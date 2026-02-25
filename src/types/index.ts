@@ -54,6 +54,18 @@ export type CashAudit = {
   createdAt: string;
 };
 
+export type CashAdjustmentType = 'INGRESO' | 'EGRESO';
+
+export type CashAdjustment = {
+  id: number;
+  currencyId: number;
+  currency: Currency;
+  amount: number;
+  type: CashAdjustmentType;
+  reason: string;
+  createdAt: string;
+};
+
 export type BankAccount = {
   id: number;
   name: string;
@@ -96,10 +108,13 @@ export type Objective = {
   remaining: number;
 };
 
+export type UserRole = 'ADMIN' | 'USER';
+
 export type User = {
   id: number;
   email: string;
   name: string;
+  role: UserRole;
 };
 
 export type AuthResponse = {

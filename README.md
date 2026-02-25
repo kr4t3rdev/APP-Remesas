@@ -1,175 +1,111 @@
 # Casa de Cambio - Mobile App
 
-Aplicación móvil para gestión de casa de cambio desarrollada con Expo y React Native.
+Aplicación móvil para gestión de casa de cambio, construida con Expo + React Native.
 
 ## Requisitos
 
 - Node.js 18+
-- pnpm (recomendado) o npm
-- Expo CLI
-- iOS Simulator / Android Emulator / Dispositivo físico
+- pnpm
+- iOS Simulator, Android Emulator o dispositivo físico
 
 ## Instalación
 
 ```bash
-# Instalar dependencias
 pnpm install
-
-# Iniciar en desarrollo
 pnpm start
+```
 
-# iOS
+Comandos útiles:
+
+```bash
 pnpm ios
-
-# Android
 pnpm android
+pnpm web
+pnpm -s tsc --noEmit
 ```
 
-## Estructura del Proyecto
+## Arquitectura Actual
 
-```
+La app usa **arquitectura modular por dominio** con React Query para datos remotos:
+
+- `src/modules/<dominio>/infrastructure`: acceso HTTP (repositories)
+- `src/modules/<dominio>/application`: hooks de `useQuery` / `useMutation`
+- `src/screens/*`: UI y flujo de interacción
+- `src/shared/query/queryKeys.ts`: claves centralizadas de cache
+
+### Regla de estado
+
+- **React Query**: todo dato que viene del backend.
+- **Zustand (`authStore`)**: estado de sesión/local (`user`, `login`, `logout`, `changePassword`).
+
+## Estructura (resumen)
+
+```text
 APP/
-├── App.tsx                    # Entry point
+├── App.tsx
 ├── src/
-│   ├── components/
-│   │   ├── ui/               # Componentes UI reutilizables
-│   │   │   ├── Button.tsx
-│   │   │   ├── Card.tsx
-│   │   │   ├── Input.tsx
-│   │   │   └── Badge.tsx
-│   │   └── features/         # Componentes específicos
-│   │       └── Dashboard/
-│   │           ├── BalanceCard.tsx
-│   │           ├── TransactionSummaryCard.tsx
-│   │           └── QuickActionCard.tsx
-│   ├── screens/
-│   │   ├── auth/
-│   │   │   └── LoginScreen.tsx
-│   │   ├── home/
-│   │   │   └── HomeScreen.tsx
-│   │   ├── profile/
-│   │   │   └── ProfileScreen.tsx
-│   │   ├── transactions/
+│   ├── modules/
 │   │   ├── cash/
+│   │   ├── dashboard/
+│   │   ├── exchange-rates/
 │   │   ├── expenses/
+│   │   ├── objectives/
+│   │   ├── profile/
 │   │   ├── reports/
-│   │   └── objectives/
+│   │   └── transactions/
+│   ├── shared/
+│   │   └── query/queryKeys.ts
+│   ├── screens/
+│   ├── services/api.ts
+│   ├── store/authStore.ts
 │   ├── navigation/
-│   │   ├── AppNavigator.tsx
-│   │   ├── MainTabs.tsx
-│   │   └── types.ts
-│   ├── services/
-│   │   ├── api.ts
-│   │   ├── auth.service.ts
-│   │   └── finance.service.ts
-│   ├── store/
-│   │   ├── authStore.ts
-│   │   └── dashboard.store.ts
-│   ├── types/
-│   │   └── index.ts
+│   ├── components/
 │   ├── theme/
-│   │   └── index.ts
-│   ├── config/
-│   │   └── constants.ts
-│   └── hooks/
-├── assets/
-├── tailwind.config.js
-├── babel.config.js
-└── app.json
+│   └── types/
+├── app.json
+└── package.json
 ```
 
-## Tecnologías
+## Módulos Implementados
 
-- **Expo SDK 54** - Framework de desarrollo
-- **React Native** - UI nativa
-- **TypeScript** - Tipado estático
-- **React Navigation** - Navegación
-- **Zustand** - Estado global
-- **TanStack Query** - Data fetching
-- **NativeWind** - Tailwind CSS para React Native
-- **Axios** - Cliente HTTP
-- **React Hook Form + Zod** - Formularios
-- **date-fns** - Manejo de fechas
+- `transactions`: lista + creación + monedas + tasas.
+- `cash`: balances, transacciones, arqueos y ajustes.
+- `exchange-rates`: tasas actuales, historial y actualización.
+- `expenses`: listado de gastos.
+- `objectives`: listado filtrado por estado.
+- `profile`: agregados de perfil (cuentas, objetivos activos, caja, resumen diario).
+- `reports`: reporte diario por fecha + balances.
+- `dashboard`: repository base para datos compuestos del home.
 
-## Pantallas
+## Convención para Nuevos Módulos
 
-### Autenticación
-- Login
+Crear siempre esta base:
 
-### Dashboard (Home)
-- Resumen del día
-- Saldos en caja
-- Acciones rápidas
+```text
+src/modules/<dominio>/
+├── infrastructure/<dominio>.repository.ts
+└── application/use<Domain>.ts
+```
 
-### Transacciones
-- Lista de transacciones
-- Nueva compra/venta
+Checklist:
 
-### Caja
-- Balances por moneda
-- Arqueos
-- Ajustes
-
-### Gastos
-- Lista de gastos
-- Nuevo gasto
-- Reconciliaciones
-
-### Reportes
-- Diario
-- Por período
-- Ganancias
-
-### Perfil
-- Información del usuario
-- Cambiar contraseña
-- Configuración
+1. Definir `queryKeys` en `src/shared/query/queryKeys.ts`.
+2. Implementar repository con `api` tipado.
+3. Implementar hooks `useQuery`/`useMutation`.
+4. Invalidar cache relacionada al mutar.
+5. Consumir hooks desde `screen`, sin llamar `api` directo.
 
 ## API Backend
 
-La aplicación consume la API REST ubicada en `/API`. 
-URL base de desarrollo: `http://localhost:3000/api`
+La app consume la API REST del proyecto `API/`.
 
-## Scripts
+La base URL está en:
 
-```bash
-# Desarrollo
-pnpm start
+- `src/config/constants.ts`
 
-# iOS Simulator
-pnpm ios
+## Diseño y UI
 
-# Android Emulator
-pnpm android
-
-# Web
-pnpm web
-
-# Linting
-pnpm lint
-
-# Build
-pnpm build
-```
-
-## Configuración
-
-### Variables de entorno
-
-Crear archivo `.env` en la raíz:
-
-```env
-API_URL=http://localhost:3000/api
-```
-
-### Tailwind/NativeWind
-
-Los estilos se definen en `tailwind.config.js` y se aplican usando la sintaxis de Tailwind.
-
-## Notas de Desarrollo
-
-- Estilo iOS-first con diseño suave y fluido
-- Navegación por tabs en la parte inferior
-- Colores primarios azules
-- Cards con sombras suaves
-- Animaciones nativas
+- Navegación por tabs inferiores.
+- Tema y tokens en `src/theme/index.ts`.
+- Componentes de UI reutilizables en `src/components/ui`.
+- Componentes de animación y gráficos en `src/components/animations` y `src/components/charts`.

@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { colors, spacing, borderRadius } from '../../theme';
-import { authService } from '../../services/auth.service';
 import { useAuthStore } from '../../store/authStore';
 
 export const LoginScreen: React.FC = () => {
@@ -25,8 +24,7 @@ export const LoginScreen: React.FC = () => {
     setError('');
 
     try {
-      const response = await authService.login(email, password);
-      await login(response.user, response.access_token);
+      await login(email, password);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al iniciar sesión');
     } finally {

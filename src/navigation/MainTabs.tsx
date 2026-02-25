@@ -2,14 +2,13 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
+import { TransactionsScreen } from '../screens/transactions/TransactionsScreen';
+import { CashScreen } from '../screens/cash/CashScreen';
+import { ReportsScreen } from '../screens/reports/ReportsScreen';
 import { colors } from '../theme';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
-
-const PlaceholderScreen: React.FC = () => (
-  <React.Fragment />
-);
 
 export const MainTabs: React.FC = () => {
   return (
@@ -44,7 +43,7 @@ export const MainTabs: React.FC = () => {
       />
       <Tab.Screen
         name="Transactions"
-        component={PlaceholderScreen}
+        component={TransactionsScreen}
         options={{
           tabBarLabel: 'Transacciones',
           tabBarIcon: ({ color }) => (
@@ -54,7 +53,7 @@ export const MainTabs: React.FC = () => {
       />
       <Tab.Screen
         name="Cash"
-        component={PlaceholderScreen}
+        component={CashScreen}
         options={{
           tabBarLabel: 'Caja',
           tabBarIcon: ({ color }) => (
@@ -64,11 +63,11 @@ export const MainTabs: React.FC = () => {
       />
       <Tab.Screen
         name="Reports"
-        component={PlaceholderScreen}
+        component={ReportsScreen}
         options={{
           tabBarLabel: 'Reportes',
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="chart-bar" color={color} />
+            <TabBarIcon name="bar-chart" color={color} />
           ),
         }}
       />
@@ -78,7 +77,7 @@ export const MainTabs: React.FC = () => {
         options={{
           tabBarLabel: 'Perfil',
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="account" color={color} />
+            <TabBarIcon name="person" color={color} />
           ),
         }}
       />
@@ -86,32 +85,13 @@ export const MainTabs: React.FC = () => {
   );
 };
 
-import { View, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 type TabBarIconProps = {
-  name: string;
+  name: keyof typeof Ionicons.glyphMap;
   color: string;
 };
 
 const TabBarIcon: React.FC<TabBarIconProps> = ({ name, color }) => {
-  const icons: Record<string, string> = {
-    home: '🏠',
-    'swap-horizontal': '💱',
-    wallet: '💵',
-    'chart-bar': '📊',
-    account: '👤',
-  };
-
-  return (
-    <View
-      style={{
-        width: 28,
-        height: 28,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Text style={{ fontSize: 20 }}>{icons[name] || '•'}</Text>
-    </View>
-  );
+  return <Ionicons name={name} size={24} color={color} />;
 };

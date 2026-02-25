@@ -1,0 +1,841 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  RefreshControl,
+  TouchableOpacity,
+  FlatList,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, spacing, borderRadius, shadows } from '../../theme';
+import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
+import { FadeIn, FadeInDown, ScaleIn } from '../../components/animations';
+import type { ExchangeRate, RateHistory } from '../../types';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import {
+  useCurrenciesQuery,
+  useCurrentExchangeRatesQuery,
+  useRateHistoryQuery,
+  useUpdateExchangeRateMutation,
+} from '../../modules/exchange-rates/application/useExchangeRates';
+
+type TabType = 'current' | 'history' | 'manual';
+
+export const ExchangeRatesScreen: React.FC = () => {
+  const currenciesQuery = useCurrenciesQuery();
+  const currentRatesQuery = useCurrentExchangeRatesQuery();
+  const historyQuery = useRateHistoryQuery();
+  const updateExchangeRateMutation = useUpdateExchangeRateMutation();
+
+  const currencies = currenciesQuery.data ?? [];
+  const rates = currentRatesQuery.data ?? [];
+  const history = historyQuery.data ?? [];
+  const manualEntries = useMemo(
+    () => history.filter((h) => h.source === 'MANUAL'),
+    [history]
+  );
+
+  const [activeTab, setActiveTab] = useState<TabType>('current');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCurrencyId, setSelectedCurrencyId] = useState<number | null>(null);
+  const [historyModalVisible, setHistoryModalVisible] = useState(false);
+  const [selectedRateHistory, setSelectedRateHistory] = useState<RateHistory[]>([]);
+
+  const [formData, setFormData] = useState({
+    currencyId: 0,
+    referenceRate: '',
+    buyMargin: '0.05',
+    sellMargin: '0.05',
+  });
+
+  useEffect(() => {
+    if (formData.currencyId !== 0) return;
+    const filteredCurrencies = currencies.filter((c) => c.code !== 'CUP');
+    const usd = filteredCurrencies.find((c) => c.code === 'USD');
+    if (usd) {
+      setFormData((prev) => ({ ...prev, currencyId: usd.id }));
+    }
+  }, [currencies, formData.currencyId]);
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      currenciesQuery.refetch(),
+      currentRatesQuery.refetch(),
+      historyQuery.refetch(),
+    ]);
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.currencyId) {
+      return;
+    }
+    if (!formData.referenceRate || parseFloat(formData.referenceRate) <= 0) {
+      return;
+    }
+
+    try {
+      await updateExchangeRateMutation.mutateAsync({
+        currencyId: formData.currencyId,
+        data: {
+          referenceRate: parseFloat(formData.referenceRate),
+          buyMargin: parseFloat(formData.buyMargin) || 0.05,
+          sellMargin: parseFloat(formData.sellMargin) || 0.05,
+        },
+      });
+
+      setModalVisible(false);
+      setFormData(prev => ({
+        ...prev,
+        referenceRate: '',
+        buyMargin: '0.05',
+        sellMargin: '0.05',
+      }));
+    } catch (error) {
+      console.error('Error updating rate:', error);
+    }
+  };
+
+  const openEditModal = (rate?: ExchangeRate) => {
+    const filteredCurrencies = currencies.filter(c => c.code !== 'CUP');
+    if (rate) {
+      setSelectedCurrencyId(rate.currencyId);
+      setFormData({
+        currencyId: rate.currencyId,
+        referenceRate: Number(rate.referenceRate).toString(),
+        buyMargin: Number(rate.buyMargin).toString(),
+        sellMargin: Number(rate.sellMargin).toString(),
+      });
+    } else {
+      setSelectedCurrencyId(null);
+      const usd = filteredCurrencies.find(c => c.code === 'USD');
+      setFormData({
+        currencyId: usd?.id || filteredCurrencies[0]?.id || 0,
+        referenceRate: '',
+        buyMargin: '0.05',
+        sellMargin: '0.05',
+      });
+    }
+    setModalVisible(true);
+  };
+
+  const viewCurrencyHistory = async (currencyId: number) => {
+    try {
+      const cupCurrency = currencies.find(c => c.code === 'CUP');
+      const cupId = cupCurrency?.id || 2;
+      const historyData = history.filter(h => 
+        h.currencyFromId === currencyId && h.currencyToId === cupId
+      );
+      setSelectedRateHistory(historyData);
+      setHistoryModalVisible(true);
+    } catch (error) {
+      console.error('Error loading history:', error);
+    }
+  };
+
+  const formatNumber = (value: number | string, decimals: number = 2) => {
+    const num = Number(value) || 0;
+    return num.toFixed(decimals);
+  };
+
+  const formatPercent = (value: number | string) => {
+    const num = Number(value) || 0;
+    return `${(num * 100).toFixed(1)}%`;
+  };
+
+  const formatDate = (dateStr: string) => {
+    return format(new Date(dateStr), 'dd/MM/yyyy HH:mm', { locale: es });
+  };
+
+  const getCurrencyColor = (code: string) => {
+    const colorMap: Record<string, string> = {
+      USD: colors.financial.venta,
+      EUR: '#3B82F6',
+      MLC: '#8B5CF6',
+    };
+    return colorMap[code] || colors.primary[500];
+  };
+
+  const renderCurrentRate = ({ item, index }: { item: ExchangeRate; index: number }) => {
+    const currencyColor = getCurrencyColor(item.currency?.code || '');
+    const buyRate = Number(item.referenceRate) * (1 - Number(item.buyMargin));
+    const sellRate = Number(item.referenceRate) * (1 + Number(item.sellMargin));
+
+    return (
+      <FadeInDown delay={index * 50}>
+        <TouchableOpacity
+          style={styles.rateCard}
+          onPress={() => openEditModal(item)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.rateHeader}>
+            <View style={[styles.currencyBadge, { backgroundColor: `${currencyColor}20` }]}>
+              <Text style={[styles.currencySymbol, { color: currencyColor }]}>
+                {item.currency?.symbol}
+              </Text>
+            </View>
+            <View style={styles.rateInfo}>
+              <Text style={styles.currencyName}>{item.currency?.name}</Text>
+              <Text style={styles.currencyCode}>{item.currency?.code}</Text>
+            </View>
+            <View style={styles.rateValues}>
+              <View style={styles.rateValueRow}>
+                <Text style={styles.rateLabel}>Compra</Text>
+                <Text style={[styles.rateValue, { color: colors.financial.compra }]}>
+                  {formatNumber(buyRate)}
+                </Text>
+              </View>
+              <View style={styles.rateValueRow}>
+                <Text style={styles.rateLabel}>Venta</Text>
+                <Text style={[styles.rateValue, { color: colors.financial.venta }]}>
+                  {formatNumber(sellRate)}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.rateFooter}>
+            <View style={styles.rateDetail}>
+              <Text style={styles.rateDetailLabel}>Referencia</Text>
+              <Text style={styles.rateDetailValue}>{formatNumber(item.referenceRate)}</Text>
+            </View>
+            <View style={styles.rateDetail}>
+              <Text style={styles.rateDetailLabel}>Margen Compra</Text>
+              <Text style={styles.rateDetailValue}>{formatPercent(item.buyMargin)}</Text>
+            </View>
+            <View style={styles.rateDetail}>
+              <Text style={styles.rateDetailLabel}>Margen Venta</Text>
+              <Text style={styles.rateDetailValue}>{formatPercent(item.sellMargin)}</Text>
+            </View>
+          </View>
+
+          {item.isNewRate && (
+            <View style={styles.newBadge}>
+              <Badge text="Nueva" variant="info" />
+            </View>
+          )}
+
+          <TouchableOpacity 
+            style={styles.historyButton}
+            onPress={() => viewCurrencyHistory(item.currencyId)}
+          >
+            <Ionicons name="time-outline" size={18} color={colors.primary[500]} />
+            <Text style={styles.historyButtonText}>Ver historial</Text>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </FadeInDown>
+    );
+  };
+
+  const renderHistoryItem = ({ item, index }: { item: RateHistory; index: number }) => {
+    const isManual = item.source === 'MANUAL';
+
+    return (
+      <FadeInDown delay={index * 30}>
+        <View style={[styles.historyCard, isManual && styles.historyCardManual]}>
+          {isManual && (
+            <View style={styles.manualBadge}>
+              <Ionicons name="hand-left" size={12} color={colors.warning} />
+              <Text style={styles.manualBadgeText}>Manual</Text>
+            </View>
+          )}
+          <View style={styles.historyRow}>
+            <View style={styles.historyPair}>
+              <Text style={styles.historyCurrency}>{item.currencyFrom?.code}</Text>
+              <Ionicons name="arrow-forward" size={16} color={colors.text.secondary} />
+              <Text style={styles.historyCurrency}>{item.currencyTo?.code}</Text>
+            </View>
+            <Text style={styles.historyRate}>{formatNumber(item.rate)}</Text>
+          </View>
+          <Text style={styles.historyDate}>{formatDate(item.createdAt)}</Text>
+        </View>
+      </FadeInDown>
+    );
+  };
+
+  const tabs: { key: TabType; label: string; icon: string }[] = [
+    { key: 'current', label: 'Actuales', icon: 'trending-up' },
+    { key: 'history', label: 'Historial', icon: 'time' },
+    { key: 'manual', label: 'Manuales', icon: 'hand-left' },
+  ];
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <FadeIn>
+        <View style={styles.header}>
+          <Text style={styles.title}>Tasas de Cambio</Text>
+          <Text style={styles.subtitle}>Gestiona las tasas de referencia</Text>
+        </View>
+      </FadeIn>
+
+      <View style={styles.tabsContainer}>
+        {tabs.map((tab, index) => (
+          <ScaleIn key={tab.key} delay={index * 50}>
+            <TouchableOpacity
+              style={[styles.tabButton, activeTab === tab.key && styles.tabButtonActive]}
+              onPress={() => setActiveTab(tab.key)}
+            >
+              <Ionicons
+                name={tab.icon as any}
+                size={18}
+                color={activeTab === tab.key ? '#fff' : colors.text.secondary}
+              />
+              <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          </ScaleIn>
+        ))}
+      </View>
+
+      {activeTab === 'current' && (
+        <FlatList
+          data={rates}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderCurrentRate}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={currentRatesQuery.isRefetching || currenciesQuery.isRefetching || historyQuery.isRefetching}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary[500]}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Ionicons name="trending-up-outline" size={64} color={colors.text.tertiary} />
+              <Text style={styles.emptyStateText}>No hay tasas configuradas</Text>
+              <Text style={styles.emptyStateSubtext}>Toca + para agregar una nueva tasa</Text>
+            </View>
+          }
+        />
+      )}
+
+      {activeTab === 'history' && (
+        <FlatList
+          data={history}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderHistoryItem}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={currentRatesQuery.isRefetching || currenciesQuery.isRefetching || historyQuery.isRefetching}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary[500]}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Ionicons name="time-outline" size={64} color={colors.text.tertiary} />
+              <Text style={styles.emptyStateText}>No hay historial</Text>
+            </View>
+          }
+        />
+      )}
+
+      {activeTab === 'manual' && (
+        <FlatList
+          data={manualEntries}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderHistoryItem}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={currentRatesQuery.isRefetching || currenciesQuery.isRefetching || historyQuery.isRefetching}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary[500]}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Ionicons name="hand-left-outline" size={64} color={colors.text.tertiary} />
+              <Text style={styles.emptyStateText}>No hay entradas manuales</Text>
+              <Text style={styles.emptyStateSubtext}>Las tasas que ingreses manualmente aparecerán aquí</Text>
+            </View>
+          }
+        />
+      )}
+
+      {activeTab === 'current' && (
+        <ScaleIn delay={200}>
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => openEditModal()}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add" size={28} color="#fff" />
+          </TouchableOpacity>
+        </ScaleIn>
+      )}
+
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setModalVisible(false)} />
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {selectedCurrencyId ? 'Editar Tasa' : 'Nueva Tasa'}
+              </Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Ionicons name="close" size={24} color={colors.text.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.sectionLabel}>Moneda</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.currencyScroll}>
+                {currencies.filter(c => c.code !== 'CUP').map((currency) => (
+                  <TouchableOpacity
+                    key={currency.id}
+                    style={[
+                      styles.currencyButton,
+                      formData.currencyId === currency.id && styles.currencyButtonActive,
+                    ]}
+                    onPress={() => setFormData(prev => ({ ...prev, currencyId: currency.id }))}
+                  >
+                    <Text style={[styles.currencyButtonText, formData.currencyId === currency.id && styles.currencyButtonTextActive]}>
+                      {currency.symbol} {currency.code}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <Input
+                label="Tasa de Referencia"
+                value={formData.referenceRate}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, referenceRate: text }))}
+                keyboardType="decimal-pad"
+                placeholder="200.00"
+              />
+
+              <View style={styles.inputRow}>
+                <View style={styles.inputHalf}>
+                  <Input
+                    label="Margen Compra (%)"
+                    value={formData.buyMargin}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, buyMargin: text }))}
+                    keyboardType="decimal-pad"
+                    placeholder="0.05"
+                  />
+                </View>
+                <View style={styles.inputHalf}>
+                  <Input
+                    label="Margen Venta (%)"
+                    value={formData.sellMargin}
+                    onChangeText={(text) => setFormData(prev => ({ ...prev, sellMargin: text }))}
+                    keyboardType="decimal-pad"
+                    placeholder="0.05"
+                  />
+                </View>
+              </View>
+
+              {formData.referenceRate && (
+                <View style={styles.previewCard}>
+                  <Text style={styles.previewTitle}>Vista Previa</Text>
+                  <View style={styles.previewRow}>
+                    <View style={styles.previewItem}>
+                      <Text style={styles.previewLabel}>Compra</Text>
+                      <Text style={[styles.previewValue, { color: colors.financial.compra }]}>
+                        {formatNumber(Number(formData.referenceRate) * (1 - Number(formData.buyMargin || 0)))}
+                      </Text>
+                    </View>
+                    <View style={styles.previewItem}>
+                      <Text style={styles.previewLabel}>Referencia</Text>
+                      <Text style={styles.previewValue}>{formatNumber(formData.referenceRate)}</Text>
+                    </View>
+                    <View style={styles.previewItem}>
+                      <Text style={styles.previewLabel}>Venta</Text>
+                      <Text style={[styles.previewValue, { color: colors.financial.venta }]}>
+                        {formatNumber(Number(formData.referenceRate) * (1 + Number(formData.sellMargin || 0)))}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              <Button
+                title={updateExchangeRateMutation.isPending ? 'Guardando...' : 'Guardar Tasa'}
+                onPress={handleSubmit}
+                loading={updateExchangeRateMutation.isPending}
+                style={styles.submitButton}
+              />
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      <Modal
+        visible={historyModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setHistoryModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setHistoryModalVisible(false)} />
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Historial de Tasas</Text>
+              <TouchableOpacity onPress={() => setHistoryModalVisible(false)}>
+                <Ionicons name="close" size={24} color={colors.text.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={selectedRateHistory}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderHistoryItem}
+              contentContainerStyle={styles.historyList}
+              ListEmptyComponent={
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyStateText}>No hay historial para esta moneda</Text>
+                </View>
+              }
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    padding: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginTop: 4,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  tabButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: borderRadius.lg,
+    backgroundColor: colors.card,
+    gap: 6,
+    ...shadows.sm,
+  },
+  tabButtonActive: {
+    backgroundColor: colors.primary[500],
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.text.secondary,
+  },
+  tabTextActive: {
+    color: '#fff',
+  },
+  listContent: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: 120,
+  },
+  rateCard: {
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    ...shadows.sm,
+  },
+  rateHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  currencyBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  currencySymbol: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  rateInfo: {
+    flex: 1,
+    marginLeft: spacing.sm,
+  },
+  currencyName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  currencyCode: {
+    fontSize: 12,
+    color: colors.text.secondary,
+  },
+  rateValues: {
+    alignItems: 'flex-end',
+  },
+  rateValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  rateLabel: {
+    fontSize: 11,
+    color: colors.text.tertiary,
+  },
+  rateValue: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  rateFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  rateDetail: {
+    alignItems: 'center',
+  },
+  rateDetailLabel: {
+    fontSize: 10,
+    color: colors.text.tertiary,
+    marginBottom: 2,
+  },
+  rateDetailValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  newBadge: {
+    position: 'absolute',
+    top: spacing.sm,
+    right: spacing.sm,
+  },
+  historyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    gap: 6,
+  },
+  historyButtonText: {
+    fontSize: 13,
+    color: colors.primary[500],
+    fontWeight: '500',
+  },
+  historyCard: {
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    ...shadows.sm,
+  },
+  historyCardManual: {
+    borderLeftWidth: 3,
+    borderLeftColor: colors.warning,
+  },
+  manualBadge: {
+    position: 'absolute',
+    top: spacing.xs,
+    right: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${colors.warning}20`,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: borderRadius.full,
+    gap: 4,
+  },
+  manualBadgeText: {
+    fontSize: 10,
+    color: colors.warning,
+    fontWeight: '600',
+  },
+  historyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  historyPair: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  historyCurrency: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  historyRate: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.primary[500],
+  },
+  historyDate: {
+    fontSize: 11,
+    color: colors.text.tertiary,
+    marginTop: 4,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: spacing.xxl * 2,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: colors.text.secondary,
+    marginTop: spacing.md,
+    fontWeight: '500',
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: colors.text.tertiary,
+    marginTop: spacing.xs,
+    textAlign: 'center',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: spacing.lg,
+    right: spacing.lg,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primary[500],
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.lg,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalContent: {
+    backgroundColor: colors.card,
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
+  },
+  currencyScroll: {
+    marginBottom: spacing.md,
+  },
+  currencyButton: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.lg,
+    backgroundColor: colors.surface,
+    marginRight: spacing.sm,
+  },
+  currencyButtonActive: {
+    backgroundColor: colors.primary[500],
+  },
+  currencyButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  currencyButtonTextActive: {
+    color: '#fff',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  inputHalf: {
+    flex: 1,
+  },
+  previewCard: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  previewTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
+  },
+  previewRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  previewItem: {
+    alignItems: 'center',
+  },
+  previewLabel: {
+    fontSize: 11,
+    color: colors.text.tertiary,
+    marginBottom: 4,
+  },
+  previewValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  submitButton: {
+    marginTop: spacing.md,
+  },
+  historyList: {
+    paddingBottom: spacing.xl,
+  },
+});
