@@ -5,26 +5,28 @@ import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { TransactionsScreen } from '../screens/transactions/TransactionsScreen';
 import { CashScreen } from '../screens/cash/CashScreen';
 import { ReportsScreen } from '../screens/reports/ReportsScreen';
-import { colors } from '../theme';
+import { useColors } from '../store/themeStore';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabs: React.FC = () => {
+  const themeColors = useColors();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
+          backgroundColor: themeColors.card,
+          borderTopColor: themeColors.border,
           borderTopWidth: 0.5,
           paddingTop: 8,
           paddingBottom: 8,
           height: 80,
         },
-        tabBarActiveTintColor: colors.primary[500],
-        tabBarInactiveTintColor: colors.text.secondary,
+        tabBarActiveTintColor: themeColors.primary[500],
+        tabBarInactiveTintColor: themeColors.text.secondary,
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '500',

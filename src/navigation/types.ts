@@ -5,6 +5,9 @@ export type RootStackParamList = {
   Main: undefined;
   Login: undefined;
   CashHistory: undefined;
+  ExchangeRates: undefined;
+  BankAccounts: undefined;
+  Currencies: undefined;
 };
 
 export type MainTabParamList = {
@@ -13,6 +16,14 @@ export type MainTabParamList = {
   Cash: undefined;
   Reports: undefined;
   Profile: undefined;
+};
+
+export type AdminTabParamList = {
+  AdminHome: undefined;
+  AdminServices: undefined;
+  AdminUsers: undefined;
+  AdminReports: undefined;
+  AdminProfile: undefined;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<RootStackParamList, T>;

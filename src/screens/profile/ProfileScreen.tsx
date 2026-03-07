@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -14,8 +14,9 @@ import { FadeIn, FadeInDown, ScaleIn } from '../../components/animations';
 import { StatsCard, CircularProgress } from '../../components/charts/Charts';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { colors, spacing, borderRadius, shadows } from '../../theme';
+import { spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
+import { useThemeStore, useColors, useIsDark, useShadows } from '../../store/themeStore';
 import type { RootStackScreenProps } from '../../navigation/types';
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -39,6 +40,12 @@ export const ProfileScreen: React.FC = () => {
   const logout = useAuthStore((state) => state.logout);
   const changePassword = useAuthStore((state) => state.changePassword);
   const navigation = useNavigation<RootStackScreenProps<'Main'>['navigation']>();
+  
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
+  const themeColors = useColors();
+  const themeShadows = useShadows();
+  const isDarkMode = useIsDark();
+  const styles = useMemo(() => createStyles(themeColors, themeShadows), [themeColors, themeShadows]);
 
   const bankAccountsQuery = useProfileBankAccountsQuery();
   const objectivesQuery = useProfileActiveObjectivesQuery();
@@ -54,6 +61,7 @@ export const ProfileScreen: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const isAdmin = user?.role === 'ADMIN';
 
   const handleRefresh = async () => {
     await Promise.all([
@@ -107,11 +115,19 @@ export const ProfileScreen: React.FC = () => {
 
   const menuItems: MenuItem[] = [
     {
+      id: 'theme',
+      title: isDarkMode ? 'Modo Claro' : 'Modo Oscuro',
+      subtitle: isDarkMode ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro',
+      icon: isDarkMode ? 'sunny-outline' : 'moon-outline',
+      color: isDarkMode ? '#F59E0B' : '#6366F1',
+      onPress: toggleTheme,
+    },
+    {
       id: 'password',
       title: 'Cambiar Contraseña',
       subtitle: 'Actualizar credenciales',
       icon: 'lock-closed-outline',
-      color: colors.primary[500],
+      color: themeColors.primary[500],
       onPress: () => setShowPasswordForm(!showPasswordForm),
     },
     {
@@ -119,23 +135,31 @@ export const ProfileScreen: React.FC = () => {
       title: 'Tasas de Cambio',
       subtitle: 'Configurar tasas de referencia',
       icon: 'swap-horizontal-outline',
-      color: colors.success,
+      color: themeColors.success,
       onPress: () => navigation.navigate('ExchangeRates'),
+    },
+    {
+      id: 'currencies',
+      title: 'Monedas',
+      subtitle: 'Gestionar monedas y principal',
+      icon: 'cash-outline',
+      color: themeColors.secondary[500],
+      onPress: () => navigation.navigate('Currencies'),
     },
     {
       id: 'accounts',
       title: 'Cuentas Bancarias',
       subtitle: `${bankAccounts.length} cuentas`,
       icon: 'business-outline',
-      color: colors.warning,
-      onPress: () => Alert.alert('Cuentas Bancarias', 'Próximamente'),
+      color: themeColors.warning,
+      onPress: () => navigation.navigate('BankAccounts'),
     },
     {
       id: 'about',
       title: 'Acerca de',
       subtitle: 'Versión 1.0.0',
       icon: 'information-circle-outline',
-      color: colors.text.secondary,
+      color: themeColors.text.secondary,
       onPress: () => Alert.alert('Casa de Cambio', 'Versión 1.0.0\nSistema de gestión para casa de cambio'),
     },
   ];
@@ -157,14 +181,16 @@ export const ProfileScreen: React.FC = () => {
               dailyReportQuery.isRefetching
             } 
             onRefresh={handleRefresh}
-            tintColor={colors.primary[500]}
+            tintColor={themeColors.primary[500]}
           />
         }
       >
         <FadeIn>
           <View style={styles.header}>
             <Text style={styles.title}>Perfil</Text>
-            <Text style={styles.subtitle}>Tu cuenta y configuración</Text>
+            <Text style={styles.subtitle}>
+              {isAdmin ? 'Cuenta administrativa y configuración operativa' : 'Tu cuenta y configuración'}
+            </Text>
           </View>
         </FadeIn>
 
@@ -172,7 +198,7 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.profileCard}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatar}>
-                <Ionicons name="person" size={40} color={colors.primary[500]} />
+                <Ionicons name="person" size={40} color={themeColors.primary[500]} />
               </View>
               <View style={styles.roleBadge}>
                 <Text style={styles.roleText}>{user?.role}</Text>
@@ -180,6 +206,12 @@ export const ProfileScreen: React.FC = () => {
             </View>
             <Text style={styles.userName}>{user?.name}</Text>
             <Text style={styles.userEmail}>{user?.email}</Text>
+            {!!user?.blockedUntil && (
+              <Text style={[styles.userEmail, { color: themeColors.warning }]}>Bloqueado hasta: {new Date(user.blockedUntil).toLocaleString()}</Text>
+            )}
+            {!!user?.isBanned && (
+              <Text style={[styles.userEmail, { color: themeColors.danger }]}>Usuario baneado</Text>
+            )}
           </View>
         </FadeInDown>
 
@@ -188,8 +220,8 @@ export const ProfileScreen: React.FC = () => {
             <StatsCard
               title="Total Banco"
               value={`$ ${formatNumber(totalBankBalance)}`}
-              icon={<Ionicons name="card" size={20} color={colors.primary[500]} />}
-              color={colors.primary[500]}
+              icon={<Ionicons name="card" size={20} color={themeColors.primary[500]} />}
+              color={themeColors.primary[500]}
               style={styles.statCard}
             />
           </ScaleIn>
@@ -197,8 +229,8 @@ export const ProfileScreen: React.FC = () => {
             <StatsCard
               title="Total Caja"
               value={`$ ${formatNumber(totalCashBalance)}`}
-              icon={<Ionicons name="wallet" size={20} color={colors.success} />}
-              color={colors.success}
+              icon={<Ionicons name="wallet" size={20} color={themeColors.success} />}
+              color={themeColors.success}
               style={styles.statCard}
             />
           </ScaleIn>
@@ -211,15 +243,15 @@ export const ProfileScreen: React.FC = () => {
               <View style={styles.summaryCard}>
                 <View style={styles.summaryRow}>
                   <View style={styles.summaryItem}>
-                    <Ionicons name="trending-up" size={20} color={colors.success} />
+                    <Ionicons name="trending-up" size={20} color={themeColors.success} />
                     <Text style={styles.summaryLabel}>Ganancia</Text>
-                    <Text style={[styles.summaryValue, { color: colors.success }]}>
+                    <Text style={[styles.summaryValue, { color: themeColors.success }]}>
                       $ {formatNumber(dailyReport.profit.net)}
                     </Text>
                   </View>
                   <View style={styles.summaryDivider} />
                   <View style={styles.summaryItem}>
-                    <Ionicons name="swap-horizontal" size={20} color={colors.primary[500]} />
+                    <Ionicons name="swap-horizontal" size={20} color={themeColors.primary[500]} />
                     <Text style={styles.summaryLabel}>Transacciones</Text>
                     <Text style={styles.summaryValue}>{dailyReport.transactions.total}</Text>
                   </View>
@@ -250,7 +282,7 @@ export const ProfileScreen: React.FC = () => {
                         percentage={objective.percentage}
                         size={60}
                         strokeWidth={5}
-                        color={objective.percentage >= 100 ? colors.success : colors.primary[500]}
+                        color={objective.percentage >= 100 ? themeColors.success : themeColors.primary[500]}
                       >
                         <Text style={styles.objectivePercent}>{objective.percentage.toFixed(0)}%</Text>
                       </CircularProgress>
@@ -278,7 +310,7 @@ export const ProfileScreen: React.FC = () => {
               {bankAccounts.slice(0, 2).map((account, index) => (
                 <View key={account.id} style={styles.accountCard}>
                   <View style={styles.accountIcon}>
-                    <Ionicons name="business" size={20} color={colors.primary[500]} />
+                    <Ionicons name="business" size={20} color={themeColors.primary[500]} />
                   </View>
                   <View style={styles.accountInfo}>
                     <Text style={styles.accountName}>{account.name}</Text>
@@ -311,7 +343,7 @@ export const ProfileScreen: React.FC = () => {
                     <Text style={styles.menuTitle}>{item.title}</Text>
                     <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.text.tertiary} />
+                  <Ionicons name="chevron-forward" size={20} color={themeColors.text.tertiary} />
                 </TouchableOpacity>
               </ScaleIn>
             ))}
@@ -365,7 +397,7 @@ export const ProfileScreen: React.FC = () => {
           variant="outline"
           onPress={handleLogout}
           style={styles.logoutButton}
-          textStyle={{ color: colors.danger }}
+          textStyle={{ color: themeColors.danger }}
         />
 
         <View style={{ height: 100 }} />
@@ -374,10 +406,10 @@ export const ProfileScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (themeColors: ReturnType<typeof useColors>, themeShadows: ReturnType<typeof useShadows>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: themeColors.background,
   },
   scrollContent: {
     padding: spacing.md,
@@ -388,20 +420,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.text.primary,
+    color: themeColors.text.primary,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.text.secondary,
+    color: themeColors.text.secondary,
     marginTop: 4,
   },
   profileCard: {
-    backgroundColor: colors.card,
+    backgroundColor: themeColors.card,
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
     alignItems: 'center',
     marginBottom: spacing.lg,
-    ...shadows.md,
+    ...themeShadows.md,
   },
   avatarContainer: {
     position: 'relative',
@@ -411,7 +443,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.primary[100],
+    backgroundColor: themeColors.primary[100],
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -419,7 +451,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: colors.primary[500],
+    backgroundColor: themeColors.primary[500],
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: borderRadius.full,
@@ -433,11 +465,11 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 22,
     fontWeight: '700',
-    color: colors.text.primary,
+    color: themeColors.text.primary,
   },
   userEmail: {
     fontSize: 14,
-    color: colors.text.secondary,
+    color: themeColors.text.secondary,
     marginTop: 4,
   },
   statsGrid: {
@@ -460,19 +492,19 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text.primary,
+    color: themeColors.text.primary,
     marginBottom: spacing.sm,
   },
   seeAll: {
     fontSize: 14,
-    color: colors.primary[500],
+    color: themeColors.primary[500],
     fontWeight: '500',
   },
   summaryCard: {
-    backgroundColor: colors.card,
+    backgroundColor: themeColors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    ...shadows.sm,
+    ...themeShadows.sm,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -484,19 +516,19 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 12,
-    color: colors.text.secondary,
+    color: themeColors.text.secondary,
     marginTop: spacing.xs,
   },
   summaryValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.text.primary,
+    color: themeColors.text.primary,
     marginTop: 4,
   },
   summaryDivider: {
     width: 1,
     height: 50,
-    backgroundColor: colors.border,
+    backgroundColor: themeColors.border,
   },
   objectivesScroll: {
     paddingRight: spacing.md,
@@ -504,44 +536,44 @@ const styles = StyleSheet.create({
   },
   objectiveCard: {
     width: 140,
-    backgroundColor: colors.card,
+    backgroundColor: themeColors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     alignItems: 'center',
-    ...shadows.sm,
+    ...themeShadows.sm,
   },
   objectivePercent: {
     fontSize: 12,
     fontWeight: '700',
-    color: colors.text.primary,
+    color: themeColors.text.primary,
   },
   objectiveName: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.text.primary,
+    color: themeColors.text.primary,
     marginTop: spacing.sm,
     textAlign: 'center',
   },
   objectiveAmount: {
     fontSize: 11,
-    color: colors.text.secondary,
+    color: themeColors.text.secondary,
     marginTop: 4,
     textAlign: 'center',
   },
   accountCard: {
-    backgroundColor: colors.card,
+    backgroundColor: themeColors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: spacing.sm,
-    ...shadows.sm,
+    ...themeShadows.sm,
   },
   accountIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary[50],
+    backgroundColor: themeColors.primary[50],
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -552,11 +584,11 @@ const styles = StyleSheet.create({
   accountName: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.text.primary,
+    color: themeColors.text.primary,
   },
   accountBank: {
     fontSize: 12,
-    color: colors.text.secondary,
+    color: themeColors.text.secondary,
     marginTop: 2,
   },
   accountBalance: {
@@ -564,21 +596,21 @@ const styles = StyleSheet.create({
   },
   balanceLabel: {
     fontSize: 11,
-    color: colors.text.tertiary,
+    color: themeColors.text.tertiary,
   },
   balanceValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.text.primary,
+    color: themeColors.text.primary,
   },
   menuItem: {
-    backgroundColor: colors.card,
+    backgroundColor: themeColors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: spacing.sm,
-    ...shadows.sm,
+    ...themeShadows.sm,
   },
   menuIcon: {
     width: 40,
@@ -594,24 +626,24 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.text.primary,
+    color: themeColors.text.primary,
   },
   menuSubtitle: {
     fontSize: 12,
-    color: colors.text.secondary,
+    color: themeColors.text.secondary,
     marginTop: 2,
   },
   passwordForm: {
-    backgroundColor: colors.card,
+    backgroundColor: themeColors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     marginBottom: spacing.lg,
-    ...shadows.sm,
+    ...themeShadows.sm,
   },
   formTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text.primary,
+    color: themeColors.text.primary,
     marginBottom: spacing.md,
   },
   formButtons: {

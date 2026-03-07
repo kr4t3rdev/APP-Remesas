@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, shadows } from '../../theme';
+import { useColors, useShadows, useIsDark } from '../../store/themeStore';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -31,6 +32,10 @@ import {
 type TabType = 'current' | 'history' | 'manual';
 
 export const ExchangeRatesScreen: React.FC = () => {
+  const themeColors = useColors();
+  const themeShadows = useShadows();
+  const isDark = useIsDark();
+  
   const currenciesQuery = useCurrenciesQuery();
   const currentRatesQuery = useCurrentExchangeRatesQuery();
   const historyQuery = useRateHistoryQuery();
@@ -157,11 +162,11 @@ export const ExchangeRatesScreen: React.FC = () => {
 
   const getCurrencyColor = (code: string) => {
     const colorMap: Record<string, string> = {
-      USD: colors.financial.venta,
+      USD: themeColors.financial.venta,
       EUR: '#3B82F6',
       MLC: '#8B5CF6',
     };
-    return colorMap[code] || colors.primary[500];
+    return colorMap[code] || themeColors.primary[500];
   };
 
   const renderCurrentRate = ({ item, index }: { item: ExchangeRate; index: number }) => {
@@ -172,7 +177,7 @@ export const ExchangeRatesScreen: React.FC = () => {
     return (
       <FadeInDown delay={index * 50}>
         <TouchableOpacity
-          style={styles.rateCard}
+          style={[styles.rateCard, { backgroundColor: themeColors.card }, themeShadows.sm]}
           onPress={() => openEditModal(item)}
           activeOpacity={0.7}
         >
@@ -183,37 +188,37 @@ export const ExchangeRatesScreen: React.FC = () => {
               </Text>
             </View>
             <View style={styles.rateInfo}>
-              <Text style={styles.currencyName}>{item.currency?.name}</Text>
-              <Text style={styles.currencyCode}>{item.currency?.code}</Text>
+              <Text style={[styles.currencyName, { color: themeColors.text.primary }]}>{item.currency?.name}</Text>
+              <Text style={[styles.currencyCode, { color: themeColors.text.secondary }]}>{item.currency?.code}</Text>
             </View>
             <View style={styles.rateValues}>
               <View style={styles.rateValueRow}>
-                <Text style={styles.rateLabel}>Compra</Text>
-                <Text style={[styles.rateValue, { color: colors.financial.compra }]}>
+                <Text style={[styles.rateLabel, { color: themeColors.text.tertiary }]}>Compra</Text>
+                <Text style={[styles.rateValue, { color: themeColors.financial.compra }]}>
                   {formatNumber(buyRate)}
                 </Text>
               </View>
               <View style={styles.rateValueRow}>
-                <Text style={styles.rateLabel}>Venta</Text>
-                <Text style={[styles.rateValue, { color: colors.financial.venta }]}>
+                <Text style={[styles.rateLabel, { color: themeColors.text.tertiary }]}>Venta</Text>
+                <Text style={[styles.rateValue, { color: themeColors.financial.venta }]}>
                   {formatNumber(sellRate)}
                 </Text>
               </View>
             </View>
           </View>
 
-          <View style={styles.rateFooter}>
+          <View style={[styles.rateFooter, { borderTopColor: themeColors.border }]}>
             <View style={styles.rateDetail}>
-              <Text style={styles.rateDetailLabel}>Referencia</Text>
-              <Text style={styles.rateDetailValue}>{formatNumber(item.referenceRate)}</Text>
+              <Text style={[styles.rateDetailLabel, { color: themeColors.text.tertiary }]}>Referencia</Text>
+              <Text style={[styles.rateDetailValue, { color: themeColors.text.primary }]}>{formatNumber(item.referenceRate)}</Text>
             </View>
             <View style={styles.rateDetail}>
-              <Text style={styles.rateDetailLabel}>Margen Compra</Text>
-              <Text style={styles.rateDetailValue}>{formatPercent(item.buyMargin)}</Text>
+              <Text style={[styles.rateDetailLabel, { color: themeColors.text.tertiary }]}>Margen Compra</Text>
+              <Text style={[styles.rateDetailValue, { color: themeColors.text.primary }]}>{formatPercent(item.buyMargin)}</Text>
             </View>
             <View style={styles.rateDetail}>
-              <Text style={styles.rateDetailLabel}>Margen Venta</Text>
-              <Text style={styles.rateDetailValue}>{formatPercent(item.sellMargin)}</Text>
+              <Text style={[styles.rateDetailLabel, { color: themeColors.text.tertiary }]}>Margen Venta</Text>
+              <Text style={[styles.rateDetailValue, { color: themeColors.text.primary }]}>{formatPercent(item.sellMargin)}</Text>
             </View>
           </View>
 
@@ -224,11 +229,11 @@ export const ExchangeRatesScreen: React.FC = () => {
           )}
 
           <TouchableOpacity 
-            style={styles.historyButton}
+            style={[styles.historyButton, { borderTopColor: themeColors.border }]}
             onPress={() => viewCurrencyHistory(item.currencyId)}
           >
-            <Ionicons name="time-outline" size={18} color={colors.primary[500]} />
-            <Text style={styles.historyButtonText}>Ver historial</Text>
+            <Ionicons name="time-outline" size={18} color={themeColors.primary[500]} />
+            <Text style={[styles.historyButtonText, { color: themeColors.primary[500] }]}>Ver historial</Text>
           </TouchableOpacity>
         </TouchableOpacity>
       </FadeInDown>
@@ -240,22 +245,22 @@ export const ExchangeRatesScreen: React.FC = () => {
 
     return (
       <FadeInDown delay={index * 30}>
-        <View style={[styles.historyCard, isManual && styles.historyCardManual]}>
+        <View style={[styles.historyCard, isManual && [styles.historyCardManual, { borderLeftColor: themeColors.warning }], { backgroundColor: themeColors.card }]}>
           {isManual && (
-            <View style={styles.manualBadge}>
-              <Ionicons name="hand-left" size={12} color={colors.warning} />
-              <Text style={styles.manualBadgeText}>Manual</Text>
+            <View style={[styles.manualBadge, { backgroundColor: `${themeColors.warning}20` }]}>
+              <Ionicons name="hand-left" size={12} color={themeColors.warning} />
+              <Text style={[styles.manualBadgeText, { color: themeColors.warning }]}>Manual</Text>
             </View>
           )}
           <View style={styles.historyRow}>
             <View style={styles.historyPair}>
-              <Text style={styles.historyCurrency}>{item.currencyFrom?.code}</Text>
-              <Ionicons name="arrow-forward" size={16} color={colors.text.secondary} />
-              <Text style={styles.historyCurrency}>{item.currencyTo?.code}</Text>
+              <Text style={[styles.historyCurrency, { color: themeColors.text.primary }]}>{item.currencyFrom?.code}</Text>
+              <Ionicons name="arrow-forward" size={16} color={themeColors.text.secondary} />
+              <Text style={[styles.historyCurrency, { color: themeColors.text.primary }]}>{item.currencyTo?.code}</Text>
             </View>
-            <Text style={styles.historyRate}>{formatNumber(item.rate)}</Text>
+            <Text style={[styles.historyRate, { color: themeColors.primary[500] }]}>{formatNumber(item.rate)}</Text>
           </View>
-          <Text style={styles.historyDate}>{formatDate(item.createdAt)}</Text>
+          <Text style={[styles.historyDate, { color: themeColors.text.tertiary }]}>{formatDate(item.createdAt)}</Text>
         </View>
       </FadeInDown>
     );
@@ -268,11 +273,11 @@ export const ExchangeRatesScreen: React.FC = () => {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <FadeIn>
         <View style={styles.header}>
-          <Text style={styles.title}>Tasas de Cambio</Text>
-          <Text style={styles.subtitle}>Gestiona las tasas de referencia</Text>
+          <Text style={[styles.title, { color: themeColors.text.primary }]}>Tasas de Cambio</Text>
+          <Text style={[styles.subtitle, { color: themeColors.text.secondary }]}>Gestiona las tasas de referencia</Text>
         </View>
       </FadeIn>
 
@@ -280,15 +285,15 @@ export const ExchangeRatesScreen: React.FC = () => {
         {tabs.map((tab, index) => (
           <ScaleIn key={tab.key} delay={index * 50}>
             <TouchableOpacity
-              style={[styles.tabButton, activeTab === tab.key && styles.tabButtonActive]}
+              style={[styles.tabButton, activeTab === tab.key && { backgroundColor: themeColors.primary[500] }, !activeTab && { backgroundColor: themeColors.card }]}
               onPress={() => setActiveTab(tab.key)}
             >
               <Ionicons
                 name={tab.icon as any}
                 size={18}
-                color={activeTab === tab.key ? '#fff' : colors.text.secondary}
+                color={activeTab === tab.key ? '#fff' : themeColors.text.secondary}
               />
-              <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
+              <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive, !activeTab && { color: themeColors.text.secondary }]}>
                 {tab.label}
               </Text>
             </TouchableOpacity>
@@ -306,14 +311,14 @@ export const ExchangeRatesScreen: React.FC = () => {
             <RefreshControl
               refreshing={currentRatesQuery.isRefetching || currenciesQuery.isRefetching || historyQuery.isRefetching}
               onRefresh={handleRefresh}
-              tintColor={colors.primary[500]}
+              tintColor={themeColors.primary[500]}
             />
           }
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Ionicons name="trending-up-outline" size={64} color={colors.text.tertiary} />
-              <Text style={styles.emptyStateText}>No hay tasas configuradas</Text>
-              <Text style={styles.emptyStateSubtext}>Toca + para agregar una nueva tasa</Text>
+              <Ionicons name="trending-up-outline" size={64} color={themeColors.text.tertiary} />
+              <Text style={[styles.emptyStateText, { color: themeColors.text.secondary }]}>No hay tasas configuradas</Text>
+              <Text style={[styles.emptyStateSubtext, { color: themeColors.text.tertiary }]}>Toca + para agregar una nueva tasa</Text>
             </View>
           }
         />
@@ -329,13 +334,13 @@ export const ExchangeRatesScreen: React.FC = () => {
             <RefreshControl
               refreshing={currentRatesQuery.isRefetching || currenciesQuery.isRefetching || historyQuery.isRefetching}
               onRefresh={handleRefresh}
-              tintColor={colors.primary[500]}
+              tintColor={themeColors.primary[500]}
             />
           }
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Ionicons name="time-outline" size={64} color={colors.text.tertiary} />
-              <Text style={styles.emptyStateText}>No hay historial</Text>
+              <Ionicons name="time-outline" size={64} color={themeColors.text.tertiary} />
+              <Text style={[styles.emptyStateText, { color: themeColors.text.secondary }]}>No hay historial</Text>
             </View>
           }
         />
@@ -351,14 +356,14 @@ export const ExchangeRatesScreen: React.FC = () => {
             <RefreshControl
               refreshing={currentRatesQuery.isRefetching || currenciesQuery.isRefetching || historyQuery.isRefetching}
               onRefresh={handleRefresh}
-              tintColor={colors.primary[500]}
+              tintColor={themeColors.primary[500]}
             />
           }
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Ionicons name="hand-left-outline" size={64} color={colors.text.tertiary} />
-              <Text style={styles.emptyStateText}>No hay entradas manuales</Text>
-              <Text style={styles.emptyStateSubtext}>Las tasas que ingreses manualmente aparecerán aquí</Text>
+              <Ionicons name="hand-left-outline" size={64} color={themeColors.text.tertiary} />
+              <Text style={[styles.emptyStateText, { color: themeColors.text.secondary }]}>No hay entradas manuales</Text>
+              <Text style={[styles.emptyStateSubtext, { color: themeColors.text.tertiary }]}>Las tasas que ingreses manualmente aparecerán aquí</Text>
             </View>
           }
         />
@@ -367,7 +372,7 @@ export const ExchangeRatesScreen: React.FC = () => {
       {activeTab === 'current' && (
         <ScaleIn delay={200}>
           <TouchableOpacity
-            style={styles.fab}
+            style={[styles.fab, { backgroundColor: themeColors.primary[500] }, themeShadows.lg]}
             onPress={() => openEditModal()}
             activeOpacity={0.8}
           >
@@ -387,13 +392,13 @@ export const ExchangeRatesScreen: React.FC = () => {
           style={styles.modalOverlay}
         >
           <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setModalVisible(false)} />
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+              <Text style={[styles.modalTitle, { color: themeColors.text.primary }]}>
                 {selectedCurrencyId ? 'Editar Tasa' : 'Nueva Tasa'}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color={colors.text.secondary} />
+                <Ionicons name="close" size={24} color={themeColors.text.secondary} />
               </TouchableOpacity>
             </View>
 
@@ -520,7 +525,6 @@ export const ExchangeRatesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     padding: spacing.md,
@@ -529,11 +533,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.text.secondary,
     marginTop: 4,
   },
   tabsContainer: {
@@ -550,17 +552,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: borderRadius.lg,
-    backgroundColor: colors.card,
     gap: 6,
-    ...shadows.sm,
-  },
-  tabButtonActive: {
-    backgroundColor: colors.primary[500],
   },
   tabText: {
     fontSize: 13,
     fontWeight: '500',
-    color: colors.text.secondary,
   },
   tabTextActive: {
     color: '#fff',
@@ -570,11 +566,9 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   rateCard: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     marginBottom: spacing.sm,
-    ...shadows.sm,
   },
   rateHeader: {
     flexDirection: 'row',
@@ -598,11 +592,9 @@ const styles = StyleSheet.create({
   currencyName: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text.primary,
   },
   currencyCode: {
     fontSize: 12,
-    color: colors.text.secondary,
   },
   rateValues: {
     alignItems: 'flex-end',
@@ -614,7 +606,6 @@ const styles = StyleSheet.create({
   },
   rateLabel: {
     fontSize: 11,
-    color: colors.text.tertiary,
   },
   rateValue: {
     fontSize: 16,
@@ -626,20 +617,17 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   rateDetail: {
     alignItems: 'center',
   },
   rateDetailLabel: {
     fontSize: 10,
-    color: colors.text.tertiary,
     marginBottom: 2,
   },
   rateDetailValue: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.text.primary,
   },
   newBadge: {
     position: 'absolute',
@@ -653,24 +641,19 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingTop: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
     gap: 6,
   },
   historyButtonText: {
     fontSize: 13,
-    color: colors.primary[500],
     fontWeight: '500',
   },
   historyCard: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
-    ...shadows.sm,
   },
   historyCardManual: {
     borderLeftWidth: 3,
-    borderLeftColor: colors.warning,
   },
   manualBadge: {
     position: 'absolute',
@@ -678,7 +661,6 @@ const styles = StyleSheet.create({
     right: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: `${colors.warning}20`,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: borderRadius.full,
@@ -686,7 +668,6 @@ const styles = StyleSheet.create({
   },
   manualBadgeText: {
     fontSize: 10,
-    color: colors.warning,
     fontWeight: '600',
   },
   historyRow: {
@@ -702,16 +683,13 @@ const styles = StyleSheet.create({
   historyCurrency: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text.primary,
   },
   historyRate: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.primary[500],
   },
   historyDate: {
     fontSize: 11,
-    color: colors.text.tertiary,
     marginTop: 4,
   },
   emptyState: {
@@ -720,13 +698,11 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: colors.text.secondary,
     marginTop: spacing.md,
     fontWeight: '500',
   },
-  emptyStateSubtext: {
+  emptyStateSubtitle: {
     fontSize: 14,
-    color: colors.text.tertiary,
     marginTop: spacing.xs,
     textAlign: 'center',
   },
@@ -737,10 +713,8 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.primary[500],
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.lg,
   },
   modalOverlay: {
     flex: 1,
@@ -751,7 +725,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   modalContent: {
-    backgroundColor: colors.card,
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
     padding: spacing.lg,
@@ -767,12 +740,10 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   sectionLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text.primary,
     marginBottom: spacing.sm,
   },
   currencyScroll: {
@@ -782,19 +753,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
-    backgroundColor: colors.surface,
     marginRight: spacing.sm,
-  },
-  currencyButtonActive: {
-    backgroundColor: colors.primary[500],
-  },
-  currencyButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text.primary,
-  },
-  currencyButtonTextActive: {
-    color: '#fff',
   },
   inputRow: {
     flexDirection: 'row',
@@ -804,7 +763,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   previewCard: {
-    backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -812,7 +770,6 @@ const styles = StyleSheet.create({
   previewTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text.primary,
     marginBottom: spacing.sm,
   },
   previewRow: {
@@ -824,18 +781,31 @@ const styles = StyleSheet.create({
   },
   previewLabel: {
     fontSize: 11,
-    color: colors.text.tertiary,
     marginBottom: 4,
   },
   previewValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   submitButton: {
     marginTop: spacing.md,
   },
   historyList: {
     paddingBottom: spacing.xl,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    marginTop: spacing.xs,
+    textAlign: 'center',
+  },
+  currencyButtonActive: {
+    backgroundColor: colors.primary[500],
+  },
+  currencyButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  currencyButtonTextActive: {
+    color: '#fff',
   },
 });

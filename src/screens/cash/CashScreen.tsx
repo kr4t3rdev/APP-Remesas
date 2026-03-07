@@ -14,11 +14,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { FadeIn, FadeInDown, ScaleIn } from '../../components/animations';
-import { BarChart, HorizontalBarChart, StatsCard } from '../../components/charts/Charts';
+import { FadeIn, FadeInDown, ScaleIn, PressableScale } from '../../components/animations';
+import { BarChart, StatsCard } from '../../components/charts/Charts';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { colors, spacing, borderRadius, shadows } from '../../theme';
+import { Card } from '../../components/ui/Card';
+import { spacing, borderRadius } from '../../theme';
+import { useColors, useShadows, useIsDark } from '../../store/themeStore';
 import type { CashBalance, Transaction } from '../../types';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -35,7 +37,11 @@ import {
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export const CashScreen: React.FC = () => {
+  const themeColors = useColors();
+  const themeShadows = useShadows();
+  const isDark = useIsDark();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
   const cashBalancesQuery = useCashBalancesQuery();
   const cashTransactionsQuery = useCashTransactionsQuery();
   const createCashAuditMutation = useCreateCashAuditMutation();
@@ -118,22 +124,22 @@ export const CashScreen: React.FC = () => {
 
   const getCurrencyColor = (code: string) => {
     const colorMap: Record<string, string> = {
-      USD: colors.currencies.usd.primary,
-      EUR: colors.currencies.eur.primary,
-      MLC: colors.currencies.mlc.primary,
-      CUP: colors.currencies.cup.primary,
+      USD: themeColors.currencies.usd.primary,
+      EUR: themeColors.currencies.eur.primary,
+      MLC: themeColors.currencies.mlc.primary,
+      CUP: themeColors.currencies.cup.primary,
     };
-    return colorMap[code] || colors.primary[500];
+    return colorMap[code] || themeColors.primary[500];
   };
 
   const getCurrencyBgColor = (code: string) => {
     const colorMap: Record<string, string> = {
-      USD: colors.currencies.usd.bg,
-      EUR: colors.currencies.eur.bg,
-      MLC: colors.currencies.mlc.bg,
-      CUP: colors.currencies.cup.bg,
+      USD: themeColors.currencies.usd.bg,
+      EUR: themeColors.currencies.eur.bg,
+      MLC: themeColors.currencies.mlc.bg,
+      CUP: themeColors.currencies.cup.bg,
     };
-    return colorMap[code] || colors.primary[50];
+    return colorMap[code] || themeColors.primary[50];
   };
 
   const quickActions = [
@@ -142,24 +148,21 @@ export const CashScreen: React.FC = () => {
       title: 'Arqueo de Caja',
       subtitle: 'Verificar saldo real',
       icon: 'checkmark-done' as const,
-      color: colors.primary[500],
-      onPress: () => setAuditModalVisible(true),
+      color: themeColors.primary[500],
     },
     {
       id: 'adjustment',
       title: 'Ajuste Manual',
       subtitle: 'Ingreso o egreso',
       icon: 'settings-outline' as const,
-      color: colors.warning,
-      onPress: () => setAdjustmentModalVisible(true),
+      color: themeColors.warning,
     },
     {
       id: 'history',
       title: 'Historial',
       subtitle: 'Movimientos de caja',
       icon: 'time-outline' as const,
-      color: colors.success,
-      onPress: () => navigation.navigate('CashHistory'),
+      color: themeColors.success,
     },
   ];
 
@@ -167,23 +170,32 @@ export const CashScreen: React.FC = () => {
     return acc + Number(b.balance);
   }, 0);
 
+  const chartData = cashBalances.slice(0, 4).map(b => ({
+    label: b.currency?.code || '',
+    value: Math.abs(Number(b.balance)),
+    color: getCurrencyColor(b.currency?.code || ''),
+  }));
+
   const renderCurrencySelector = () => (
     <View style={styles.currencySelector}>
-      <Text style={styles.label}>Moneda</Text>
+      <Text style={[styles.label, { color: themeColors.text.primary }]}>Moneda</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {cashBalances.map((balance) => (
           <TouchableOpacity
             key={balance.currencyId}
             style={[
               styles.currencyOption,
-              selectedCurrency === balance.currencyId && styles.selectedCurrencyOption,
+              selectedCurrency === balance.currencyId && { 
+                borderColor: themeColors.primary[500], 
+                backgroundColor: isDark ? 'rgba(99, 102, 241, 0.2)' : themeColors.primary[50] 
+              },
             ]}
             onPress={() => setSelectedCurrency(balance.currencyId)}
           >
             <Text
               style={[
                 styles.currencyOptionText,
-                selectedCurrency === balance.currencyId && styles.selectedCurrencyOptionText,
+                selectedCurrency === balance.currencyId && { color: themeColors.primary[500] },
               ]}
             >
               {balance.currency.code}
@@ -194,56 +206,58 @@ export const CashScreen: React.FC = () => {
     </View>
   );
 
-  const chartData = cashBalances.slice(0, 4).map(b => ({
-    label: b.currency?.code || '',
-    value: Math.abs(Number(b.balance)),
-    color: getCurrencyColor(b.currency?.code || ''),
-  }));
-
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl 
             refreshing={cashBalancesQuery.isRefetching || cashTransactionsQuery.isRefetching} 
             onRefresh={handleRefresh}
-            tintColor={colors.primary[500]}
+            tintColor={themeColors.primary[500]}
           />
         }
       >
         <FadeIn>
           <View style={styles.header}>
-            <Text style={styles.title}>Caja</Text>
-            <Text style={styles.subtitle}>Saldos y control de efectivo</Text>
+            <Text style={[styles.title, { color: themeColors.text.primary }]}>Caja</Text>
+            <Text style={[styles.subtitle, { color: themeColors.text.secondary }]}>
+              Saldos y control de efectivo
+            </Text>
           </View>
         </FadeIn>
 
         <View style={styles.statsRow}>
           <ScaleIn delay={100}>
-            <StatsCard
-              title="Total en Caja"
-              value={`$ ${formatNumber(totalBalances)}`}
-              icon={<Ionicons name="wallet" size={20} color={colors.primary[500]} />}
-              color={colors.primary[500]}
-              style={styles.statCard}
-            />
+            <View style={[styles.statCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+              <StatsCard
+                title="Total en Caja"
+                value={`$ ${formatNumber(totalBalances)}`}
+                icon={<Ionicons name="wallet" size={20} color={themeColors.primary[500]} />}
+                color={themeColors.primary[500]}
+                style={styles.statCard}
+              />
+            </View>
           </ScaleIn>
           <ScaleIn delay={150}>
-            <StatsCard
-              title="Monedas"
-              value={cashBalances.length.toString()}
-              subtitle="Activas"
-              icon={<Ionicons name="cash" size={20} color={colors.success} />}
-              color={colors.success}
-              style={styles.statCard}
-            />
+            <View style={[styles.statCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+              <StatsCard
+                title="Monedas"
+                value={cashBalances.length.toString()}
+                subtitle="Activas"
+                icon={<Ionicons name="cash" size={20} color={themeColors.success} />}
+                color={themeColors.success}
+                style={styles.statCard}
+              />
+            </View>
           </ScaleIn>
         </View>
 
         <FadeInDown delay={200}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Saldos por Moneda</Text>
+            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
+              Saldos por Moneda
+            </Text>
             <ScrollView 
               horizontal 
               showsHorizontalScrollIndicator={false}
@@ -255,18 +269,29 @@ export const CashScreen: React.FC = () => {
                 
                 return (
                   <ScaleIn key={balance.id} delay={250 + index * 50}>
-                    <View style={[styles.balanceCard, { borderLeftColor: currencyColor }]}>
+                    <TouchableOpacity 
+                      style={[
+                        styles.balanceCard, 
+                        { borderLeftColor: currencyColor, backgroundColor: themeColors.card },
+                        themeShadows.sm
+                      ]}
+                      activeOpacity={0.8}
+                    >
                       <View style={[styles.balanceIcon, { backgroundColor: bgColor }]}>
                         <Text style={[styles.balanceSymbol, { color: currencyColor }]}>
                           {balance.currency?.symbol}
                         </Text>
                       </View>
-                      <Text style={styles.balanceCode}>{balance.currency?.code}</Text>
-                      <Text style={styles.balanceName}>{balance.currency?.name}</Text>
+                      <Text style={[styles.balanceCode, { color: themeColors.text.primary }]}>
+                        {balance.currency?.code}
+                      </Text>
+                      <Text style={[styles.balanceName, { color: themeColors.text.secondary }]}>
+                        {balance.currency?.name}
+                      </Text>
                       <Text style={[styles.balanceAmount, { color: currencyColor }]}>
                         {formatNumber(balance.balance)}
                       </Text>
-                    </View>
+                    </TouchableOpacity>
                   </ScaleIn>
                 );
               })}
@@ -276,8 +301,10 @@ export const CashScreen: React.FC = () => {
 
         {chartData.length > 0 && (
           <FadeInDown delay={300}>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Distribución</Text>
+            <View style={[styles.section, { backgroundColor: themeColors.card }, themeShadows.md]}>
+              <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
+                Distribución
+              </Text>
               <View style={styles.chartCard}>
                 <BarChart
                   data={chartData}
@@ -293,23 +320,33 @@ export const CashScreen: React.FC = () => {
 
         <FadeInDown delay={350}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
+            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
+              Acciones Rápidas
+            </Text>
             {quickActions.map((action, index) => (
               <ScaleIn key={action.id} delay={400 + index * 50}>
-                <TouchableOpacity
-                  style={styles.actionCard}
-                  onPress={action.onPress}
-                  activeOpacity={0.7}
+                <PressableScale
+                  onPress={action.id === 'history' ? () => navigation.navigate('CashHistory') : () => {
+                    if (action.id === 'audit') setAuditModalVisible(true);
+                    if (action.id === 'adjustment') setAdjustmentModalVisible(true);
+                  }}
+                  style={styles.actionCardWrapper}
                 >
-                  <View style={[styles.actionIcon, { backgroundColor: `${action.color}15` }]}>
-                    <Ionicons name={action.icon} size={22} color={action.color} />
+                  <View style={[styles.actionCard, { backgroundColor: themeColors.card }, themeShadows.sm]}>
+                    <View style={[styles.actionIcon, { backgroundColor: `${action.color}20` }]}>
+                      <Ionicons name={action.icon} size={22} color={action.color} />
+                    </View>
+                    <View style={styles.actionInfo}>
+                      <Text style={[styles.actionTitle, { color: themeColors.text.primary }]}>
+                        {action.title}
+                      </Text>
+                      <Text style={[styles.actionSubtitle, { color: themeColors.text.secondary }]}>
+                        {action.subtitle}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={themeColors.text.tertiary} />
                   </View>
-                  <View style={styles.actionInfo}>
-                    <Text style={styles.actionTitle}>{action.title}</Text>
-                    <Text style={styles.actionSubtitle}>{action.subtitle}</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.text.tertiary} />
-                </TouchableOpacity>
+                </PressableScale>
               </ScaleIn>
             ))}
           </View>
@@ -317,39 +354,50 @@ export const CashScreen: React.FC = () => {
 
         {transactions.length > 0 && (
           <FadeInDown delay={450}>
-            <View style={styles.section}>
+            <View style={[styles.section, { backgroundColor: themeColors.card }, themeShadows.md]}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Últimas Transacciones</Text>
+                <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>
+                  Últimas Transacciones
+                </Text>
                 <TouchableOpacity>
-                  <Text style={styles.seeAll}>Ver todo</Text>
+                  <Text style={[styles.seeAll, { color: themeColors.primary[500] }]}>Ver todo</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.transactionsCard}>
                 {transactions.slice(0, 4).map((tx, index) => {
                   const isCompra = tx.type === 'COMPRA';
                   return (
-                    <View key={tx.id} style={styles.transactionItem}>
+                    <View 
+                      key={tx.id} 
+                      style={[
+                        styles.transactionItem,
+                        index < transactions.slice(0, 4).length - 1 && { 
+                          borderBottomWidth: 1, 
+                          borderBottomColor: themeColors.border 
+                        }
+                      ]}
+                    >
                       <View style={[
                         styles.transactionIcon,
-                        { backgroundColor: isCompra ? colors.financial.compraLight : colors.financial.ventaLight }
+                        { backgroundColor: isCompra ? themeColors.financial.compraLight : themeColors.financial.ventaLight }
                       ]}>
                         <Ionicons 
                           name={isCompra ? 'arrow-down' : 'arrow-up'} 
                           size={16} 
-                          color={isCompra ? colors.financial.compra : colors.financial.venta} 
+                          color={isCompra ? themeColors.financial.compra : themeColors.financial.venta} 
                         />
                       </View>
                       <View style={styles.transactionInfo}>
-                        <Text style={styles.transactionTitle}>
+                        <Text style={[styles.transactionTitle, { color: themeColors.text.primary }]}>
                           {isCompra ? 'Compra' : 'Venta'} {tx.currency?.code}
                         </Text>
-                        <Text style={styles.transactionDate}>
+                        <Text style={[styles.transactionDate, { color: themeColors.text.secondary }]}>
                           {format(new Date(tx.createdAt), 'dd/MM HH:mm')}
                         </Text>
                       </View>
                       <Text style={[
                         styles.transactionAmount,
-                        { color: isCompra ? colors.financial.compra : colors.financial.venta }
+                        { color: isCompra ? themeColors.financial.compra : themeColors.financial.venta }
                       ]}>
                         {isCompra ? '-' : '+'}{formatNumber(tx.totalCup)}
                       </Text>
@@ -380,11 +428,11 @@ export const CashScreen: React.FC = () => {
             activeOpacity={1} 
             onPress={() => setAuditModalVisible(false)}
           />
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Registrar Arqueo</Text>
+              <Text style={[styles.modalTitle, { color: themeColors.text.primary }]}>Registrar Arqueo</Text>
               <TouchableOpacity onPress={() => setAuditModalVisible(false)}>
-                <Ionicons name="close" size={24} color={colors.text.secondary} />
+                <Ionicons name="close" size={24} color={themeColors.text.secondary} />
               </TouchableOpacity>
             </View>
 
@@ -433,29 +481,29 @@ export const CashScreen: React.FC = () => {
             activeOpacity={1} 
             onPress={() => setAdjustmentModalVisible(false)}
           />
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Ajuste Manual</Text>
+              <Text style={[styles.modalTitle, { color: themeColors.text.primary }]}>Ajuste Manual</Text>
               <TouchableOpacity onPress={() => setAdjustmentModalVisible(false)}>
-                <Ionicons name="close" size={24} color={colors.text.secondary} />
+                <Ionicons name="close" size={24} color={themeColors.text.secondary} />
               </TouchableOpacity>
             </View>
 
             {renderCurrencySelector()}
 
-            <Text style={styles.label}>Tipo de Ajuste</Text>
+            <Text style={[styles.label, { color: themeColors.text.primary }]}>Tipo de Ajuste</Text>
             <View style={styles.typeSelector}>
               <TouchableOpacity
                 style={[
                   styles.typeButton,
-                  adjustmentType === 'INGRESO' && styles.typeButtonIngreso
+                  adjustmentType === 'INGRESO' && { backgroundColor: themeColors.success }
                 ]}
                 onPress={() => setAdjustmentType('INGRESO')}
               >
                 <Ionicons 
                   name="add-circle" 
                   size={20} 
-                  color={adjustmentType === 'INGRESO' ? '#fff' : colors.success} 
+                  color={adjustmentType === 'INGRESO' ? '#fff' : themeColors.success} 
                 />
                 <Text style={[
                   styles.typeButtonText,
@@ -467,14 +515,14 @@ export const CashScreen: React.FC = () => {
               <TouchableOpacity
                 style={[
                   styles.typeButton,
-                  adjustmentType === 'EGRESO' && styles.typeButtonEgreso
+                  adjustmentType === 'EGRESO' && { backgroundColor: themeColors.danger }
                 ]}
                 onPress={() => setAdjustmentType('EGRESO')}
               >
                 <Ionicons 
                   name="remove-circle" 
                   size={20} 
-                  color={adjustmentType === 'EGRESO' ? '#fff' : colors.danger} 
+                  color={adjustmentType === 'EGRESO' ? '#fff' : themeColors.danger} 
                 />
                 <Text style={[
                   styles.typeButtonText,
@@ -516,7 +564,6 @@ export const CashScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   scrollContent: {
     padding: spacing.md,
@@ -527,17 +574,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.text.secondary,
     marginTop: 4,
   },
   statsRow: {
     flexDirection: 'row',
     gap: spacing.md,
     marginBottom: spacing.lg,
+  },
+  statCardWrapper: {
+    flex: 1,
+    borderRadius: borderRadius.lg,
+    padding: spacing.sm,
   },
   statCard: {
     flex: 1,
@@ -554,12 +604,10 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text.primary,
     marginBottom: spacing.sm,
   },
   seeAll: {
     fontSize: 14,
-    color: colors.primary[500],
     fontWeight: '500',
   },
   balancesScroll: {
@@ -568,11 +616,9 @@ const styles = StyleSheet.create({
   },
   balanceCard: {
     width: 140,
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     borderLeftWidth: 4,
-    ...shadows.sm,
   },
   balanceIcon: {
     width: 36,
@@ -589,11 +635,9 @@ const styles = StyleSheet.create({
   balanceCode: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text.primary,
   },
   balanceName: {
     fontSize: 11,
-    color: colors.text.secondary,
     marginTop: 2,
   },
   balanceAmount: {
@@ -602,19 +646,17 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   chartCard: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    ...shadows.sm,
+    padding: spacing.sm,
+  },
+  actionCardWrapper: {
+    marginBottom: spacing.sm,
   },
   actionCard: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.sm,
-    ...shadows.sm,
   },
   actionIcon: {
     width: 44,
@@ -630,18 +672,14 @@ const styles = StyleSheet.create({
   actionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text.primary,
   },
   actionSubtitle: {
     fontSize: 12,
-    color: colors.text.secondary,
     marginTop: 2,
   },
   transactionsCard: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    ...shadows.sm,
   },
   transactionItem: {
     flexDirection: 'row',
@@ -662,11 +700,9 @@ const styles = StyleSheet.create({
   transactionTitle: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.text.primary,
   },
   transactionDate: {
     fontSize: 11,
-    color: colors.text.secondary,
     marginTop: 2,
   },
   transactionAmount: {
@@ -682,7 +718,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   modalContent: {
-    backgroundColor: colors.card,
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
     padding: spacing.lg,
@@ -697,12 +732,10 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text.primary,
     marginBottom: spacing.xs,
   },
   currencySelector: {
@@ -713,21 +746,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: '#E2E8F0',
     marginRight: spacing.sm,
-    backgroundColor: colors.surface,
-  },
-  selectedCurrencyOption: {
-    borderColor: colors.primary[500],
-    backgroundColor: colors.primary[50],
+    backgroundColor: '#F1F5F9',
   },
   currencyOptionText: {
-    color: colors.text.secondary,
     fontWeight: '600',
     fontSize: 14,
-  },
-  selectedCurrencyOptionText: {
-    color: colors.primary[500],
   },
   typeSelector: {
     flexDirection: 'row',
@@ -741,19 +766,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing.md,
     borderRadius: borderRadius.lg,
-    backgroundColor: colors.surface,
+    backgroundColor: '#F1F5F9',
     gap: spacing.xs,
-  },
-  typeButtonIngreso: {
-    backgroundColor: colors.success,
-  },
-  typeButtonEgreso: {
-    backgroundColor: colors.danger,
   },
   typeButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text.primary,
   },
   typeButtonTextActive: {
     color: '#fff',

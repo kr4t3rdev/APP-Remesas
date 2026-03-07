@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ViewStyle, Animated, Easing, StyleProp } from 'react-native';
 import { FadeIn } from '../animations';
-import { colors, spacing, borderRadius, shadows } from '../../theme';
+import { colors, spacing, borderRadius } from '../../theme';
+import { useColors, useShadows } from '../../store/themeStore';
 
 type BarChartProps = {
   data: { label: string; value: number; color?: string }[];
@@ -219,12 +220,15 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
   percentage,
   size = 120,
   strokeWidth = 10,
-  color = colors.primary[500],
-  backgroundColor = colors.border,
+  color,
+  backgroundColor,
   animated = true,
   children,
   style,
 }) => {
+  const themeColors = useColors();
+  const progressBackgroundColor = backgroundColor ?? themeColors.border;
+
   const rotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -256,13 +260,15 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
               height: size,
               borderRadius: size / 2,
               borderWidth: strokeWidth,
-              borderColor: backgroundColor,
+              borderColor: progressBackgroundColor,
             },
           ]}
         />
         <View style={styles.circularContent}>
           {children || (
-            <Text style={styles.circularPercentage}>{percentage.toFixed(0)}%</Text>
+            <Text style={[styles.circularPercentage, { color: themeColors.text.primary }]}>
+              {percentage.toFixed(0)}%
+            </Text>
           )}
         </View>
       </View>
@@ -293,6 +299,9 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   animated = true,
   style,
 }) => {
+  const themeColors = useColors();
+  const themeShadows = useShadows();
+
   const scale = useRef(new Animated.Value(0.9)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -319,18 +328,29 @@ export const StatsCard: React.FC<StatsCardProps> = ({
 
   const getTrendColor = () => {
     switch (trend) {
-      case 'up': return colors.success;
-      case 'down': return colors.danger;
-      default: return colors.text.secondary;
+      case 'up': return themeColors.success;
+      case 'down': return themeColors.danger;
+      default: return themeColors.text.secondary;
     }
   };
 
   return (
-    <Animated.View style={[styles.statsCard, shadows.md, { transform: [{ scale }], opacity }, style]}>
+    <Animated.View
+      style={[
+        styles.statsCard,
+        {
+          backgroundColor: themeColors.card,
+          transform: [{ scale }],
+          opacity,
+        },
+        themeShadows.md,
+        style,
+      ]}
+    >
       {icon && <View style={[styles.statsIconContainer, { backgroundColor: `${color}15` }]}>{icon}</View>}
-      <Text style={styles.statsTitle}>{title}</Text>
+      <Text style={[styles.statsTitle, { color: themeColors.text.secondary }]}>{title}</Text>
       <Text style={[styles.statsValue, { color }]}>{value}</Text>
-      {subtitle && <Text style={styles.statsSubtitle}>{subtitle}</Text>}
+      {subtitle && <Text style={[styles.statsSubtitle, { color: themeColors.text.tertiary }]}>{subtitle}</Text>}
       {trend && trendValue && (
         <View style={styles.trendContainer}>
           <Text style={[styles.trendValue, { color: getTrendColor() }]}>

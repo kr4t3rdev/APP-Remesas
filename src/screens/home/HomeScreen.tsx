@@ -2,11 +2,12 @@ import React, { useCallback } from 'react';
 import { View, ScrollView, Text, TouchableOpacity, StyleSheet, RefreshControl, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { FadeIn, FadeInDown, ScaleIn, StaggerList, LoadingDots, Skeleton } from '../../components/animations';
-import { BarChart, HorizontalBarChart, CircularProgress, StatsCard, MiniChart } from '../../components/charts/Charts';
+import { FadeIn, FadeInDown, ScaleIn, PressableScale, LoadingDots } from '../../components/animations';
+import { BarChart, CircularProgress, StatsCard } from '../../components/charts/Charts';
 import { useDashboardData } from '../../hooks/useDashboardData';
 import { useAuthStore } from '../../store/authStore';
-import { colors, spacing, borderRadius, shadows } from '../../theme';
+import { useColors, useShadows, useIsDark, useGradients } from '../../store/themeStore';
+import { spacing, borderRadius } from '../../theme';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -14,6 +15,11 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export const HomeScreen: React.FC = () => {
   const user = useAuthStore((state) => state.user);
+  const themeColors = useColors();
+  const themeShadows = useShadows();
+  const isDark = useIsDark();
+  const gradients = useGradients();
+  
   const { 
     dailyReport, 
     cashBalances, 
@@ -63,32 +69,32 @@ export const HomeScreen: React.FC = () => {
 
   const getCurrencyColor = (code: string) => {
     const colorMap: Record<string, { primary: string; bg: string }> = {
-      USD: colors.currencies.usd,
-      EUR: colors.currencies.eur,
-      MLC: colors.currencies.mlc,
-      CUP: colors.currencies.cup,
+      USD: themeColors.currencies.usd,
+      EUR: themeColors.currencies.eur,
+      MLC: themeColors.currencies.mlc,
+      CUP: themeColors.currencies.cup,
     };
-    return colorMap[code] || colors.currencies.usd;
+    return colorMap[code] || themeColors.currencies.usd;
   };
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
         <View style={styles.loadingContainer}>
-          <LoadingDots size={12} color={colors.primary[500]} />
-          <Text style={styles.loadingText}>Cargando dashboard...</Text>
+          <LoadingDots size={12} color={themeColors.primary[500]} />
+          <Text style={[styles.loadingText, { color: themeColors.text.secondary }]}>Cargando dashboard...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   const transactionChartData = [
-    { label: 'Compras', value: summary.transactionSummary.comprasCount, color: colors.financial.compra },
-    { label: 'Ventas', value: summary.transactionSummary.ventasCount, color: colors.financial.venta },
+    { label: 'Compras', value: summary.transactionSummary.comprasCount, color: themeColors.financial.compra },
+    { label: 'Ventas', value: summary.transactionSummary.ventasCount, color: themeColors.financial.venta },
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -96,32 +102,32 @@ export const HomeScreen: React.FC = () => {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={onRefresh}
-            tintColor={colors.primary[500]}
-            colors={[colors.primary[500]]}
+            tintColor={themeColors.primary[500]}
+            colors={[themeColors.primary[500]]}
           />
         }
       >
         <FadeIn delay={0}>
           <View style={styles.header}>
             <View>
-              <Text style={styles.greeting}>{getGreeting()}</Text>
-              <Text style={styles.userName}>{user?.name || 'Usuario'}</Text>
+              <Text style={[styles.greeting, { color: themeColors.text.secondary }]}>{getGreeting()}</Text>
+              <Text style={[styles.userName, { color: themeColors.text.primary }]}>{user?.name || 'Usuario'}</Text>
             </View>
-            <TouchableOpacity style={styles.notificationButton}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text.primary} />
-              <View style={styles.notificationBadge} />
+            <TouchableOpacity style={[styles.notificationButton, { backgroundColor: themeColors.card }, themeShadows.sm]}>
+              <Ionicons name="notifications-outline" size={24} color={themeColors.text.primary} />
+              <View style={[styles.notificationBadge, { backgroundColor: themeColors.danger }]} />
             </TouchableOpacity>
           </View>
         </FadeIn>
 
         <FadeIn delay={100}>
-          <View style={styles.dateCard}>
-            <View style={styles.dateIconContainer}>
-              <Ionicons name="calendar-outline" size={20} color={colors.primary[500]} />
+          <View style={[styles.dateCard, { backgroundColor: themeColors.card }, themeShadows.sm]}>
+            <View style={[styles.dateIconContainer, { backgroundColor: `${themeColors.primary[500]}15` }]}>
+              <Ionicons name="calendar-outline" size={20} color={themeColors.primary[500]} />
             </View>
             <View>
-              <Text style={styles.dateLabel}>Hoy</Text>
-              <Text style={styles.dateText}>
+              <Text style={[styles.dateLabel, { color: themeColors.text.secondary }]}>Hoy</Text>
+              <Text style={[styles.dateText, { color: themeColors.text.primary }]}>
                 {format(new Date(), "d 'de' MMMM, yyyy", { locale: es })}
               </Text>
             </View>
@@ -130,54 +136,62 @@ export const HomeScreen: React.FC = () => {
 
         <View style={styles.statsGrid}>
           <ScaleIn delay={150}>
-            <StatsCard
-              title="Ganancia Hoy"
-              value={formatCurrency(summary.todayProfit)}
-              icon={<Ionicons name="trending-up" size={20} color={colors.primary[500]} />}
-              color={colors.primary[500]}
-              trend={summary.todayProfit > 0 ? 'up' : summary.todayProfit < 0 ? 'down' : 'neutral'}
-              style={styles.statCard}
-            />
+            <View style={[styles.statCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+              <StatsCard
+                title="Ganancia Hoy"
+                value={formatCurrency(summary.todayProfit)}
+                icon={<Ionicons name="trending-up" size={20} color={themeColors.primary[500]} />}
+                color={themeColors.primary[500]}
+                trend={summary.todayProfit > 0 ? 'up' : summary.todayProfit < 0 ? 'down' : 'neutral'}
+                style={styles.statCard}
+              />
+            </View>
           </ScaleIn>
           <ScaleIn delay={200}>
-            <StatsCard
-              title="Transacciones"
-              value={summary.todayTransactions.toString()}
-              icon={<Ionicons name="swap-horizontal" size={20} color={colors.secondary[500]} />}
-              color={colors.secondary[500]}
-              subtitle={`${summary.transactionSummary.comprasCount} compras, ${summary.transactionSummary.ventasCount} ventas`}
-              style={styles.statCard}
-            />
+            <View style={[styles.statCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+              <StatsCard
+                title="Transacciones"
+                value={summary.todayTransactions.toString()}
+                icon={<Ionicons name="swap-horizontal" size={20} color={themeColors.secondary[500]} />}
+                color={themeColors.secondary[500]}
+                subtitle={`${summary.transactionSummary.comprasCount} compras, ${summary.transactionSummary.ventasCount} ventas`}
+                style={styles.statCard}
+              />
+            </View>
           </ScaleIn>
         </View>
 
         <View style={styles.statsGrid}>
           <ScaleIn delay={250}>
-            <StatsCard
-              title="Gastos Hoy"
-              value={formatCurrency(summary.todayExpenses)}
-              icon={<Ionicons name="wallet-outline" size={20} color={colors.danger} />}
-              color={colors.danger}
-              style={styles.statCard}
-            />
+            <View style={[styles.statCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+              <StatsCard
+                title="Gastos Hoy"
+                value={formatCurrency(summary.todayExpenses)}
+                icon={<Ionicons name="wallet-outline" size={20} color={themeColors.danger} />}
+                color={themeColors.danger}
+                style={styles.statCard}
+              />
+            </View>
           </ScaleIn>
           <ScaleIn delay={300}>
-            <StatsCard
-              title="Balance Caja"
-              value={formatCurrency(summary.totalCashBalance)}
-              icon={<Ionicons name="cash-outline" size={20} color={colors.accent[500]} />}
-              color={colors.accent[500]}
-              style={styles.statCard}
-            />
+            <View style={[styles.statCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+              <StatsCard
+                title="Balance Caja"
+                value={formatCurrency(summary.totalCashBalance)}
+                icon={<Ionicons name="cash-outline" size={20} color={themeColors.accent[500]} />}
+                color={themeColors.accent[500]}
+                style={styles.statCard}
+              />
+            </View>
           </ScaleIn>
         </View>
 
         <FadeInDown delay={350}>
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Balances por Moneda</Text>
+              <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Balances por Moneda</Text>
               <TouchableOpacity>
-                <Text style={styles.seeAll}>Ver todo</Text>
+                <Text style={[styles.seeAll, { color: themeColors.primary[500] }]}>Ver todo</Text>
               </TouchableOpacity>
             </View>
             <ScrollView 
@@ -189,15 +203,18 @@ export const HomeScreen: React.FC = () => {
                 const currencyColor = getCurrencyColor(balance.currency.code);
                 return (
                   <ScaleIn key={balance.id} delay={400 + index * 50}>
-                    <View style={[styles.currencyCard, { borderLeftColor: currencyColor.primary }]}>
+                    <TouchableOpacity 
+                      style={[styles.currencyCard, { borderLeftColor: currencyColor.primary, backgroundColor: themeColors.card }, themeShadows.sm]}
+                      activeOpacity={0.8}
+                    >
                       <View style={[styles.currencyIcon, { backgroundColor: currencyColor.bg }]}>
                         <Text style={styles.currencySymbol}>{balance.currency.symbol}</Text>
                       </View>
-                      <Text style={styles.currencyCode}>{balance.currency.code}</Text>
-                      <Text style={styles.currencyBalance}>
+                      <Text style={[styles.currencyCode, { color: themeColors.text.secondary }]}>{balance.currency.code}</Text>
+                      <Text style={[styles.currencyBalance, { color: themeColors.text.primary }]}>
                         {balance.balance.toLocaleString('es-CU', { minimumFractionDigits: 2 })}
                       </Text>
-                    </View>
+                    </TouchableOpacity>
                   </ScaleIn>
                 );
               })}
@@ -207,29 +224,35 @@ export const HomeScreen: React.FC = () => {
 
         <FadeInDown delay={450}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Tasas de Cambio</Text>
-            <View style={styles.ratesContainer}>
+            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Tasas de Cambio</Text>
+            <View style={[styles.ratesContainer, { backgroundColor: themeColors.card }, themeShadows.sm]}>
               {exchangeRates?.map((rate, index) => {
                 const currencyColor = getCurrencyColor(rate.currency.code);
                 return (
-                  <View key={rate.id} style={styles.rateRow}>
+                  <View 
+                    key={rate.id} 
+                    style={[
+                      styles.rateRow,
+                      index < exchangeRates.length - 1 && { borderBottomWidth: 1, borderBottomColor: themeColors.border }
+                    ]}
+                  >
                     <View style={styles.rateCurrencyInfo}>
                       <View style={[styles.rateCurrencyIcon, { backgroundColor: currencyColor.bg }]}>
                         <Text style={styles.rateCurrencySymbol}>{rate.currency.symbol}</Text>
                       </View>
-                      <Text style={styles.rateCurrencyName}>{rate.currency.name}</Text>
+                      <Text style={[styles.rateCurrencyName, { color: themeColors.text.primary }]}>{rate.currency.name}</Text>
                     </View>
                     <View style={styles.rateValues}>
                       <View style={styles.rateValueContainer}>
-                        <Text style={styles.rateLabel}>Compra</Text>
-                        <Text style={[styles.rateValue, { color: colors.financial.compra }]}>
+                        <Text style={[styles.rateLabel, { color: themeColors.text.tertiary }]}>Compra</Text>
+                        <Text style={[styles.rateValue, { color: themeColors.financial.compra }]}>
                           {rate.buyRate.toFixed(2)}
                         </Text>
                       </View>
-                      <View style={styles.rateDivider} />
+                      <View style={[styles.rateDivider, { backgroundColor: themeColors.border }]} />
                       <View style={styles.rateValueContainer}>
-                        <Text style={styles.rateLabel}>Venta</Text>
-                        <Text style={[styles.rateValue, { color: colors.financial.venta }]}>
+                        <Text style={[styles.rateLabel, { color: themeColors.text.tertiary }]}>Venta</Text>
+                        <Text style={[styles.rateValue, { color: themeColors.financial.venta }]}>
                           {rate.sellRate.toFixed(2)}
                         </Text>
                       </View>
@@ -243,11 +266,16 @@ export const HomeScreen: React.FC = () => {
 
         <FadeInDown delay={550}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Resumen de Actividad</Text>
-            <View style={styles.chartCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Resumen de Actividad</Text>
+              <TouchableOpacity>
+                <Text style={[styles.seeAll, { color: themeColors.primary[500] }]}>Ver todo</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={[styles.chartCard, { backgroundColor: themeColors.card }, themeShadows.sm]}>
               <View style={styles.chartHeader}>
-                <Text style={styles.chartTitle}>Compras vs Ventas</Text>
-                <Text style={styles.chartSubtitle}>Transacciones del día</Text>
+                <Text style={[styles.chartTitle, { color: themeColors.text.primary }]}>Compras vs Ventas</Text>
+                <Text style={[styles.chartSubtitle, { color: themeColors.text.secondary }]}>Transacciones del día</Text>
               </View>
               <BarChart
                 data={transactionChartData}
@@ -264,9 +292,9 @@ export const HomeScreen: React.FC = () => {
           <FadeInDown delay={600}>
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Objetivos</Text>
+                <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Objetivos</Text>
                 <TouchableOpacity>
-                  <Text style={styles.seeAll}>Ver todo</Text>
+                  <Text style={[styles.seeAll, { color: themeColors.primary[500] }]}>Ver todo</Text>
                 </TouchableOpacity>
               </View>
               <ScrollView 
@@ -276,19 +304,19 @@ export const HomeScreen: React.FC = () => {
               >
                 {activeObjectives.slice(0, 3).map((objective, index) => (
                   <ScaleIn key={objective.id} delay={650 + index * 50}>
-                    <View style={styles.objectiveCard}>
+                    <View style={[styles.objectiveCard, { backgroundColor: themeColors.card }, themeShadows.sm]}>
                       <View style={styles.objectiveHeader}>
                         <CircularProgress
                           percentage={objective.percentage}
                           size={60}
                           strokeWidth={6}
-                          color={colors.primary[500]}
+                          color={objective.percentage >= 100 ? themeColors.success : themeColors.primary[500]}
                         >
-                          <Text style={styles.objectivePercentage}>{objective.percentage.toFixed(0)}%</Text>
+                          <Text style={[styles.objectivePercentage, { color: themeColors.text.primary }]}>{objective.percentage.toFixed(0)}%</Text>
                         </CircularProgress>
                       </View>
-                      <Text style={styles.objectiveName} numberOfLines={1}>{objective.name}</Text>
-                      <Text style={styles.objectiveAmount}>
+                      <Text style={[styles.objectiveName, { color: themeColors.text.primary }]} numberOfLines={1}>{objective.name}</Text>
+                      <Text style={[styles.objectiveAmount, { color: themeColors.text.secondary }]}>
                         {formatCurrency(objective.currentAmount, objective.currency.symbol)} / {formatCurrency(objective.targetAmount, objective.currency.symbol)}
                       </Text>
                     </View>
@@ -302,36 +330,36 @@ export const HomeScreen: React.FC = () => {
         <FadeInDown delay={700}>
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Actividad Reciente</Text>
+              <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Actividad Reciente</Text>
               <TouchableOpacity>
-                <Text style={styles.seeAll}>Ver todo</Text>
+                <Text style={[styles.seeAll, { color: themeColors.primary[500] }]}>Ver todo</Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.transactionsContainer}>
+            <View style={[styles.transactionsContainer, { backgroundColor: themeColors.card }, themeShadows.sm]}>
               {recentTransactions && recentTransactions.length > 0 ? (
                 recentTransactions.map((tx, index) => (
                   <FadeInDown key={tx.id} delay={750 + index * 50}>
-                    <TouchableOpacity style={styles.transactionItem}>
+                    <TouchableOpacity style={styles.transactionItem} activeOpacity={0.8}>
                       <View style={[
                         styles.transactionIcon, 
-                        { backgroundColor: tx.type === 'COMPRA' ? colors.financial.compraLight : colors.financial.ventaLight }
+                        { backgroundColor: tx.type === 'COMPRA' ? themeColors.financial.compraLight : themeColors.financial.ventaLight }
                       ]}>
                         <Ionicons 
                           name={getTransactionIconName(tx.type)} 
                           size={22} 
-                          color={tx.type === 'COMPRA' ? colors.financial.compra : colors.financial.venta} 
+                          color={tx.type === 'COMPRA' ? themeColors.financial.compra : themeColors.financial.venta} 
                         />
                       </View>
                       <View style={styles.transactionInfo}>
-                        <Text style={styles.transactionName}>
+                        <Text style={[styles.transactionName, { color: themeColors.text.primary }]}>
                           {tx.type === 'COMPRA' ? 'Compra' : 'Venta'} de {tx.currency.code}
                         </Text>
                         <View style={styles.transactionMeta}>
-                          <Text style={styles.transactionAmount}>
+                          <Text style={[styles.transactionAmount, { color: themeColors.text.secondary }]}>
                             {tx.amount.toLocaleString()} {tx.currency.code}
                           </Text>
-                          <Text style={styles.transactionDot}>•</Text>
-                          <Text style={styles.transactionRate}>
+                          <Text style={[styles.transactionDot, { color: themeColors.text.tertiary }]}>•</Text>
+                          <Text style={[styles.transactionRate, { color: themeColors.text.tertiary }]}>
                             @ {tx.rate}
                           </Text>
                         </View>
@@ -339,19 +367,19 @@ export const HomeScreen: React.FC = () => {
                       <View style={styles.transactionRight}>
                         <Text style={[
                           styles.transactionTotal,
-                          { color: tx.type === 'COMPRA' ? colors.financial.compra : colors.financial.venta }
+                          { color: tx.type === 'COMPRA' ? themeColors.financial.compra : themeColors.financial.venta }
                         ]}>
                           {tx.type === 'COMPRA' ? '-' : '+'}{formatCurrency(tx.totalCup)}
                         </Text>
-                        <Text style={styles.transactionTime}>{formatTime(tx.createdAt)}</Text>
+                        <Text style={[styles.transactionTime, { color: themeColors.text.tertiary }]}>{formatTime(tx.createdAt)}</Text>
                       </View>
                     </TouchableOpacity>
                   </FadeInDown>
                 ))
               ) : (
                 <View style={styles.emptyState}>
-                  <Ionicons name="receipt-outline" size={48} color={colors.text.tertiary} />
-                  <Text style={styles.emptyStateText}>No hay transacciones recientes</Text>
+                  <Ionicons name="receipt-outline" size={48} color={themeColors.text.tertiary} />
+                  <Text style={[styles.emptyStateText, { color: themeColors.text.secondary }]}>No hay transacciones recientes</Text>
                 </View>
               )}
             </View>
@@ -367,7 +395,6 @@ export const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -377,7 +404,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: colors.text.secondary,
   },
   scrollContent: {
     padding: spacing.md,
@@ -390,22 +416,18 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 14,
-    color: colors.text.secondary,
     marginBottom: 2,
   },
   userName: {
     fontSize: 22,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   notificationButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
-    ...shadows.sm,
     position: 'relative',
   },
   notificationBadge: {
@@ -415,42 +437,41 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: colors.danger,
     borderWidth: 2,
-    borderColor: colors.card,
+    borderColor: '#fff',
   },
   dateCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     marginBottom: spacing.lg,
     gap: spacing.md,
-    ...shadows.sm,
   },
   dateIconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: `${colors.primary[500]}15`,
     justifyContent: 'center',
     alignItems: 'center',
   },
   dateLabel: {
     fontSize: 12,
-    color: colors.text.secondary,
     marginBottom: 2,
   },
   dateText: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.text.primary,
   },
   statsGrid: {
     flexDirection: 'row',
     gap: spacing.md,
     marginBottom: spacing.md,
+  },
+  statCardWrapper: {
+    flex: 1,
+    borderRadius: borderRadius.lg,
+    padding: spacing.sm,
   },
   statCard: {
     flex: 1,
@@ -467,11 +488,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.text.primary,
   },
   seeAll: {
     fontSize: 14,
-    color: colors.primary[500],
     fontWeight: '500',
   },
   horizontalScroll: {
@@ -480,11 +499,9 @@ const styles = StyleSheet.create({
   },
   currencyCard: {
     width: 130,
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     borderLeftWidth: 4,
-    ...shadows.sm,
   },
   currencyIcon: {
     width: 36,
@@ -497,32 +514,26 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.text.primary,
+    color: '#0F172A',
   },
   currencyCode: {
     fontSize: 13,
-    color: colors.text.secondary,
     marginBottom: 4,
   },
   currencyBalance: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   ratesContainer: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     gap: spacing.md,
-    ...shadows.sm,
   },
   rateRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   rateCurrencyInfo: {
     flexDirection: 'row',
@@ -539,12 +550,11 @@ const styles = StyleSheet.create({
   rateCurrencySymbol: {
     fontSize: 14,
     fontWeight: '700',
-    color: colors.text.primary,
+    color: '#0F172A',
   },
   rateCurrencyName: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.text.primary,
   },
   rateValues: {
     flexDirection: 'row',
@@ -556,7 +566,6 @@ const styles = StyleSheet.create({
   },
   rateLabel: {
     fontSize: 11,
-    color: colors.text.tertiary,
     marginBottom: 2,
   },
   rateValue: {
@@ -566,13 +575,10 @@ const styles = StyleSheet.create({
   rateDivider: {
     width: 1,
     height: 24,
-    backgroundColor: colors.border,
   },
   chartCard: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    ...shadows.sm,
   },
   chartHeader: {
     marginBottom: spacing.md,
@@ -580,20 +586,16 @@ const styles = StyleSheet.create({
   chartTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.text.primary,
     marginBottom: 2,
   },
   chartSubtitle: {
     fontSize: 12,
-    color: colors.text.secondary,
   },
   objectiveCard: {
     width: 160,
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     alignItems: 'center',
-    ...shadows.sm,
   },
   objectiveHeader: {
     marginBottom: spacing.sm,
@@ -601,25 +603,20 @@ const styles = StyleSheet.create({
   objectivePercentage: {
     fontSize: 14,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   objectiveName: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text.primary,
     marginBottom: 4,
     textAlign: 'center',
   },
   objectiveAmount: {
     fontSize: 12,
-    color: colors.text.secondary,
     textAlign: 'center',
   },
   transactionsContainer: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    ...shadows.sm,
   },
   transactionItem: {
     flexDirection: 'row',
@@ -640,7 +637,6 @@ const styles = StyleSheet.create({
   transactionName: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.text.primary,
     marginBottom: 2,
   },
   transactionMeta: {
@@ -650,15 +646,12 @@ const styles = StyleSheet.create({
   },
   transactionAmount: {
     fontSize: 13,
-    color: colors.text.secondary,
   },
   transactionDot: {
     fontSize: 13,
-    color: colors.text.tertiary,
   },
   transactionRate: {
     fontSize: 13,
-    color: colors.text.tertiary,
   },
   transactionRight: {
     alignItems: 'flex-end',
@@ -670,7 +663,6 @@ const styles = StyleSheet.create({
   },
   transactionTime: {
     fontSize: 12,
-    color: colors.text.tertiary,
   },
   emptyState: {
     alignItems: 'center',
@@ -679,6 +671,5 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 14,
-    color: colors.text.tertiary,
   },
 });

@@ -104,6 +104,122 @@ export const borderRadius = {
   full: 9999,
 };
 
+export const darkColors = {
+  primary: {
+    50: '#1E1B4B',
+    100: '#312E81',
+    200: '#3730A3',
+    300: '#4338CA',
+    400: '#4F46E5',
+    500: '#6366F1',
+    600: '#818CF8',
+    700: '#A5B4FC',
+    800: '#C7D2FE',
+    900: '#E0E7FF',
+  },
+  secondary: {
+    50: '#052E16',
+    100: '#14532D',
+    200: '#166534',
+    300: '#15803D',
+    400: '#16A34A',
+    500: '#22C55E',
+    600: '#4ADE80',
+    700: '#86EFAC',
+    800: '#BBF7D0',
+    900: '#DCFCE7',
+  },
+  accent: {
+    50: '#451A03',
+    100: '#78350F',
+    200: '#92400E',
+    300: '#B45309',
+    400: '#D97706',
+    500: '#F59E0B',
+    600: '#FBBF24',
+    700: '#FCD34D',
+    800: '#FDE68A',
+    900: '#FEF3C7',
+  },
+  background: '#0F172A',
+  card: '#1E293B',
+  surface: '#334155',
+  text: {
+    primary: '#F1F5F9',
+    secondary: '#94A3B8',
+    tertiary: '#64748B',
+    inverse: '#0F172A',
+  },
+  success: '#10B981',
+  warning: '#F59E0B',
+  danger: '#EF4444',
+  info: '#3B82F6',
+  border: '#334155',
+  separator: '#475569',
+  financial: {
+    income: '#10B981',
+    incomeLight: '#064E3B',
+    expense: '#EF4444',
+    expenseLight: '#7F1D1D',
+    profit: '#818CF8',
+    profitLight: '#312E81',
+    neutral: '#94A3B8',
+    neutralLight: '#334155',
+    compra: '#FBBF24',
+    compraLight: '#451A03',
+    venta: '#34D399',
+    ventaLight: '#064E3B',
+  },
+  currencies: {
+    usd: { primary: '#22C55E', bg: '#064E3B' },
+    eur: { primary: '#60A5FA', bg: '#1E3A5F' },
+    mlc: { primary: '#A78BFA', bg: '#2E1065' },
+    cup: { primary: '#FBBF24', bg: '#451A03' },
+  },
+  dashboard: {
+    bg: '#1E293B',
+    text: {
+      title: '#F1F5F9',
+      amount: '#F1F5F9',
+      subtitle: '#94A3B8',
+    },
+    categories: {
+      rent: { bg: '#7F1D1D', icon: '#FCA5A5' },
+      servicios: { bg: '#1E3A5F', icon: '#93C5FD' },
+      salario: { bg: '#064E3B', icon: '#6EE7B7' },
+      insumos: { bg: '#451A03', icon: '#FDE68A' },
+      otros: { bg: '#334155', icon: '#94A3B8' },
+    },
+  },
+};
+
+export const gradientPresets = {
+  daily: {
+    light: ['#6366F1', '#8B5CF6'],
+    dark: ['#4F46E5', '#7C3AED'],
+  },
+  profit: {
+    light: ['#10B981', '#059669'],
+    dark: ['#059669', '#047857'],
+  },
+  cashFlow: {
+    light: ['#8B5CF6', '#A855F7'],
+    dark: ['#7C3AED', '#6D28D9'],
+  },
+  period: {
+    light: ['#F59E0B', '#D97706'],
+    dark: ['#D97706', '#B45309'],
+  },
+  compra: {
+    light: ['#F59E0B', '#FCD34D'],
+    dark: ['#D97706', '#B45309'],
+  },
+  venta: {
+    light: ['#10B981', '#34D399'],
+    dark: ['#059669', '#047857'],
+  },
+};
+
 export const shadows = {
   sm: {
     shadowColor: '#000',
@@ -125,5 +241,43 @@ export const shadows = {
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 5,
+  },
+  glow: {
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+};
+
+export const darkShadows = {
+  sm: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  glow: {
+    shadowColor: '#818CF8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
 };

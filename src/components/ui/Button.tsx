@@ -6,6 +6,8 @@ type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 type ButtonProps = {
+  testID?: string;
+  accessibilityLabel?: string;
   title: string;
   onPress: () => void;
   variant?: ButtonVariant;
@@ -62,9 +64,13 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   style,
   textStyle,
+  testID,
+  accessibilityLabel,
 }) => {
   return (
     <TouchableOpacity
+      testID={testID}
+      accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       disabled={disabled || loading}
       style={[

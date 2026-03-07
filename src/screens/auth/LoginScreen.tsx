@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useAuthStore } from '../../store/authStore';
+import { showError } from '../../store/toastStore';
 
 export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +17,9 @@ export const LoginScreen: React.FC = () => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError('Por favor complete todos los campos');
+      const msg = 'Por favor complete todos los campos';
+      setError(msg);
+      showError(msg);
       return;
     }
 
@@ -26,7 +29,9 @@ export const LoginScreen: React.FC = () => {
     try {
       await login(email, password);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al iniciar sesión');
+      const errorMessage = err.response?.data?.message || err.message || 'Error al iniciar sesión';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }

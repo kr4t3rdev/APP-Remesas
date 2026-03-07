@@ -14,11 +14,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, borderRadius, shadows } from '../../theme';
+import { FadeIn, FadeInDown, ScaleIn, PressableScale } from '../../components/animations';
 import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { FadeIn, FadeInDown, ScaleIn } from '../../components/animations';
+import { colors, spacing, borderRadius, shadows } from '../../theme';
+import { useColors, useShadows, useIsDark, useGradients } from '../../store/themeStore';
 import type { Transaction } from '../../types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -32,6 +33,11 @@ import {
 type FilterType = 'all' | 'COMPRA' | 'VENTA';
 
 export const TransactionsScreen: React.FC = () => {
+  const themeColors = useColors();
+  const themeShadows = useShadows();
+  const isDark = useIsDark();
+  const gradients = useGradients();
+  
   const [filter, setFilter] = useState<FilterType>('all');
   const [modalVisible, setModalVisible] = useState(false);
   const createTransactionMutation = useCreateTransactionMutation();
@@ -82,7 +88,7 @@ export const TransactionsScreen: React.FC = () => {
     setFormData(prev => ({
       ...prev,
       currencyId,
-      rate: rate ? (formData.type === 'COMPRA' ? rate.buyRate : rate.sellRate).toString() : '',
+      rate: rate ? (prev.type === 'COMPRA' ? rate.buyRate : rate.sellRate).toString() : '',
     }));
   };
 
@@ -133,10 +139,6 @@ export const TransactionsScreen: React.FC = () => {
     }
   };
 
-  const openModal = () => {
-    setModalVisible(true);
-  };
-
   const formatCurrency = (amount: number | string, symbol: string) => {
     const numAmount = Number(amount) || 0;
     return `${symbol} ${numAmount.toLocaleString('es-CU', { minimumFractionDigits: 2 })}`;
@@ -169,51 +171,52 @@ export const TransactionsScreen: React.FC = () => {
 
   const renderTransaction = ({ item, index }: { item: Transaction; index: number }) => {
     const isCompra = item.type === 'COMPRA';
+    const isPending = item.status === 'PENDIENTE';
     
     return (
-      <FadeInDown delay={index * 50}>
+      <FadeInDown delay={index * 30}>
         <TouchableOpacity
-          style={styles.transactionCard}
-          activeOpacity={0.7}
+          style={[styles.transactionCard, { backgroundColor: themeColors.card }, themeShadows.sm]}
+          activeOpacity={0.8}
         >
           <View style={styles.transactionHeader}>
             <View style={[
               styles.transactionIcon,
-              { backgroundColor: isCompra ? colors.financial.compraLight : colors.financial.ventaLight }
+              { backgroundColor: isCompra ? themeColors.financial.compraLight : themeColors.financial.ventaLight }
             ]}>
               <Ionicons 
                 name={isCompra ? 'arrow-down' : 'arrow-up'} 
                 size={20} 
-                color={isCompra ? colors.financial.compra : colors.financial.venta} 
+                color={isCompra ? themeColors.financial.compra : themeColors.financial.venta} 
               />
             </View>
             <View style={styles.transactionInfo}>
-              <Text style={styles.transactionTitle}>
+              <Text style={[styles.transactionTitle, { color: themeColors.text.primary }]}>
                 {isCompra ? 'Compra' : 'Venta'} de {item.currency?.code}
               </Text>
-              <Text style={styles.transactionDate}>{formatTime(item.createdAt)}</Text>
+              <Text style={[styles.transactionDate, { color: themeColors.text.secondary }]}>{formatTime(item.createdAt)}</Text>
             </View>
             <View style={styles.transactionAmounts}>
-              <Text style={styles.transactionAmount}>
+              <Text style={[styles.transactionAmount, { color: themeColors.text.primary }]}>
                 {formatCurrency(item.amount, item.currency?.symbol || '$')}
               </Text>
-              <Text style={styles.transactionRate}>@ {formatRate(item.rate)}</Text>
+              <Text style={[styles.transactionRate, { color: themeColors.text.secondary }]}>@ {formatRate(item.rate)}</Text>
             </View>
           </View>
           
-          <View style={styles.transactionFooter}>
+          <View style={[styles.transactionFooter, { borderTopColor: themeColors.border }]}>
             <View style={styles.transactionTotal}>
-              <Text style={styles.transactionTotalLabel}>Total</Text>
+              <Text style={[styles.transactionTotalLabel, { color: themeColors.text.tertiary }]}>Total</Text>
               <Text style={[
                 styles.transactionTotalValue,
-                { color: isCompra ? colors.financial.compra : colors.financial.venta }
+                { color: isCompra ? themeColors.financial.compra : themeColors.financial.venta }
               ]}>
                 {isCompra ? '-' : '+'}$ {formatTotalCup(item.totalCup)} CUP
               </Text>
             </View>
             <Badge
-              text={item.status === 'PENDIENTE' ? 'Pendiente' : 'Reconciliado'}
-              variant={item.status === 'PENDIENTE' ? 'warning' : 'success'}
+              text={isPending ? 'Pendiente' : 'Reconciliado'}
+              variant={isPending ? 'warning' : 'success'}
             />
           </View>
         </TouchableOpacity>
@@ -232,35 +235,46 @@ export const TransactionsScreen: React.FC = () => {
     ? (parseFloat(formData.amount) * parseFloat(formData.rate)).toLocaleString('es-CU', { minimumFractionDigits: 2 })
     : '0.00';
 
+  const getCurrencyColor = (code: string) => {
+    const colorMap: Record<string, string> = {
+      USD: themeColors.currencies.usd.primary,
+      EUR: themeColors.currencies.eur.primary,
+      MLC: themeColors.currencies.mlc.primary,
+    };
+    return colorMap[code] || themeColors.primary[500];
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <FadeIn>
         <View style={styles.header}>
-          <Text style={styles.title}>Transacciones</Text>
-          <Text style={styles.subtitle}>Historial de compras y ventas</Text>
+          <Text style={[styles.title, { color: themeColors.text.primary }]}>Transacciones</Text>
+          <Text style={[styles.subtitle, { color: themeColors.text.secondary }]}>Historial de compras y ventas</Text>
         </View>
       </FadeIn>
 
-      <View style={styles.filtersContainer}>
-        {filters.map((f, index) => (
-          <ScaleIn key={f.key} delay={index * 50}>
-            <TouchableOpacity
-              onPress={() => setFilter(f.key)}
-              style={[
-                styles.filterButton,
-                filter === f.key && styles.filterButtonActive
-              ]}
-            >
-              <Text style={[
-                styles.filterText,
-                filter === f.key && styles.filterTextActive
-              ]}>
-                {f.label}
-              </Text>
-            </TouchableOpacity>
-          </ScaleIn>
-        ))}
-      </View>
+      <FadeInDown delay={50}>
+        <View style={styles.filtersContainer}>
+          {filters.map((f, index) => (
+            <ScaleIn key={f.key} delay={index * 50}>
+              <TouchableOpacity
+                onPress={() => setFilter(f.key)}
+                style={[
+                  styles.filterButton,
+                  filter === f.key ? { backgroundColor: themeColors.primary[500] } : { backgroundColor: themeColors.card }
+                ]}
+              >
+                <Text style={[
+                  styles.filterText,
+                  filter === f.key ? { color: '#fff' } : { color: themeColors.text.secondary }
+                ]}>
+                  {f.label}
+                </Text>
+              </TouchableOpacity>
+            </ScaleIn>
+          ))}
+        </View>
+      </FadeInDown>
 
       <FlatList
         data={transactions}
@@ -271,14 +285,14 @@ export const TransactionsScreen: React.FC = () => {
           <RefreshControl 
             refreshing={transactionsQuery.isRefetching}
             onRefresh={handleRefresh}
-            tintColor={colors.primary[500]}
+            tintColor={themeColors.primary[500]}
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="swap-horizontal-outline" size={64} color={colors.text.tertiary} />
-            <Text style={styles.emptyStateText}>No hay transacciones</Text>
-            <Text style={styles.emptyStateSubtext}>
+            <Ionicons name="swap-horizontal-outline" size={64} color={themeColors.text.tertiary} />
+            <Text style={[styles.emptyStateText, { color: themeColors.text.secondary }]}>No hay transacciones</Text>
+            <Text style={[styles.emptyStateSubtitle, { color: themeColors.text.tertiary }]}>
               Toca el botón + para registrar una nueva
             </Text>
           </View>
@@ -287,8 +301,8 @@ export const TransactionsScreen: React.FC = () => {
 
       <ScaleIn delay={200}>
         <TouchableOpacity
-          style={styles.fab}
-          onPress={openModal}
+          style={[styles.fab, { backgroundColor: themeColors.primary[500] }, themeShadows.lg]}
+          onPress={() => setModalVisible(true)}
           activeOpacity={0.8}
         >
           <Ionicons name="add" size={28} color="#fff" />
@@ -310,28 +324,28 @@ export const TransactionsScreen: React.FC = () => {
             activeOpacity={1} 
             onPress={() => setModalVisible(false)}
           />
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Nueva Transacción</Text>
+              <Text style={[styles.modalTitle, { color: themeColors.text.primary }]}>Nueva Transacción</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color={colors.text.secondary} />
+                <Ionicons name="close" size={24} color={themeColors.text.secondary} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.sectionLabel}>Tipo de operación</Text>
+              <Text style={[styles.sectionLabel, { color: themeColors.text.primary }]}>Tipo de operación</Text>
               <View style={styles.typeSelector}>
                 <TouchableOpacity
                   style={[
                     styles.typeButton,
-                    formData.type === 'COMPRA' && styles.typeButtonCompra
+                    formData.type === 'COMPRA' && { backgroundColor: themeColors.financial.compra }
                   ]}
                   onPress={() => handleTypeChange('COMPRA')}
                 >
                   <Ionicons 
                     name="arrow-down-circle" 
                     size={24} 
-                    color={formData.type === 'COMPRA' ? '#fff' : colors.financial.compra} 
+                    color={formData.type === 'COMPRA' ? '#fff' : themeColors.financial.compra} 
                   />
                   <Text style={[
                     styles.typeButtonText,
@@ -343,14 +357,14 @@ export const TransactionsScreen: React.FC = () => {
                 <TouchableOpacity
                   style={[
                     styles.typeButton,
-                    formData.type === 'VENTA' && styles.typeButtonVenta
+                    formData.type === 'VENTA' && { backgroundColor: themeColors.financial.venta }
                   ]}
                   onPress={() => handleTypeChange('VENTA')}
                 >
                   <Ionicons 
                     name="arrow-up-circle" 
                     size={24} 
-                    color={formData.type === 'VENTA' ? '#fff' : colors.financial.venta} 
+                    color={formData.type === 'VENTA' ? '#fff' : themeColors.financial.venta} 
                   />
                   <Text style={[
                     styles.typeButtonText,
@@ -361,35 +375,39 @@ export const TransactionsScreen: React.FC = () => {
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.sectionLabel}>Moneda</Text>
+              <Text style={[styles.sectionLabel, { color: themeColors.text.primary }]}>Moneda</Text>
               <ScrollView 
                 horizontal 
                 showsHorizontalScrollIndicator={false}
                 style={styles.currencyScroll}
               >
-                {selectableCurrencies.map((currency) => (
-                  <TouchableOpacity
-                    key={currency.id}
-                    style={[
-                      styles.currencyButton,
-                      formData.currencyId === currency.id && styles.currencyButtonActive
-                    ]}
-                    onPress={() => handleCurrencyChange(currency.id)}
-                  >
-                    <Text style={[
-                      styles.currencySymbol,
-                      formData.currencyId === currency.id && styles.currencySymbolActive
-                    ]}>
-                      {currency.symbol}
-                    </Text>
-                    <Text style={[
-                      styles.currencyCode,
-                      formData.currencyId === currency.id && styles.currencyCodeActive
-                    ]}>
-                      {currency.code}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                {selectableCurrencies.map((currency) => {
+                  const currencyColor = getCurrencyColor(currency.code);
+                  const isSelected = formData.currencyId === currency.id;
+                  return (
+                    <TouchableOpacity
+                      key={currency.id}
+                      style={[
+                        styles.currencyButton,
+                        isSelected && { backgroundColor: currencyColor, borderColor: currencyColor }
+                      ]}
+                      onPress={() => handleCurrencyChange(currency.id)}
+                    >
+                      <Text style={[
+                        styles.currencySymbol,
+                        isSelected && styles.currencySymbolActive
+                      ]}>
+                        {currency.symbol}
+                      </Text>
+              <Text style={[
+                styles.currencyCode,
+                isSelected ? { color: 'rgba(255,255,255,0.8)' } : { color: themeColors.text.secondary }
+              ]}>
+                        {currency.code}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </ScrollView>
 
               <View style={styles.inputRow}>
@@ -413,15 +431,15 @@ export const TransactionsScreen: React.FC = () => {
                 </View>
               </View>
 
-              <View style={styles.previewCard}>
+              <View style={[styles.previewCard, { backgroundColor: themeColors.surface }]}>
                 <View style={styles.previewRow}>
-                  <Text style={styles.previewLabel}>
+                  <Text style={[styles.previewLabel, { color: themeColors.text.secondary }]}>
                     {formData.amount || '0'} {selectedCurrency?.code || 'USD'}
                   </Text>
-                  <Text style={styles.previewOperator}>×</Text>
-                  <Text style={styles.previewLabel}>{formData.rate || '0'}</Text>
-                  <Text style={styles.previewOperator}>=</Text>
-                  <Text style={styles.previewValue}>$ {previewTotal} CUP</Text>
+                  <Text style={[styles.previewOperator, { color: themeColors.text.tertiary }]}>×</Text>
+                  <Text style={[styles.previewLabel, { color: themeColors.text.secondary }]}>{formData.rate || '0'}</Text>
+                  <Text style={[styles.previewOperator, { color: themeColors.text.tertiary }]}>=</Text>
+                  <Text style={[styles.previewValue, { color: themeColors.primary[500] }]}>$ {previewTotal} CUP</Text>
                 </View>
               </View>
 
@@ -451,7 +469,6 @@ export const TransactionsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
     padding: spacing.md,
@@ -460,11 +477,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.text.secondary,
     marginTop: 4,
   },
   filtersContainer: {
@@ -477,30 +492,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.card,
     ...shadows.sm,
-  },
-  filterButtonActive: {
-    backgroundColor: colors.primary[500],
   },
   filterText: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.text.secondary,
-  },
-  filterTextActive: {
-    color: '#fff',
   },
   listContent: {
     paddingHorizontal: spacing.md,
     paddingBottom: 120,
   },
   transactionCard: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     marginBottom: spacing.sm,
-    ...shadows.sm,
   },
   transactionHeader: {
     flexDirection: 'row',
@@ -520,11 +525,9 @@ const styles = StyleSheet.create({
   transactionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text.primary,
   },
   transactionDate: {
     fontSize: 12,
-    color: colors.text.secondary,
     marginTop: 2,
   },
   transactionAmounts: {
@@ -533,11 +536,9 @@ const styles = StyleSheet.create({
   transactionAmount: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   transactionRate: {
     fontSize: 12,
-    color: colors.text.secondary,
   },
   transactionFooter: {
     flexDirection: 'row',
@@ -546,14 +547,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     paddingTop: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   transactionTotal: {
     flex: 1,
   },
   transactionTotalLabel: {
     fontSize: 11,
-    color: colors.text.tertiary,
   },
   transactionTotalValue: {
     fontSize: 15,
@@ -565,13 +564,11 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: colors.text.secondary,
     marginTop: spacing.md,
     fontWeight: '500',
   },
-  emptyStateSubtext: {
+  emptyStateSubtitle: {
     fontSize: 14,
-    color: colors.text.tertiary,
     marginTop: spacing.xs,
   },
   fab: {
@@ -581,10 +578,8 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.primary[500],
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadows.lg,
   },
   modalOverlay: {
     flex: 1,
@@ -595,7 +590,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   modalContent: {
-    backgroundColor: colors.card,
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
     padding: spacing.lg,
@@ -611,12 +605,10 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.text.primary,
   },
   sectionLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.text.primary,
     marginBottom: spacing.sm,
   },
   typeSelector: {
@@ -631,19 +623,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing.md,
     borderRadius: borderRadius.lg,
-    backgroundColor: colors.surface,
+    backgroundColor: '#F1F5F9',
     gap: spacing.sm,
-  },
-  typeButtonCompra: {
-    backgroundColor: colors.financial.compra,
-  },
-  typeButtonVenta: {
-    backgroundColor: colors.financial.venta,
   },
   typeButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: colors.text.primary,
+    color: '#0F172A',
   },
   typeButtonTextActive: {
     color: '#fff',
@@ -656,28 +642,23 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
-    backgroundColor: colors.surface,
+    backgroundColor: '#F1F5F9',
     marginRight: spacing.sm,
     minWidth: 70,
-  },
-  currencyButtonActive: {
-    backgroundColor: colors.primary[500],
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   currencySymbol: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.text.primary,
+    color: '#0F172A',
   },
   currencySymbolActive: {
     color: '#fff',
   },
   currencyCode: {
     fontSize: 12,
-    color: colors.text.secondary,
     marginTop: 2,
-  },
-  currencyCodeActive: {
-    color: 'rgba(255,255,255,0.8)',
   },
   inputRow: {
     flexDirection: 'row',
@@ -687,7 +668,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   previewCard: {
-    backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     marginBottom: spacing.md,
@@ -700,16 +680,13 @@ const styles = StyleSheet.create({
   },
   previewLabel: {
     fontSize: 14,
-    color: colors.text.secondary,
   },
   previewOperator: {
     fontSize: 14,
-    color: colors.text.tertiary,
   },
   previewValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.primary[500],
   },
   submitButton: {
     marginTop: spacing.md,

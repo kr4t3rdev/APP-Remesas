@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TextInput, Text, TextInputProps, ViewStyle } from 'react-native';
-import { colors, borderRadius, spacing } from '../../theme';
+import { borderRadius, spacing } from '../../theme';
+import { useColors } from '../../store/themeStore';
 
 type InputProps = TextInputProps & {
   label?: string;
@@ -15,6 +16,8 @@ export const Input: React.FC<InputProps> = ({
   style,
   ...props
 }) => {
+  const themeColors = useColors();
+
   return (
     <View style={containerStyle}>
       {label && (
@@ -22,7 +25,7 @@ export const Input: React.FC<InputProps> = ({
           style={{
             fontSize: 14,
             fontWeight: '500',
-            color: colors.text.primary,
+            color: themeColors.text.primary,
             marginBottom: spacing.xs,
           }}
         >
@@ -32,22 +35,22 @@ export const Input: React.FC<InputProps> = ({
       <TextInput
         style={[
           {
-            backgroundColor: colors.background,
+            backgroundColor: themeColors.background,
             borderRadius: borderRadius.md,
             paddingVertical: 12,
             paddingHorizontal: spacing.md,
             fontSize: 16,
-            color: colors.text.primary,
+            color: themeColors.text.primary,
             borderWidth: 1,
-            borderColor: error ? colors.danger : colors.border,
+            borderColor: error ? themeColors.danger : themeColors.border,
           },
           style,
         ]}
-        placeholderTextColor={colors.text.secondary}
+        placeholderTextColor={themeColors.text.secondary}
         {...props}
       />
       {error && (
-        <Text style={{ color: colors.danger, fontSize: 12, marginTop: spacing.xs }}>
+        <Text style={{ color: themeColors.danger, fontSize: 12, marginTop: spacing.xs }}>
           {error}
         </Text>
       )}
