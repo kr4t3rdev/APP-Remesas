@@ -11,7 +11,7 @@ type KpiCardProps = {
   prefix?: string;
   suffix?: string;
   decimals?: number;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon?: keyof typeof Ionicons.glyphMap;
   iconColor?: string;
   trend?: {
     direction: 'up' | 'down' | 'neutral';
@@ -19,6 +19,8 @@ type KpiCardProps = {
   };
   loading?: boolean;
   delay?: number;
+  variant?: 'default' | 'outlined';
+  accentColor?: string;
 };
 
 export const ReportsKpiCard: React.FC<KpiCardProps> = ({
@@ -32,14 +34,57 @@ export const ReportsKpiCard: React.FC<KpiCardProps> = ({
   trend,
   loading = false,
   delay = 50,
+  variant = 'default',
+  accentColor,
 }) => {
   const colors = useColors();
   const shadows = useShadows();
-  const styles = useMemo(() => createStyles(colors, shadows, iconColor || colors.primary[500]), [
-    colors,
-    shadows,
-    iconColor,
-  ]);
+  
+  // Custom styles based on props
+  const customStyles = useMemo(() => {
+    const baseCardStyle: any = {
+      backgroundColor: colors.card,
+      borderRadius: 24, // More rounded as per design
+      padding: spacing.lg,
+      flexDirection: 'column', // Vertical layout
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      minHeight: 140, // Taller cards
+      flex: 1, // To fill grid column
+    };
+
+    if (variant === 'outlined' && accentColor) {
+      baseCardStyle.borderWidth = 1;
+      baseCardStyle.borderColor = accentColor;
+      baseCardStyle.backgroundColor = `${accentColor}10`; // Slight tint
+    }
+
+    return StyleSheet.create({
+      container: baseCardStyle,
+      title: {
+        fontSize: 14,
+        color: variant === 'outlined' && accentColor ? accentColor : colors.text.secondary,
+        fontWeight: '500',
+        marginBottom: spacing.xs,
+      },
+      value: {
+        fontSize: 32,
+        fontWeight: '700',
+        color: variant === 'outlined' && accentColor ? accentColor : colors.text.primary,
+        marginVertical: spacing.sm,
+      },
+      trendRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: 'transparent',
+      },
+      trendText: {
+        fontSize: 14,
+        fontWeight: '600',
+      },
+    });
+  }, [colors, variant, accentColor]);
 
   // Animated number effect
   const animatedValue = useRef(new Animated.Value(0)).current;
@@ -89,8 +134,22 @@ export const ReportsKpiCard: React.FC<KpiCardProps> = ({
   if (loading) {
     return (
       <ScaleIn delay={delay}>
-        <View style={styles.container}>
-          <View style={styles.skeleton} />
+        <View style={customStyles.container}>
+          <View style={{
+              height: 20, 
+              width: '60%', 
+              backgroundColor: colors.border, 
+              borderRadius: 4, 
+              opacity: 0.3 
+            }} />
+          <View style={{
+              height: 40, 
+              width: '80%', 
+              backgroundColor: colors.border, 
+              borderRadius: 4, 
+              opacity: 0.3,
+              marginTop: 10
+            }} />
         </View>
       </ScaleIn>
     );
@@ -98,86 +157,20 @@ export const ReportsKpiCard: React.FC<KpiCardProps> = ({
 
   return (
     <ScaleIn delay={delay}>
-      <View style={styles.container}>
-        <View style={styles.iconWrap}>
-          <Ionicons name={icon} size={20} color={styles.iconColor.color} />
-        </View>
+      <View style={customStyles.container}>
+        <Text style={customStyles.title}>{title}</Text>
+        <Text style={customStyles.value}>{formatValue(displayValue)}</Text>
 
-        <View style={styles.content}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.value}>{formatValue(displayValue)}</Text>
-
-          {trend && (
-            <View style={styles.trendRow}>
-              <Ionicons name={getTrendIcon()!} size={14} color={getTrendColor()} />
-              <Text style={[styles.trendText, { color: getTrendColor() }]}>
-                {trend.value}%
-              </Text>
-            </View>
-          )}
-        </View>
+        {trend && (
+          <View style={customStyles.trendRow}>
+            <Ionicons name={getTrendIcon()!} size={16} color={getTrendColor()} />
+            <Text style={[customStyles.trendText, { color: getTrendColor() }]}>
+              {trend.value}%
+            </Text>
+          </View>
+        )}
       </View>
     </ScaleIn>
   );
 };
 
-// Need to import useState
-// import { useState } from 'react';
-
-const createStyles = (
-  colors: ReturnType<typeof useColors>,
-  shadows: ReturnType<typeof useShadows>,
-  iconColor: string,
-) =>
-  StyleSheet.create({
-    container: {
-      backgroundColor: colors.card,
-      borderRadius: borderRadius.lg,
-      padding: spacing.md,
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: spacing.sm,
-      ...shadows.sm,
-    },
-    iconWrap: {
-      width: 40,
-      height: 40,
-      borderRadius: borderRadius.md,
-      backgroundColor: `${iconColor}16`,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    iconColor: {
-      color: iconColor,
-    },
-    content: {
-      flex: 1,
-    },
-    title: {
-      fontSize: 12,
-      color: colors.text.secondary,
-      fontWeight: '500',
-      marginBottom: 2,
-    },
-    value: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: colors.text.primary,
-    },
-    trendRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 2,
-      marginTop: 4,
-    },
-    trendText: {
-      fontSize: 12,
-      fontWeight: '600',
-    },
-    skeleton: {
-      height: 80,
-      backgroundColor: colors.border,
-      borderRadius: borderRadius.md,
-      opacity: 0.3,
-    },
-  });

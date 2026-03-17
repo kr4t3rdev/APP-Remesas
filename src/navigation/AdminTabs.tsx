@@ -5,7 +5,7 @@ import type { AdminTabParamList } from './types';
 import { useColors } from '../store/themeStore';
 import { AdminScreenPerfil } from '../screens/admin/AdminScreenPerfil';
 import { AdminHomeScreen } from '../screens/admin/AdminHomeScreen';
-import { AdminServicesScreen } from '../screens/admin/AdminServicesScreen';
+import { AdminRoutes } from './adminRoutes';
 import { AdminUsersScreen } from '../screens/admin/AdminUsersScreen';
 import { AdminReportsScreen } from '../screens/admin/AdminReportsScreen';
 
@@ -44,7 +44,7 @@ export const AdminTabs: React.FC = () => {
       />
       <Tab.Screen
         name="AdminServices"
-        component={AdminServicesScreen}
+        component={AdminRoutes}
         options={{
           tabBarLabel: 'Servicios',
           tabBarIcon: ({ color }) => <Ionicons name="construct" size={24} color={color} />,

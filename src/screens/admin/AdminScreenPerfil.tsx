@@ -12,6 +12,8 @@ import {
   RefreshControl,
   TouchableOpacity,
   StyleSheet,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,12 +23,16 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { spacing, borderRadius } from '../../theme';
 import { useAdminProfile } from '../../modules/admin/application/useAdminProfile';
+import { API_CONFIG } from '../../config/constants';
+
+import { AdminLogoutModal } from '../../components/admin/AdminLogoutModal';
+import { AdminChangePasswordSuccessModal } from '../../components/admin/AdminChangePasswordSuccessModal';
+import { ErrorModal } from '../../components/admin/ErrorModal';
 
 export const AdminScreenPerfil: React.FC = () => {
   const {
     user,
     stats,
-    recentAuditLogs,
     isAdmin,
     isDarkMode,
     isLoading,
@@ -35,6 +41,7 @@ export const AdminScreenPerfil: React.FC = () => {
     currentPassword,
     newPassword,
     loading,
+    uploadingAvatar,
     statsLoaded,
     setShowPasswordForm,
     setCurrentPassword,
@@ -46,9 +53,23 @@ export const AdminScreenPerfil: React.FC = () => {
     handleRefresh,
     handleChangePassword,
     handleLogout,
+    confirmLogout,
+    handleAvatarPress,
+    modalState,
   } = useAdminProfile();
 
   const styles = createStyles(themeColors, themeShadows);
+
+  // Helper to construct full avatar URL
+  const getAvatarSource = () => {
+    if (user?.avatarUrl) {
+      // If it's a full URL, use it
+      if (user.avatarUrl.startsWith('http')) return { uri: user.avatarUrl };
+      // Otherwise prepend base URL
+      return { uri: `${API_CONFIG.baseURL}${user.avatarUrl}` };
+    }
+    return null;
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -76,9 +97,30 @@ export const AdminScreenPerfil: React.FC = () => {
         <FadeInDown delay={50}>
           <View style={styles.profileCard}>
             <View style={styles.avatarContainer}>
-              <View style={styles.avatar}>
-                <Ionicons name="person" size={40} color={themeColors.primary[500]} />
-              </View>
+              <TouchableOpacity 
+                style={styles.avatarWrapper}
+                onPress={handleAvatarPress}
+                disabled={uploadingAvatar}
+              >
+                {user?.avatarUrl ? (
+                  <Image source={getAvatarSource()} style={styles.avatarImage} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Ionicons name="person" size={40} color={themeColors.primary[500]} />
+                  </View>
+                )}
+                
+                {uploadingAvatar && (
+                  <View style={styles.avatarOverlay}>
+                    <ActivityIndicator color="#fff" />
+                  </View>
+                )}
+                
+                <View style={styles.editIconBadge}>
+                  <Ionicons name="camera" size={12} color="#fff" />
+                </View>
+              </TouchableOpacity>
+              
               <View style={[styles.roleBadge, { backgroundColor: themeColors.danger }]}>
                 <Text style={styles.roleText}>ADMIN</Text>
               </View>
@@ -140,35 +182,6 @@ export const AdminScreenPerfil: React.FC = () => {
                   style={styles.statCard}
                 />
               </ScaleIn>
-            </View>
-          </FadeInDown>
-        )}
-
-        {/* Recent Audit Logs */}
-        {recentAuditLogs.length > 0 && (
-          <FadeInDown delay={220}>
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Actividad Reciente</Text>
-                <TouchableOpacity>
-                  <Text style={styles.seeAll}>Ver todo</Text>
-                </TouchableOpacity>
-              </View>
-              {recentAuditLogs.slice(0, 3).map((log, index) => (
-                <ScaleIn key={log.id} delay={240 + index * 30}>
-                  <View style={styles.auditItem}>
-                    <View style={[styles.auditIcon, { backgroundColor: `${themeColors.primary[500]}15` }]}>
-                      <Ionicons name="shield-checkmark" size={16} color={themeColors.primary[500]} />
-                    </View>
-                    <View style={styles.auditInfo}>
-                      <Text style={styles.auditAction}>{log.action}</Text>
-                      <Text style={styles.auditDate}>
-                        {new Date(log.createdAt).toLocaleString('es-CU')}
-                      </Text>
-                    </View>
-                  </View>
-                </ScaleIn>
-              ))}
             </View>
           </FadeInDown>
         )}
@@ -257,6 +270,25 @@ export const AdminScreenPerfil: React.FC = () => {
 
         <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* Modals */}
+      <AdminLogoutModal
+        visible={modalState.showLogoutModal}
+        onConfirm={confirmLogout}
+        onCancel={() => modalState.setShowLogoutModal(false)}
+      />
+
+      <AdminChangePasswordSuccessModal
+        visible={modalState.showPasswordSuccessModal}
+        onClose={() => modalState.setShowPasswordSuccessModal(false)}
+      />
+
+      <ErrorModal
+        visible={modalState.showErrorModal}
+        title="Error"
+        message={modalState.errorMessage}
+        onClose={() => modalState.setShowErrorModal(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -289,13 +321,18 @@ const createStyles = (themeColors: any, themeShadows: any) =>
       padding: spacing.lg,
       alignItems: 'center',
       marginBottom: spacing.lg,
-      ...themeShadows.md,
+      ...themeShadows.glow, // Updated to glow for better prominence
     },
     avatarContainer: {
       position: 'relative',
       marginBottom: spacing.md,
     },
-    avatar: {
+    avatarWrapper: {
+      position: 'relative',
+      width: 80,
+      height: 80,
+    },
+    avatarPlaceholder: {
       width: 80,
       height: 80,
       borderRadius: 40,
@@ -303,13 +340,40 @@ const createStyles = (themeColors: any, themeShadows: any) =>
       justifyContent: 'center',
       alignItems: 'center',
     },
-    roleBadge: {
+    avatarImage: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+    },
+    avatarOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      borderRadius: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    editIconBadge: {
       position: 'absolute',
       bottom: 0,
       right: 0,
+      backgroundColor: themeColors.primary[500],
+      width: 28, // Slightly larger for touch target
+      height: 28,
+      borderRadius: 14,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: themeColors.card,
+      ...themeShadows.sm, // Add shadow for depth
+    },
+    roleBadge: {
+      position: 'absolute',
+      bottom: -10,
+      alignSelf: 'center',
       paddingHorizontal: 8,
       paddingVertical: 2,
       borderRadius: borderRadius.full,
+      zIndex: 1,
     },
     roleText: {
       fontSize: 10,

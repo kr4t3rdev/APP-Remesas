@@ -58,8 +58,8 @@ test.describe('Admin mode and licensing flows', () => {
     await page.getByTestId('admin-user-action-UNBLOCK').click();
 
     await page.getByRole('tab', { name: 'Reportes' }).click();
-    await expect(page.getByText('Reportes Admin')).toBeVisible();
-    await expect(page.getByText('Analítica extendida para profundizar decisiones operativas de Usuarios')).toBeVisible();
+    await expect(page.getByTestId('admin-reports-title')).toBeVisible();
+    await expect(page.getByText('Reportes Administrativos')).toBeVisible();
   });
 
 

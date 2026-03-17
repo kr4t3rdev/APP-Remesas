@@ -6,8 +6,7 @@ type ExchangeRatesResponse = {
 };
 
 export const transactionsRepository = {
-  async getTransactions(type?: TransactionType): Promise<Transaction[]> {
-    const params = type ? { type } : undefined;
+  async getTransactions(params?: { type?: TransactionType; status?: 'PENDIENTE' | 'RECONCILIADO'; startDate?: string; endDate?: string }): Promise<Transaction[]> {
     const response = await api.get<Transaction[]>('/transactions', { params });
     return response.data;
   },

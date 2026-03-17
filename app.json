@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Casa de Cambio",
-    "slug": "casa-de-cambio",
+    "name": "XChange$ocial",
+    "slug": "xchange-sofial",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "scheme": "casadecambio",
+    "scheme": "xchangesocial",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -15,14 +15,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.casadecambio.app",
+      "bundleIdentifier": "com.xchangesocial.app",
       "buildNumber": "1",
       "infoPlist": {
         "UIBackgroundModes": ["fetch", "remote-notification"]
       }
     },
     "android": {
-      "package": "com.casadecambio.app",
+      "package": "com.xchangesocial.app",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",

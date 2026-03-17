@@ -170,6 +170,7 @@ export type User = {
   id: number;
   email: string;
   name: string;
+  avatarUrl?: string | null;
   role: UserRole;
   primaryCurrencyId?: number;
   isActive?: boolean;
@@ -177,10 +178,12 @@ export type User = {
   blockedUntil?: string | null;
   isBanned?: boolean;
   bannedUntil?: string | null;
+  mustChangePassword?: boolean;
 };
 
 export type AuthResponse = {
   access_token: string;
+  mustChangePassword?: boolean;
   user: User;
 };
 
@@ -566,4 +569,32 @@ export type CurrencyDetail = {
   isPrimary: boolean;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ReconcileExpenseRequest = {
+  expenseId: number;
+  transactionId: number;
+};
+
+export type ReconcileIncomeRequest = {
+  transactionId: number;
+  bankAccountId: number;
+};
+
+export type ReconcileIncomeBulkRequest = {
+  transactionIds: number[];
+  bankAccountId: number;
+};
+
+export type Reconciliation = {
+  id: number;
+  type: 'EXPENSE' | 'INCOME';
+  transactionId: number;
+  expenseId?: number;
+  bankAccountId?: number;
+  reconciledAt: string;
+  reconciledBy: number;
+  transaction?: Transaction;
+  expense?: Expense;
+  bankAccount?: BankAccount;
 };

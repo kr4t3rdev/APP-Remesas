@@ -99,6 +99,10 @@ export const queryKeys = {
     auditSummary: (startDate?: string, endDate?: string) =>
       ['reports', 'auditSummary', startDate ?? 'none', endDate ?? 'none'] as const,
   },
+  reconciliations: {
+    list: () => ['reconciliations', 'list'] as const,
+    detail: (id: number, type: 'expense' | 'income') => ['reconciliations', 'detail', id, type] as const,
+  },
   objectives: {
     list: (status?: 'ACTIVO' | 'COMPLETADO' | 'PAUSADO') =>
       ['objectives', 'list', status ?? 'all'] as const,

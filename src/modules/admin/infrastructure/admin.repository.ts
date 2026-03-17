@@ -58,6 +58,6 @@ export const adminRepository = {
   },
 
   async deleteUser(userId: number): Promise<void> {
-    await api.delete(`/admin/users/${userId}`);
+    await api.delete(`/auth/users/${userId}`);
   },
 };

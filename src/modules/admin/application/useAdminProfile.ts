@@ -5,10 +5,11 @@
 
 import { useState, useMemo } from 'react';
 import { Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../../store/authStore';
 import { useThemeStore, useColors, useShadows, useIsDark } from '../../../store/themeStore';
 import { useAdminStatsQuery } from './useAdminStats';
-import { useAdminAuditLogsProfileQuery } from './useAdminAuditLogsProfile';
+import { uploadApi } from '../../../api/uploadApi';
 import type { AdminMenuItem } from '../domain/admin-profile.types';
 import type { RootStackScreenProps } from '../../../navigation/types';
 import { useNavigation } from '@react-navigation/native';
@@ -29,21 +30,26 @@ export const useAdminProfile = () => {
 
   // Queries
   const statsQuery = useAdminStatsQuery();
-  const auditLogsQuery = useAdminAuditLogsProfileQuery(5);
 
   // Local state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  
+  // Modal states
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showPasswordSuccessModal, setShowPasswordSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Computed values
   const isAdmin = user?.role === 'ADMIN';
   const stats = statsQuery.data;
-  const recentAuditLogs = auditLogsQuery.data ?? [];
   
   const isLoading = statsQuery.isLoading;
-  const isRefreshing = statsQuery.isRefetching || auditLogsQuery.isRefetching;
+  const isRefreshing = statsQuery.isRefetching;
 
   // Format number helper
   const formatNumber = (value: number | string) => {
@@ -52,47 +58,92 @@ export const useAdminProfile = () => {
   };
 
   // Handlers
+  const handleAvatarPress = async () => {
+    try {
+      // Request permission
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permiso denegado', 'Necesitamos acceso a la galería para cambiar tu foto de perfil');
+        return;
+      }
+
+      // Pick image
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0].uri) {
+        setUploadingAvatar(true);
+        try {
+          const response = await uploadApi.uploadAvatar(result.assets[0].uri);
+          
+          // Update user in store directly with the response
+          if (response.user) {
+            // We need a way to update the user in the store without logging in again
+            // For now, we'll force a refresh or rely on the user object being updated next app start
+            // Ideally authStore should expose an 'updateUser' method
+            useAuthStore.getState().setUser({
+              ...user!,
+              avatarUrl: response.avatarUrl, // Assuming response returns the relative path
+            });
+          }
+          
+          // Alert.alert('Éxito', 'Foto de perfil actualizada'); // Replaced with inline feedback or toast if available, silent success for now as UI updates
+        } catch (error: any) {
+          setErrorMessage(error.message || 'Error al subir la imagen');
+          setShowErrorModal(true);
+        } finally {
+          setUploadingAvatar(false);
+        }
+      }
+    } catch (error) {
+      console.error('Avatar picker error:', error);
+      setUploadingAvatar(false);
+    }
+  };
+
   const handleRefresh = async () => {
-    await Promise.all([
-      statsQuery.refetch(),
-      auditLogsQuery.refetch(),
-    ]);
+    await statsQuery.refetch();
   };
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword) {
-      Alert.alert('Error', 'Complete todos los campos');
+      setErrorMessage('Complete todos los campos');
+      setShowErrorModal(true);
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres');
+      setErrorMessage('La contraseña debe tener al menos 6 caracteres');
+      setShowErrorModal(true);
       return;
     }
 
     setLoading(true);
     try {
       await changePassword(currentPassword, newPassword);
-      Alert.alert('Éxito', 'Contraseña actualizada');
       setShowPasswordForm(false);
       setCurrentPassword('');
       setNewPassword('');
+      setShowPasswordSuccessModal(true);
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.message || 'Error al cambiar contraseña');
+      setErrorMessage(error.response?.data?.message || 'Error al cambiar contraseña');
+      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Cerrar Sesión',
-      '¿Está seguro que desea cerrar sesión?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Cerrar Sesión', style: 'destructive', onPress: logout },
-      ]
-    );
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    logout();
   };
 
   // Menu items configuration
@@ -114,25 +165,6 @@ export const useAdminProfile = () => {
       onPress: () => setShowPasswordForm(!showPasswordForm),
     },
     {
-      id: 'licenses',
-      title: 'Gestión de Licencias',
-      subtitle: stats?.expiringLicenses 
-        ? `${stats.expiringLicenses} por vencer` 
-        : 'Administrar licencias',
-      icon: 'key-outline',
-      color: themeColors.warning,
-      badge: stats?.expiringLicenses,
-      onPress: () => navigation.navigate('AdminHome' as never),
-    },
-    {
-      id: 'audit',
-      title: 'Auditoría',
-      subtitle: `${recentAuditLogs.length} acciones recientes`,
-      icon: 'shield-checkmark-outline',
-      color: themeColors.success,
-      onPress: () => navigation.navigate('AdminReports' as never),
-    },
-    {
       id: 'settings',
       title: 'Configuración del Sistema',
       subtitle: 'Ajustes generales',
@@ -152,8 +184,6 @@ export const useAdminProfile = () => {
     isDarkMode, 
     showPasswordForm, 
     themeColors, 
-    stats, 
-    recentAuditLogs.length, 
     navigation,
     toggleTheme
   ]);
@@ -162,7 +192,6 @@ export const useAdminProfile = () => {
     // Data
     user,
     stats,
-    recentAuditLogs,
     isAdmin,
     isDarkMode,
     
@@ -173,6 +202,7 @@ export const useAdminProfile = () => {
     currentPassword,
     newPassword,
     loading,
+    uploadingAvatar,
     statsLoaded: statsQuery.data !== undefined,
     
     // Setters
@@ -187,8 +217,21 @@ export const useAdminProfile = () => {
     menuItems,
     
     // Handlers
+    handleAvatarPress,
     handleRefresh,
     handleChangePassword,
     handleLogout,
+    confirmLogout,
+    
+    // Modals
+    modalState: {
+      showLogoutModal,
+      setShowLogoutModal,
+      showPasswordSuccessModal,
+      setShowPasswordSuccessModal,
+      showErrorModal,
+      setShowErrorModal,
+      errorMessage,
+    },
   };
 };

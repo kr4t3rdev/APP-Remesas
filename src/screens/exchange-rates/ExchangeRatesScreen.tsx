@@ -19,6 +19,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { FadeIn, FadeInDown, ScaleIn } from '../../components/animations';
+import { BarChart, StatsCard } from '../../components/charts/Charts';
 import type { ExchangeRate, RateHistory } from '../../types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -27,6 +28,8 @@ import {
   useCurrentExchangeRatesQuery,
   useRateHistoryQuery,
   useUpdateExchangeRateMutation,
+  usePairHistoryQuery,
+  usePairStatsQuery,
 } from '../../modules/exchange-rates/application/useExchangeRates';
 
 type TabType = 'current' | 'history' | 'manual';
@@ -53,7 +56,13 @@ export const ExchangeRatesScreen: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCurrencyId, setSelectedCurrencyId] = useState<number | null>(null);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
-  const [selectedRateHistory, setSelectedRateHistory] = useState<RateHistory[]>([]);
+  const [historyPair, setHistoryPair] = useState<{ fromId: number, toId: number } | null>(null);
+
+  const pairHistoryQuery = usePairHistoryQuery(historyPair?.fromId ?? 0, historyPair?.toId ?? 0);
+  const pairStatsQuery = usePairStatsQuery(historyPair?.fromId ?? 0, historyPair?.toId ?? 0);
+
+  const selectedRateHistory = pairHistoryQuery.data ?? [];
+  const pairStats = pairStatsQuery.data;
 
   const [formData, setFormData] = useState({
     currencyId: 0,
@@ -132,18 +141,11 @@ export const ExchangeRatesScreen: React.FC = () => {
     setModalVisible(true);
   };
 
-  const viewCurrencyHistory = async (currencyId: number) => {
-    try {
-      const cupCurrency = currencies.find(c => c.code === 'CUP');
-      const cupId = cupCurrency?.id || 2;
-      const historyData = history.filter(h => 
-        h.currencyFromId === currencyId && h.currencyToId === cupId
-      );
-      setSelectedRateHistory(historyData);
-      setHistoryModalVisible(true);
-    } catch (error) {
-      console.error('Error loading history:', error);
-    }
+  const viewCurrencyHistory = (currencyId: number) => {
+    const cupCurrency = currencies.find(c => c.code === 'CUP');
+    const cupId = cupCurrency?.id || 2;
+    setHistoryPair({ fromId: currencyId, toId: cupId });
+    setHistoryModalVisible(true);
   };
 
   const formatNumber = (value: number | string, decimals: number = 2) => {
@@ -242,6 +244,8 @@ export const ExchangeRatesScreen: React.FC = () => {
 
   const renderHistoryItem = ({ item, index }: { item: RateHistory; index: number }) => {
     const isManual = item.source === 'MANUAL';
+    const fromCode = item.currencyFrom?.code || currencies.find(c => c.id === item.currencyFromId)?.code || '?';
+    const toCode = item.currencyTo?.code || currencies.find(c => c.id === item.currencyToId)?.code || '?';
 
     return (
       <FadeInDown delay={index * 30}>
@@ -254,9 +258,9 @@ export const ExchangeRatesScreen: React.FC = () => {
           )}
           <View style={styles.historyRow}>
             <View style={styles.historyPair}>
-              <Text style={[styles.historyCurrency, { color: themeColors.text.primary }]}>{item.currencyFrom?.code}</Text>
+              <Text style={[styles.historyCurrency, { color: themeColors.text.primary }]}>{fromCode}</Text>
               <Ionicons name="arrow-forward" size={16} color={themeColors.text.secondary} />
-              <Text style={[styles.historyCurrency, { color: themeColors.text.primary }]}>{item.currencyTo?.code}</Text>
+              <Text style={[styles.historyCurrency, { color: themeColors.text.primary }]}>{toCode}</Text>
             </View>
             <Text style={[styles.historyRate, { color: themeColors.primary[500] }]}>{formatNumber(item.rate)}</Text>
           </View>
@@ -509,9 +513,48 @@ export const ExchangeRatesScreen: React.FC = () => {
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderHistoryItem}
               contentContainerStyle={styles.historyList}
+              ListHeaderComponent={
+                pairStats ? (
+                  <View style={styles.historyHeaderContainer}>
+                    <View style={styles.chartContainer}>
+                      <BarChart 
+                        data={selectedRateHistory.slice(0, 7).reverse().map(h => ({
+                          label: format(new Date(h.createdAt), 'dd/MM'),
+                          value: h.rate,
+                          color: themeColors.primary[500]
+                        }))}
+                        height={180}
+                        showValues={false}
+                      />
+                    </View>
+                    <View style={styles.statsRow}>
+                      <StatsCard 
+                        title="Mínimo" 
+                        value={formatNumber(pairStats.min)} 
+                        trend="neutral"
+                        style={{ flex: 1, marginRight: 8 }}
+                      />
+                      <StatsCard 
+                        title="Promedio" 
+                        value={formatNumber(pairStats.average)} 
+                        trend={pairStats.trend}
+                        trendValue={pairStats.changePercentage ? `${pairStats.changePercentage.toFixed(1)}%` : undefined}
+                        style={{ flex: 1, marginRight: 8 }}
+                      />
+                      <StatsCard 
+                        title="Máximo" 
+                        value={formatNumber(pairStats.max)} 
+                        trend="neutral"
+                        style={{ flex: 1 }}
+                      />
+                    </View>
+                    <Text style={[styles.historyListTitle, { color: themeColors.text.primary }]}>Últimos Movimientos</Text>
+                  </View>
+                ) : null
+              }
               ListEmptyComponent={
                 <View style={styles.emptyState}>
-                  <Text style={styles.emptyStateText}>No hay historial para esta moneda</Text>
+                  <Text style={[styles.emptyStateText, { color: themeColors.text.secondary }]}>No hay historial para esta moneda</Text>
                 </View>
               }
             />
@@ -792,6 +835,24 @@ const styles = StyleSheet.create({
   },
   historyList: {
     paddingBottom: spacing.xl,
+  },
+  historyHeaderContainer: {
+    padding: spacing.md,
+  },
+  chartContainer: {
+    marginBottom: spacing.md,
+    alignItems: 'center',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.lg,
+  },
+  historyListTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    marginTop: spacing.md,
   },
   emptyStateSubtext: {
     fontSize: 14,

@@ -79,6 +79,21 @@ export const useAdminUserControlActionMutation = () => {
   });
 };
 
+export const useAdminDeleteUserMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: number) => adminRepository.deleteUser(userId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.admin.auditLogs() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.admin.kpis() }),
+      ]);
+    },
+  });
+};
+
 export const useAdminBlockedUsersQuery = () =>
   useQuery({
     queryKey: queryKeys.admin.blockedUsers(),

@@ -1,0 +1,22 @@
+schema: spec-driven
+
+context: |
+  Tech stack: React Native (Expo), TypeScript
+  Architecture: Feature-based folder structure (src/features, src/screens)
+  Testing: Jest, React Native Testing Library
+  Style: ESLint, Prettier
+
+rules:
+  proposal:
+    - Identify affected modules
+  specs:
+    - Use Given/When/Then format
+  design:
+    - Document component hierarchy
+    - Define data models clearly
+  tasks:
+    - Keep tasks small and testable
+  apply:
+    - Use existing UI components
+  verify:
+    - Verify UI against design

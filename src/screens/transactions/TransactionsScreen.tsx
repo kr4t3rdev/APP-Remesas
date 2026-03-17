@@ -51,7 +51,7 @@ export const TransactionsScreen: React.FC = () => {
   });
 
   const selectedType = filter === 'all' ? undefined : filter;
-  const transactionsQuery = useTransactionsQuery(selectedType);
+  const transactionsQuery = useTransactionsQuery(selectedType ? { type: selectedType } : undefined);
   const currenciesQuery = useCurrenciesQuery();
   const exchangeRatesQuery = useExchangeRatesQuery();
 
@@ -254,25 +254,43 @@ export const TransactionsScreen: React.FC = () => {
       </FadeIn>
 
       <FadeInDown delay={50}>
-        <View style={styles.filtersContainer}>
-          {filters.map((f, index) => (
-            <ScaleIn key={f.key} delay={index * 50}>
+        <View style={styles.actionsContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
+            {filters.map((f, index) => (
+              <ScaleIn key={f.key} delay={index * 50}>
+                <TouchableOpacity
+                  onPress={() => setFilter(f.key)}
+                  style={[
+                    styles.filterButton,
+                    filter === f.key ? { backgroundColor: themeColors.primary[500] } : { backgroundColor: themeColors.card }
+                  ]}
+                >
+                  <Text style={[
+                    styles.filterText,
+                    filter === f.key ? { color: '#fff' } : { color: themeColors.text.secondary }
+                  ]}>
+                    {f.label}
+                  </Text>
+                </TouchableOpacity>
+              </ScaleIn>
+            ))}
+            <ScaleIn delay={150}>
               <TouchableOpacity
-                onPress={() => setFilter(f.key)}
-                style={[
-                  styles.filterButton,
-                  filter === f.key ? { backgroundColor: themeColors.primary[500] } : { backgroundColor: themeColors.card }
-                ]}
+                onPress={() => navigation.navigate('BulkReconciliation' as never)}
+                style={[styles.filterButton, { backgroundColor: themeColors.card, borderColor: themeColors.primary[500], borderWidth: 1 }]}
               >
-                <Text style={[
-                  styles.filterText,
-                  filter === f.key ? { color: '#fff' } : { color: themeColors.text.secondary }
-                ]}>
-                  {f.label}
-                </Text>
+                <Text style={[styles.filterText, { color: themeColors.primary[500] }]}>Reconciliar</Text>
               </TouchableOpacity>
             </ScaleIn>
-          ))}
+            <ScaleIn delay={200}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('ReconciliationsHistory' as never)}
+                style={[styles.filterButton, { backgroundColor: themeColors.card }]}
+              >
+                <Text style={[styles.filterText, { color: themeColors.text.secondary }]}>Historial</Text>
+              </TouchableOpacity>
+            </ScaleIn>
+          </ScrollView>
         </View>
       </FadeInDown>
 
@@ -486,6 +504,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: spacing.md,
     marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  actionsContainer: {
+    marginBottom: spacing.md,
+  },
+  filtersScroll: {
+    paddingHorizontal: spacing.md,
     gap: spacing.sm,
   },
   filterButton: {

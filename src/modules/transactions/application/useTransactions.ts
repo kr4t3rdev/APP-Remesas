@@ -3,10 +3,10 @@ import type { TransactionType } from '../../../types';
 import { queryKeys } from '../../../shared/query/queryKeys';
 import { transactionsRepository } from '../infrastructure/transactions.repository';
 
-export const useTransactionsQuery = (type?: TransactionType) =>
+export const useTransactionsQuery = (params?: { type?: TransactionType; status?: 'PENDIENTE' | 'RECONCILIADO'; startDate?: string; endDate?: string }) =>
   useQuery({
-    queryKey: queryKeys.transactions.list(type),
-    queryFn: () => transactionsRepository.getTransactions(type),
+    queryKey: ['transactions', 'list', params],
+    queryFn: () => transactionsRepository.getTransactions(params),
     staleTime: 1000 * 60 * 2,
   });
 

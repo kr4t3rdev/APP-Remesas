@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { colors, borderRadius } from '../../theme';
+import { borderRadius } from '../../theme';
+import { useColors } from '../../store/themeStore';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -18,43 +19,6 @@ type ButtonProps = {
   textStyle?: TextStyle;
 };
 
-const getVariantStyles = (variant: ButtonVariant): ViewStyle => {
-  switch (variant) {
-    case 'primary':
-      return { backgroundColor: colors.primary[500] };
-    case 'secondary':
-      return { backgroundColor: colors.primary[100] };
-    case 'outline':
-      return { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.primary[500] };
-    case 'ghost':
-      return { backgroundColor: 'transparent' };
-  }
-};
-
-const getSizeStyles = (size: ButtonSize): ViewStyle => {
-  switch (size) {
-    case 'sm':
-      return { paddingVertical: 8, paddingHorizontal: 16 };
-    case 'md':
-      return { paddingVertical: 12, paddingHorizontal: 24 };
-    case 'lg':
-      return { paddingVertical: 16, paddingHorizontal: 32 };
-  }
-};
-
-const getTextColor = (variant: ButtonVariant): string => {
-  switch (variant) {
-    case 'primary':
-      return '#FFFFFF';
-    case 'secondary':
-      return colors.primary[700];
-    case 'outline':
-      return colors.primary[500];
-    case 'ghost':
-      return colors.primary[500];
-  }
-};
-
 export const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
@@ -67,6 +31,45 @@ export const Button: React.FC<ButtonProps> = ({
   testID,
   accessibilityLabel,
 }) => {
+  const colors = useColors();
+
+  const getVariantStyles = (variant: ButtonVariant): ViewStyle => {
+    switch (variant) {
+      case 'primary':
+        return { backgroundColor: colors.primary[500] };
+      case 'secondary':
+        return { backgroundColor: colors.primary[100] };
+      case 'outline':
+        return { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.primary[500] };
+      case 'ghost':
+        return { backgroundColor: 'transparent' };
+    }
+  };
+
+  const getSizeStyles = (size: ButtonSize): ViewStyle => {
+    switch (size) {
+      case 'sm':
+        return { paddingVertical: 8, paddingHorizontal: 16 };
+      case 'md':
+        return { paddingVertical: 12, paddingHorizontal: 24 };
+      case 'lg':
+        return { paddingVertical: 16, paddingHorizontal: 32 };
+    }
+  };
+
+  const getTextColor = (variant: ButtonVariant): string => {
+    switch (variant) {
+      case 'primary':
+        return '#FFFFFF';
+      case 'secondary':
+        return colors.primary[700];
+      case 'outline':
+        return colors.primary[500];
+      case 'ghost':
+        return colors.primary[500];
+    }
+  };
+
   return (
     <TouchableOpacity
       testID={testID}
