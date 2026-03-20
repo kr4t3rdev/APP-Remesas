@@ -28,6 +28,7 @@ export const AdminPlansListScreen: React.FC = () => {
       const data = await plansApi.getPlans();
       setPlans(data);
     } catch (error) {
+      console.error('Error fetching plans:', error);
       Alert.alert('Error', 'No se pudieron cargar los planes');
     } finally {
       setLoading(false);

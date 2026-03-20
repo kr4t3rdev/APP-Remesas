@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, useColorScheme } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AdminHeader } from '../../../components/admin/layout/AdminHeader';
 import { LicenseCard } from '../../../components/admin/licenses/LicenseCard';
+import { AssignLicenseModal } from '../../../components/admin/licenses/AssignLicenseModal';
 import { licensesApi } from '../../../api/licensesApi';
-import { License, LicenseStatus } from '../../../types/licenses';
-import { useThemeStore, useColors } from '../../../store/themeStore';
+import { License } from '../../../types/licenses';
+import { useColors, useIsDark } from '../../../store/themeStore';
 
 const TABS: { id: string; label: string }[] = [
   { id: 'all', label: 'Todas' },
@@ -17,22 +18,15 @@ const TABS: { id: string; label: string }[] = [
 ];
 
 export const AdminLicensesListScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [licenses, setLicenses] = useState<License[]>([]);
   const [loading, setLoading] = useState(true);
+  const [assignModalVisible, setAssignModalVisible] = useState(false);
 
-  const colorScheme = useColorScheme();
-  const setTheme = useThemeStore(state => state.setTheme);
   const colors = useColors();
-  const isDark = colorScheme === 'dark';
-
-  useEffect(() => {
-    if (colorScheme) {
-      setTheme(colorScheme);
-    }
-  }, [colorScheme, setTheme]);
+  const isDark = useIsDark();
 
   useEffect(() => {
     loadLicenses();
@@ -78,29 +72,29 @@ export const AdminLicensesListScreen: React.FC = () => {
       
       <View style={styles.container}>
         {/* Search Bar */}
-        <View style={[styles.searchContainer, { backgroundColor: isDark ? '#1e293b' : '#f3f4f6' }]}>
-          <Ionicons name="search" size={20} color={isDark ? '#9ca3af' : '#9ca3af'} style={styles.searchIcon} />
+        <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
+          <Ionicons name="search" size={20} color={colors.text.secondary} style={styles.searchIcon} />
           <TextInput
             style={[styles.searchInput, { color: colors.text.primary }]}
             placeholder="Buscar licencias o usuarios"
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor={isDark ? '#9ca3af' : '#9ca3af'}
+            placeholderTextColor={colors.text.secondary}
           />
         </View>
 
         {/* Tabs */}
-        <View style={[styles.tabsRow, { borderBottomColor: isDark ? '#334155' : '#f3f4f6' }]}>
+        <View style={[styles.tabsRow, { borderBottomColor: colors.border }]}>
           {TABS.map((tab) => (
             <TouchableOpacity 
               key={tab.id} 
               onPress={() => setActiveTab(tab.id)}
               style={[styles.tabItem, activeTab === tab.id && styles.tabItemActive]}
             >
-              <Text style={[styles.tabText, { color: activeTab === tab.id ? '#3b82f6' : (isDark ? '#94a3b8' : '#6b7280') }]}>
+              <Text style={[styles.tabText, { color: activeTab === tab.id ? colors.primary[500] : colors.text.secondary }]}>
                 {tab.label}
               </Text>
-              {activeTab === tab.id && <View style={styles.activeIndicator} />}
+              {activeTab === tab.id && <View style={[styles.activeIndicator, { backgroundColor: colors.primary[500] }]} />}
             </TouchableOpacity>
           ))}
         </View>
@@ -109,7 +103,7 @@ export const AdminLicensesListScreen: React.FC = () => {
 
         {loading ? (
           <View style={styles.center}>
-            <ActivityIndicator size="large" color="#3b82f6" />
+            <ActivityIndicator size="large" color={colors.primary[500]} />
           </View>
         ) : (
           <FlatList
@@ -132,9 +126,21 @@ export const AdminLicensesListScreen: React.FC = () => {
       </View>
 
       {/* FAB */}
-      <TouchableOpacity style={styles.fab}>
+      <TouchableOpacity 
+        style={[styles.fab, { backgroundColor: colors.primary[500], shadowColor: colors.primary[500] }]}
+        onPress={() => setAssignModalVisible(true)}
+      >
         <Ionicons name="add" size={30} color="#fff" />
       </TouchableOpacity>
+
+      <AssignLicenseModal
+        visible={assignModalVisible}
+        onCancel={() => setAssignModalVisible(false)}
+        onSuccess={() => {
+          setAssignModalVisible(false);
+          loadLicenses();
+        }}
+      />
     </SafeAreaView>
   );
 };

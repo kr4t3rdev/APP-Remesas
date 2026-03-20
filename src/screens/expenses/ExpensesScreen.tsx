@@ -204,7 +204,7 @@ export const ExpensesScreen: React.FC = () => {
                   <Text
                     style={[
                       styles.categoryChipText,
-                      isSelected && { color: '#fff' },
+                      isSelected && { color: themeColors.text.inverse },
                       !isSelected && { color: themeColors.text.secondary },
                     ]}
                   >

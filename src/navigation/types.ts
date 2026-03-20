@@ -4,7 +4,10 @@ import type { User } from '../types';
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
+  Welcome: undefined;
   Login: undefined;
+  Register: undefined;
+  VerificationPending: { email?: string };
   ChangePassword: undefined;
   CashHistory: undefined;
   ExchangeRates: undefined;
@@ -14,7 +17,9 @@ export type RootStackParamList = {
   BulkReconciliation: undefined;
   AdminUserDetail: { user: User };
   AdminLicensesList: undefined;
-  AdminLicenseDetail: { licenseId: string };
+  AdminLicenseDetail: { licenseId: string | number };
+  AdminAuditLog: undefined;
+  AdminExportReports: undefined;
 };
 
 export type MainTabParamList = {

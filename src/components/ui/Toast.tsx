@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useToastStore, type Toast as ToastType } from '../../store/toastStore';
+import { useToastStore, type Toast as ToastType, type ToastType as TType } from '../../store/toastStore';
 import { colors, spacing, borderRadius } from '../../theme';
 
-const getBackgroundColor = (type: ToastType) => {
+const getBackgroundColor = (type: TType) => {
   switch (type) {
     case 'success':
       return colors.success;
@@ -18,7 +18,7 @@ const getBackgroundColor = (type: ToastType) => {
   }
 };
 
-const getIcon = (type: ToastType) => {
+const getIcon = (type: TType) => {
   switch (type) {
     case 'success':
       return '✓';

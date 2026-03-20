@@ -75,6 +75,10 @@ export const queryKeys = {
     detail: (id: number) => ['expenses', 'detail', id] as const,
     pending: () => ['expenses', 'pending'] as const,
   },
+  workerPayments: {
+    list: () => ['workerPayments', 'list'] as const,
+    detail: (id: number) => ['workerPayments', 'detail', id] as const,
+  },
   profile: {
     bankAccounts: () => ['profile', 'bankAccounts'] as const,
     activeObjectives: () => ['profile', 'activeObjectives'] as const,

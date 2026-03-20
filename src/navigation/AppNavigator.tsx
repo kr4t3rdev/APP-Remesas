@@ -2,8 +2,11 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, ActivityIndicator } from 'react-native';
+import { WelcomeScreen } from '../screens/auth/WelcomeScreen';
 import { LoginScreen } from '../screens/auth/LoginScreen';
+import { RegisterScreen } from '../screens/auth/RegisterScreen';
 import { ChangePasswordScreen } from '../screens/auth/ChangePasswordScreen';
+import { VerificationPendingScreen } from '../screens/auth/VerificationPendingScreen';
 import { CashHistoryScreen } from '../screens/cash/CashHistoryScreen';
 import { ExchangeRatesScreen } from '../screens/exchange-rates/ExchangeRatesScreen';
 import { BankAccountsScreen } from '../screens/bank-accounts/BankAccountsScreen';
@@ -23,7 +26,10 @@ const AuthStack = createNativeStackNavigator<RootStackParamList>();
 
 const AuthStackNavigator: React.FC = () => (
   <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+    <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
     <AuthStack.Screen name="Login" component={LoginScreen} />
+    <AuthStack.Screen name="Register" component={RegisterScreen} />
+    <AuthStack.Screen name="VerificationPending" component={VerificationPendingScreen} />
     <AuthStack.Screen 
       name="ChangePassword" 
       component={ChangePasswordScreen}

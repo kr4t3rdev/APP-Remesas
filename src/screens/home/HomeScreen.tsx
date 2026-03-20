@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: 'transparent',
   },
   dateCard: {
     flexDirection: 'row',

@@ -102,6 +102,7 @@ export const AdminPlanCreateScreen: React.FC = () => {
       
       navigation.goBack();
     } catch (error) {
+      console.error('Error saving plan:', error);
       Alert.alert('Error', 'No se pudo guardar el plan');
     } finally {
       setSaving(false);

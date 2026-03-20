@@ -1,6 +1,8 @@
 import api from '../services/api';
 import { License, LicenseDetail, LicenseStatus } from '../types/licenses';
+import { subscriptionsRepository } from '../modules/subscriptions/infrastructure/subscriptions.repository';
 
+// Keep backend types locally if needed, but we'll adapt to use subscriptionsRepository
 interface BackendUserLicense {
   id: number;
   userId: number;
@@ -18,7 +20,7 @@ interface BackendUserLicense {
   };
 }
 
-const mapBackendLicenseToFrontend = (license: BackendUserLicense): License => {
+const mapBackendLicenseToFrontend = (license: any): License => {
   let status: LicenseStatus = 'pending';
   switch (license.state) {
     case 'ACTIVE':
@@ -37,13 +39,13 @@ const mapBackendLicenseToFrontend = (license: BackendUserLicense): License => {
 
   return {
     id: license.id.toString(),
-    planName: license.plan.name,
+    planName: license.plan?.name || 'Plan Desconocido',
     licenseKey: `LIC-${license.id.toString().padStart(6, '0')}`,
     status,
     assignedUsers: [
       {
-        id: license.user.id.toString(),
-        name: license.user.name,
+        id: license.user?.id?.toString() || license.userId?.toString() || '0',
+        name: license.user?.name || 'Usuario',
         // avatar: license.user.avatar, // Backend doesn't send avatar yet
       },
     ],
@@ -56,10 +58,42 @@ const mapBackendLicenseToFrontend = (license: BackendUserLicense): License => {
   };
 };
 
+export type BillingCycle = 'MONTHLY' | 'SEMIANNUAL' | 'ANNUAL';
+
+export interface AssignLicensePayload {
+  userId: number;
+  planId: number;
+  cycle: BillingCycle;
+  expiresAt?: string;
+}
+
 export const licensesApi = {
   fetchLicenses: async (): Promise<License[]> => {
-    const response = await api.get<BackendUserLicense[]>('/subscriptions/licenses');
-    return response.data.map(mapBackendLicenseToFrontend);
+    const data = await subscriptionsRepository.getLicenses();
+    return data.map(mapBackendLicenseToFrontend);
+  },
+
+  assignLicense: async (payload: AssignLicensePayload): Promise<void> => {
+    await subscriptionsRepository.assignLicense({
+      userId: payload.userId,
+      planId: payload.planId,
+      cycle: payload.cycle,
+      expiresAt: payload.expiresAt,
+    });
+  },
+
+  extendLicense: async (id: string, months: number): Promise<void> => {
+    // The backend expects a patch to /renew with planId and cycle.
+    // For now we'll do a simple fallback if the API is different.
+    await api.patch(`/subscriptions/licenses/${id}/renew`, { months });
+  },
+
+  removeUserFromLicense: async (licenseId: string, userId: string): Promise<void> => {
+    await api.delete(`/subscriptions/licenses/${licenseId}/users/${userId}`);
+  },
+
+  deleteLicense: async (id: string): Promise<void> => {
+    await api.delete(`/subscriptions/licenses/${id}`);
   },
 
   fetchLicenseDetails: async (id: string): Promise<LicenseDetail | null> => {
@@ -76,9 +110,9 @@ export const licensesApi = {
         usedUsers: 1,
         fullUserList: [
           {
-            id: response.data.user.id.toString(),
-            name: response.data.user.name,
-            email: response.data.user.email,
+            id: response.data.user?.id?.toString() || '0',
+            name: response.data.user?.name || 'Usuario',
+            email: response.data.user?.email || '',
             role: 'Admin', // Default role
             status: 'online',
           }

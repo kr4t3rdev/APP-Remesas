@@ -459,7 +459,7 @@ const createStyles = (themeColors: ReturnType<typeof useColors>, themeShadows: R
   roleText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#fff',
+    color: themeColors.text.inverse,
     textTransform: 'uppercase',
   },
   userName: {

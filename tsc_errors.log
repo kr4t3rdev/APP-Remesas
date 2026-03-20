@@ -1,0 +1,135 @@
+src/components/admin/AdminActionConfirmModal.tsx(4,26): error TS2307: Cannot find module 'expo-blur' or its corresponding type declarations.
+src/components/admin/AdminActionConfirmModal.tsx(49,12): error TS2678: Type '"temp_block"' is not comparable to type 'AdminUserControlActionType | null'.
+src/components/admin/AdminUserDetailModal.tsx(14,26): error TS2307: Cannot find module 'expo-blur' or its corresponding type declarations.
+src/components/admin/licenses/AssignLicenseModal.tsx(15,23): error TS2305: Module '"../../../api/licensesApi"' has no exported member 'BillingCycle'.
+src/components/admin/licenses/AssignLicenseModal.tsx(143,24): error TS2503: Cannot find namespace 'licensesApi'.
+src/components/admin/licenses/AssignLicenseModal.tsx(151,27): error TS2339: Property 'assignLicense' does not exist on type '{ fetchLicenses: () => Promise<License[]>; fetchLicenseDetails: (id: string) => Promise<LicenseDetail | null>; }'.
+src/components/admin/licenses/ExtendLicenseModal.tsx(15,23): error TS2305: Module '"../../../api/licensesApi"' has no exported member 'BillingCycle'.
+src/components/layout/Header.tsx(7,19): error TS2305: Module '"../../theme"' has no exported member 'header'.
+src/components/layout/ResponsiveContainer.tsx(4,10): error TS2305: Module '"../../theme"' has no exported member 'gridColumns'.
+src/components/layout/Sidebar.tsx(9,33): error TS2305: Module '"../../theme"' has no exported member 'sidebar'.
+src/components/ui/DeleteButton.tsx(177,15): error TS2322: Type '{ children: Element[]; style: { opacity: Value; transform: { translateY: Value; }[]; }; }' is not assignable to type 'IntrinsicAttributes & AnimatedProps<(GProps | Readonly<GProps>) & RefAttributes<G<unknown>>>'.
+  Property 'style' does not exist on type 'IntrinsicAttributes & AnimatedProps<(GProps | Readonly<GProps>) & RefAttributes<G<unknown>>>'.
+src/components/ui/DeleteButton.tsx(199,15): error TS2322: Type '{ children: Element[]; style: { transform: ({ translateX: number; } | { translateY: number; } | { rotate: AnimatedInterpolation<string | number>; })[]; }; }' is not assignable to type 'IntrinsicAttributes & AnimatedProps<(GProps | Readonly<GProps>) & RefAttributes<G<unknown>>>'.
+  Property 'style' does not exist on type 'IntrinsicAttributes & AnimatedProps<(GProps | Readonly<GProps>) & RefAttributes<G<unknown>>>'.
+src/components/ui/Toast.tsx(9,10): error TS2678: Type 'string' is not comparable to type 'Toast'.
+src/components/ui/Toast.tsx(11,10): error TS2678: Type 'string' is not comparable to type 'Toast'.
+src/components/ui/Toast.tsx(13,10): error TS2678: Type 'string' is not comparable to type 'Toast'.
+src/components/ui/Toast.tsx(15,10): error TS2678: Type 'string' is not comparable to type 'Toast'.
+src/components/ui/Toast.tsx(23,10): error TS2678: Type 'string' is not comparable to type 'Toast'.
+src/components/ui/Toast.tsx(25,10): error TS2678: Type 'string' is not comparable to type 'Toast'.
+src/components/ui/Toast.tsx(27,10): error TS2678: Type 'string' is not comparable to type 'Toast'.
+src/components/ui/Toast.tsx(29,10): error TS2678: Type 'string' is not comparable to type 'Toast'.
+src/components/ui/Toast.tsx(37,71): error TS2345: Argument of type 'string' is not assignable to parameter of type 'Toast'.
+  Type 'string' is not assignable to type 'Toast'.
+src/components/ui/Toast.tsx(38,42): error TS2345: Argument of type 'string' is not assignable to parameter of type 'Toast'.
+  Type 'string' is not assignable to type 'Toast'.
+src/components/ui/UserAvatar.tsx(113,12): error TS2304: Cannot find name 'colors'.
+src/components/worker-payments/AddBalanceModal.tsx(9,15): error TS2305: Module '"../../types"' has no exported member 'Worker'.
+src/components/worker-payments/AddBalanceModal.tsx(192,12): error TS2304: Cannot find name 'themeColors'.
+src/components/worker-payments/TransactionFormModal.tsx(9,15): error TS2305: Module '"../../types"' has no exported member 'Worker'.
+src/components/worker-payments/TransactionFormModal.tsx(237,12): error TS2304: Cannot find name 'themeColors'.
+src/components/worker-payments/WorkerCard.tsx(7,15): error TS2305: Module '"../../types"' has no exported member 'Worker'.
+src/components/worker-payments/WorkerCard.tsx(29,56): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/worker-payments/WorkerCard.tsx(132,12): error TS2304: Cannot find name 'themeColors'.
+src/components/worker-payments/WorkerExpandableRow.tsx(6,15): error TS2305: Module '"../../types"' has no exported member 'Worker'.
+src/components/worker-payments/WorkerExpandableRow.tsx(6,23): error TS2305: Module '"../../types"' has no exported member 'WorkerTransaction'.
+src/components/worker-payments/WorkerExpandableRow.tsx(16,47): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/worker-payments/WorkerExpandableRow.tsx(17,48): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/components/worker-payments/WorkerExpandableRow.tsx(55,30): error TS7006: Parameter 'tx' implicitly has an 'any' type.
+src/components/worker-payments/WorkerExpandableRow.tsx(55,34): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/components/worker-payments/WorkerFormModal.tsx(9,15): error TS2305: Module '"../../types"' has no exported member 'Worker'.
+src/components/worker-payments/WorkerFormModal.tsx(9,23): error TS2305: Module '"../../types"' has no exported member 'CreateWorkerInput'.
+src/components/worker-payments/WorkerFormModal.tsx(9,42): error TS2305: Module '"../../types"' has no exported member 'UpdateWorkerInput'.
+src/components/worker-payments/WorkerFormModal.tsx(199,12): error TS2304: Cannot find name 'themeColors'.
+src/hooks/__tests__/useBreakpointListener.test.ts(51,7): error TS2554: Expected 1 arguments, but got 0.
+src/hooks/__tests__/useResponsive.test.ts(168,7): error TS2554: Expected 1 arguments, but got 0.
+src/hooks/__tests__/useResponsive.test.ts(188,7): error TS2554: Expected 1 arguments, but got 0.
+src/modules/admin/application/__tests__/useAdminProfile.test.ts(48,26): error TS2352: Conversion of type 'UseBoundStore<StoreApi<AuthState>>' to type 'Mock<any, any, any>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ (): AuthState; <U>(selector: (state: AuthState) => U): U; } & StoreApi<AuthState>' is missing the following properties from type 'Mock<any, any, any>': getMockName, mock, mockClear, mockReset, and 13 more.
+src/modules/admin/application/__tests__/useAdminProfile.test.ts(49,27): error TS2352: Conversion of type 'UseBoundStore<StoreApi<ThemeState>>' to type 'Mock<any, any, any>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ (): ThemeState; <U>(selector: (state: ThemeState) => U): U; } & StoreApi<ThemeState>' is missing the following properties from type 'Mock<any, any, any>': getMockName, mock, mockClear, mockReset, and 13 more.
+src/modules/admin/application/__tests__/useAdminProfile.test.ts(117,27): error TS2339: Property 'recentAuditLogs' does not exist on type '{ user: User | null; stats: AdminProfileStats | undefined; isAdmin: boolean; isDarkMode: boolean; isLoading: boolean; isRefreshing: boolean; showPasswordForm: boolean; ... 17 more ...; modalState: { ...; }; }'.
+src/modules/admin/application/__tests__/useAdminProfile.test.ts(118,27): error TS2339: Property 'recentAuditLogs' does not exist on type '{ user: User | null; stats: AdminProfileStats | undefined; isAdmin: boolean; isDarkMode: boolean; isLoading: boolean; isRefreshing: boolean; showPasswordForm: boolean; ... 17 more ...; modalState: { ...; }; }'.
+src/modules/worker-payments/application/useWorkerPayments.test.tsx(105,74): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.test.tsx(127,74): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.test.tsx(128,74): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.test.tsx(146,74): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.test.tsx(168,74): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.test.tsx(169,74): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.test.tsx(188,74): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.test.tsx(189,74): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.ts(5,3): error TS2305: Module '"../../../types"' has no exported member 'Worker'.
+src/modules/worker-payments/application/useWorkerPayments.ts(6,3): error TS2305: Module '"../../../types"' has no exported member 'CreateWorkerInput'.
+src/modules/worker-payments/application/useWorkerPayments.ts(7,3): error TS2305: Module '"../../../types"' has no exported member 'UpdateWorkerInput'.
+src/modules/worker-payments/application/useWorkerPayments.ts(8,3): error TS2305: Module '"../../../types"' has no exported member 'CreateTransactionInput'.
+src/modules/worker-payments/application/useWorkerPayments.ts(9,3): error TS2305: Module '"../../../types"' has no exported member 'AddBalanceInput'.
+src/modules/worker-payments/application/useWorkerPayments.ts(14,25): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.ts(21,25): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.ts(33,65): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.ts(46,61): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.ts(47,61): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.ts(59,65): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.ts(72,61): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.ts(73,61): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.ts(87,61): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/application/useWorkerPayments.ts(88,61): error TS2339: Property 'workerPayments' does not exist on type '{ dashboard: { dailyReport: (date?: string | undefined) => readonly ["dashboard", "dailyReport", string]; cashBalances: () => readonly ["dashboard", "cashBalances"]; exchangeRates: () => readonly ["dashboard", "exchangeRates"]; recentTransactions: (limit?: number | undefined) => readonly [...]; pendingTransactions: ...'.
+src/modules/worker-payments/infrastructure/workerPayments.repository.ts(3,3): error TS2305: Module '"../../../types"' has no exported member 'Worker'.
+src/modules/worker-payments/infrastructure/workerPayments.repository.ts(4,3): error TS2305: Module '"../../../types"' has no exported member 'CreateWorkerInput'.
+src/modules/worker-payments/infrastructure/workerPayments.repository.ts(5,3): error TS2305: Module '"../../../types"' has no exported member 'UpdateWorkerInput'.
+src/modules/worker-payments/infrastructure/workerPayments.repository.ts(6,3): error TS2305: Module '"../../../types"' has no exported member 'CreateTransactionInput'.
+src/modules/worker-payments/infrastructure/workerPayments.repository.ts(7,3): error TS2305: Module '"../../../types"' has no exported member 'AddBalanceInput'.
+src/screens/admin/AdminAuditLogScreen.tsx(19,75): error TS2344: Type '"AdminAuditLog"' does not satisfy the constraint 'keyof AdminTabParamList'.
+src/screens/admin/AdminExportReportsScreen.tsx(23,11): error TS2339: Property 'showToast' does not exist on type 'ToastState'.
+src/screens/admin/AdminHomeScreen.tsx(76,3): error TS2344: Type 'undefined' does not satisfy the constraint 'NavigationHelpersCommon<ParamListBase, any>'.
+  Type 'undefined' is not assignable to type '{ dispatch(action: Readonly<{ type: string; payload?: object | undefined; source?: string | undefined; target?: string | undefined; }> | ((state: Readonly<any>) => Readonly<...>)): void; ... 9 more ...; getState(): any; }'.
+src/screens/admin/AdminHomeScreen.tsx(151,58): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ name: string; params: never; path?: string | undefined; merge?: boolean | undefined; pop?: boolean | undefined; } | { name: number; params: never; path?: string | undefined; merge?: boolean | undefined; pop?: boolean | undefined; } | { ...; }'.
+src/screens/admin/AdminHomeScreen.tsx(188,52): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ name: string; params: never; path?: string | undefined; merge?: boolean | undefined; pop?: boolean | undefined; } | { name: number; params: never; path?: string | undefined; merge?: boolean | undefined; pop?: boolean | undefined; } | { ...; }'.
+src/screens/admin/AdminScreenPerfil.tsx(106,26): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: ImageProps): Image', gave the following error.
+    Type '{ uri: string; } | null' is not assignable to type 'ImageSourcePropType | undefined'.
+      Type 'null' is not assignable to type 'ImageSourcePropType | undefined'.
+  Overload 2 of 2, '(props: ImageProps, context: any): Image', gave the following error.
+    Type '{ uri: string; } | null' is not assignable to type 'ImageSourcePropType | undefined'.
+      Type 'null' is not assignable to type 'ImageSourcePropType | undefined'.
+src/screens/admin/AdminScreenPerfil.tsx(290,9): error TS2322: Type '{ visible: boolean; title: string; message: string; onClose: () => void; }' is not assignable to type 'IntrinsicAttributes & ErrorModalProps'.
+  Property 'onClose' does not exist on type 'IntrinsicAttributes & ErrorModalProps'.
+src/screens/admin/AdminUserDetailScreen.test.tsx(9,8): error TS2307: Cannot find module '../../modules/admin/application/useAdminUsers' or its corresponding type declarations.
+src/screens/admin/AdminUserDetailScreen.tsx(204,55): error TS2322: Type 'number' is not assignable to type 'string'.
+src/screens/admin/AdminUserDetailScreen.tsx(569,9): error TS2322: Type '{ visible: boolean; title: string; message: string; onClose: () => void; }' is not assignable to type 'IntrinsicAttributes & ErrorModalProps'.
+  Property 'onClose' does not exist on type 'IntrinsicAttributes & ErrorModalProps'.
+src/screens/admin/licenses/AdminLicensesListScreen.tsx(122,39): error TS2345: Argument of type '[string, { licenseId: string; }]' is not assignable to parameter of type 'never'.
+src/screens/admin/plans/AdminPlanCreateScreen.tsx(272,11): error TS2322: Type '({ backgroundColor: string; borderRadius: number; } | { backgroundColor: string; })[]' is not assignable to type 'ViewStyle'.
+  Types of property 'filter' are incompatible.
+    Type '{ <S extends { backgroundColor: string; borderRadius: number; } | { backgroundColor: string; }>(predicate: (value: { backgroundColor: string; borderRadius: number; } | { backgroundColor: string; }, index: number, array: ({ ...; } | { ...; })[]) => value is S, thisArg?: any): S[]; (predicate: (value: { ...; } | { ......' is not assignable to type 'string | readonly FilterFunction[] | undefined'.
+src/screens/exchange-rates/ExchangeRatesScreen.tsx(512,15): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: FlatListProps<RateHistory>): FlatList<RateHistory>', gave the following error.
+    Type 'RateHistoryEntry[]' is not assignable to type 'ArrayLike<RateHistory>'.
+      'number' index signatures are incompatible.
+        Property 'userId' is missing in type 'RateHistoryEntry' but required in type 'RateHistory'.
+  Overload 2 of 2, '(props: FlatListProps<RateHistory>, context: any): FlatList<RateHistory>', gave the following error.
+    Type 'RateHistoryEntry[]' is not assignable to type 'ArrayLike<RateHistory>'.
+      'number' index signatures are incompatible.
+        Property 'userId' is missing in type 'RateHistoryEntry' but required in type 'RateHistory'.
+src/screens/exchange-rates/ExchangeRatesScreen.tsx(540,25): error TS2322: Type '"up" | "down" | "stable"' is not assignable to type '"up" | "down" | "neutral" | undefined'.
+  Type '"stable"' is not assignable to type '"up" | "down" | "neutral" | undefined'.
+src/screens/expenses/ExpensesScreen.tsx(288,9): error TS2322: Type '(data: CreateExpenseInput) => Promise<void>' is not assignable to type '(data: CreateExpenseInput | Partial<CreateExpenseInput>) => Promise<void>'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type 'CreateExpenseInput | Partial<CreateExpenseInput>' is not assignable to type 'CreateExpenseInput'.
+      Type 'Partial<CreateExpenseInput>' is not assignable to type 'CreateExpenseInput'.
+        Types of property 'description' are incompatible.
+          Type 'string | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.
+src/screens/objectives/ObjectivesScreen.tsx(60,7): error TS2304: Cannot find name 'objetivos'.
+src/screens/objectives/ObjectivesScreen.tsx(246,9): error TS2322: Type '(data: CreateObjectiveInput) => Promise<void>' is not assignable to type '(data: CreateObjectiveInput | Partial<CreateObjectiveInput>) => Promise<void>'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type 'CreateObjectiveInput | Partial<CreateObjectiveInput>' is not assignable to type 'CreateObjectiveInput'.
+      Type 'Partial<CreateObjectiveInput>' is not assignable to type 'CreateObjectiveInput'.
+        Types of property 'name' are incompatible.
+          Type 'string | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.
+src/screens/transactions/TransactionsScreen.tsx(279,32): error TS2552: Cannot find name 'navigation'. Did you mean 'navigator'?
+src/screens/transactions/TransactionsScreen.tsx(287,32): error TS2552: Cannot find name 'navigation'. Did you mean 'navigator'?
+src/screens/worker-payments/WorkerPaymentsScreen.tsx(21,15): error TS2305: Module '"../../types"' has no exported member 'Worker'.
+src/screens/worker-payments/WorkerPaymentsScreen.tsx(21,23): error TS2305: Module '"../../types"' has no exported member 'CreateWorkerInput'.
+src/screens/worker-payments/WorkerPaymentsScreen.tsx(21,42): error TS2305: Module '"../../types"' has no exported member 'UpdateWorkerInput'.

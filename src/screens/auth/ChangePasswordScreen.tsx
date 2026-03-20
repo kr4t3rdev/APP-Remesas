@@ -113,7 +113,7 @@ export const ChangePasswordScreen: React.FC = () => {
       opacity: 0.6,
     },
     buttonText: {
-      color: '#fff',
+      color: colors.text.inverse,
       fontSize: 16,
       fontWeight: '600',
     },

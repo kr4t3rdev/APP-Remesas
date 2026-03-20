@@ -1,0 +1,15 @@
+change: fix-app-wide-dark-mode
+status: apply_completed
+current_phase: apply
+artifacts:
+  - path: openspec/changes/fix-app-wide-dark-mode/tasks.md
+    type: tasks
+    status: completed
+dependencies:
+  proposal: skipped
+  specs: completed
+  design: skipped
+  tasks: completed
+  apply: completed
+  verify: pending
+  archive: pending
