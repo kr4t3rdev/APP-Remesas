@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
+  TextInput,
   FlatList,
   RefreshControl,
   TouchableOpacity,
@@ -26,6 +27,7 @@ import {
   useDeleteWorkerMutation,
   useCreateTransactionMutation,
   useAddBalanceMutation,
+  useFetchWorkerByIdMutation,
 } from '../../modules/worker-payments/application/useWorkerPayments';
 
 export const WorkerPaymentsScreen: React.FC = () => {
@@ -39,6 +41,8 @@ export const WorkerPaymentsScreen: React.FC = () => {
   const [editingWorker, setEditingWorker] = useState<Worker | null>(null);
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   const [expandedWorkerId, setExpandedWorkerId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [workerDetailsById, setWorkerDetailsById] = useState<Record<number, Worker>>({});
 
   // Queries y mutations
   const workersQuery = useWorkersQuery();
@@ -47,36 +51,23 @@ export const WorkerPaymentsScreen: React.FC = () => {
   const deleteMutation = useDeleteWorkerMutation();
   const transactionMutation = useCreateTransactionMutation();
   const balanceMutation = useAddBalanceMutation();
+  const workerDetailMutation = useFetchWorkerByIdMutation();
 
   const workers = workersQuery.data ?? [];
+  const workersBySearch = useMemo(() => {
+    const normalizedTerm = searchTerm.trim().toLowerCase();
+    if (!normalizedTerm) {
+      return workers;
+    }
+    return workers.filter((worker) => worker.name.toLowerCase().includes(normalizedTerm));
+  }, [workers, searchTerm]);
 
-  // Stats calculados
-  const statsData = useMemo(() => {
+  const payrollData = useMemo(() => {
     const totalBalance = workers.reduce((acc, w) => acc + Number(w.balance), 0);
-    const totalProfit = workers.reduce((acc, w) => acc + Number(w.accumulatedProfit), 0);
-    const totalDelivered = workers.reduce((acc, w) => acc + Number(w.totalDelivered), 0);
-
-    return [
-      {
-        label: 'Total Saldo',
-        value: `$ ${totalBalance.toLocaleString()}`,
-        color: themeColors.primary[500],
-        icon: 'wallet-outline' as const,
-      },
-      {
-        label: 'Total Ganancias',
-        value: `$ ${totalProfit.toLocaleString()}`,
-        color: themeColors.success,
-        icon: 'trending-up-outline' as const,
-      },
-      {
-        label: 'Total Entregado',
-        value: `$ ${totalDelivered.toLocaleString()}`,
-        color: '#3B82F6',
-        icon: 'cash-outline' as const,
-      },
-    ];
-  }, [workers, themeColors]);
+    return {
+      totalPayroll: `$${totalBalance.toLocaleString()}`,
+    };
+  }, [workers]);
 
   const handleRefresh = async () => {
     try {
@@ -131,9 +122,16 @@ export const WorkerPaymentsScreen: React.FC = () => {
   }, [deleteMutation]);
 
   const handleOpenTransactionModal = useCallback((worker: Worker) => {
-    setSelectedWorker(worker);
-    setShowTransactionModal(true);
-  }, []);
+    (async () => {
+      try {
+        const workerDetail = await workerDetailMutation.mutateAsync(worker.id);
+        setSelectedWorker(workerDetail);
+        setShowTransactionModal(true);
+      } catch {
+        Alert.alert('Error', 'No se pudo obtener el detalle del trabajador');
+      }
+    })();
+  }, [workerDetailMutation]);
 
   const handleCloseTransactionModal = useCallback(() => {
     setShowTransactionModal(false);
@@ -150,9 +148,9 @@ export const WorkerPaymentsScreen: React.FC = () => {
   };
 
   const handleOpenBalanceModal = useCallback((worker: Worker) => {
-    setSelectedWorker(worker);
+    setSelectedWorker(workerDetailsById[worker.id] ?? worker);
     setShowBalanceModal(true);
-  }, []);
+  }, [workerDetailsById]);
 
   const handleCloseBalanceModal = useCallback(() => {
     setShowBalanceModal(false);
@@ -166,8 +164,20 @@ export const WorkerPaymentsScreen: React.FC = () => {
   };
 
   const handleToggleExpand = useCallback((worker: Worker) => {
-    setExpandedWorkerId(prev => prev === worker.id ? null : worker.id);
-  }, []);
+    (async () => {
+      const nextExpandedWorkerId = expandedWorkerId === worker.id ? null : worker.id;
+      setExpandedWorkerId(nextExpandedWorkerId);
+      if (!nextExpandedWorkerId) {
+        return;
+      }
+      try {
+        const workerDetail = await workerDetailMutation.mutateAsync(worker.id);
+        setWorkerDetailsById((prev) => ({ ...prev, [worker.id]: workerDetail }));
+      } catch {
+        Alert.alert('Error', 'No se pudo obtener el detalle del trabajador');
+      }
+    })();
+  }, [expandedWorkerId, workerDetailMutation]);
 
   const isLoading = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
   const isTransactionLoading = transactionMutation.isPending;
@@ -184,9 +194,11 @@ export const WorkerPaymentsScreen: React.FC = () => {
           onExpand={handleToggleExpand}
           onTransaction={handleOpenTransactionModal}
           onAddBalance={handleOpenBalanceModal}
+          onEdit={handleOpenWorkerModal}
+          onDelete={handleDeleteWorker}
           isExpanded={isExpanded}
         />
-        {isExpanded && <WorkerExpandableRow worker={item} />}
+        {isExpanded && <WorkerExpandableRow worker={workerDetailsById[item.id] ?? item} />}
       </View>
     );
   };
@@ -199,38 +211,43 @@ export const WorkerPaymentsScreen: React.FC = () => {
             <Text style={[styles.title, { color: themeColors.text.primary }]}>
               Pagos a Trabajadores
             </Text>
-            <Text style={[styles.subtitle, { color: themeColors.text.secondary }]}>
-              Gestión de pagos y transacciones
-            </Text>
           </View>
         </FadeInDown>
       </View>
 
       <FadeInDown delay={50}>
-        <View style={styles.statsRow}>
-          {statsData.map((stat) => (
-            <View
-              key={stat.label}
-              style={[styles.statCard, { backgroundColor: themeColors.card }, themeShadows.sm]}
-            >
-              <View style={[styles.statIcon, { backgroundColor: `${stat.color}15` }]}>
-                <Ionicons name={stat.icon} size={18} color={stat.color} />
-              </View>
-              <View style={styles.statInfo}>
-                <Text style={[styles.statLabel, { color: themeColors.text.secondary }]}>
-                  {stat.label}
-                </Text>
-                <Text style={[styles.statValue, { color: stat.color }]}>
-                  {stat.value}
-                </Text>
-              </View>
-            </View>
-          ))}
+        <View style={styles.contentSection}>
+          <View style={[styles.searchBar, { backgroundColor: themeColors.card }]}>
+            <Ionicons name="search-outline" size={18} color={themeColors.text.tertiary} />
+            <TextInput
+              value={searchTerm}
+              onChangeText={setSearchTerm}
+              placeholder="Buscar trabajador por nombre..."
+              placeholderTextColor={themeColors.text.tertiary}
+              style={[styles.searchInput, { color: themeColors.text.primary }]}
+            />
+          </View>
+          <View style={styles.payrollRow}>
+            <Text style={[styles.payrollLabel, { color: themeColors.text.secondary }]}>
+              TOTAL NÓMINA
+            </Text>
+            <Text style={[styles.payrollValue, { color: themeColors.text.primary }]}>
+              {payrollData.totalPayroll}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.newWorkerButton, { backgroundColor: themeColors.primary[500] }, themeShadows.md]}
+            onPress={() => handleOpenWorkerModal()}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="add" size={18} color={themeColors.text.inverse} />
+            <Text style={[styles.newWorkerText, { color: themeColors.text.inverse }]}>Nuevo Trabajador</Text>
+          </TouchableOpacity>
         </View>
       </FadeInDown>
 
       <FlatList
-        data={workers}
+        data={workersBySearch}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderWorkerItem}
         contentContainerStyle={styles.listContent}
@@ -248,26 +265,18 @@ export const WorkerPaymentsScreen: React.FC = () => {
               No hay trabajadores registrados
             </Text>
             <Text style={[styles.emptySubtitle, { color: themeColors.text.secondary }]}>
-              Toca el botón + para agregar el primer trabajador
+              Crea el primer trabajador para empezar a gestionar pagos
             </Text>
           </View>
         }
       />
-
-      <TouchableOpacity
-        testID="add-worker-fab"
-        style={[styles.fab, { backgroundColor: themeColors.primary[500] }, themeShadows.lg]}
-        onPress={() => handleOpenWorkerModal()}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="person-add" size={24} color={themeColors.text.inverse} />
-      </TouchableOpacity>
 
       <WorkerFormModal
         visible={showWorkerModal}
         onClose={handleCloseWorkerModal}
         onSubmit={editingWorker ? handleUpdateWorker : handleCreateWorker}
         worker={editingWorker}
+        recentWorkers={workers}
         isLoading={isLoading}
       />
 
@@ -299,47 +308,56 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
   },
-  subtitle: {
-    fontSize: 14,
-    marginTop: 4,
-  },
-  statsRow: {
-    flexDirection: 'row',
+  contentSection: {
     paddingHorizontal: spacing.md,
-    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
     marginBottom: spacing.md,
   },
-  statCard: {
+  searchInput: {
     flex: 1,
+    marginLeft: spacing.xs,
+    height: 42,
+    fontSize: 14,
+  },
+  payrollRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.sm,
-    borderRadius: borderRadius.lg,
-    gap: spacing.xs,
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
   },
-  statIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  payrollLabel: {
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  payrollValue: {
+    fontSize: 44,
+    fontWeight: '700',
+  },
+  newWorkerButton: {
+    height: 44,
+    borderRadius: borderRadius.md,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: spacing.xs,
   },
-  statInfo: {
-    flex: 1,
-  },
-  statLabel: {
-    fontSize: 10,
-  },
-  statValue: {
-    fontSize: 13,
+  newWorkerText: {
+    fontSize: 16,
     fontWeight: '700',
   },
   listContent: {
     paddingHorizontal: spacing.md,
-    paddingBottom: 100,
+    paddingBottom: spacing.xl,
   },
   emptyState: {
     alignItems: 'center',
@@ -354,15 +372,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: spacing.xs,
     textAlign: 'center',
-  },
-  fab: {
-    position: 'absolute',
-    bottom: spacing.lg,
-    right: spacing.lg,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

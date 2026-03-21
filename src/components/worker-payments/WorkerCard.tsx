@@ -12,6 +12,8 @@ type WorkerCardProps = {
   onExpand?: (worker: Worker) => void;
   onTransaction?: (worker: Worker) => void;
   onAddBalance?: (worker: Worker) => void;
+  onEdit?: (worker: Worker) => void;
+  onDelete?: (worker: Worker) => void;
   isExpanded?: boolean;
 };
 
@@ -21,69 +23,69 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({
   onExpand,
   onTransaction,
   onAddBalance,
+  onEdit,
+  onDelete,
   isExpanded = false,
 }) => {
   const themeColors = useColors();
   const themeShadows = useShadows();
 
-  const transactionCount = worker.transactions?.filter(t => t.type === 'TRANSACTION').length || 0;
+  const workerSubtitle = worker.phone?.trim() ? worker.phone : 'Trabajador';
 
   return (
     <FadeInDown delay={index * 50}>
       <View style={[styles.card, { backgroundColor: themeColors.card }, themeShadows.sm]}>
-        <TouchableOpacity 
-          style={styles.mainContent}
-          onPress={() => onExpand?.(worker)}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.avatar, { backgroundColor: themeColors.primary[500] }]}>
-            <Text style={styles.avatarText}>{worker.initials}</Text>
-          </View>
-
-          <View style={styles.info}>
-            <Text
-              style={[styles.name, { color: themeColors.text.primary }]}
-              numberOfLines={1}
-            >
-              {worker.name}
-            </Text>
-            <View style={styles.meta}>
-              <Text style={[styles.transactions, { color: themeColors.text.secondary }]}>
-                {transactionCount} transacción{transactionCount !== 1 ? 'es' : ''}
+        <View style={styles.mainContent}>
+          <View style={styles.headerRow}>
+            <View style={[styles.avatar, { backgroundColor: `${themeColors.primary[500]}20` }]}>
+              <Text style={[styles.avatarText, { color: themeColors.primary[500] }]}>{worker.initials ?? 'TR'}</Text>
+            </View>
+            <View style={styles.info}>
+              <Text
+                style={[styles.name, { color: themeColors.text.primary }]}
+                numberOfLines={1}
+              >
+                {worker.name}
+              </Text>
+              <Text style={[styles.subtitle, { color: themeColors.text.secondary }]}>
+                {workerSubtitle}
               </Text>
             </View>
+            <TouchableOpacity
+              testID="worker-expand-button"
+              onPress={() => onExpand?.(worker)}
+              style={styles.expandIcon}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons
+                name={isExpanded ? 'ellipsis-horizontal-circle' : 'ellipsis-vertical'}
+                size={20}
+                color={themeColors.text.secondary}
+              />
+            </TouchableOpacity>
           </View>
-
-          <View style={styles.statsContainer}>
+          <View style={[styles.statsContainer, { backgroundColor: themeColors.background }]}>
             <View style={styles.statItem}>
               <Text style={[styles.statLabel, { color: themeColors.text.secondary }]}>
-                Saldo
+                SALDO ACTUAL
               </Text>
               <Text style={[
                 styles.statValue,
-                { color: worker.balance < 0 ? themeColors.danger : themeColors.text.primary }
+                { color: Number(worker.balance) < 0 ? themeColors.danger : themeColors.text.primary }
               ]}>
                 ${Number(worker.balance).toLocaleString()}
               </Text>
             </View>
             <View style={styles.statItem}>
               <Text style={[styles.statLabel, { color: themeColors.text.secondary }]}>
-                Ganancia
+                GANANCIA ACUM.
               </Text>
               <Text style={[styles.statValue, { color: themeColors.success }]}>
-                ${Number(worker.accumulatedProfit).toLocaleString()}
+                ${Number(worker.accumulatedProfit ?? 0).toLocaleString()}
               </Text>
             </View>
           </View>
-
-          <View style={styles.expandIcon}>
-            <Ionicons 
-              name={isExpanded ? 'chevron-up' : 'chevron-down'} 
-              size={20} 
-              color={themeColors.text.secondary} 
-            />
-          </View>
-        </TouchableOpacity>
+        </View>
 
         <View style={[styles.actions, { borderTopColor: themeColors.border }]}>
           <TouchableOpacity
@@ -104,6 +106,18 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({
             <Text style={[styles.actionText, { color: '#10B981' }]}>Agregar Saldo</Text>
           </TouchableOpacity>
         </View>
+        {isExpanded && (
+          <View style={[styles.secondaryActions, { borderTopColor: themeColors.border }]}>
+            <TouchableOpacity onPress={() => onEdit?.(worker)} style={styles.secondaryActionButton}>
+              <Ionicons name="create-outline" size={16} color={themeColors.text.secondary} />
+              <Text style={[styles.secondaryActionText, { color: themeColors.text.secondary }]}>Editar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => onDelete?.(worker)} style={styles.secondaryActionButton}>
+              <Ionicons name="trash-outline" size={16} color={themeColors.danger} />
+              <Text style={[styles.secondaryActionText, { color: themeColors.danger }]}>Eliminar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </FadeInDown>
   );
@@ -116,21 +130,22 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   mainContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
     padding: spacing.md,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
   },
   avatarText: {
-    color: themeColors.text.inverse,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
   },
   info: {
@@ -140,30 +155,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  meta: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  subtitle: {
+    fontSize: 12,
     marginTop: 2,
   },
-  transactions: {
-    fontSize: 12,
-  },
   statsContainer: {
-    flexDirection: 'row',
-    gap: spacing.md,
+    marginTop: spacing.md,
+    padding: spacing.sm,
+    borderRadius: borderRadius.md,
   },
   statItem: {
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 12,
+    fontWeight: '700',
   },
   statValue: {
-    fontSize: 14,
+    fontSize: 22,
     fontWeight: '700',
   },
   expandIcon: {
-    marginLeft: spacing.sm,
+    marginLeft: spacing.xs,
   },
   actions: {
     flexDirection: 'row',
@@ -182,7 +198,24 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   actionText: {
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  secondaryActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+    borderTopWidth: 1,
+    gap: spacing.md,
+  },
+  secondaryActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  secondaryActionText: {
+    fontSize: 12,
     fontWeight: '600',
   },
 });

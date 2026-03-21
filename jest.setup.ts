@@ -1,15 +1,5 @@
 import 'react-native-gesture-handler/jestSetup';
 
-jest.mock('react-native-reanimated', () => {
-  return {
-    default: { call: () => {} },
-    useSharedValue: jest.fn(),
-    useAnimatedStyle: jest.fn(),
-    withTiming: jest.fn(),
-    withSpring: jest.fn(),
-  };
-});
-
 jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(async () => undefined),
   getItemAsync: jest.fn(async () => null),

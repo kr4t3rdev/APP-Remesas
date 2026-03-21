@@ -113,4 +113,14 @@ export const queryKeys = {
     detail: (id: number) => ['objectives', 'detail', id] as const,
     progress: (id: number) => ['objectives', 'progress', id] as const,
   },
+  expenseItems: {
+    root: () => ['expenseItems'] as const,
+    all: (params?: { category?: string; startDate?: string; endDate?: string }) =>
+      ['expenseItems', 'all', params ?? {}] as const,
+    byId: (id: number) => ['expenseItems', 'detail', id] as const,
+    categoriesRoot: () => ['expenseItems', 'categories'] as const,
+    categories: () => ['expenseItems', 'categories', 'list'] as const,
+    report: (period: string, date?: string) =>
+      ['expenseItems', 'report', period, date ?? 'current'] as const,
+  },
 };

@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Dimensions,
+  ToastAndroid,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +26,7 @@ import type { CashBalance, Transaction } from '../../types';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/types';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -33,6 +35,7 @@ import {
   useCreateCashAdjustmentMutation,
   useCreateCashAuditMutation,
 } from '../../modules/cash/application/useCash';
+import { ToastContainer } from '../../components/ui';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -100,6 +103,7 @@ export const CashScreen: React.FC = () => {
   const handleCreateAdjustment = async () => {
     if (!selectedCurrency || !amount || !reason) {
       Alert.alert('Error', 'Complete todos los campos');
+      
       return;
     }
 

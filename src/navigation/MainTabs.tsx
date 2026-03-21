@@ -3,8 +3,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '../screens/home/HomeScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { TransactionsScreen } from '../screens/transactions/TransactionsScreen';
-import { CashScreen } from '../screens/cash/CashScreen';
+import { ExpenseItemsScreen } from '../screens/expense-items/ExpenseItemsScreen';
 import { ReportsScreen } from '../screens/reports/ReportsScreen';
+import { BusinessScreen } from '../screens/business/BusinessScreen';
 import { useColors } from '../store/themeStore';
 import type { MainTabParamList } from './types';
 
@@ -44,6 +45,16 @@ export const MainTabs: React.FC = () => {
         }}
       />
       <Tab.Screen
+        name="Business"
+        component={BusinessScreen}
+        options={{
+          tabBarLabel: 'Negocios',
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="briefcase" color={color} />
+          ),
+        }}
+      />
+      {/* <Tab.Screen
         name="Transactions"
         component={TransactionsScreen}
         options={{
@@ -52,14 +63,14 @@ export const MainTabs: React.FC = () => {
             <TabBarIcon name="swap-horizontal" color={color} />
           ),
         }}
-      />
+      /> */}
       <Tab.Screen
-        name="Cash"
-        component={CashScreen}
+        name="ExpenseItems"
+        component={ExpenseItemsScreen}
         options={{
-          tabBarLabel: 'Caja',
+          tabBarLabel: 'Gastos',
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="wallet" color={color} />
+            <TabBarIcon name="receipt" color={color} />
           ),
         }}
       />

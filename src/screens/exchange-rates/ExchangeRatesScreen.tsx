@@ -509,7 +509,7 @@ export const ExchangeRatesScreen: React.FC = () => {
             </View>
 
             <FlatList
-              data={selectedRateHistory}
+              data={selectedRateHistory as RateHistory[]}
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderHistoryItem}
               contentContainerStyle={styles.historyList}
@@ -537,7 +537,7 @@ export const ExchangeRatesScreen: React.FC = () => {
                       <StatsCard 
                         title="Promedio" 
                         value={formatNumber(pairStats.average)} 
-                        trend={pairStats.trend}
+                        trend={pairStats.trend === 'stable' ? 'neutral' : pairStats.trend}
                         trendValue={pairStats.changePercentage ? `${pairStats.changePercentage.toFixed(1)}%` : undefined}
                         style={{ flex: 1, marginRight: 8 }}
                       />

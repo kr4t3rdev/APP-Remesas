@@ -1,18 +1,25 @@
 export type WorkerTransaction = {
   id: number;
   workerId: number;
-  amount: number;
-  type: 'TRANSACTION' | 'BALANCE';
-  profit?: number;
+  amount: number | string;
+  type: 'TRANSACTION' | 'BALANCE_ADD';
+  profit?: number | string;
+  balanceBefore: number | string;
+  balanceAfter: number | string;
   description?: string;
   createdAt: string;
 };
 
 export type Worker = {
   id: number;
+  userId?: number;
   name: string;
   phone?: string;
-  balance: number;
+  photoUrl?: string;
+  initials?: string;
+  balance: number | string;
+  accumulatedProfit?: number | string;
+  totalDelivered?: number | string;
   transactions?: WorkerTransaction[];
   createdAt: string;
   updatedAt: string;

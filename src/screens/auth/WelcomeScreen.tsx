@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Animated, useWindo
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { AuthWrapper } from '../../components/auth/AuthWrapper';
 import { spacing, borderRadius } from '../../theme';
 import { useColors } from '../../store/themeStore';
 
@@ -21,7 +20,7 @@ const getFeatures = (colors: any) => [
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
   const themeColors = useColors();
   const styles = createStyles(themeColors);
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isDesktop = width >= 768;
   const FEATURES = getFeatures(themeColors);
   
@@ -172,23 +171,33 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
   if (isDesktop) {
     return (
-      <AuthWrapper showBrandingPanel={false}>
-        <View style={styles.desktopContainer}>
-          <View style={styles.desktopHero}>
-            {content}
-          </View>
+      <View style={[styles.desktopScreen, { backgroundColor: themeColors.background, minHeight: height }]}>
+        <StatusBar barStyle="light-content" />
+
+        <View style={[styles.desktopContainer, { minHeight: height }]}>
+          <LinearGradient
+            colors={[themeColors.primary[500], themeColors.primary[700]]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.desktopHero}
+          >
+            <SafeAreaView style={styles.desktopHeroWrapper}>
+              {content}
+            </SafeAreaView>
+          </LinearGradient>
+
           <View style={styles.desktopContent}>
             {featuresSection}
             {buttonsSection}
             {footer}
           </View>
         </View>
-      </AuthWrapper>
+      </View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: themeColors.background, height: '100vh' }]}>
+    <View style={[styles.container, { backgroundColor: themeColors.background, minHeight: height }]}>
       <StatusBar barStyle="light-content" />
       
       <LinearGradient
@@ -214,7 +223,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 const createStyles = (themeColors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    minHeight: '100vh',
     height: '100%',
     width: '100%',
   },
@@ -328,16 +336,22 @@ const createStyles = (themeColors: any) => StyleSheet.create({
     flexDirection: 'row',
     height: '100%',
     width: '100%',
-    minHeight: '100vh',
+  },
+  desktopScreen: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   desktopHero: {
     flex: 0.4,
-    backgroundColor: themeColors.primary[500],
+    minWidth: 320,
+    height: '100%',
+  },
+  desktopHeroWrapper: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopLeftRadius: 40,
-    borderBottomLeftRadius: 40,
-    height: '100%',
+    paddingHorizontal: spacing.xl,
   },
   desktopContent: {
     flex: 0.6,

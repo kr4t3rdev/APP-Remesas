@@ -70,17 +70,17 @@ describe('WorkerCard', () => {
     expect(getByText('$250')).toBeTruthy();
   });
 
-  it('renders transaction count', () => {
+  it('renders worker subtitle', () => {
     const { getByText } = render(<WorkerCard {...defaultProps} />);
 
-    expect(getByText('1 transacción')).toBeTruthy();
+    expect(getByText('Trabajador')).toBeTruthy();
   });
 
   it('calls onExpand when card is pressed', () => {
     const onExpand = jest.fn();
-    const { getByText } = render(<WorkerCard {...defaultProps} onExpand={onExpand} />);
+    const { getByTestId } = render(<WorkerCard {...defaultProps} onExpand={onExpand} />);
 
-    fireEvent.press(getByText('Juan Pérez'));
+    fireEvent.press(getByTestId('worker-expand-button'));
 
     expect(onExpand).toHaveBeenCalledWith(defaultWorker);
   });
@@ -104,7 +104,7 @@ describe('WorkerCard', () => {
   });
 
   it('renders correct expand icon based on isExpanded prop', () => {
-    const { queryByTestId, rerender } = render(<WorkerCard {...defaultProps} isExpanded={false} />);
+    const { rerender } = render(<WorkerCard {...defaultProps} isExpanded={false} />);
 
     // Icon changes based on expanded state - tested indirectly via render
     rerender(<WorkerCard {...defaultProps} isExpanded={true} />);

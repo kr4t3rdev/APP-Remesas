@@ -24,6 +24,11 @@ export const useWorkerDetailQuery = (id: number) =>
     enabled: !!id,
   });
 
+export const useFetchWorkerByIdMutation = () =>
+  useMutation({
+    mutationFn: (id: number) => workerPaymentsRepository.getWorkerById(id),
+  });
+
 export const useCreateWorkerMutation = () => {
   const queryClient = useQueryClient();
 
