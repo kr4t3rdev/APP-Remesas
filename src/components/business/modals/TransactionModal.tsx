@@ -56,7 +56,7 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
 };
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
+  overlay: { flex: 1, backgroundColor: 'transparent', justifyContent: 'center', alignItems: 'center' },
   container: { width: '80%', padding: 20, borderRadius: 12, elevation: 5 },
   title: { fontSize: 18, fontWeight: 'bold', marginBottom: 16 },
   input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 16 },

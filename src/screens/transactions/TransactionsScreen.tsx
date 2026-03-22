@@ -321,7 +321,7 @@ export const TransactionsScreen: React.FC = () => {
         <TouchableOpacity
           style={[styles.fab, { backgroundColor: themeColors.primary[500] }, themeShadows.lg]}
           onPress={() => setModalVisible(true)}
-          activeOpacity={0.8}
+          //activeOpacity={0.8}
         >
           <Ionicons name="add" size={28} color="#fff" />
         </TouchableOpacity>
@@ -339,7 +339,6 @@ export const TransactionsScreen: React.FC = () => {
         >
           <TouchableOpacity 
             style={styles.modalBackdrop} 
-            activeOpacity={1} 
             onPress={() => setModalVisible(false)}
           />
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
@@ -487,6 +486,7 @@ export const TransactionsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: -80
   },
   header: {
     padding: spacing.md,
@@ -495,6 +495,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
+    
   },
   subtitle: {
     fontSize: 14,
@@ -612,7 +613,7 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'transparent',
   },
   modalContent: {
     borderTopLeftRadius: borderRadius.xl,
@@ -649,7 +650,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     backgroundColor: '#F1F5F9',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   typeButtonText: {
     fontSize: 15,
@@ -668,7 +669,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
     backgroundColor: '#F1F5F9',
-    marginRight: spacing.sm,
+    marginRight: spacing.md,
     minWidth: 70,
     borderWidth: 1,
     borderColor: 'transparent',

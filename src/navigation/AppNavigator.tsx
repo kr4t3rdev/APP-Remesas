@@ -21,6 +21,7 @@ import type { RootStackParamList } from './types';
 import { AdminUserDetailScreen } from '../screens/admin/AdminUserDetailScreen';
 import { AdminLicensesListScreen } from '../screens/admin/licenses/AdminLicensesListScreen';
 import { AdminLicenseDetailScreen } from '../screens/admin/licenses/AdminLicenseDetailScreen';
+import { BusinessWorkersScreen, UIWorkersRedirect } from './BusinessWorkersRouter';
 
 const AuthStack = createNativeStackNavigator<RootStackParamList>();
 
@@ -123,6 +124,22 @@ const MainStackNavigator: React.FC = () => {
       <MainStack.Screen 
         name="AdminLicenseDetail" 
         component={AdminLicenseDetailScreen}
+        options={{ 
+          headerShown: false,
+          presentation: 'card'
+        }}
+      />
+      <MainStack.Screen 
+        name="BusinessWorkers" 
+        component={BusinessWorkersScreen}
+        options={{ 
+          headerShown: false,
+          presentation: 'card'
+        }}
+      />
+      <MainStack.Screen 
+        name="UIWorkersRedirect" 
+        component={UIWorkersRedirect}
         options={{ 
           headerShown: false,
           presentation: 'card'

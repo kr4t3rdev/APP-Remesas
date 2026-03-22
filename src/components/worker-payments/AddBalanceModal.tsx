@@ -86,7 +86,7 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
               {worker && (
                 <View style={[styles.workerInfo, { backgroundColor: themeColors.background }]}>
                   <View style={[styles.avatar, { backgroundColor: themeColors.primary[500] }]}>
-                    <Text style={styles.avatarText}>{worker.initials}</Text>
+                    <Text style={[styles.avatarText, { color: themeColors.text.inverse }]}>{worker.initials}</Text>
                   </View>
                   <View style={styles.workerDetails}>
                     <Text style={[styles.workerName, { color: themeColors.text.primary }]}>
@@ -189,7 +189,6 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   avatarText: {
-    color: themeColors.text.inverse,
     fontSize: 18,
     fontWeight: '700',
   },

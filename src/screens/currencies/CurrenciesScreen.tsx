@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     ...shadows.lg,
   },
   modalOverlay: { flex: 1, justifyContent: 'flex-end' },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
+  modalBackdrop: { flex: 1, backgroundColor: 'transparent' },
   modalContent: {
     backgroundColor: colors.card,
     borderTopLeftRadius: borderRadius.xl,

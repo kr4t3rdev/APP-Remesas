@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { PortfolioLiquidityCard } from './components/PortfolioLiquidityCard';
 import { TabSelector, TabItem } from './components/TabSelector';
 import { ExchangeRatesScreen } from '../exchange-rates/ExchangeRatesScreen';
+import { ExchangeTab } from './tabs/ExchangesTab';
 
 const BUSINESS_TABS: TabItem[] = [
   { key: 'transactions', label: 'Transacciones' },
@@ -26,18 +27,17 @@ const Header = () => {
     <View style={styles.headerContainer}>
       <View style={styles.topBar}>
         <TouchableOpacity>
-          <Ionicons name="menu-outline" size={28} color={colors.primary[500]} />
+          {/* <Ionicons name="menu-outline" size={28} color={colors.primary[500]} /> */}
         </TouchableOpacity>
-        <Text style={[styles.topBarTitle, { color: colors.text.primary }]}>Business</Text>
         <TouchableOpacity>
-          <Ionicons name="search-outline" size={24} color={colors.primary[500]} />
+          {/* <Ionicons name="search-outline" size={24} color={colors.primary[500]} /> */}
         </TouchableOpacity>
       </View>
       
       <View style={styles.titleSection}>
-        <Text style={[styles.superTitle, { color: colors.text.secondary }]}>HUB</Text>
+        <Text style={[styles.topBarTitle, { color: colors.text.primary }]}>Business</Text>
+        <Text style={[styles.superTitle, { color: colors.text.secondary }]}>Todo lo realcionado con tu negocio</Text>
       </View>
-      <PortfolioLiquidityCard />
     </View>
   );
 };
@@ -45,7 +45,7 @@ const Header = () => {
 const styles = StyleSheet.create({
   headerContainer: {
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 40,
     paddingBottom: 5,
   },
   topBar: {
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   topBarTitle: {
-    fontSize: 18,
+    fontSize: 28,
     fontWeight: '700',
   },
   titleSection: {
@@ -86,7 +86,7 @@ export const BusinessScreen = () => {
       case 'banks': return <BanksTab />;
       case 'currencies': return <CurrenciesTab />;
       case 'cash': return <CashRegisterTab />;
-      case 'tasa de cambio': return <ExchangeRatesScreen /> ;
+      case 'tasa_cambio': return <ExchangeTab /> ;
       default: return <TransactionsTab />;
     }
   };

@@ -209,7 +209,7 @@ export const WorkerPaymentsScreen: React.FC = () => {
         <FadeInDown delay={0}>
           <View>
             <Text style={[styles.title, { color: themeColors.text.primary }]}>
-              Pagos a Trabajadores
+            Trabajadores
             </Text>
           </View>
         </FadeInDown>
@@ -227,14 +227,7 @@ export const WorkerPaymentsScreen: React.FC = () => {
               style={[styles.searchInput, { color: themeColors.text.primary }]}
             />
           </View>
-          <View style={styles.payrollRow}>
-            <Text style={[styles.payrollLabel, { color: themeColors.text.secondary }]}>
-              TOTAL NÓMINA
-            </Text>
-            <Text style={[styles.payrollValue, { color: themeColors.text.primary }]}>
-              {payrollData.totalPayroll}
-            </Text>
-          </View>
+          
           <TouchableOpacity
             style={[styles.newWorkerButton, { backgroundColor: themeColors.primary[500] }, themeShadows.md]}
             onPress={() => handleOpenWorkerModal()}

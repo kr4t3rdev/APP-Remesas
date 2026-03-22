@@ -20,6 +20,8 @@ export type RootStackParamList = {
   AdminLicenseDetail: { licenseId: string | number };
   AdminAuditLog: undefined;
   AdminExportReports: undefined;
+  BusinessWorkers: undefined;
+  UIWorkersRedirect: undefined;
 };
 
 export type MainTabParamList = {
