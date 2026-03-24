@@ -1,11 +1,12 @@
-import api from '../../../services/api';
-import type { BankAccount, Currency } from '../../../types';
+import api from "../../../services/api";
+import type { BankAccount, Currency } from "../../../types";
 
 type CreateBankAccountDto = {
   name: string;
   bankName: string;
   currencyId: number;
   accountNumber: string;
+  initialBalance?: number;
   isActive?: boolean;
 };
 
@@ -25,7 +26,7 @@ type BankAccountTransactions = {
 
 export const bankAccountsRepository = {
   async getAll(): Promise<BankAccount[]> {
-    const response = await api.get<BankAccount[]>('/bank-accounts');
+    const response = await api.get<BankAccount[]>("/bank-accounts");
     return response.data;
   },
 
@@ -35,7 +36,7 @@ export const bankAccountsRepository = {
   },
 
   async create(data: CreateBankAccountDto): Promise<BankAccount> {
-    const response = await api.post<BankAccount>('/bank-accounts', data);
+    const response = await api.post<BankAccount>("/bank-accounts", data);
     return response.data;
   },
 
@@ -49,12 +50,16 @@ export const bankAccountsRepository = {
   },
 
   async getBalance(id: number): Promise<BankAccountBalance> {
-    const response = await api.get<BankAccountBalance>(`/bank-accounts/${id}/balance`);
+    const response = await api.get<BankAccountBalance>(
+      `/bank-accounts/${id}/balance`,
+    );
     return response.data;
   },
 
   async getTransactions(id: number): Promise<BankAccountTransactions> {
-    const response = await api.get<BankAccountTransactions>(`/bank-accounts/${id}/transactions`);
+    const response = await api.get<BankAccountTransactions>(
+      `/bank-accounts/${id}/transactions`,
+    );
     return response.data;
   },
 };

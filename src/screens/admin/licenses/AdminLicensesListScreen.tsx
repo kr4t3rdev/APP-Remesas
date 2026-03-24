@@ -1,26 +1,34 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { AdminHeader } from '../../../components/admin/layout/AdminHeader';
-import { LicenseCard } from '../../../components/admin/licenses/LicenseCard';
-import { AssignLicenseModal } from '../../../components/admin/licenses/AssignLicenseModal';
-import { licensesApi } from '../../../api/licensesApi';
-import { License } from '../../../types/licenses';
-import { useColors, useIsDark } from '../../../store/themeStore';
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { AdminHeader } from "../../../components/admin/layout/AdminHeader";
+import { LicenseCard } from "../../../components/admin/licenses/LicenseCard";
+import { AssignLicenseModal } from "../../../components/admin/licenses/AssignLicenseModal";
+import { licensesApi } from "../../../api/licensesApi";
+import { License } from "../../../types/licenses";
+import { useColors, useIsDark } from "../../../store/themeStore";
 
 const TABS: { id: string; label: string }[] = [
-  { id: 'all', label: 'Todas' },
-  { id: 'active', label: 'Activas' },
-  { id: 'expired', label: 'Expiradas' },
-  { id: 'pending', label: 'Pendientes' },
+  { id: "all", label: "Todas" },
+  { id: "active", label: "Activas" },
+  { id: "expired", label: "Expiradas" },
+  { id: "pending", label: "Pendientes" },
 ];
 
 export const AdminLicensesListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
-  const [activeTab, setActiveTab] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [licenses, setLicenses] = useState<License[]>([]);
   const [loading, setLoading] = useState(true);
   const [assignModalVisible, setAssignModalVisible] = useState(false);
@@ -47,7 +55,7 @@ export const AdminLicensesListScreen: React.FC = () => {
   const filteredLicenses = useMemo(() => {
     return licenses.filter((license) => {
       // 1. Filter by Tab
-      if (activeTab !== 'all' && license.status !== activeTab) {
+      if (activeTab !== "all" && license.status !== activeTab) {
         return false;
       }
       // 2. Filter by Search Query
@@ -55,7 +63,9 @@ export const AdminLicensesListScreen: React.FC = () => {
         const query = searchQuery.toLowerCase();
         const matchesName = license.planName.toLowerCase().includes(query);
         const matchesKey = license.licenseKey.toLowerCase().includes(query);
-        const matchesUser = license.assignedUsers.some(u => u.name.toLowerCase().includes(query));
+        const matchesUser = license.assignedUsers.some((u) =>
+          u.name.toLowerCase().includes(query),
+        );
         return matchesName || matchesKey || matchesUser;
       }
       return true;
@@ -63,17 +73,27 @@ export const AdminLicensesListScreen: React.FC = () => {
   }, [licenses, activeTab, searchQuery]);
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
-      <AdminHeader 
-        title="Listado de Licencias" 
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+      edges={["top", "bottom"]}
+    >
+      <AdminHeader
+        title="Listado de Licencias"
         onBack={() => navigation.goBack()}
         // Assuming AdminHeader supports right action or we add it manually below if needed
       />
-      
+
       <View style={styles.container}>
         {/* Search Bar */}
-        <View style={[styles.searchContainer, { backgroundColor: colors.card }]}>
-          <Ionicons name="search" size={20} color={colors.text.secondary} style={styles.searchIcon} />
+        <View
+          style={[styles.searchContainer, { backgroundColor: colors.card }]}
+        >
+          <Ionicons
+            name="search"
+            size={20}
+            color={colors.text.secondary}
+            style={styles.searchIcon}
+          />
           <TextInput
             style={[styles.searchInput, { color: colors.text.primary }]}
             placeholder="Buscar licencias o usuarios"
@@ -86,20 +106,42 @@ export const AdminLicensesListScreen: React.FC = () => {
         {/* Tabs */}
         <View style={[styles.tabsRow, { borderBottomColor: colors.border }]}>
           {TABS.map((tab) => (
-            <TouchableOpacity 
-              key={tab.id} 
+            <TouchableOpacity
+              key={tab.id}
               onPress={() => setActiveTab(tab.id)}
-              style={[styles.tabItem, activeTab === tab.id && styles.tabItemActive]}
+              style={[
+                styles.tabItem,
+                activeTab === tab.id && styles.tabItemActive,
+              ]}
             >
-              <Text style={[styles.tabText, { color: activeTab === tab.id ? colors.primary[500] : colors.text.secondary }]}>
+              <Text
+                style={[
+                  styles.tabText,
+                  {
+                    color:
+                      activeTab === tab.id
+                        ? colors.primary[500]
+                        : colors.text.secondary,
+                  },
+                ]}
+              >
                 {tab.label}
               </Text>
-              {activeTab === tab.id && <View style={[styles.activeIndicator, { backgroundColor: colors.primary[500] }]} />}
+              {activeTab === tab.id && (
+                <View
+                  style={[
+                    styles.activeIndicator,
+                    { backgroundColor: colors.primary[500] },
+                  ]}
+                />
+              )}
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Licencias Recientes</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+          Licencias Recientes
+        </Text>
 
         {loading ? (
           <View style={styles.center}>
@@ -110,24 +152,36 @@ export const AdminLicensesListScreen: React.FC = () => {
             data={filteredLicenses}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <LicenseCard 
-                license={item} 
+              <LicenseCard
+                license={item}
                 onPress={() => {
-                  navigation.navigate('AdminLicenseDetail', { licenseId: item.id });
-                }} 
+                  navigation.navigate("AdminLicenseDetail", {
+                    licenseId: item.id,
+                  });
+                }}
               />
             )}
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
-              <Text style={[styles.emptyText, { color: colors.text.secondary }]}>No se encontraron licencias.</Text>
+              <Text
+                style={[styles.emptyText, { color: colors.text.secondary }]}
+              >
+                No se encontraron licencias.
+              </Text>
             }
           />
         )}
       </View>
 
       {/* FAB */}
-      <TouchableOpacity 
-        style={[styles.fab, { backgroundColor: colors.primary[500], shadowColor: colors.primary[500] }]}
+      <TouchableOpacity
+        style={[
+          styles.fab,
+          {
+            backgroundColor: colors.primary[500],
+            shadowColor: colors.primary[500],
+          },
+        ]}
         onPress={() => setAssignModalVisible(true)}
       >
         <Ionicons name="add" size={30} color="#fff" />
@@ -148,16 +202,16 @@ export const AdminLicensesListScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff', // White background based on design
+    backgroundColor: "#fff", // White background based on design
   },
   container: {
     flex: 1,
     paddingHorizontal: 16,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f3f4f6',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f3f4f6",
     borderRadius: 24, // Pill shape
     paddingHorizontal: 16,
     height: 48,
@@ -169,71 +223,71 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: '#111827',
+    color: "#111827",
   },
   tabsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: "#f3f4f6",
   },
   tabItem: {
     marginRight: 24,
     paddingBottom: 12,
-    position: 'relative',
+    position: "relative",
   },
   tabItemActive: {
     // Active styles handled by indicator
   },
   tabText: {
     fontSize: 15,
-    color: '#6b7280',
-    fontWeight: '500',
+    color: "#6b7280",
+    fontWeight: "500",
   },
   tabTextActive: {
-    color: '#3b82f6',
-    fontWeight: '600',
+    color: "#3b82f6",
+    fontWeight: "600",
   },
   activeIndicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -1, // Overlap the border
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
     borderTopLeftRadius: 3,
     borderTopRightRadius: 3,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#111827',
+    fontWeight: "700",
+    color: "#111827",
     marginBottom: 16,
   },
   center: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   listContent: {
     paddingBottom: 80,
   },
   emptyText: {
-    textAlign: 'center',
-    color: '#9ca3af',
+    textAlign: "center",
+    color: "#9ca3af",
     marginTop: 20,
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 24,
     right: 24,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#3b82f6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#3b82f6',
+    backgroundColor: "#3b82f6",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#3b82f6",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

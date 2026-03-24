@@ -1,10 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { reportsRepository } from '../infrastructure/reports.repository';
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { reportsRepository } from "../infrastructure/reports.repository";
 
 export const useReportsDailyReportQuery = (date: Date) => {
-  const formattedDate = format(date, 'yyyy-MM-dd');
+  const formattedDate = format(date, "yyyy-MM-dd");
 
   return useQuery({
     queryKey: queryKeys.reports.dailyReport(formattedDate),
@@ -36,18 +36,28 @@ export const useReportsProfitQuery = (startDate: string, endDate: string) =>
     enabled: !!startDate && !!endDate,
   });
 
-export const useReportsCurrencyQuery = (currencyId: number, startDate?: string, endDate?: string) =>
+export const useReportsCurrencyQuery = (
+  currencyId: number,
+  startDate?: string,
+  endDate?: string,
+) =>
   useQuery({
     queryKey: queryKeys.reports.currencyReport(currencyId, startDate, endDate),
-    queryFn: () => reportsRepository.getCurrencyReport(currencyId, startDate, endDate),
+    queryFn: () =>
+      reportsRepository.getCurrencyReport(currencyId, startDate, endDate),
     staleTime: 1000 * 60 * 5,
     enabled: !!currencyId,
   });
 
-export const useReportsExpensesQuery = (startDate?: string, endDate?: string, category?: string) =>
+export const useReportsExpensesQuery = (
+  startDate?: string,
+  endDate?: string,
+  category?: string,
+) =>
   useQuery({
     queryKey: queryKeys.reports.expensesReport(startDate, endDate, category),
-    queryFn: () => reportsRepository.getExpensesReport(startDate, endDate, category),
+    queryFn: () =>
+      reportsRepository.getExpensesReport(startDate, endDate, category),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -73,7 +83,10 @@ export const useReportsCashFlowQuery = (startDate: string, endDate: string) =>
     enabled: !!startDate && !!endDate,
   });
 
-export const useReportsAuditSummaryQuery = (startDate?: string, endDate?: string) =>
+export const useReportsAuditSummaryQuery = (
+  startDate?: string,
+  endDate?: string,
+) =>
   useQuery({
     queryKey: queryKeys.reports.auditSummary(startDate, endDate),
     queryFn: () => reportsRepository.getAuditSummary(startDate, endDate),

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useState, useEffect } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   View,
   Text,
@@ -9,21 +9,19 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   Dimensions,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeInDown } from '../animations';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { spacing, borderRadius } from '../../theme';
-import { useColors, useShadows } from '../../store/themeStore';
-import type {
-  ExpenseItem,
-  CreateExpenseItemInput,
-} from '../../types';
+} from "react-native";
+import { Alert } from "../../utils/alert";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { Ionicons } from "@expo/vector-icons";
+import { FadeInDown } from "../animations";
+import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
+import { spacing, borderRadius } from "../../theme";
+import { useColors, useShadows } from "../../store/themeStore";
+import type { ExpenseItem, CreateExpenseItemInput } from "../../types";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 type ExpenseItemFormModalProps = {
   visible: boolean;
@@ -46,9 +44,9 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
   const themeShadows = useShadows();
   const insets = useSafeAreaInsets();
 
-  const [name, setName] = useState('');
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('');
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,11 +58,11 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
       if (expense) {
         setName(expense.name);
         setAmount(parseFloat(expense.amount).toFixed(2));
-        setCategory(expense.category || '');
+        setCategory(expense.category || "");
       } else {
-        setName('');
-        setAmount('');
-        setCategory('');
+        setName("");
+        setAmount("");
+        setCategory("");
       }
       setErrors({});
       setShowCategoryPicker(false);
@@ -75,10 +73,10 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!name.trim()) {
-      newErrors.name = 'El nombre es requerido';
+      newErrors.name = "El nombre es requerido";
     }
     if (!amount || Number(amount) <= 0) {
-      newErrors.amount = 'El monto debe ser mayor a cero';
+      newErrors.amount = "El monto debe ser mayor a cero";
     }
 
     setErrors(newErrors);
@@ -96,14 +94,17 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
         category: category.trim() || undefined,
       };
 
-      console.log('Payload a enviar:', JSON.stringify(payload, null, 2));
-      
+      console.log("Payload a enviar:", JSON.stringify(payload, null, 2));
+
       await onSubmit(payload);
       onClose();
     } catch (error: any) {
-      console.error('Error al guardar gasto:', error);
-      const errorMessage = error?.response?.data?.message || error?.message || 'No se pudo guardar el gasto. Intenta de nuevo.';
-      Alert.alert('Error', errorMessage);
+      console.error("Error al guardar gasto:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "No se pudo guardar el gasto. Intenta de nuevo.";
+      Alert.alert("Error", errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -115,7 +116,7 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
   };
 
   const handleClearCategory = () => {
-    setCategory('');
+    setCategory("");
     setShowCategoryPicker(false);
   };
 
@@ -127,30 +128,47 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
     <Modal visible={visible} animationType="slide" transparent>
       <KeyboardAvoidingView
         style={styles.overlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
-        <View style={[styles.wrapper, { paddingBottom: insets.bottom || spacing.md }]}>
+        <View
+          style={[
+            styles.wrapper,
+            { paddingBottom: insets.bottom || spacing.md },
+          ]}
+        >
           <FadeInDown>
-            <View style={[
-              styles.container, 
-              { 
-                backgroundColor: themeColors.card, 
-                maxHeight: modalHeight,
-              }, 
-              themeShadows.lg
-            ]}>
+            <View
+              style={[
+                styles.container,
+                {
+                  backgroundColor: themeColors.card,
+                  maxHeight: modalHeight,
+                },
+                themeShadows.lg,
+              ]}
+            >
               <View style={styles.header}>
-                <Text style={[styles.title, { color: themeColors.text.primary }]}>
-                  {isEditing ? 'Editar Gasto' : '+ Nuevo Gasto'}
+                <Text
+                  style={[styles.title, { color: themeColors.text.primary }]}
+                >
+                  {isEditing ? "Editar Gasto" : "+ Nuevo Gasto"}
                 </Text>
-                <TouchableOpacity testID="close-expense-item-modal" onPress={onClose} style={styles.closeButton}>
-                  <Ionicons name="close" size={24} color={themeColors.text.primary} />
+                <TouchableOpacity
+                  testID="close-expense-item-modal"
+                  onPress={onClose}
+                  style={styles.closeButton}
+                >
+                  <Ionicons
+                    name="close"
+                    size={24}
+                    color={themeColors.text.primary}
+                  />
                 </TouchableOpacity>
               </View>
 
-              <ScrollView 
-                style={[styles.content, { maxHeight: contentHeight }]} 
+              <ScrollView
+                style={[styles.content, { maxHeight: contentHeight }]}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
               >
@@ -164,7 +182,14 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
                 />
 
                 <View style={styles.amountContainer}>
-                  <Text style={[styles.currencySymbol, { color: themeColors.text.secondary }]}>$</Text>
+                  <Text
+                    style={[
+                      styles.currencySymbol,
+                      { color: themeColors.text.secondary },
+                    ]}
+                  >
+                    $
+                  </Text>
                   <Input
                     testID="expense-item-amount-input"
                     label="Monto *"
@@ -178,10 +203,15 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
                 </View>
 
                 <View style={styles.categorySection}>
-                  <Text style={[styles.categoryLabel, { color: themeColors.text.primary }]}>
+                  <Text
+                    style={[
+                      styles.categoryLabel,
+                      { color: themeColors.text.primary },
+                    ]}
+                  >
                     Categoría (opcional)
                   </Text>
-                  
+
                   {!showCategoryPicker ? (
                     <TouchableOpacity
                       testID="expense-item-category-picker-button"
@@ -190,17 +220,23 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
                         styles.categoryButton,
                         {
                           backgroundColor: themeColors.background,
-                          borderColor: errors.category ? themeColors.danger : themeColors.border,
+                          borderColor: errors.category
+                            ? themeColors.danger
+                            : themeColors.border,
                         },
                       ]}
                     >
                       <Text
                         style={[
                           styles.categoryButtonText,
-                          { color: category ? themeColors.text.primary : themeColors.text.secondary },
+                          {
+                            color: category
+                              ? themeColors.text.primary
+                              : themeColors.text.secondary,
+                          },
                         ]}
                       >
-                        {category || 'Seleccionar categoría'}
+                        {category || "Seleccionar categoría"}
                       </Text>
                       <Ionicons
                         name="chevron-down"
@@ -212,7 +248,10 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
                     <View
                       style={[
                         styles.categoryPicker,
-                        { backgroundColor: themeColors.background, borderColor: themeColors.border },
+                        {
+                          backgroundColor: themeColors.background,
+                          borderColor: themeColors.border,
+                        },
                       ]}
                     >
                       {categories.length > 0 ? (
@@ -223,14 +262,19 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
                             onPress={() => handleSelectCategory(cat)}
                             style={[
                               styles.categoryOption,
-                              category === cat && { backgroundColor: `${themeColors.primary[500]}20` },
+                              category === cat && {
+                                backgroundColor: `${themeColors.primary[500]}20`,
+                              },
                             ]}
                           >
                             <Text
                               style={[
                                 styles.categoryOptionText,
                                 { color: themeColors.text.primary },
-                                category === cat && { color: themeColors.primary[500], fontWeight: '600' },
+                                category === cat && {
+                                  color: themeColors.primary[500],
+                                  fontWeight: "600",
+                                },
                               ]}
                             >
                               {cat}
@@ -238,7 +282,12 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
                           </TouchableOpacity>
                         ))
                       ) : (
-                        <Text style={[styles.noCategoriesText, { color: themeColors.text.secondary }]}>
+                        <Text
+                          style={[
+                            styles.noCategoriesText,
+                            { color: themeColors.text.secondary },
+                          ]}
+                        >
                           No hay categorías guardadas
                         </Text>
                       )}
@@ -247,10 +296,22 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
                         onPress={() => {
                           setShowCategoryPicker(false);
                         }}
-                        style={[styles.newCategoryButton, { borderColor: themeColors.border }]}
+                        style={[
+                          styles.newCategoryButton,
+                          { borderColor: themeColors.border },
+                        ]}
                       >
-                        <Ionicons name="add" size={18} color={themeColors.primary[500]} />
-                        <Text style={[styles.newCategoryText, { color: themeColors.primary[500] }]}>
+                        <Ionicons
+                          name="add"
+                          size={18}
+                          color={themeColors.primary[500]}
+                        />
+                        <Text
+                          style={[
+                            styles.newCategoryText,
+                            { color: themeColors.primary[500] },
+                          ]}
+                        >
                           Crear nueva categoría
                         </Text>
                       </TouchableOpacity>
@@ -260,7 +321,12 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
                           onPress={handleClearCategory}
                           style={styles.clearCategoryButton}
                         >
-                          <Text style={[styles.clearCategoryText, { color: themeColors.danger }]}>
+                          <Text
+                            style={[
+                              styles.clearCategoryText,
+                              { color: themeColors.danger },
+                            ]}
+                          >
                             Quitar categoría
                           </Text>
                         </TouchableOpacity>
@@ -268,7 +334,7 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
                     </View>
                   )}
                 </View>
-                
+
                 {/* Espacio extra para que no quede pegado al footer */}
                 <View style={{ height: spacing.xl }} />
               </ScrollView>
@@ -283,7 +349,7 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
                 />
                 <Button
                   testID="expense-item-submit-button"
-                  title={isEditing ? 'Guardar' : 'Crear'}
+                  title={isEditing ? "Guardar" : "Crear"}
                   onPress={handleSubmit}
                   loading={isSubmitting || isLoading}
                   disabled={isSubmitting || isLoading}
@@ -301,11 +367,11 @@ export const ExpenseItemFormModal: React.FC<ExpenseItemFormModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   wrapper: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
     paddingHorizontal: spacing.md,
   },
   container: {
@@ -313,16 +379,16 @@ const styles = StyleSheet.create({
     borderTopRightRadius: borderRadius.xl,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    borderBottomColor: "rgba(0,0,0,0.1)",
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   closeButton: {
     padding: spacing.xs,
@@ -331,13 +397,13 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   amountContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexDirection: "row",
+    alignItems: "flex-end",
     marginTop: spacing.md,
   },
   currencySymbol: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: "600",
     marginRight: spacing.sm,
     marginBottom: spacing.lg,
   },
@@ -349,13 +415,13 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: spacing.xs,
   },
   categoryButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.md,
@@ -380,21 +446,21 @@ const styles = StyleSheet.create({
   noCategoriesText: {
     padding: spacing.md,
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
   },
   newCategoryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: spacing.xs,
     paddingVertical: spacing.sm,
     marginTop: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
+    borderTopColor: "rgba(0,0,0,0.1)",
   },
   newCategoryText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   clearCategoryButton: {
     paddingVertical: spacing.sm,
@@ -402,14 +468,14 @@ const styles = StyleSheet.create({
   },
   clearCategoryText: {
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
   },
   footer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
     padding: spacing.lg,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
+    borderTopColor: "rgba(0,0,0,0.1)",
   },
 });

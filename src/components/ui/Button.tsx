@@ -1,10 +1,16 @@
-import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { borderRadius } from '../../theme';
-import { useColors } from '../../store/themeStore';
+import React from "react";
+import {
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+  ViewStyle,
+  TextStyle,
+} from "react-native";
+import { borderRadius } from "../../theme";
+import { useColors } from "../../store/themeStore";
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
-type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
+type ButtonSize = "sm" | "md" | "lg";
 
 type ButtonProps = {
   testID?: string;
@@ -22,8 +28,8 @@ type ButtonProps = {
 export const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   loading = false,
   disabled = false,
   style,
@@ -35,37 +41,41 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getVariantStyles = (variant: ButtonVariant): ViewStyle => {
     switch (variant) {
-      case 'primary':
+      case "primary":
         return { backgroundColor: colors.primary[500] };
-      case 'secondary':
+      case "secondary":
         return { backgroundColor: colors.primary[100] };
-      case 'outline':
-        return { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.primary[500] };
-      case 'ghost':
-        return { backgroundColor: 'transparent' };
+      case "outline":
+        return {
+          backgroundColor: "transparent",
+          borderWidth: 1,
+          borderColor: colors.primary[500],
+        };
+      case "ghost":
+        return { backgroundColor: "transparent" };
     }
   };
 
   const getSizeStyles = (size: ButtonSize): ViewStyle => {
     switch (size) {
-      case 'sm':
+      case "sm":
         return { paddingVertical: 8, paddingHorizontal: 16 };
-      case 'md':
+      case "md":
         return { paddingVertical: 12, paddingHorizontal: 24 };
-      case 'lg':
+      case "lg":
         return { paddingVertical: 16, paddingHorizontal: 32 };
     }
   };
 
   const getTextColor = (variant: ButtonVariant): string => {
     switch (variant) {
-      case 'primary':
-        return '#FFFFFF';
-      case 'secondary':
+      case "primary":
+        return "#FFFFFF";
+      case "secondary":
         return colors.primary[700];
-      case 'outline':
+      case "outline":
         return colors.primary[500];
-      case 'ghost':
+      case "ghost":
         return colors.primary[500];
     }
   };
@@ -79,9 +89,9 @@ export const Button: React.FC<ButtonProps> = ({
       style={[
         {
           borderRadius: borderRadius.md,
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'row',
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "row",
         },
         getVariantStyles(variant),
         getSizeStyles(size),
@@ -95,8 +105,8 @@ export const Button: React.FC<ButtonProps> = ({
         <Text
           style={[
             {
-              fontSize: size === 'sm' ? 14 : 16,
-              fontWeight: '600',
+              fontSize: size === "sm" ? 14 : 16,
+              fontWeight: "600",
               color: getTextColor(variant),
             },
             textStyle,

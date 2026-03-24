@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeInDown, FadeIn } from '../animations';
-import { useColors, useShadows } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
-import type { User } from '../../types';
+import React, { useMemo } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeInDown, FadeIn } from "../animations";
+import { useColors, useShadows } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
+import type { User } from "../../types";
 
 type BlockedUser = User & {
   blockedReason?: string;
@@ -24,22 +24,28 @@ export const ReportsBlockedList: React.FC<ReportsBlockedListProps> = ({
 }) => {
   const colors = useColors();
   const shadows = useShadows();
-  const styles = useMemo(() => createStyles(colors, shadows), [colors, shadows]);
+  const styles = useMemo(
+    () => createStyles(colors, shadows),
+    [colors, shadows],
+  );
 
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return 'Fecha no disponible';
+    if (!dateStr) return "Fecha no disponible";
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return date.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const isBlocked = (user: User) => {
-    return user.isBanned || (user.blockedUntil && new Date(user.blockedUntil) > new Date());
+    return (
+      user.isBanned ||
+      (user.blockedUntil && new Date(user.blockedUntil) > new Date())
+    );
   };
 
   const blockedUsers = useMemo(() => {
@@ -80,40 +86,53 @@ export const ReportsBlockedList: React.FC<ReportsBlockedListProps> = ({
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.listContent}
+      showsVerticalScrollIndicator={false}
+    >
       {renderHeader()}
-      {blockedUsers.length === 0 ? (
-        renderEmpty()
-      ) : (
-        blockedUsers.map((item, index) => (
-          <FadeInDown key={item.id} delay={delay + index * 30} duration={250}>
-            <View style={styles.userRow}>
-              <View style={styles.iconWrap}>
-                <Ionicons name="lock-closed" size={18} color={colors.danger} />
-              </View>
+      {blockedUsers.length === 0
+        ? renderEmpty()
+        : blockedUsers.map((item, index) => (
+            <FadeInDown key={item.id} delay={delay + index * 30} duration={250}>
+              <View style={styles.userRow}>
+                <View style={styles.iconWrap}>
+                  <Ionicons
+                    name="lock-closed"
+                    size={18}
+                    color={colors.danger}
+                  />
+                </View>
 
-              <View style={styles.userInfo}>
-                <Text style={styles.userName} numberOfLines={1}>
-                  {item.name}
-                </Text>
-                <Text style={styles.userEmail} numberOfLines={1}>
-                  {item.email}
-                </Text>
-              </View>
+                <View style={styles.userInfo}>
+                  <Text style={styles.userName} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  <Text style={styles.userEmail} numberOfLines={1}>
+                    {item.email}
+                  </Text>
+                </View>
 
-              <View style={styles.blockInfo}>
-                <Text style={styles.blockLabel}>Bloqueado</Text>
-                <Text style={styles.blockDate}>{formatDate(item.blockedUntil ?? item.bannedUntil ?? undefined)}</Text>
+                <View style={styles.blockInfo}>
+                  <Text style={styles.blockLabel}>Bloqueado</Text>
+                  <Text style={styles.blockDate}>
+                    {formatDate(
+                      item.blockedUntil ?? item.bannedUntil ?? undefined,
+                    )}
+                  </Text>
+                </View>
               </View>
-            </View>
-          </FadeInDown>
-        ))
-      )}
+            </FadeInDown>
+          ))}
     </ScrollView>
   );
 };
 
-const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<typeof useShadows>) =>
+const createStyles = (
+  colors: ReturnType<typeof useColors>,
+  shadows: ReturnType<typeof useShadows>,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -125,20 +144,20 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       marginBottom: spacing.md,
     },
     statsRow: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: spacing.md,
     },
     statItem: {
       backgroundColor: colors.card,
       borderRadius: borderRadius.md,
       padding: spacing.md,
-      alignItems: 'center',
+      alignItems: "center",
       minWidth: 100,
       ...shadows.sm,
     },
     statValue: {
       fontSize: 28,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.danger,
     },
     statLabel: {
@@ -147,8 +166,8 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       marginTop: 2,
     },
     userRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.sm,
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.md,
@@ -164,15 +183,15 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       height: 36,
       borderRadius: 18,
       backgroundColor: `${colors.danger}16`,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     userInfo: {
       flex: 1,
     },
     userName: {
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.primary,
     },
     userEmail: {
@@ -181,13 +200,13 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       marginTop: 2,
     },
     blockInfo: {
-      alignItems: 'flex-end',
+      alignItems: "flex-end",
     },
     blockLabel: {
       fontSize: 11,
       color: colors.danger,
-      fontWeight: '600',
-      textTransform: 'uppercase',
+      fontWeight: "600",
+      textTransform: "uppercase",
     },
     blockDate: {
       fontSize: 11,
@@ -195,22 +214,22 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       marginTop: 2,
     },
     emptyContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
       paddingVertical: spacing.xl * 2,
       paddingHorizontal: spacing.lg,
     },
     emptyTitle: {
       marginTop: spacing.md,
       fontSize: 18,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.primary,
     },
     emptyText: {
       marginTop: spacing.xs,
       fontSize: 14,
       color: colors.text.secondary,
-      textAlign: 'center',
+      textAlign: "center",
     },
     skeleton: {
       height: 200,

@@ -1,8 +1,16 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ViewStyle, Animated, Easing, StyleProp } from 'react-native';
-import { FadeIn } from '../animations';
-import { colors, spacing, borderRadius } from '../../theme';
-import { useColors, useShadows } from '../../store/themeStore';
+import React, { useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ViewStyle,
+  Animated,
+  Easing,
+  StyleProp,
+} from "react-native";
+import { FadeIn } from "../animations";
+import { colors, spacing, borderRadius } from "../../theme";
+import { useColors, useShadows } from "../../store/themeStore";
 
 type BarChartProps = {
   data: { label: string; value: number; color?: string }[];
@@ -59,9 +67,7 @@ const BarItem: React.FC<BarItemProps> = ({
   return (
     <View style={styles.barWrapper}>
       {showValue && (
-        <Text style={styles.barValue}>
-          {value.toLocaleString()}
-        </Text>
+        <Text style={styles.barValue}>{value.toLocaleString()}</Text>
       )}
       <Animated.View
         style={[
@@ -90,7 +96,7 @@ export const BarChart: React.FC<BarChartProps> = ({
   animated = true,
   style,
 }) => {
-  const max = maxValue || Math.max(...data.map(d => d.value), 1);
+  const max = maxValue || Math.max(...data.map((d) => d.value), 1);
 
   return (
     <FadeIn style={[styles.chartContainer, style]}>
@@ -154,18 +160,19 @@ const HorizontalBarItem: React.FC<HorizontalBarItemProps> = ({
     <View style={styles.horizontalBarWrapper}>
       <View style={styles.horizontalBarHeader}>
         <Text style={styles.horizontalBarLabel}>{label}</Text>
-        <Text style={styles.horizontalBarValue}>
-          {percentage.toFixed(1)}%
-        </Text>
+        <Text style={styles.horizontalBarValue}>{percentage.toFixed(1)}%</Text>
       </View>
       <View style={styles.horizontalBarBackground}>
         <Animated.View
           style={[
             styles.horizontalBar,
-            { backgroundColor: color, width: animatedWidth.interpolate({
-              inputRange: [0, 100],
-              outputRange: ['0%', '100%'],
-            }) },
+            {
+              backgroundColor: color,
+              width: animatedWidth.interpolate({
+                inputRange: [0, 100],
+                outputRange: ["0%", "100%"],
+              }),
+            },
           ]}
         />
       </View>
@@ -186,7 +193,7 @@ export const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
   animated = true,
   style,
 }) => {
-  const max = maxValue || Math.max(...data.map(d => d.value), 1);
+  const max = maxValue || Math.max(...data.map((d) => d.value), 1);
 
   return (
     <FadeIn style={[styles.horizontalChartContainer, style]}>
@@ -246,7 +253,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
 
   const rotateDeg = rotation.interpolate({
     inputRange: [0, 100],
-    outputRange: ['0deg', '360deg'],
+    outputRange: ["0deg", "360deg"],
   });
 
   return (
@@ -266,7 +273,12 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
         />
         <View style={styles.circularContent}>
           {children || (
-            <Text style={[styles.circularPercentage, { color: themeColors.text.primary }]}>
+            <Text
+              style={[
+                styles.circularPercentage,
+                { color: themeColors.text.primary },
+              ]}
+            >
               {percentage.toFixed(0)}%
             </Text>
           )}
@@ -281,7 +293,7 @@ type StatsCardProps = {
   value: string | number;
   subtitle?: string;
   icon?: React.ReactNode;
-  trend?: 'up' | 'down' | 'neutral';
+  trend?: "up" | "down" | "neutral";
   trendValue?: string;
   color?: string;
   animated?: boolean;
@@ -328,9 +340,12 @@ export const StatsCard: React.FC<StatsCardProps> = ({
 
   const getTrendColor = () => {
     switch (trend) {
-      case 'up': return themeColors.success;
-      case 'down': return themeColors.danger;
-      default: return themeColors.text.secondary;
+      case "up":
+        return themeColors.success;
+      case "down":
+        return themeColors.danger;
+      default:
+        return themeColors.text.secondary;
     }
   };
 
@@ -347,14 +362,28 @@ export const StatsCard: React.FC<StatsCardProps> = ({
         style,
       ]}
     >
-      {icon && <View style={[styles.statsIconContainer, { backgroundColor: `${color}15` }]}>{icon}</View>}
-      <Text style={[styles.statsTitle, { color: themeColors.text.secondary }]}>{title}</Text>
+      {icon && (
+        <View
+          style={[styles.statsIconContainer, { backgroundColor: `${color}15` }]}
+        >
+          {icon}
+        </View>
+      )}
+      <Text style={[styles.statsTitle, { color: themeColors.text.secondary }]}>
+        {title}
+      </Text>
       <Text style={[styles.statsValue, { color }]}>{value}</Text>
-      {subtitle && <Text style={[styles.statsSubtitle, { color: themeColors.text.tertiary }]}>{subtitle}</Text>}
+      {subtitle && (
+        <Text
+          style={[styles.statsSubtitle, { color: themeColors.text.tertiary }]}
+        >
+          {subtitle}
+        </Text>
+      )}
       {trend && trendValue && (
         <View style={styles.trendContainer}>
           <Text style={[styles.trendValue, { color: getTrendColor() }]}>
-            {trend === 'up' ? '↑' : trend === 'down' ? '↓' : ''} {trendValue}
+            {trend === "up" ? "↑" : trend === "down" ? "↓" : ""} {trendValue}
           </Text>
         </View>
       )}
@@ -410,25 +439,25 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   barsContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-around",
     paddingHorizontal: spacing.sm,
   },
   barWrapper: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
     paddingHorizontal: 4,
   },
   bar: {
-    width: '100%',
+    width: "100%",
     maxWidth: 40,
     borderRadius: borderRadius.sm,
     minHeight: 4,
   },
   barValue: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text.primary,
     marginBottom: 4,
   },
@@ -436,7 +465,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.text.secondary,
     marginTop: 4,
-    textAlign: 'center',
+    textAlign: "center",
   },
   horizontalChartContainer: {
     gap: spacing.md,
@@ -445,45 +474,45 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   horizontalBarHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   horizontalBarLabel: {
     fontSize: 13,
     color: colors.text.primary,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   horizontalBarValue: {
     fontSize: 13,
     color: colors.text.secondary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   horizontalBarBackground: {
     height: 8,
     backgroundColor: colors.border,
     borderRadius: borderRadius.full,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   horizontalBar: {
-    height: '100%',
+    height: "100%",
     borderRadius: borderRadius.full,
   },
   circularContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   circularBackground: {
-    position: 'absolute',
+    position: "absolute",
   },
   circularContent: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 999,
   },
   circularPercentage: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     color: colors.text.primary,
   },
   statsCard: {
@@ -497,8 +526,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: spacing.sm,
   },
   statsTitle: {
@@ -508,7 +537,7 @@ const styles = StyleSheet.create({
   },
   statsValue: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   statsSubtitle: {
     fontSize: 12,
@@ -520,12 +549,12 @@ const styles = StyleSheet.create({
   },
   trendValue: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   miniChartContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    height: '100%',
+    flexDirection: "row",
+    alignItems: "flex-end",
+    height: "100%",
   },
   miniChartBar: {
     flex: 1,

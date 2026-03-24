@@ -1,9 +1,15 @@
-import React, { useMemo, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FadeInDown } from '../animations';
-import { useColors } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
-import type { DashboardGrowthPoint } from '../../modules/admin/application/useAdminReportsDashboard';
+import React, { useMemo, useState } from "react";
+import {
+  LayoutChangeEvent,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { FadeInDown } from "../animations";
+import { useColors } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
+import type { DashboardGrowthPoint } from "../../modules/admin/application/useAdminReportsDashboard";
 
 type AdminReportsUsersGrowthCardProps = {
   points: DashboardGrowthPoint[];
@@ -19,7 +25,11 @@ type PointCoordinates = {
   label: string;
 };
 
-function buildCoordinates(points: DashboardGrowthPoint[], width: number, height: number): PointCoordinates[] {
+function buildCoordinates(
+  points: DashboardGrowthPoint[],
+  width: number,
+  height: number,
+): PointCoordinates[] {
   if (!points.length || width <= 0) return [];
 
   const maxValue = Math.max(...points.map((point) => point.value), 1);
@@ -27,7 +37,9 @@ function buildCoordinates(points: DashboardGrowthPoint[], width: number, height:
   const drawableWidth = width - horizontalPadding * 2;
 
   return points.map((point, index) => {
-    const x = horizontalPadding + (drawableWidth * index) / Math.max(points.length - 1, 1);
+    const x =
+      horizontalPadding +
+      (drawableWidth * index) / Math.max(points.length - 1, 1);
     const normalized = point.value / maxValue;
     const y = height - normalized * (height - 24) - 12;
 
@@ -35,13 +47,9 @@ function buildCoordinates(points: DashboardGrowthPoint[], width: number, height:
   });
 }
 
-export const AdminReportsUsersGrowthCard: React.FC<AdminReportsUsersGrowthCardProps> = ({
-  points,
-  peakLabel,
-  isEmpty = false,
-  onPressSeeAll,
-  delay = 120,
-}) => {
+export const AdminReportsUsersGrowthCard: React.FC<
+  AdminReportsUsersGrowthCardProps
+> = ({ points, peakLabel, isEmpty = false, onPressSeeAll, delay = 120 }) => {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -81,7 +89,9 @@ export const AdminReportsUsersGrowthCard: React.FC<AdminReportsUsersGrowthCardPr
 
         {isEmpty ? (
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyText}>Sin actividad de usuarios para este período</Text>
+            <Text style={styles.emptyText}>
+              Sin actividad de usuarios para este período
+            </Text>
           </View>
         ) : (
           <View style={styles.chartWrap} onLayout={handleChartLayout}>
@@ -119,7 +129,8 @@ export const AdminReportsUsersGrowthCard: React.FC<AdminReportsUsersGrowthCardPr
                     {
                       left: point.x - 5,
                       top: point.y - 5,
-                      backgroundColor: index === peakIndex ? '#4DB1FF' : '#1D8FFF',
+                      backgroundColor:
+                        index === peakIndex ? "#4DB1FF" : "#1D8FFF",
                     },
                   ]}
                 />
@@ -166,87 +177,87 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       minHeight: 240,
     },
     headerRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       marginBottom: spacing.sm,
     },
     title: {
       color: colors.text.primary,
       fontSize: 22,
-      fontWeight: '700',
+      fontWeight: "700",
     },
     seeAllButton: {
       minHeight: 44,
-      justifyContent: 'center',
+      justifyContent: "center",
       paddingHorizontal: spacing.xs,
     },
     seeAllText: {
-      color: '#1D8FFF',
-      fontWeight: '700',
+      color: "#1D8FFF",
+      fontWeight: "700",
       fontSize: 18,
     },
     chartWrap: {
       borderRadius: borderRadius.lg,
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
       paddingTop: spacing.sm,
       minHeight: 240,
     },
     linesArea: {
       height: 190,
-      position: 'relative',
+      position: "relative",
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
     segment: {
-      position: 'absolute',
+      position: "absolute",
       height: 2,
-      backgroundColor: '#1D8FFF',
+      backgroundColor: "#1D8FFF",
     },
     point: {
-      position: 'absolute',
+      position: "absolute",
       width: 10,
       height: 10,
       borderRadius: borderRadius.full,
       borderWidth: 1,
-      borderColor: '#E4F2FF',
+      borderColor: "#E4F2FF",
     },
     peakTag: {
-      position: 'absolute',
+      position: "absolute",
       minHeight: 30,
       paddingHorizontal: spacing.sm,
       borderRadius: borderRadius.full,
-      backgroundColor: '#1D8FFF',
-      justifyContent: 'center',
+      backgroundColor: "#1D8FFF",
+      justifyContent: "center",
     },
     peakText: {
-      color: '#EAF5FF',
-      fontWeight: '700',
+      color: "#EAF5FF",
+      fontWeight: "700",
       fontSize: 13,
     },
     labelsRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      justifyContent: "space-between",
       marginTop: spacing.sm,
       paddingHorizontal: spacing.xs,
     },
     labelText: {
       color: colors.text.secondary,
       fontSize: 13,
-      fontWeight: '700',
+      fontWeight: "700",
     },
     emptyWrap: {
       borderRadius: borderRadius.md,
       borderWidth: 1,
-      borderColor: '#15385B',
+      borderColor: "#15385B",
       paddingVertical: spacing.lg,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     emptyText: {
       color: colors.text.secondary,
       fontSize: 14,
-      fontWeight: '500',
-      textAlign: 'center',
+      fontWeight: "500",
+      textAlign: "center",
     },
   });

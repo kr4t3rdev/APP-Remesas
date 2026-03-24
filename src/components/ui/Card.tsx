@@ -1,9 +1,15 @@
-import React from 'react';
-import { View, Text, ViewStyle, TouchableOpacity, StyleSheet } from 'react-native';
-import { borderRadius, spacing } from '../../theme';
-import { useColors, useShadows, useIsDark } from '../../store/themeStore';
+import React from "react";
+import {
+  View,
+  Text,
+  ViewStyle,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import { borderRadius, spacing } from "../../theme";
+import { useColors, useShadows, useIsDark } from "../../store/themeStore";
 
-type CardVariant = 'default' | 'glass' | 'gradient' | 'elevated';
+type CardVariant = "default" | "glass" | "gradient" | "elevated";
 
 type CardProps = {
   children: React.ReactNode;
@@ -20,7 +26,7 @@ export const Card: React.FC<CardProps> = ({
   children,
   title,
   subtitle,
-  variant = 'default',
+  variant = "default",
   gradientColors,
   glowColor,
   style,
@@ -37,26 +43,32 @@ export const Card: React.FC<CardProps> = ({
     };
 
     switch (variant) {
-      case 'elevated':
+      case "elevated":
         return {
           ...baseStyle,
           backgroundColor: colors.card,
           ...shadows.lg,
         };
-      case 'glass':
+      case "glass":
         return {
           ...baseStyle,
-          backgroundColor: isDark ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: isDark
+            ? "rgba(30, 41, 59, 0.8)"
+            : "rgba(255, 255, 255, 0.9)",
           borderWidth: 1,
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+          borderColor: isDark
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.05)",
           ...shadows.md,
         };
-      case 'gradient':
+      case "gradient":
         return {
           ...baseStyle,
           backgroundColor: colors.card,
           borderWidth: 1,
-          borderColor: gradientColors ? gradientColors[0] + '30' : colors.primary[500] + '30',
+          borderColor: gradientColors
+            ? gradientColors[0] + "30"
+            : colors.primary[500] + "30",
           ...shadows.glow,
         };
       default:
@@ -76,7 +88,7 @@ export const Card: React.FC<CardProps> = ({
             <Text
               style={{
                 fontSize: 18,
-                fontWeight: '600',
+                fontWeight: "600",
                 color: colors.text.primary,
               }}
             >

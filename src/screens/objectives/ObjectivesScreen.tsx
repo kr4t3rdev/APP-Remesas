@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,42 +6,49 @@ import {
   RefreshControl,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeInDown } from '../../components/animations';
-import { ObjectiveCard } from '../../components/objectives/ObjectiveCard';
-import { ObjectiveFormModal } from '../../components/objectives/ObjectiveFormModal';
-import { spacing, borderRadius } from '../../theme';
-import { useColors, useShadows } from '../../store/themeStore';
-import type { Objective, ObjectiveStatus, CreateObjectiveInput } from '../../types';
+} from "react-native";
+import { Alert } from "../../utils/alert";
+
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeInDown } from "../../components/animations";
+import { ObjectiveCard } from "../../components/objectives/ObjectiveCard";
+import { ObjectiveFormModal } from "../../components/objectives/ObjectiveFormModal";
+import { spacing, borderRadius } from "../../theme";
+import { useColors, useShadows } from "../../store/themeStore";
+import type {
+  Objective,
+  ObjectiveStatus,
+  CreateObjectiveInput,
+} from "../../types";
 import {
   useObjectivesQuery,
   useCreateObjectiveMutation,
   useUpdateObjectiveMutation,
   useUpdateObjectiveStatusMutation,
   useDeleteObjectiveMutation,
-} from '../../modules/objectives/application/useObjectives';
+} from "../../modules/objectives/application/useObjectives";
 
 const FILTERS = [
-  { key: 'all', label: 'Todos' },
-  { key: 'ACTIVO', label: 'Activos' },
-  { key: 'COMPLETADO', label: 'Completados' },
-  { key: 'PAUSADO', label: 'Pausados' },
+  { key: "all", label: "Todos" },
+  { key: "ACTIVO", label: "Activos" },
+  { key: "COMPLETADO", label: "Completados" },
+  { key: "PAUSADO", label: "Pausados" },
 ];
 
 export const ObjectivesScreen: React.FC = () => {
   const themeColors = useColors();
   const themeShadows = useShadows();
 
-  const [filter, setFilter] = useState<string>('all');
+  const [filter, setFilter] = useState<string>("all");
   const [showModal, setShowModal] = useState(false);
-  const [editingObjective, setEditingObjective] = useState<Objective | null>(null);
+  const [editingObjective, setEditingObjective] = useState<Objective | null>(
+    null,
+  );
 
   const selectedStatus = useMemo<ObjectiveStatus | undefined>(
-    () => (filter === 'all' ? undefined : (filter as ObjectiveStatus)),
-    [filter]
+    () => (filter === "all" ? undefined : (filter as ObjectiveStatus)),
+    [filter],
   );
 
   const objectivesQuery = useObjectivesQuery(selectedStatus);
@@ -53,12 +60,15 @@ export const ObjectivesScreen: React.FC = () => {
   const objectives = objectivesQuery.data ?? [];
 
   const stats = useMemo(() => {
-    const activos = objectives.filter((o) => o.status === 'ACTIVO').length;
-    const completados = objectives.filter((o) => o.status === 'COMPLETADO').length;
-    const pausados = objectives.filter((o) => o.status === 'PAUSADO').length;
+    const activos = objectives.filter((o) => o.status === "ACTIVO").length;
+    const completados = objectives.filter(
+      (o) => o.status === "COMPLETADO",
+    ).length;
+    const pausados = objectives.filter((o) => o.status === "PAUSADO").length;
     const totalProgress =
       objetivos.length > 0
-        ? objectives.reduce((acc, o) => acc + (o.percentage || 0), 0) / objectives.length
+        ? objectives.reduce((acc, o) => acc + (o.percentage || 0), 0) /
+          objectives.length
         : 0;
     return { activos, completados, pausados, totalProgress };
   }, [objectives]);
@@ -67,36 +77,42 @@ export const ObjectivesScreen: React.FC = () => {
     try {
       await objectivesQuery.refetch();
     } catch {
-      Alert.alert('Error', 'No se pudieron cargar los objetivos');
+      Alert.alert("Error", "No se pudieron cargar los objetivos");
     }
   };
 
   const handleCreateObjective = async (data: CreateObjectiveInput) => {
     await createMutation.mutateAsync(data as any);
-    Alert.alert('Éxito', 'Objetivo creado correctamente');
+    Alert.alert("Éxito", "Objetivo creado correctamente");
   };
 
   const handleUpdateObjective = async (data: CreateObjectiveInput) => {
     if (!editingObjective) return;
-    await updateMutation.mutateAsync({ id: editingObjective.id, data: data as any });
-    Alert.alert('Éxito', 'Objetivo actualizado correctamente');
+    await updateMutation.mutateAsync({
+      id: editingObjective.id,
+      data: data as any,
+    });
+    Alert.alert("Éxito", "Objetivo actualizado correctamente");
   };
 
   const handleDeleteObjective = async (objective: Objective) => {
     try {
       await deleteMutation.mutateAsync(objective.id);
-      Alert.alert('Éxito', 'Objetivo eliminado correctamente');
+      Alert.alert("Éxito", "Objetivo eliminado correctamente");
     } catch {
-      Alert.alert('Error', 'No se pudo eliminar el objetivo');
+      Alert.alert("Error", "No se pudo eliminar el objetivo");
     }
   };
 
-  const handleStatusChange = async (objective: Objective, newStatus: ObjectiveStatus) => {
+  const handleStatusChange = async (
+    objective: Objective,
+    newStatus: ObjectiveStatus,
+  ) => {
     try {
       await statusMutation.mutateAsync({ id: objective.id, status: newStatus });
-      Alert.alert('Éxito', 'Estado actualizado correctamente');
+      Alert.alert("Éxito", "Estado actualizado correctamente");
     } catch {
-      Alert.alert('Error', 'No se pudo actualizar el estado');
+      Alert.alert("Error", "No se pudo actualizar el estado");
     }
   };
 
@@ -116,12 +132,18 @@ export const ObjectivesScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: themeColors.background }]}
+    >
       <View style={styles.header}>
         <FadeInDown delay={0}>
           <View>
-            <Text style={[styles.title, { color: themeColors.text.primary }]}>Objetivos</Text>
-            <Text style={[styles.subtitle, { color: themeColors.text.secondary }]}>
+            <Text style={[styles.title, { color: themeColors.text.primary }]}>
+              Objetivos
+            </Text>
+            <Text
+              style={[styles.subtitle, { color: themeColors.text.secondary }]}
+            >
               Metas y progreso del negocio
             </Text>
           </View>
@@ -130,35 +152,78 @@ export const ObjectivesScreen: React.FC = () => {
 
       <FadeInDown delay={50}>
         <View style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: themeColors.card }, themeShadows.sm]}>
-            <View style={[styles.statIcon, { backgroundColor: '#10B98115' }]}>
+          <View
+            style={[
+              styles.statCard,
+              { backgroundColor: themeColors.card },
+              themeShadows.sm,
+            ]}
+          >
+            <View style={[styles.statIcon, { backgroundColor: "#10B98115" }]}>
               <Ionicons name="flag" size={20} color="#10B981" />
             </View>
             <View style={styles.statInfo}>
-              <Text style={[styles.statLabel, { color: themeColors.text.secondary }]}>Activos</Text>
-              <Text style={[styles.statValue, { color: '#10B981' }]}>{stats.activos}</Text>
+              <Text
+                style={[
+                  styles.statLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
+                Activos
+              </Text>
+              <Text style={[styles.statValue, { color: "#10B981" }]}>
+                {stats.activos}
+              </Text>
             </View>
           </View>
 
-          <View style={[styles.statCard, { backgroundColor: themeColors.card }, themeShadows.sm]}>
-            <View style={[styles.statIcon, { backgroundColor: '#6366F115' }]}>
+          <View
+            style={[
+              styles.statCard,
+              { backgroundColor: themeColors.card },
+              themeShadows.sm,
+            ]}
+          >
+            <View style={[styles.statIcon, { backgroundColor: "#6366F115" }]}>
               <Ionicons name="checkmark-circle" size={20} color="#6366F1" />
             </View>
             <View style={styles.statInfo}>
-              <Text style={[styles.statLabel, { color: themeColors.text.secondary }]}>
+              <Text
+                style={[
+                  styles.statLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
                 Completados
               </Text>
-              <Text style={[styles.statValue, { color: '#6366F1' }]}>{stats.completados}</Text>
+              <Text style={[styles.statValue, { color: "#6366F1" }]}>
+                {stats.completados}
+              </Text>
             </View>
           </View>
 
-          <View style={[styles.statCard, { backgroundColor: themeColors.card }, themeShadows.sm]}>
-            <View style={[styles.statIcon, { backgroundColor: '#F59E0B15' }]}>
+          <View
+            style={[
+              styles.statCard,
+              { backgroundColor: themeColors.card },
+              themeShadows.sm,
+            ]}
+          >
+            <View style={[styles.statIcon, { backgroundColor: "#F59E0B15" }]}>
               <Ionicons name="pause-circle" size={20} color="#F59E0B" />
             </View>
             <View style={styles.statInfo}>
-              <Text style={[styles.statLabel, { color: themeColors.text.secondary }]}>Pausados</Text>
-              <Text style={[styles.statValue, { color: '#F59E0B' }]}>{stats.pausados}</Text>
+              <Text
+                style={[
+                  styles.statLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
+                Pausados
+              </Text>
+              <Text style={[styles.statValue, { color: "#F59E0B" }]}>
+                {stats.pausados}
+              </Text>
             </View>
           </View>
         </View>
@@ -180,13 +245,16 @@ export const ObjectivesScreen: React.FC = () => {
                 style={[
                   styles.filterChip,
                   isSelected && { backgroundColor: themeColors.primary[500] },
-                  !isSelected && { backgroundColor: themeColors.card, borderColor: themeColors.border },
+                  !isSelected && {
+                    backgroundColor: themeColors.card,
+                    borderColor: themeColors.border,
+                  },
                 ]}
               >
                 <Text
                   style={[
                     styles.filterText,
-                    { color: isSelected ? '#fff' : themeColors.text.secondary },
+                    { color: isSelected ? "#fff" : themeColors.text.secondary },
                   ]}
                 >
                   {f.label}
@@ -209,11 +277,22 @@ export const ObjectivesScreen: React.FC = () => {
       >
         {objectives.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="flag-outline" size={64} color={themeColors.text.tertiary} />
-            <Text style={[styles.emptyTitle, { color: themeColors.text.primary }]}>
+            <Ionicons
+              name="flag-outline"
+              size={64}
+              color={themeColors.text.tertiary}
+            />
+            <Text
+              style={[styles.emptyTitle, { color: themeColors.text.primary }]}
+            >
               No hay objetivos creados
             </Text>
-            <Text style={[styles.emptySubtitle, { color: themeColors.text.secondary }]}>
+            <Text
+              style={[
+                styles.emptySubtitle,
+                { color: themeColors.text.secondary },
+              ]}
+            >
               Toca el botón + para crear una nueva meta
             </Text>
           </View>
@@ -233,7 +312,11 @@ export const ObjectivesScreen: React.FC = () => {
 
       <TouchableOpacity
         testID="add-objective-fab"
-        style={[styles.fab, { backgroundColor: themeColors.primary[500] }, themeShadows.lg]}
+        style={[
+          styles.fab,
+          { backgroundColor: themeColors.primary[500] },
+          themeShadows.lg,
+        ]}
         onPress={handleOpenModal}
         activeOpacity={0.8}
       >
@@ -243,7 +326,9 @@ export const ObjectivesScreen: React.FC = () => {
       <ObjectiveFormModal
         visible={showModal}
         onClose={handleCloseModal}
-        onSubmit={editingObjective ? handleUpdateObjective : handleCreateObjective}
+        onSubmit={
+          editingObjective ? handleUpdateObjective : handleCreateObjective
+        }
         objective={editingObjective}
         isLoading={createMutation.isPending || updateMutation.isPending}
       />
@@ -261,22 +346,22 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   subtitle: {
     fontSize: 14,
     marginTop: 4,
   },
   statsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: spacing.md,
     gap: spacing.sm,
     marginBottom: spacing.md,
   },
   statCard: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: spacing.sm,
     borderRadius: borderRadius.lg,
     gap: spacing.xs,
@@ -285,8 +370,8 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   statInfo: {
     flex: 1,
@@ -296,7 +381,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   filtersScroll: {
     paddingHorizontal: spacing.md,
@@ -311,34 +396,34 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   listContent: {
     paddingHorizontal: spacing.md,
     paddingBottom: 100,
   },
   emptyState: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: spacing.xxl * 2,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: spacing.md,
   },
   emptySubtitle: {
     fontSize: 14,
     marginTop: spacing.xs,
-    textAlign: 'center',
+    textAlign: "center",
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     bottom: spacing.lg,
     right: spacing.lg,
     width: 56,
     height: 56,
     borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

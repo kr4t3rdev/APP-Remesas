@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeInDown } from '../animations';
-import { useColors } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
-import type { DashboardSystemUsageRow } from '../../modules/admin/application/useAdminReportsDashboard';
+import React, { useMemo } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeInDown } from "../animations";
+import { useColors } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
+import type { DashboardSystemUsageRow } from "../../modules/admin/application/useAdminReportsDashboard";
 
 type AdminReportsSystemUsageSectionProps = {
   rows: DashboardSystemUsageRow[];
@@ -12,11 +12,9 @@ type AdminReportsSystemUsageSectionProps = {
   delay?: number;
 };
 
-export const AdminReportsSystemUsageSection: React.FC<AdminReportsSystemUsageSectionProps> = ({
-  rows,
-  onRowPress,
-  delay = 150,
-}) => {
+export const AdminReportsSystemUsageSection: React.FC<
+  AdminReportsSystemUsageSectionProps
+> = ({ rows, onRowPress, delay = 150 }) => {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -27,7 +25,11 @@ export const AdminReportsSystemUsageSection: React.FC<AdminReportsSystemUsageSec
 
         {rows.map((row) => {
           const statusColor =
-            row.status === 'ok' ? '#00D08C' : row.status === 'warning' ? '#F2B646' : colors.text.secondary;
+            row.status === "ok"
+              ? "#00D08C"
+              : row.status === "warning"
+                ? "#F2B646"
+                : colors.text.secondary;
 
           return (
             <TouchableOpacity
@@ -38,7 +40,12 @@ export const AdminReportsSystemUsageSection: React.FC<AdminReportsSystemUsageSec
               onPress={() => onRowPress?.(row)}
               style={styles.row}
             >
-              <View style={[styles.iconWrap, { backgroundColor: `${statusColor}22` }]}>
+              <View
+                style={[
+                  styles.iconWrap,
+                  { backgroundColor: `${statusColor}22` },
+                ]}
+              >
                 <Ionicons name={row.icon} size={20} color={statusColor} />
               </View>
 
@@ -47,7 +54,11 @@ export const AdminReportsSystemUsageSection: React.FC<AdminReportsSystemUsageSec
                 <Text style={styles.rowSubtitle}>{row.subtitle}</Text>
               </View>
 
-              <Ionicons name="chevron-forward" size={22} color={colors.text.secondary} />
+              <Ionicons
+                name="chevron-forward"
+                size={22}
+                color={colors.text.secondary}
+              />
             </TouchableOpacity>
           );
         })}
@@ -63,7 +74,7 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     },
     sectionTitle: {
       color: colors.text.primary,
-      fontWeight: '700',
+      fontWeight: "700",
       fontSize: 20,
       marginBottom: spacing.sm,
     },
@@ -73,8 +84,8 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.card,
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.sm,
       paddingHorizontal: spacing.md,
       marginBottom: spacing.sm,
@@ -83,8 +94,8 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       width: 42,
       height: 42,
       borderRadius: borderRadius.full,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     textWrap: {
       flex: 1,
@@ -92,7 +103,7 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     rowTitle: {
       color: colors.text.primary,
       fontSize: 17,
-      fontWeight: '700',
+      fontWeight: "700",
     },
     rowSubtitle: {
       color: colors.text.secondary,

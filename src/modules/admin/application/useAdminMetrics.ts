@@ -1,11 +1,22 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AdminCreateUserRequest, AdminUserControlRequest } from '../../../types';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { adminRepository } from '../infrastructure/admin.repository';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+  AdminCreateUserRequest,
+  AdminUserControlRequest,
+} from "../../../types";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { adminRepository } from "../infrastructure/admin.repository";
 
-export const useAdminKpisQuery = (params?: { dateFrom?: string; dateTo?: string; planId?: number }) =>
+export const useAdminKpisQuery = (params?: {
+  dateFrom?: string;
+  dateTo?: string;
+  planId?: number;
+}) =>
   useQuery({
-    queryKey: queryKeys.admin.kpis(params?.dateFrom, params?.dateTo, params?.planId),
+    queryKey: queryKeys.admin.kpis(
+      params?.dateFrom,
+      params?.dateTo,
+      params?.planId,
+    ),
     queryFn: () => adminRepository.getKpis(params),
     staleTime: 1000 * 60,
   });
@@ -29,12 +40,17 @@ export const useCreateAdminUserMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: AdminCreateUserRequest) => adminRepository.createAdminUser(input),
+    mutationFn: (input: AdminCreateUserRequest) =>
+      adminRepository.createAdminUser(input),
     onSuccess: async (createdUser) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.admin.userDetail(createdUser.id) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.admin.auditLogs() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.admin.userDetail(createdUser.id),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.admin.auditLogs(),
+        }),
         queryClient.invalidateQueries({ queryKey: queryKeys.admin.kpis() }),
       ]);
     },
@@ -45,7 +61,12 @@ export const useAdminUpdateUserBasicMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: { userId: number; name?: string; email?: string; isActive?: boolean }) =>
+    mutationFn: (input: {
+      userId: number;
+      name?: string;
+      email?: string;
+      isActive?: boolean;
+    }) =>
       adminRepository.updateUserBasic(input.userId, {
         name: input.name,
         email: input.email,
@@ -54,8 +75,12 @@ export const useAdminUpdateUserBasicMutation = () => {
     onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.admin.userDetail(variables.userId) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.admin.auditLogs() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.admin.userDetail(variables.userId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.admin.auditLogs(),
+        }),
       ]);
     },
   });
@@ -70,9 +95,15 @@ export const useAdminUserControlActionMutation = () => {
     onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.admin.userDetail(variables.userId) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.admin.blockedUsers() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.admin.auditLogs() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.admin.userDetail(variables.userId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.admin.blockedUsers(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.admin.auditLogs(),
+        }),
         queryClient.invalidateQueries({ queryKey: queryKeys.admin.kpis() }),
       ]);
     },
@@ -87,7 +118,9 @@ export const useAdminDeleteUserMutation = () => {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.admin.auditLogs() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.admin.auditLogs(),
+        }),
         queryClient.invalidateQueries({ queryKey: queryKeys.admin.kpis() }),
       ]);
     },

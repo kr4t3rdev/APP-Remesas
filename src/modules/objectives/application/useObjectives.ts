@@ -1,7 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ObjectiveStatus, CreateObjectiveInput, UpdateObjectiveInput } from '../../../types';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { objectivesRepository } from '../infrastructure/objectives.repository';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+  ObjectiveStatus,
+  CreateObjectiveInput,
+  UpdateObjectiveInput,
+} from "../../../types";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { objectivesRepository } from "../infrastructure/objectives.repository";
 
 export const useObjectivesQuery = (status?: ObjectiveStatus) =>
   useQuery({
@@ -30,9 +34,12 @@ export const useCreateObjectiveMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateObjectiveInput) => objectivesRepository.createObjective(data),
+    mutationFn: (data: CreateObjectiveInput) =>
+      objectivesRepository.createObjective(data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.objectives.list() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.objectives.list(),
+      });
     },
   });
 };
@@ -45,9 +52,15 @@ export const useUpdateObjectiveMutation = () => {
       objectivesRepository.updateObjective(input.id, input.data),
     onSuccess: async (_data, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.objectives.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.objectives.detail(variables.id) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.objectives.progress(variables.id) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.objectives.list(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.objectives.detail(variables.id),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.objectives.progress(variables.id),
+        }),
       ]);
     },
   });
@@ -61,8 +74,12 @@ export const useUpdateObjectiveStatusMutation = () => {
       objectivesRepository.updateObjectiveStatus(input.id, input.status),
     onSuccess: async (_data, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.objectives.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.objectives.detail(variables.id) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.objectives.list(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.objectives.detail(variables.id),
+        }),
       ]);
     },
   });
@@ -75,9 +92,15 @@ export const useDeleteObjectiveMutation = () => {
     mutationFn: (id: number) => objectivesRepository.deleteObjective(id),
     onSuccess: async (_data, id) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.objectives.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.objectives.detail(id) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.objectives.progress(id) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.objectives.list(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.objectives.detail(id),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.objectives.progress(id),
+        }),
       ]);
     },
   });

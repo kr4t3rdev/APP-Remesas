@@ -24,7 +24,7 @@ export type ExchangeRate = {
   isNewRate?: boolean;
 };
 
-export type RateSource = 'MANUAL' | 'SYSTEM';
+export type RateSource = "MANUAL" | "SYSTEM";
 
 export type RateHistory = {
   id: number;
@@ -40,8 +40,8 @@ export type RateHistory = {
   createdAt: string;
 };
 
-export type TransactionType = 'COMPRA' | 'VENTA';
-export type ReconciliationStatus = 'PENDIENTE' | 'RECONCILIADO';
+export type TransactionType = "COMPRA" | "VENTA";
+export type ReconciliationStatus = "PENDIENTE" | "RECONCILIADO";
 
 export type Transaction = {
   id: number;
@@ -76,7 +76,7 @@ export type CashAudit = {
   createdAt: string;
 };
 
-export type CashAdjustmentType = 'INGRESO' | 'EGRESO';
+export type CashAdjustmentType = "INGRESO" | "EGRESO";
 
 export type CashAdjustment = {
   id: number;
@@ -99,7 +99,12 @@ export type BankAccount = {
   isActive: boolean;
 };
 
-export type ExpenseCategory = 'renta' | 'servicios' | 'salario' | 'insumos' | 'otros';
+export type ExpenseCategory =
+  | "renta"
+  | "servicios"
+  | "salario"
+  | "insumos"
+  | "otros";
 
 export type Expense = {
   id: number;
@@ -124,7 +129,7 @@ export type CreateExpenseInput = {
 
 export type UpdateExpenseInput = Partial<CreateExpenseInput>;
 
-export type ObjectiveStatus = 'ACTIVO' | 'COMPLETADO' | 'PAUSADO';
+export type ObjectiveStatus = "ACTIVO" | "COMPLETADO" | "PAUSADO";
 
 export type Objective = {
   id: number;
@@ -164,7 +169,7 @@ export type UpdateObjectiveStatusInput = {
   status: ObjectiveStatus;
 };
 
-export type UserRole = 'ADMIN' | 'USER';
+export type UserRole = "ADMIN" | "USER";
 
 export type User = {
   id: number;
@@ -214,7 +219,10 @@ export type CurrencyTransactionSummary = Record<
   { compras: number; ventas: number; count: number }
 >;
 
-export type CurrencyExpenseSummary = Record<string, { total: number; count: number }>;
+export type CurrencyExpenseSummary = Record<
+  string,
+  { total: number; count: number }
+>;
 
 export type DailyBreakdownItem = {
   date: string;
@@ -248,7 +256,10 @@ export type ProfitReportTransaction = {
   createdAt: string;
 };
 
-export type ProfitByCurrencySummary = Record<string, { marginProfit: number; count: number }>;
+export type ProfitByCurrencySummary = Record<
+  string,
+  { marginProfit: number; count: number }
+>;
 
 export type ProfitReport = {
   period: {
@@ -327,8 +338,14 @@ export type ApiError = {
   statusCode: number;
 };
 
-export type BillingCycle = 'MONTHLY' | 'SEMIANNUAL' | 'ANNUAL';
-export type LicenseState = 'TRIAL' | 'ACTIVE' | 'GRACE' | 'EXPIRED' | 'SUSPENDED' | 'CANCELLED';
+export type BillingCycle = "MONTHLY" | "SEMIANNUAL" | "ANNUAL";
+export type LicenseState =
+  | "TRIAL"
+  | "ACTIVE"
+  | "GRACE"
+  | "EXPIRED"
+  | "SUSPENDED"
+  | "CANCELLED";
 
 export type UserAccessState = {
   isActive: boolean;
@@ -364,7 +381,7 @@ export type CreatePlanInput = {
 export type UserLicense = {
   id: number;
   userId: number;
-  user?: Pick<User, 'id' | 'name' | 'email'>;
+  user?: Pick<User, "id" | "name" | "email">;
   planId: number;
   plan?: Plan;
   state: LicenseState;
@@ -415,25 +432,25 @@ export type AdminKpiSnapshot = {
 
 export type AdminNotificationEvent =
   | {
-      type: 'NEW_USER_REGISTERED';
+      type: "NEW_USER_REGISTERED";
       userId: number;
       email: string;
       createdAt: string;
-      channel?: 'IN_APP' | 'WEBHOOK' | 'EMAIL';
+      channel?: "IN_APP" | "WEBHOOK" | "EMAIL";
     }
   | {
-      type: 'USER_TEMP_BLOCKED';
+      type: "USER_TEMP_BLOCKED";
       userId: number;
       blockedUntil: string;
       failedAttempts: number;
-      channel?: 'IN_APP' | 'WEBHOOK' | 'EMAIL';
+      channel?: "IN_APP" | "WEBHOOK" | "EMAIL";
     }
   | {
-      type: 'USER_BANNED';
+      type: "USER_BANNED";
       userId: number;
       bannedUntil: string | null;
       reason: string;
-      channel?: 'IN_APP' | 'WEBHOOK' | 'EMAIL';
+      channel?: "IN_APP" | "WEBHOOK" | "EMAIL";
     };
 
 export type AdminAuditLog = {
@@ -446,15 +463,15 @@ export type AdminAuditLog = {
 };
 
 export type AdminUserControlActionType =
-  | 'TEMP_BLOCK'
-  | 'UNBLOCK'
-  | 'SUSPEND_ACCOUNT'
-  | 'REACTIVATE_ACCOUNT'
-  | 'FORCE_PASSWORD_RESET'
-  | 'REVOKE_ALL_SESSIONS'
-  | 'CHANGE_ROLE'
-  | 'SUSPEND_LICENSE'
-  | 'EXTEND_LICENSE';
+  | "TEMP_BLOCK"
+  | "UNBLOCK"
+  | "SUSPEND_ACCOUNT"
+  | "REACTIVATE_ACCOUNT"
+  | "FORCE_PASSWORD_RESET"
+  | "REVOKE_ALL_SESSIONS"
+  | "CHANGE_ROLE"
+  | "SUSPEND_LICENSE"
+  | "EXTEND_LICENSE";
 
 export type AdminUserControlRequest = {
   actionType: AdminUserControlActionType;
@@ -488,7 +505,7 @@ export type AdminCreateUserRequest = {
     sendInviteEmail?: boolean;
   };
   security?: {
-    riskLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
+    riskLevel?: "LOW" | "MEDIUM" | "HIGH";
     notes?: string;
   };
   preferences?: {
@@ -541,7 +558,7 @@ export type RateHistoryEntry = {
   currencyFromId: number;
   currencyToId: number;
   rate: number;
-  source: 'MANUAL' | 'SYSTEM';
+  source: "MANUAL" | "SYSTEM";
   createdAt: string;
 };
 
@@ -550,7 +567,7 @@ export type RateStats = {
   max: number;
   average: number;
   median: number;
-  trend: 'up' | 'down' | 'stable';
+  trend: "up" | "down" | "stable";
   changePercentage: number;
 };
 
@@ -609,7 +626,13 @@ export type UpdateExpenseItemInput = {
   category?: string | null;
 };
 
-export type ReportPeriod = 'month' | 'quarter' | 'semester' | 'year' | 'all' | 'single';
+export type ReportPeriod =
+  | "month"
+  | "quarter"
+  | "semester"
+  | "year"
+  | "all"
+  | "single";
 
 export type ExpenseReport = {
   items: ExpenseItem[];
@@ -624,7 +647,7 @@ export type ExpenseReport = {
 
 export type Reconciliation = {
   id: number;
-  type: 'EXPENSE' | 'INCOME';
+  type: "EXPENSE" | "INCOME";
   transactionId: number;
   expenseId?: number;
   bankAccountId?: number;
@@ -634,4 +657,4 @@ export type Reconciliation = {
   expense?: Expense;
   bankAccount?: BankAccount;
 };
-export * from './worker';
+export * from "./worker";

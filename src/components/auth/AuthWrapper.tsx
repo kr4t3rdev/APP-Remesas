@@ -1,9 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, useWindowDimensions, Animated } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { BrandingPanel } from './BrandingPanel';
-import { AuthCard } from './AuthCard';
-import { useColors } from '../../store/themeStore';
+import React, { useEffect, useRef } from "react";
+import { View, StyleSheet, useWindowDimensions, Animated } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { BrandingPanel } from "./BrandingPanel";
+import { AuthCard } from "./AuthCard";
+import { useColors } from "../../store/themeStore";
 
 const AUTH_BREAKPOINT = 768;
 
@@ -21,7 +21,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
   const colors = useColors();
   const { width } = useWindowDimensions();
   const isDesktop = width >= AUTH_BREAKPOINT;
-  
+
   // Animation refs for fade in
   const brandingOpacity = useRef(new Animated.Value(0)).current;
   const cardOpacity = useRef(new Animated.Value(0)).current;
@@ -35,7 +35,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
         duration: 400,
         useNativeDriver: true,
       }).start();
-      
+
       // Animate card with scale
       Animated.parallel([
         Animated.timing(cardOpacity, {
@@ -63,9 +63,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
   // Mobile layout
   if (!isDesktop) {
     return (
-      <SafeAreaView style={styles.mobileContainer}>
-        {children}
-      </SafeAreaView>
+      <SafeAreaView style={styles.mobileContainer}>{children}</SafeAreaView>
     );
   }
 
@@ -73,59 +71,60 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
   return (
     <View style={styles.desktopContainer}>
       {showBrandingPanel && (
-        <Animated.View style={[styles.brandingPanelContainer, { opacity: brandingOpacity }]}>
+        <Animated.View
+          style={[styles.brandingPanelContainer, { opacity: brandingOpacity }]}
+        >
           <BrandingPanel />
         </Animated.View>
       )}
       <View style={styles.formPanel}>
-        <Animated.View 
+        <Animated.View
           style={[
             styles.authCardContainer,
-            { 
+            {
               opacity: cardOpacity,
               transform: [{ scale: cardScale }],
               maxWidth: maxFormWidth,
-            }
+            },
           ]}
         >
-          <AuthCard maxWidth={maxFormWidth}>
-            {children}
-          </AuthCard>
+          <AuthCard maxWidth={maxFormWidth}>{children}</AuthCard>
         </Animated.View>
       </View>
     </View>
   );
 };
 
-const createStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
-  mobileContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  desktopContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: colors.background,
-    height: '100%',
-    width: '100%',
-    minHeight: '100vh',
-  },
-  brandingPanelContainer: {
-    flex: 0.4,
-    minWidth: 300,
-    height: '100%',
-    width: '100%',
-  },
-  formPanel: {
-    flex: 0.6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-    width: '100%',
-  },
-  authCardContainer: {
-    width: '100%',
-  },
-});
+const createStyles = (colors: ReturnType<typeof useColors>) =>
+  StyleSheet.create({
+    mobileContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    desktopContainer: {
+      flex: 1,
+      flexDirection: "row",
+      backgroundColor: colors.background,
+      height: "100%",
+      width: "100%",
+      minHeight: "100vh",
+    },
+    brandingPanelContainer: {
+      flex: 0.4,
+      minWidth: 300,
+      height: "100%",
+      width: "100%",
+    },
+    formPanel: {
+      flex: 0.6,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 32,
+      width: "100%",
+    },
+    authCardContainer: {
+      width: "100%",
+    },
+  });
 
 export default AuthWrapper;

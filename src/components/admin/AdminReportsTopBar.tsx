@@ -1,15 +1,18 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useColors } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
+import React, { useMemo } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useColors } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
 
 type AdminReportsTopBarProps = {
   onBack: () => void;
   onSettings: () => void;
 };
 
-export const AdminReportsTopBar: React.FC<AdminReportsTopBarProps> = ({ onBack, onSettings }) => {
+export const AdminReportsTopBar: React.FC<AdminReportsTopBarProps> = ({
+  onBack,
+  onSettings,
+}) => {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -45,27 +48,27 @@ export const AdminReportsTopBar: React.FC<AdminReportsTopBarProps> = ({ onBack, 
 const createStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
     container: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       marginBottom: spacing.md,
     },
     iconButton: {
       width: 46,
       height: 46,
       borderRadius: borderRadius.full,
-      backgroundColor: '#0F213A',
-      alignItems: 'center',
-      justifyContent: 'center',
+      backgroundColor: "#0F213A",
+      alignItems: "center",
+      justifyContent: "center",
       borderWidth: 1,
-      borderColor: '#173861',
+      borderColor: "#173861",
     },
     title: {
       flex: 1,
-      textAlign: 'center',
+      textAlign: "center",
       color: colors.text.primary,
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: "700",
       paddingHorizontal: spacing.sm,
     },
   });

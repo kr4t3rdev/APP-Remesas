@@ -1,11 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { TransactionType } from '../../../types';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { transactionsRepository } from '../infrastructure/transactions.repository';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { TransactionType } from "../../../types";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { transactionsRepository } from "../infrastructure/transactions.repository";
 
-export const useTransactionsQuery = (params?: { type?: TransactionType; status?: 'PENDIENTE' | 'RECONCILIADO'; startDate?: string; endDate?: string }) =>
+export const useTransactionsQuery = (params?: {
+  type?: TransactionType;
+  status?: "PENDIENTE" | "RECONCILIADO";
+  startDate?: string;
+  endDate?: string;
+}) =>
   useQuery({
-    queryKey: ['transactions', 'list', params],
+    queryKey: ["transactions", "list", params],
     queryFn: () => transactionsRepository.getTransactions(params),
     staleTime: 1000 * 60 * 2,
   });
@@ -31,8 +36,8 @@ export const useCreateTransactionMutation = () => {
     mutationFn: transactionsRepository.createTransaction,
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['transactions'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ["transactions"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
       ]);
     },
   });

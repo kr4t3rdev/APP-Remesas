@@ -1,11 +1,11 @@
-import { useCallback, useMemo, useState } from 'react';
-import type { AdminAuditLog, AdminKpiSnapshot } from '../../../types';
+import { useCallback, useMemo, useState } from "react";
+import type { AdminAuditLog, AdminKpiSnapshot } from "../../../types";
 import {
   useAdminAuditLogsQuery,
   useAdminBlockedUsersQuery,
   useAdminExpiringLicensesQuery,
   useAdminKpisQuery,
-} from './useAdminMetrics';
+} from "./useAdminMetrics";
 
 export type AdminHomeViewModel = {
   kpis: AdminKpiSnapshot | null;
@@ -48,17 +48,18 @@ export const useAdminHomeData = (): AdminHomeViewModel => {
     ]);
 
     setLastRefreshFailures({
-      kpis: results[0].status === 'rejected',
-      blockedUsers: results[1].status === 'rejected',
-      expiringLicenses: results[2].status === 'rejected',
-      auditLogs: results[3].status === 'rejected',
+      kpis: results[0].status === "rejected",
+      blockedUsers: results[1].status === "rejected",
+      expiringLicenses: results[2].status === "rejected",
+      auditLogs: results[3].status === "rejected",
     });
 
     setIsRefreshing(false);
   }, [kpisQuery, blockedUsersQuery, expiringQuery, auditLogsQuery]);
 
   const kpis = kpisQuery.data ?? null;
-  const blockedUsersCount = (blockedUsersQuery.data?.length ?? 0) || kpis?.suspendedUsers || 0;
+  const blockedUsersCount =
+    (blockedUsersQuery.data?.length ?? 0) || kpis?.suspendedUsers || 0;
   const expiring7dCount = expiringQuery.data?.length ?? 0;
 
   const licenseStateEntries = useMemo(
@@ -72,17 +73,29 @@ export const useAdminHomeData = (): AdminHomeViewModel => {
   const recentEvents = useMemo(
     () =>
       [...(auditLogsQuery.data ?? [])]
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
         .slice(0, 8),
     [auditLogsQuery.data],
   );
 
   const isLoadingInitial =
-    kpisQuery.isLoading || blockedUsersQuery.isLoading || expiringQuery.isLoading || auditLogsQuery.isLoading;
+    kpisQuery.isLoading ||
+    blockedUsersQuery.isLoading ||
+    expiringQuery.isLoading ||
+    auditLogsQuery.isLoading;
 
   const blockErrors = {
-    kpis: kpisQuery.isError || lastRefreshFailures.kpis || lastRefreshFailures.blockedUsers,
-    licenseState: kpisQuery.isError || expiringQuery.isError || lastRefreshFailures.expiringLicenses,
+    kpis:
+      kpisQuery.isError ||
+      lastRefreshFailures.kpis ||
+      lastRefreshFailures.blockedUsers,
+    licenseState:
+      kpisQuery.isError ||
+      expiringQuery.isError ||
+      lastRefreshFailures.expiringLicenses,
     events: auditLogsQuery.isError || lastRefreshFailures.auditLogs,
   };
 
@@ -94,7 +107,8 @@ export const useAdminHomeData = (): AdminHomeViewModel => {
     recentEvents,
     isLoadingInitial,
     isRefreshing,
-    hasPartialFailure: blockErrors.kpis || blockErrors.licenseState || blockErrors.events,
+    hasPartialFailure:
+      blockErrors.kpis || blockErrors.licenseState || blockErrors.events,
     blockErrors,
     refetchAll,
   };

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,43 +7,64 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeInDown } from '../../components/animations';
-import { ExpenseCard } from '../../components/expenses/ExpenseCard';
-import { ExpenseFormModal } from '../../components/expenses/ExpenseFormModal';
-import { spacing, borderRadius } from '../../theme';
-import { useColors, useShadows } from '../../store/themeStore';
-import type { Expense, ExpenseCategory, CreateExpenseInput } from '../../types';
+} from "react-native";
+import { Alert } from "../../utils/alert";
+
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeInDown } from "../../components/animations";
+import { ConfirmModal } from "../../components/ui/ConfirmModal";
+import { ExpenseCard } from "../../components/expenses/ExpenseCard";
+import { ExpenseFormModal } from "../../components/expenses/ExpenseFormModal";
+import { spacing, borderRadius } from "../../theme";
+import { useColors, useShadows } from "../../store/themeStore";
+import type { Expense, ExpenseCategory, CreateExpenseInput } from "../../types";
 import {
   useExpensesQuery,
   useCreateExpenseMutation,
   useUpdateExpenseMutation,
   useDeleteExpenseMutation,
-} from '../../modules/expenses/application/useExpenses';
+} from "../../modules/expenses/application/useExpenses";
 
-const CATEGORIES: { id: ExpenseCategory | 'all'; label: string; icon: string }[] = [
-  { id: 'all', label: 'Todos', icon: 'apps' },
-  { id: 'renta', label: 'Renta', icon: 'home' },
-  { id: 'servicios', label: 'Servicios', icon: 'bulb' },
-  { id: 'salario', label: 'Salario', icon: 'people' },
-  { id: 'insumos', label: 'Insumos', icon: 'cube' },
-  { id: 'otros', label: 'Otros', icon: 'ellipsis-horizontal' },
+const CATEGORIES: {
+  id: ExpenseCategory | "all";
+  label: string;
+  icon: string;
+}[] = [
+  { id: "all", label: "Todos", icon: "apps" },
+  { id: "renta", label: "Renta", icon: "home" },
+  { id: "servicios", label: "Servicios", icon: "bulb" },
+  { id: "salario", label: "Salario", icon: "people" },
+  { id: "insumos", label: "Insumos", icon: "cube" },
+  { id: "otros", label: "Otros", icon: "ellipsis-horizontal" },
 ];
 
 export const ExpensesScreen: React.FC = () => {
   const themeColors = useColors();
   const themeShadows = useShadows();
 
-  const [selectedCategory, setSelectedCategory] = useState<ExpenseCategory | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<
+    ExpenseCategory | "all"
+  >("all");
   const [showModal, setShowModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [showPending, setShowPending] = useState(false);
 
+  const [confirmModal, setConfirmModal] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    variant?: "danger" | "primary" | "warning";
+  }>({
+    visible: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+
   const expensesQuery = useExpensesQuery(
-    selectedCategory !== 'all' ? { category: selectedCategory } : undefined
+    selectedCategory !== "all" ? { category: selectedCategory } : undefined,
   );
   const createMutation = useCreateExpenseMutation();
   const updateMutation = useUpdateExpenseMutation();
@@ -52,40 +73,52 @@ export const ExpensesScreen: React.FC = () => {
   const expenses = expensesQuery.data ?? [];
   const filteredExpenses = useMemo(() => {
     if (showPending) {
-      return expenses.filter((e) => e.status === 'PENDIENTE');
+      return expenses.filter((e) => e.status === "PENDIENTE");
     }
     return expenses;
   }, [expenses, showPending]);
 
-  const totalExpenses = filteredExpenses.reduce((acc, e) => acc + Number(e.amount), 0);
-  const pendingCount = expenses.filter((e) => e.status === 'PENDIENTE').length;
+  const totalExpenses = filteredExpenses.reduce(
+    (acc, e) => acc + Number(e.amount),
+    0,
+  );
+  const pendingCount = expenses.filter((e) => e.status === "PENDIENTE").length;
 
   const handleRefresh = async () => {
     try {
       await expensesQuery.refetch();
     } catch {
-      Alert.alert('Error', 'No se pudieron cargar los gastos');
+      Alert.alert("Error", "No se pudieron cargar los gastos");
     }
   };
 
   const handleCreateExpense = async (data: CreateExpenseInput) => {
     await createMutation.mutateAsync(data);
-    Alert.alert('Éxito', 'Gasto creado correctamente');
+    Alert.alert("Éxito", "Gasto creado correctamente");
   };
 
   const handleUpdateExpense = async (data: CreateExpenseInput) => {
     if (!editingExpense) return;
     await updateMutation.mutateAsync({ id: editingExpense.id, data });
-    Alert.alert('Éxito', 'Gasto actualizado correctamente');
+    Alert.alert("Éxito", "Gasto actualizado correctamente");
   };
 
   const handleDeleteExpense = async (expense: Expense) => {
-    try {
-      await deleteMutation.mutateAsync(expense.id);
-      Alert.alert('Éxito', 'Gasto eliminado correctamente');
-    } catch {
-      Alert.alert('Error', 'No se pudo eliminar el gasto');
-    }
+    setConfirmModal({
+      visible: true,
+      title: "Eliminar Gasto",
+      message: "¿Estás seguro de que deseas eliminar este gasto?",
+      variant: "danger",
+      onConfirm: async () => {
+        setConfirmModal((prev) => ({ ...prev, visible: false }));
+        try {
+          await deleteMutation.mutateAsync(expense.id);
+          Alert.alert("Éxito", "Gasto eliminado correctamente");
+        } catch {
+          Alert.alert("Error", "No se pudo eliminar el gasto");
+        }
+      },
+    });
   };
 
   const handleEditExpense = (expense: Expense) => {
@@ -95,25 +128,25 @@ export const ExpensesScreen: React.FC = () => {
 
   const handleReconcileExpense = (expense: Expense) => {
     Alert.alert(
-      'Reconciliar Gasto',
+      "Reconciliar Gasto",
       `¿Marcar "${expense.description}" como pagado?`,
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: "Cancelar", style: "cancel" },
         {
-          text: 'Confirmar',
+          text: "Confirmar",
           onPress: async () => {
             try {
               await updateMutation.mutateAsync({
                 id: expense.id,
-                data: { notes: expense.notes || 'Reconciliado' },
+                data: { notes: expense.notes || "Reconciliado" },
               });
-              Alert.alert('Éxito', 'Gasto marcado como pagado');
+              Alert.alert("Éxito", "Gasto marcado como pagado");
             } catch {
-              Alert.alert('Error', 'No se pudo reconciliar el gasto');
+              Alert.alert("Error", "No se pudo reconciliar el gasto");
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -129,26 +162,32 @@ export const ExpensesScreen: React.FC = () => {
 
   const statsData = [
     {
-      label: 'Total Gastos',
+      label: "Total Gastos",
       value: `$ ${totalExpenses.toLocaleString()}`,
       color: themeColors.danger,
-      icon: 'wallet-outline' as const,
+      icon: "wallet-outline" as const,
     },
     {
-      label: 'Pendientes',
+      label: "Pendientes",
       value: pendingCount.toString(),
       color: themeColors.warning,
-      icon: 'time-outline' as const,
+      icon: "time-outline" as const,
     },
   ];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: themeColors.background }]}
+    >
       <View style={styles.header}>
         <FadeInDown delay={0}>
           <View>
-            <Text style={[styles.title, { color: themeColors.text.primary }]}>Gastos</Text>
-            <Text style={[styles.subtitle, { color: themeColors.text.secondary }]}>
+            <Text style={[styles.title, { color: themeColors.text.primary }]}>
+              Gastos
+            </Text>
+            <Text
+              style={[styles.subtitle, { color: themeColors.text.secondary }]}
+            >
               Control de gastos operativos
             </Text>
           </View>
@@ -160,16 +199,32 @@ export const ExpensesScreen: React.FC = () => {
           {statsData.map((stat) => (
             <View
               key={stat.label}
-              style={[styles.statCard, { backgroundColor: themeColors.card }, themeShadows.sm]}
+              style={[
+                styles.statCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.sm,
+              ]}
             >
-              <View style={[styles.statIcon, { backgroundColor: `${stat.color}15` }]}>
+              <View
+                style={[
+                  styles.statIcon,
+                  { backgroundColor: `${stat.color}15` },
+                ]}
+              >
                 <Ionicons name={stat.icon} size={20} color={stat.color} />
               </View>
               <View style={styles.statInfo}>
-                <Text style={[styles.statLabel, { color: themeColors.text.secondary }]}>
+                <Text
+                  style={[
+                    styles.statLabel,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
                   {stat.label}
                 </Text>
-                <Text style={[styles.statValue, { color: stat.color }]}>{stat.value}</Text>
+                <Text style={[styles.statValue, { color: stat.color }]}>
+                  {stat.value}
+                </Text>
               </View>
             </View>
           ))}
@@ -193,13 +248,16 @@ export const ExpensesScreen: React.FC = () => {
                   style={[
                     styles.categoryChip,
                     isSelected && { backgroundColor: themeColors.primary[500] },
-                    !isSelected && { backgroundColor: themeColors.card, borderColor: themeColors.border },
+                    !isSelected && {
+                      backgroundColor: themeColors.card,
+                      borderColor: themeColors.border,
+                    },
                   ]}
                 >
                   <Ionicons
                     name={cat.icon as any}
                     size={16}
-                    color={isSelected ? '#fff' : themeColors.text.secondary}
+                    color={isSelected ? "#fff" : themeColors.text.secondary}
                   />
                   <Text
                     style={[
@@ -226,12 +284,12 @@ export const ExpensesScreen: React.FC = () => {
             <Ionicons
               name="alert-circle"
               size={16}
-              color={showPending ? '#fff' : themeColors.warning}
+              color={showPending ? "#fff" : themeColors.warning}
             />
             <Text
               style={[
                 styles.pendingFilterText,
-                { color: showPending ? '#fff' : themeColors.warning },
+                { color: showPending ? "#fff" : themeColors.warning },
               ]}
             >
               Pendientes
@@ -262,11 +320,22 @@ export const ExpensesScreen: React.FC = () => {
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="receipt-outline" size={64} color={themeColors.text.tertiary} />
-            <Text style={[styles.emptyTitle, { color: themeColors.text.primary }]}>
+            <Ionicons
+              name="receipt-outline"
+              size={64}
+              color={themeColors.text.tertiary}
+            />
+            <Text
+              style={[styles.emptyTitle, { color: themeColors.text.primary }]}
+            >
               No hay gastos registrados
             </Text>
-            <Text style={[styles.emptySubtitle, { color: themeColors.text.secondary }]}>
+            <Text
+              style={[
+                styles.emptySubtitle,
+                { color: themeColors.text.secondary },
+              ]}
+            >
               Toca el botón + para registrar un nuevo gasto
             </Text>
           </View>
@@ -275,7 +344,11 @@ export const ExpensesScreen: React.FC = () => {
 
       <TouchableOpacity
         testID="add-expense-fab"
-        style={[styles.fab, { backgroundColor: themeColors.danger }, themeShadows.lg]}
+        style={[
+          styles.fab,
+          { backgroundColor: themeColors.danger },
+          themeShadows.lg,
+        ]}
         onPress={handleOpenModal}
         activeOpacity={0.8}
       >
@@ -288,6 +361,17 @@ export const ExpensesScreen: React.FC = () => {
         onSubmit={editingExpense ? handleUpdateExpense : handleCreateExpense}
         expense={editingExpense}
         isLoading={createMutation.isPending || updateMutation.isPending}
+      />
+
+      <ConfirmModal
+        visible={confirmModal.visible}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        variant={confirmModal.variant}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() =>
+          setConfirmModal((prev) => ({ ...prev, visible: false }))
+        }
       />
     </SafeAreaView>
   );
@@ -303,22 +387,22 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   subtitle: {
     fontSize: 14,
     marginTop: 4,
   },
   statsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: spacing.md,
     gap: spacing.md,
     marginBottom: spacing.md,
   },
   statCard: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     gap: spacing.sm,
@@ -327,8 +411,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   statInfo: {
     flex: 1,
@@ -339,11 +423,11 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   filtersRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: spacing.sm,
     paddingRight: spacing.md,
   },
@@ -352,8 +436,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
@@ -362,11 +446,11 @@ const styles = StyleSheet.create({
   },
   categoryChipText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   pendingFilter: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
@@ -375,19 +459,19 @@ const styles = StyleSheet.create({
   },
   pendingFilterText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   listContent: {
     paddingHorizontal: spacing.md,
     paddingBottom: 100,
   },
   emptyState: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: spacing.xxl * 2,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: spacing.md,
   },
   emptySubtitle: {
@@ -395,13 +479,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     bottom: spacing.lg,
     right: spacing.lg,
     width: 56,
     height: 56,
     borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

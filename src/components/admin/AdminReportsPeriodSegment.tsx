@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FadeInDown } from '../animations';
-import { useColors } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
-import type { AdminReportsPeriod } from '../../modules/admin/application/useAdminReportsDashboard';
+import React, { useMemo } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FadeInDown } from "../animations";
+import { useColors } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
+import type { AdminReportsPeriod } from "../../modules/admin/application/useAdminReportsDashboard";
 
 type AdminReportsPeriodSegmentProps = {
   value: AdminReportsPeriod;
@@ -12,16 +12,14 @@ type AdminReportsPeriodSegmentProps = {
 };
 
 const OPTIONS: Array<{ id: AdminReportsPeriod; label: string }> = [
-  { id: 'weekly', label: 'Semanal' },
-  { id: 'monthly', label: 'Mensual' },
-  { id: 'annual', label: 'Anual' },
+  { id: "weekly", label: "Semanal" },
+  { id: "monthly", label: "Mensual" },
+  { id: "annual", label: "Anual" },
 ];
 
-export const AdminReportsPeriodSegment: React.FC<AdminReportsPeriodSegmentProps> = ({
-  value,
-  onChange,
-  delay = 30,
-}) => {
+export const AdminReportsPeriodSegment: React.FC<
+  AdminReportsPeriodSegmentProps
+> = ({ value, onChange, delay = 30 }) => {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -40,7 +38,11 @@ export const AdminReportsPeriodSegment: React.FC<AdminReportsPeriodSegmentProps>
               style={[styles.item, isActive && styles.itemActive]}
               onPress={() => onChange(option.id)}
             >
-              <Text style={[styles.itemText, isActive && styles.itemTextActive]}>{option.label}</Text>
+              <Text
+                style={[styles.itemText, isActive && styles.itemTextActive]}
+              >
+                {option.label}
+              </Text>
             </TouchableOpacity>
           );
         })}
@@ -58,16 +60,16 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       borderRadius: borderRadius.full,
       padding: 6,
       marginBottom: spacing.md,
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.xs,
     },
     item: {
       flex: 1,
       minHeight: 44,
       borderRadius: borderRadius.full,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     itemActive: {
       backgroundColor: colors.surface,
@@ -75,7 +77,7 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     itemText: {
       color: colors.text.secondary,
       fontSize: 14,
-      fontWeight: '700',
+      fontWeight: "700",
     },
     itemTextActive: {
       color: colors.text.primary,

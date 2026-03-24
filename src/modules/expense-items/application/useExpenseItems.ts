@@ -1,12 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   CreateExpenseItemInput,
   UpdateExpenseItemInput,
   ExpenseReport,
   ReportPeriod,
-} from '../../../types';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { expenseItemsRepository } from '../infrastructure/expense-items.repository';
+} from "../../../types";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { expenseItemsRepository } from "../infrastructure/expense-items.repository";
 
 export const useExpenseItemsQuery = (params?: {
   category?: string;
@@ -49,8 +49,12 @@ export const useCreateExpenseItemMutation = () => {
     mutationFn: expenseItemsRepository.createExpenseItem,
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenseItems.root() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenseItems.categoriesRoot() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.expenseItems.root(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.expenseItems.categoriesRoot(),
+        }),
       ]);
     },
   });
@@ -63,7 +67,9 @@ export const useUpdateExpenseItemMutation = () => {
     mutationFn: ({ id, data }: { id: number; data: UpdateExpenseItemInput }) =>
       expenseItemsRepository.updateExpenseItem(id, data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.expenseItems.root() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.expenseItems.root(),
+      });
     },
   });
 };
@@ -74,7 +80,9 @@ export const useDeleteExpenseItemMutation = () => {
   return useMutation({
     mutationFn: expenseItemsRepository.deleteExpenseItem,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.expenseItems.root() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.expenseItems.root(),
+      });
     },
   });
 };

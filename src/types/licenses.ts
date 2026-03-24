@@ -1,4 +1,4 @@
-export type LicenseStatus = 'active' | 'expired' | 'subscribed' | 'pending';
+export type LicenseStatus = "active" | "expired" | "subscribed" | "pending";
 
 export interface LicenseUser {
   id: string;
@@ -21,7 +21,7 @@ export interface LicenseUserDetail {
   name: string;
   email: string;
   role: string; // "Admin", "Editor", "Viewer"
-  status: 'online' | 'offline';
+  status: "online" | "offline";
   avatarUrl?: string;
 }
 

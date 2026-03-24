@@ -1,12 +1,12 @@
 export interface Transaction {
   id: string;
   date: string;
-  type: 'BUY' | 'SELL';
+  type: "BUY" | "SELL";
   sourceCurrency: string;
   targetCurrency: string;
   amount: number;
   rate: number;
-  status: 'PENDING' | 'RECONCILED';
+  status: "PENDING" | "RECONCILED";
 }
 
 export interface Worker {
@@ -27,7 +27,7 @@ export interface BankAccount {
 export interface CashMovement {
   id: string;
   date: string;
-  type: 'IN' | 'OUT' | 'ADJUSTMENT';
+  type: "IN" | "OUT" | "ADJUSTMENT";
   amount: number;
   description: string;
 }
@@ -37,6 +37,6 @@ export interface CashReconciliation {
   date: string;
   registeredBalance: number;
   countedBalance: number;
-  result: 'SOBRANTE' | 'FALTANTE' | 'CUADRADO';
+  result: "SOBRANTE" | "FALTANTE" | "CUADRADO";
   difference: number;
 }

@@ -1,6 +1,5 @@
-
-import { API_CONFIG } from '../config/constants';
-import * as SecureStore from 'expo-secure-store';
+import { API_CONFIG } from "../config/constants";
+import * as SecureStore from "expo-secure-store";
 
 const BASE_URL = API_CONFIG.baseURL;
 
@@ -17,24 +16,24 @@ export const uploadApi = {
    */
   async uploadAvatar(imageUri: string): Promise<UploadResponse> {
     try {
-      const token = await SecureStore.getItemAsync('auth_token');
-      
+      const token = await SecureStore.getItemAsync("auth_token");
+
       const formData = new FormData();
-      const filename = imageUri.split('/').pop() || 'avatar.jpg';
+      const filename = imageUri.split("/").pop() || "avatar.jpg";
       const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      const type = match ? `image/${match[1]}` : "image/jpeg";
 
       // @ts-ignore - React Native FormData expects name, type, uri
-      formData.append('file', {
+      formData.append("file", {
         uri: imageUri,
         name: filename,
         type,
       });
 
       const response = await fetch(`${BASE_URL}/upload/avatar`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: formData,
@@ -42,12 +41,12 @@ export const uploadApi = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to upload avatar');
+        throw new Error(errorData.message || "Failed to upload avatar");
       }
 
       return await response.json();
     } catch (error) {
-      console.error('[uploadApi] Upload error:', error);
+      console.error("[uploadApi] Upload error:", error);
       throw error;
     }
   },

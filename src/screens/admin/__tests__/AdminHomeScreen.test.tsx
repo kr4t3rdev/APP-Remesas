@@ -1,15 +1,18 @@
-import React from 'react';
-import { fireEvent, render } from '@testing-library/react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { AdminHomeScreen } from '../AdminHomeScreen';
-import { useAdminHomeData } from '../../../modules/admin/application/useAdminHomeData';
+import React from "react";
+import { fireEvent, render } from "@testing-library/react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { AdminHomeScreen } from "../AdminHomeScreen";
+import { useAdminHomeData } from "../../../modules/admin/application/useAdminHomeData";
 
-jest.mock('../../../modules/admin/application/useAdminHomeData', () => ({
+jest.mock("../../../modules/admin/application/useAdminHomeData", () => ({
   useAdminHomeData: jest.fn(),
 }));
 
-jest.mock('../../../store/authStore', () => ({
-  useAuthStore: jest.fn(() => ({ name: 'Admin User', email: 'admin@test.com' })),
+jest.mock("../../../store/authStore", () => ({
+  useAuthStore: jest.fn(() => ({
+    name: "Admin User",
+    email: "admin@test.com",
+  })),
 }));
 
 const mockUseAdminHomeData = useAdminHomeData as jest.Mock;
@@ -46,8 +49,8 @@ const createBaseViewModel = () => ({
   blockedUsersCount: 1,
   expiring7dCount: 2,
   licenseStateEntries: [
-    { state: 'ACTIVE', count: 8 },
-    { state: 'EXPIRED', count: 2 },
+    { state: "ACTIVE", count: 8 },
+    { state: "EXPIRED", count: 2 },
   ],
   recentEvents: buildEvents(3),
   isLoadingInitial: false,
@@ -61,7 +64,7 @@ const renderWithNavigation = (component: React.ReactElement) => {
   return render(<NavigationContainer>{component}</NavigationContainer>);
 };
 
-describe('AdminHomeScreen', () => {
+describe("AdminHomeScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseAdminHomeData.mockReturnValue(createBaseViewModel());
@@ -70,41 +73,41 @@ describe('AdminHomeScreen', () => {
   it('renders finance-style header with title "Inicio"', () => {
     const { getByText } = renderWithNavigation(<AdminHomeScreen />);
 
-    expect(getByText('Inicio')).toBeTruthy();
+    expect(getByText("Inicio")).toBeTruthy();
   });
 
   it('renders hero card with "Total usuarios" metric', () => {
     const { getByText } = renderWithNavigation(<AdminHomeScreen />);
 
-    expect(getByText('Total usuarios')).toBeTruthy();
-    expect(getByText('10')).toBeTruthy();
+    expect(getByText("Total usuarios")).toBeTruthy();
+    expect(getByText("10")).toBeTruthy();
   });
 
   it('renders hero card with "Reportes" button', () => {
     const { getByText } = renderWithNavigation(<AdminHomeScreen />);
 
-    expect(getByText('Reportes')).toBeTruthy();
+    expect(getByText("Reportes")).toBeTruthy();
   });
 
   it('renders weekly progress card with title "Progreso semanal"', () => {
     const { getByText } = renderWithNavigation(<AdminHomeScreen />);
 
-    expect(getByText('Progreso semanal')).toBeTruthy();
+    expect(getByText("Progreso semanal")).toBeTruthy();
   });
 
   it('renders events section with title "Eventos recientes"', () => {
     const { getByText } = renderWithNavigation(<AdminHomeScreen />);
 
-    expect(getByText('Eventos recientes')).toBeTruthy();
+    expect(getByText("Eventos recientes")).toBeTruthy();
   });
 
   it('renders "Ver todo" link in events section', () => {
     const { getByText } = renderWithNavigation(<AdminHomeScreen />);
 
-    expect(getByText('Ver todo')).toBeTruthy();
+    expect(getByText("Ver todo")).toBeTruthy();
   });
 
-  it('shows empty state when no events are available', () => {
+  it("shows empty state when no events are available", () => {
     mockUseAdminHomeData.mockReturnValueOnce({
       ...createBaseViewModel(),
       recentEvents: [],
@@ -112,7 +115,7 @@ describe('AdminHomeScreen', () => {
 
     const { getByText } = renderWithNavigation(<AdminHomeScreen />);
 
-    expect(getByText('Sin eventos recientes')).toBeTruthy();
+    expect(getByText("Sin eventos recientes")).toBeTruthy();
   });
 
   it('shows "Sin datos esta semana" when weekly progress is empty', () => {
@@ -123,10 +126,10 @@ describe('AdminHomeScreen', () => {
 
     const { getByText } = renderWithNavigation(<AdminHomeScreen />);
 
-    expect(getByText('Sin datos esta semana')).toBeTruthy();
+    expect(getByText("Sin datos esta semana")).toBeTruthy();
   });
 
-  it('triggers refresh when header icon is pressed', () => {
+  it("triggers refresh when header icon is pressed", () => {
     const refetchAll = jest.fn().mockResolvedValue(undefined);
     mockUseAdminHomeData.mockReturnValueOnce({
       ...createBaseViewModel(),
@@ -135,46 +138,52 @@ describe('AdminHomeScreen', () => {
 
     const { getByTestId } = renderWithNavigation(<AdminHomeScreen />);
 
-    fireEvent.press(getByTestId('admin-home-refresh-button'));
+    fireEvent.press(getByTestId("admin-home-refresh-button"));
 
     expect(refetchAll).toHaveBeenCalledTimes(1);
   });
 
-  it('shows warning indicator when KPIs have partial failure', () => {
+  it("shows warning indicator when KPIs have partial failure", () => {
     mockUseAdminHomeData.mockReturnValueOnce({
       ...createBaseViewModel(),
       blockErrors: { kpis: true, licenseState: false, events: false },
       hasPartialFailure: true,
     });
 
-    const { getByTestId, getByText } = renderWithNavigation(<AdminHomeScreen />);
+    const { getByTestId, getByText } = renderWithNavigation(
+      <AdminHomeScreen />,
+    );
 
-    expect(getByTestId('admin-home-kpis-warning')).toBeTruthy();
-    expect(getByText('Datos parciales, intenta actualizar')).toBeTruthy();
+    expect(getByTestId("admin-home-kpis-warning")).toBeTruthy();
+    expect(getByText("Datos parciales, intenta actualizar")).toBeTruthy();
   });
 
-  it('shows warning indicator when events have partial failure', () => {
+  it("shows warning indicator when events have partial failure", () => {
     mockUseAdminHomeData.mockReturnValueOnce({
       ...createBaseViewModel(),
       blockErrors: { kpis: false, licenseState: false, events: true },
       hasPartialFailure: true,
     });
 
-    const { getByTestId, getByText } = renderWithNavigation(<AdminHomeScreen />);
+    const { getByTestId, getByText } = renderWithNavigation(
+      <AdminHomeScreen />,
+    );
 
-    expect(getByTestId('admin-home-events-warning')).toBeTruthy();
-    expect(getByText('Datos parciales, intenta actualizar')).toBeTruthy();
+    expect(getByTestId("admin-home-events-warning")).toBeTruthy();
+    expect(getByText("Datos parciales, intenta actualizar")).toBeTruthy();
   });
 
-  it('caps recent events at 8 items', () => {
+  it("caps recent events at 8 items", () => {
     mockUseAdminHomeData.mockReturnValueOnce({
       ...createBaseViewModel(),
       recentEvents: buildEvents(12),
     });
 
-    const { getAllByTestId, queryByText } = renderWithNavigation(<AdminHomeScreen />);
+    const { getAllByTestId, queryByText } = renderWithNavigation(
+      <AdminHomeScreen />,
+    );
 
-    expect(getAllByTestId('admin-home-event-row')).toHaveLength(8);
-    expect(queryByText('EVENT_9')).toBeNull();
+    expect(getAllByTestId("admin-home-event-row")).toHaveLength(8);
+    expect(queryByText("EVENT_9")).toBeNull();
   });
 });

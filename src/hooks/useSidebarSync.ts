@@ -1,7 +1,11 @@
-import { useEffect, useCallback, useRef } from 'react';
-import { useNavigation, CommonActions, NavigationState } from '@react-navigation/native';
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import type { MainTabParamList } from '../navigation/types';
+import { useEffect, useCallback, useRef } from "react";
+import {
+  useNavigation,
+  CommonActions,
+  NavigationState,
+} from "@react-navigation/native";
+import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import type { MainTabParamList } from "../navigation/types";
 
 /**
  * Hook that syncs sidebar navigation with BottomTabs
@@ -9,11 +13,11 @@ import type { MainTabParamList } from '../navigation/types';
  */
 export const useSidebarSync = () => {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
-  const currentRouteRef = useRef<string>('Home');
+  const currentRouteRef = useRef<string>("Home");
 
   // Listen to navigation state changes
   useEffect(() => {
-    const unsubscribe = navigation.addListener('state', (e) => {
+    const unsubscribe = navigation.addListener("state", (e) => {
       const state = e.data.state as NavigationState | undefined;
       if (state?.routes?.length) {
         const currentRoute = state.routes[state.index || 0];
@@ -27,17 +31,20 @@ export const useSidebarSync = () => {
   }, [navigation]);
 
   // Navigate to a route and sync with BottomTab
-  const navigateToRoute = useCallback((routeName: keyof MainTabParamList) => {
-    currentRouteRef.current = routeName;
-    
-    // Navigate using common actions for proper state sync
-    navigation.dispatch(
-      CommonActions.navigate({
-        name: routeName,
-        merge: true,
-      })
-    );
-  }, [navigation]);
+  const navigateToRoute = useCallback(
+    (routeName: keyof MainTabParamList) => {
+      currentRouteRef.current = routeName;
+
+      // Navigate using common actions for proper state sync
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: routeName,
+          merge: true,
+        }),
+      );
+    },
+    [navigation],
+  );
 
   // Get the current active route
   const getCurrentRoute = useCallback((): string => {

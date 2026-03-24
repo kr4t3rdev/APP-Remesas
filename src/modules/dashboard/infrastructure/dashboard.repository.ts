@@ -1,4 +1,4 @@
-import api from '../../../services/api';
+import api from "../../../services/api";
 import type {
   CashBalance,
   DailyReport,
@@ -6,7 +6,7 @@ import type {
   Objective,
   Expense,
   Transaction,
-} from '../../../types';
+} from "../../../types";
 
 type ExchangeRatesResponse = {
   rates: ExchangeRate[];
@@ -14,19 +14,19 @@ type ExchangeRatesResponse = {
 
 export const dashboardRepository = {
   async getDailyReport(date?: string): Promise<DailyReport> {
-    const response = await api.get<DailyReport>('/reports/daily', {
+    const response = await api.get<DailyReport>("/reports/daily", {
       params: { date },
     });
     return response.data;
   },
 
   async getCashBalances(): Promise<CashBalance[]> {
-    const response = await api.get<CashBalance[]>('/cash-balances');
+    const response = await api.get<CashBalance[]>("/cash-balances");
     return response.data;
   },
 
   async getExchangeRates(): Promise<ExchangeRate[]> {
-    const response = await api.get<ExchangeRatesResponse>('/exchange-rates');
+    const response = await api.get<ExchangeRatesResponse>("/exchange-rates");
     return response.data.rates ?? [];
   },
 
@@ -37,17 +37,17 @@ export const dashboardRepository = {
     startDate?: string;
     endDate?: string;
   }): Promise<Transaction[]> {
-    const response = await api.get<Transaction[]>('/transactions', { params });
+    const response = await api.get<Transaction[]>("/transactions", { params });
     return response.data;
   },
 
   async getPendingTransactions(): Promise<Transaction[]> {
-    const response = await api.get<Transaction[]>('/transactions/pending');
+    const response = await api.get<Transaction[]>("/transactions/pending");
     return response.data;
   },
 
   async getObjectives(status?: string): Promise<Objective[]> {
-    const response = await api.get<Objective[]>('/objectives', {
+    const response = await api.get<Objective[]>("/objectives", {
       params: { status },
     });
     return response.data;
@@ -59,7 +59,7 @@ export const dashboardRepository = {
     endDate?: string;
     currencyId?: number;
   }): Promise<Expense[]> {
-    const response = await api.get<Expense[]>('/expenses', { params });
+    const response = await api.get<Expense[]>("/expenses", { params });
     return response.data;
   },
 };

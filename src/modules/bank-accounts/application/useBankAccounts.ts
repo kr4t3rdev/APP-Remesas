@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { bankAccountsRepository } from '../infrastructure/bankAccounts.repository';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { bankAccountsRepository } from "../infrastructure/bankAccounts.repository";
 
 export const useBankAccountsQuery = () =>
   useQuery({
@@ -42,10 +42,13 @@ export const useCreateBankAccountMutation = () => {
       bankName: string;
       currencyId: number;
       accountNumber: string;
+      initialBalance?: number;
       isActive?: boolean;
     }) => bankAccountsRepository.create(data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.list() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.bankAccounts.list(),
+      });
     },
   });
 };
@@ -69,8 +72,12 @@ export const useUpdateBankAccountMutation = () => {
     }) => bankAccountsRepository.update(id, data),
     onSuccess: async (_, { id }) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.detail(id) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.bankAccounts.list(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.bankAccounts.detail(id),
+        }),
       ]);
     },
   });
@@ -82,7 +89,9 @@ export const useDeleteBankAccountMutation = () => {
   return useMutation({
     mutationFn: (id: number) => bankAccountsRepository.delete(id),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.list() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.bankAccounts.list(),
+      });
     },
   });
 };

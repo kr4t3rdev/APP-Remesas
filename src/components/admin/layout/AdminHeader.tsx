@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuthStore } from '../../../store/authStore';
-import { useColors } from '../../../store/themeStore';
-import { spacing } from '../../../theme';
+import React, { useMemo } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuthStore } from "../../../store/authStore";
+import { useColors } from "../../../store/themeStore";
+import { spacing } from "../../../theme";
 
 interface AdminHeaderProps {
   title: string;
@@ -16,29 +16,34 @@ function getInitials(name: string | null | undefined, email?: string): string {
   if (name && name.trim()) {
     const parts = name.trim().split(/\s+/);
     if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase().slice(0, 2);
+      return (parts[0][0] + parts[parts.length - 1][0])
+        .toUpperCase()
+        .slice(0, 2);
     }
     return name.slice(0, 2).toUpperCase();
   }
   if (email && email.length) return email[0].toUpperCase();
-  return '?';
+  return "?";
 }
 
-export const AdminHeader: React.FC<AdminHeaderProps> = ({ 
-  title, 
-  onRefresh, 
+export const AdminHeader: React.FC<AdminHeaderProps> = ({
+  title,
+  onRefresh,
   onBack,
-  showAvatar = true 
+  showAvatar = true,
 }) => {
   const colors = useColors();
   const user = useAuthStore((s) => s.user);
-  const initials = useMemo(() => getInitials(user?.name, user?.email), [user?.name, user?.email]);
+  const initials = useMemo(
+    () => getInitials(user?.name, user?.email),
+    [user?.name, user?.email],
+  );
 
   const styles = StyleSheet.create({
     header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       marginBottom: spacing.md,
       paddingHorizontal: spacing.md,
       paddingTop: spacing.md,
@@ -46,40 +51,40 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     leftContainer: {
       width: 44,
       height: 44,
-      justifyContent: 'center',
-      alignItems: 'flex-start',
+      justifyContent: "center",
+      alignItems: "flex-start",
     },
     rightContainer: {
       width: 44,
       height: 44,
-      justifyContent: 'center',
-      alignItems: 'flex-end',
+      justifyContent: "center",
+      alignItems: "flex-end",
     },
     avatar: {
       width: 44,
       height: 44,
       borderRadius: 22,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
       backgroundColor: colors.primary[500],
     },
     avatarText: {
       color: colors.text.inverse,
-      fontWeight: '700',
+      fontWeight: "700",
       fontSize: 16,
     },
     headerTitle: {
       flex: 1,
-      textAlign: 'center',
+      textAlign: "center",
       fontSize: 20,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     iconButton: {
       width: 44,
       height: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
   });
 
@@ -89,7 +94,11 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
       <View style={styles.leftContainer}>
         {onBack ? (
           <TouchableOpacity onPress={onBack} style={styles.iconButton}>
-            <Ionicons name="chevron-back" size={24} color={colors.text.primary} />
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={colors.text.primary}
+            />
           </TouchableOpacity>
         ) : showAvatar ? (
           <View style={styles.avatar}>

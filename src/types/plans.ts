@@ -1,4 +1,4 @@
-export type PlanIconType = 'star' | 'diamond' | 'rocket' | 'flash';
+export type PlanIconType = "star" | "diamond" | "rocket" | "flash";
 
 export interface PlanBenefit {
   id: string;

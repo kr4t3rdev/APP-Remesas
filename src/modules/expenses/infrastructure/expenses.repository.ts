@@ -1,5 +1,9 @@
-import api from '../../../services/api';
-import type { Expense, CreateExpenseInput, UpdateExpenseInput } from '../../../types';
+import api from "../../../services/api";
+import type {
+  Expense,
+  CreateExpenseInput,
+  UpdateExpenseInput,
+} from "../../../types";
 
 export const expensesRepository = {
   async getExpenses(params?: {
@@ -8,7 +12,7 @@ export const expensesRepository = {
     endDate?: string;
     currencyId?: number;
   }): Promise<Expense[]> {
-    const response = await api.get<Expense[]>('/expenses', { params });
+    const response = await api.get<Expense[]>("/expenses", { params });
     return response.data;
   },
 
@@ -18,7 +22,7 @@ export const expensesRepository = {
   },
 
   async createExpense(data: CreateExpenseInput): Promise<Expense> {
-    const response = await api.post<Expense>('/expenses', data);
+    const response = await api.post<Expense>("/expenses", data);
     return response.data;
   },
 
@@ -32,7 +36,7 @@ export const expensesRepository = {
   },
 
   async getPendingExpenses(): Promise<Expense[]> {
-    const response = await api.get<Expense[]>('/expenses/pending');
+    const response = await api.get<Expense[]>("/expenses/pending");
     return response.data;
   },
 };

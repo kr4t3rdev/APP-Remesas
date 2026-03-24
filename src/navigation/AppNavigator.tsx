@@ -1,27 +1,30 @@
-import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, ActivityIndicator } from 'react-native';
-import { WelcomeScreen } from '../screens/auth/WelcomeScreen';
-import { LoginScreen } from '../screens/auth/LoginScreen';
-import { RegisterScreen } from '../screens/auth/RegisterScreen';
-import { ChangePasswordScreen } from '../screens/auth/ChangePasswordScreen';
-import { VerificationPendingScreen } from '../screens/auth/VerificationPendingScreen';
-import { CashHistoryScreen } from '../screens/cash/CashHistoryScreen';
-import { ExchangeRatesScreen } from '../screens/exchange-rates/ExchangeRatesScreen';
-import { BankAccountsScreen } from '../screens/bank-accounts/BankAccountsScreen';
-import { CurrenciesScreen } from '../screens/currencies/CurrenciesScreen';
-import { ReconciliationsHistoryScreen } from '../screens/reconciliations/ReconciliationsHistoryScreen';
-import { BulkReconciliationScreen } from '../screens/reconciliations/BulkReconciliationScreen';
-import { MainTabs } from './MainTabs';
-import { AdminTabs } from './AdminTabs';
-import { useAuthStore } from '../store/authStore';
-import { colors } from '../theme';
-import type { RootStackParamList } from './types';
-import { AdminUserDetailScreen } from '../screens/admin/AdminUserDetailScreen';
-import { AdminLicensesListScreen } from '../screens/admin/licenses/AdminLicensesListScreen';
-import { AdminLicenseDetailScreen } from '../screens/admin/licenses/AdminLicenseDetailScreen';
-import { BusinessWorkersScreen, UIWorkersRedirect } from './BusinessWorkersRouter';
+import React, { useEffect } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { View, ActivityIndicator } from "react-native";
+import { WelcomeScreen } from "../screens/auth/WelcomeScreen";
+import { LoginScreen } from "../screens/auth/LoginScreen";
+import { RegisterScreen } from "../screens/auth/RegisterScreen";
+import { ChangePasswordScreen } from "../screens/auth/ChangePasswordScreen";
+import { VerificationPendingScreen } from "../screens/auth/VerificationPendingScreen";
+import { CashHistoryScreen } from "../screens/cash/CashHistoryScreen";
+import { ExchangeRatesScreen } from "../screens/exchange-rates/ExchangeRatesScreen";
+import { BankAccountsScreen } from "../screens/bank-accounts/BankAccountsScreen";
+import { CurrenciesScreen } from "../screens/currencies/CurrenciesScreen";
+import { ReconciliationsHistoryScreen } from "../screens/reconciliations/ReconciliationsHistoryScreen";
+import { BulkReconciliationScreen } from "../screens/reconciliations/BulkReconciliationScreen";
+import { MainTabs } from "./MainTabs";
+import { AdminTabs } from "./AdminTabs";
+import { useAuthStore } from "../store/authStore";
+import { colors } from "../theme";
+import type { RootStackParamList } from "./types";
+import { AdminUserDetailScreen } from "../screens/admin/AdminUserDetailScreen";
+import { AdminLicensesListScreen } from "../screens/admin/licenses/AdminLicensesListScreen";
+import { AdminLicenseDetailScreen } from "../screens/admin/licenses/AdminLicenseDetailScreen";
+import {
+  BusinessWorkersScreen,
+  UIWorkersRedirect,
+} from "./BusinessWorkersRouter";
 
 const AuthStack = createNativeStackNavigator<RootStackParamList>();
 
@@ -30,11 +33,14 @@ const AuthStackNavigator: React.FC = () => (
     <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
     <AuthStack.Screen name="Login" component={LoginScreen} />
     <AuthStack.Screen name="Register" component={RegisterScreen} />
-    <AuthStack.Screen name="VerificationPending" component={VerificationPendingScreen} />
-    <AuthStack.Screen 
-      name="ChangePassword" 
+    <AuthStack.Screen
+      name="VerificationPending"
+      component={VerificationPendingScreen}
+    />
+    <AuthStack.Screen
+      name="ChangePassword"
       component={ChangePasswordScreen}
-      options={{ 
+      options={{
         gestureEnabled: false,
       }}
     />
@@ -45,104 +51,107 @@ const MainStack = createNativeStackNavigator<RootStackParamList>();
 
 const MainStackNavigator: React.FC = () => {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === 'ADMIN';
-  
+  const isAdmin = user?.role === "ADMIN";
+
   return (
     <MainStack.Navigator screenOptions={{ headerShown: false }}>
-      <MainStack.Screen name="Main" component={isAdmin ? AdminTabs : MainTabs} />
-      <MainStack.Screen 
-        name="ChangePassword" 
+      <MainStack.Screen
+        name="Main"
+        component={isAdmin ? AdminTabs : MainTabs}
+      />
+      <MainStack.Screen
+        name="ChangePassword"
         component={ChangePasswordScreen}
-        options={{ 
+        options={{
           gestureEnabled: false,
         }}
       />
-      <MainStack.Screen 
-        name="AdminUserDetail" 
+      <MainStack.Screen
+        name="AdminUserDetail"
         component={AdminUserDetailScreen}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'card'
+          presentation: "card",
         }}
       />
-      <MainStack.Screen 
-        name="CashHistory" 
+      <MainStack.Screen
+        name="CashHistory"
         component={CashHistoryScreen}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'card'
+          presentation: "card",
         }}
       />
-      <MainStack.Screen 
-        name="ExchangeRates" 
+      <MainStack.Screen
+        name="ExchangeRates"
         component={ExchangeRatesScreen}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'card'
+          presentation: "card",
         }}
       />
-      <MainStack.Screen 
-        name="BankAccounts" 
+      <MainStack.Screen
+        name="BankAccounts"
         component={BankAccountsScreen}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'card'
+          presentation: "card",
         }}
       />
-      <MainStack.Screen 
-        name="Currencies" 
+      <MainStack.Screen
+        name="Currencies"
         component={CurrenciesScreen}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'card'
+          presentation: "card",
         }}
       />
-      <MainStack.Screen 
-        name="ReconciliationsHistory" 
+      <MainStack.Screen
+        name="ReconciliationsHistory"
         component={ReconciliationsHistoryScreen}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'card'
+          presentation: "card",
         }}
       />
-      <MainStack.Screen 
-        name="BulkReconciliation" 
+      <MainStack.Screen
+        name="BulkReconciliation"
         component={BulkReconciliationScreen}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'modal'
+          presentation: "modal",
         }}
       />
-      <MainStack.Screen 
-        name="AdminLicensesList" 
+      <MainStack.Screen
+        name="AdminLicensesList"
         component={AdminLicensesListScreen}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'card'
+          presentation: "card",
         }}
       />
-      <MainStack.Screen 
-        name="AdminLicenseDetail" 
+      <MainStack.Screen
+        name="AdminLicenseDetail"
         component={AdminLicenseDetailScreen}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'card'
+          presentation: "card",
         }}
       />
-      <MainStack.Screen 
-        name="BusinessWorkers" 
+      <MainStack.Screen
+        name="BusinessWorkers"
         component={BusinessWorkersScreen}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'card'
+          presentation: "card",
         }}
       />
-      <MainStack.Screen 
-        name="UIWorkersRedirect" 
+      <MainStack.Screen
+        name="UIWorkersRedirect"
         component={UIWorkersRedirect}
-        options={{ 
+        options={{
           headerShown: false,
-          presentation: 'card'
+          presentation: "card",
         }}
       />
     </MainStack.Navigator>
@@ -150,7 +159,8 @@ const MainStackNavigator: React.FC = () => {
 };
 
 export const AppNavigator: React.FC = () => {
-  const { isAuthenticated, isLoading, checkAuth, user, mustChangePassword } = useAuthStore();
+  const { isAuthenticated, isLoading, checkAuth, user, mustChangePassword } =
+    useAuthStore();
 
   useEffect(() => {
     checkAuth();
@@ -158,7 +168,14 @@ export const AppNavigator: React.FC = () => {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: colors.background,
+        }}
+      >
         <ActivityIndicator size="large" color={colors.primary[500]} />
       </View>
     );
@@ -175,11 +192,7 @@ export const AppNavigator: React.FC = () => {
 
   return (
     <NavigationContainer>
-      {isAuthenticated ? (
-        <MainStackNavigator />
-      ) : (
-        <AuthStackNavigator />
-      )}
+      {isAuthenticated ? <MainStackNavigator /> : <AuthStackNavigator />}
     </NavigationContainer>
   );
 };

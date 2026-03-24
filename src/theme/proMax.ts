@@ -4,13 +4,13 @@
 
 export const PRO_MAX_THEME = {
   colors: {
-    background: '#F3F4F6', // light gray background
-    surface: '#FFFFFF',    // white card surface
-    text: '#111827',
-    primary: '#4F46E5',
+    background: "#F3F4F6", // light gray background
+    surface: "#FFFFFF", // white card surface
+    text: "#111827",
+    primary: "#4F46E5",
   },
   typography: {
-    fontFamily: 'Inter, system-ui, -apple-system',
+    fontFamily: "Inter, system-ui, -apple-system",
     fontSize: 16,
   },
   spacing: {

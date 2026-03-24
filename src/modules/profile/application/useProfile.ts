@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { profileRepository } from '../infrastructure/profile.repository';
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { profileRepository } from "../infrastructure/profile.repository";
 
 export const useProfileBankAccountsQuery = () =>
   useQuery({

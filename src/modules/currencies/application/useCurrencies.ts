@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { currenciesRepository } from '../infrastructure/currencies.repository';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { currenciesRepository } from "../infrastructure/currencies.repository";
 
 export const useCurrenciesQuery = () =>
   useQuery({
@@ -20,12 +20,20 @@ export const useCreateCurrencyMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { code: string; name: string; symbol: string; isActive?: boolean }) =>
-      currenciesRepository.create(data),
+    mutationFn: (data: {
+      code: string;
+      name: string;
+      symbol: string;
+      isActive?: boolean;
+    }) => currenciesRepository.create(data),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.currencies.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.currencies.withPrimary() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.currencies.list(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.currencies.withPrimary(),
+        }),
       ]);
     },
   });
@@ -40,12 +48,21 @@ export const useUpdateCurrencyMutation = () => {
       data,
     }: {
       id: number;
-      data: { code?: string; name?: string; symbol?: string; isActive?: boolean };
+      data: {
+        code?: string;
+        name?: string;
+        symbol?: string;
+        isActive?: boolean;
+      };
     }) => currenciesRepository.update(id, data),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.currencies.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.currencies.withPrimary() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.currencies.list(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.currencies.withPrimary(),
+        }),
       ]);
     },
   });
@@ -55,9 +72,12 @@ export const useSetPrimaryCurrencyMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (primaryCurrencyId: number) => currenciesRepository.setPrimaryCurrency(primaryCurrencyId),
+    mutationFn: (primaryCurrencyId: number) =>
+      currenciesRepository.setPrimaryCurrency(primaryCurrencyId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.currencies.withPrimary() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.currencies.withPrimary(),
+      });
     },
   });
 };
@@ -77,8 +97,12 @@ export const useDeleteCurrencyMutation = () => {
     mutationFn: (id: number) => currenciesRepository.delete(id),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.currencies.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.currencies.withPrimary() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.currencies.list(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.currencies.withPrimary(),
+        }),
       ]);
     },
   });

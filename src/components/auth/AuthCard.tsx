@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
-import { spacing, borderRadius, shadows } from '../../theme';
-import { useColors } from '../../store/themeStore';
+import React from "react";
+import { View, StyleSheet, ViewStyle } from "react-native";
+import { spacing, borderRadius, shadows } from "../../theme";
+import { useColors } from "../../store/themeStore";
 
 interface AuthCardProps {
   children: React.ReactNode;
@@ -17,15 +17,15 @@ export const AuthCard: React.FC<AuthCardProps> = ({
   const colors = useColors();
 
   return (
-    <View 
+    <View
       style={[
-        styles.card, 
-        { 
+        styles.card,
+        {
           backgroundColor: colors.card,
           maxWidth,
           ...shadows.md,
         },
-        style
+        style,
       ]}
     >
       {children}
@@ -35,7 +35,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    width: '100%',
+    width: "100%",
     padding: spacing.lg,
     borderRadius: borderRadius.xl,
   },

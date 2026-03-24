@@ -1,14 +1,24 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, StyleSheet, useWindowDimensions, Animated } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { AuthWrapper } from '../../components/auth/AuthWrapper';
-import { spacing, borderRadius } from '../../theme';
-import { useColors } from '../../store/themeStore';
-import { useAuthStore } from '../../store/authStore';
-import { showError } from '../../store/toastStore';
+import React, { useState, useRef } from "react";
+import {
+  View,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  useWindowDimensions,
+  Animated,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Input";
+import { AuthWrapper } from "../../components/auth/AuthWrapper";
+import { spacing, borderRadius } from "../../theme";
+import { useColors } from "../../store/themeStore";
+import { useAuthStore } from "../../store/authStore";
+import { showError } from "../../store/toastStore";
 
 interface LoginScreenProps {
   navigation?: any;
@@ -18,31 +28,32 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const colors = useColors();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 768;
-  
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [btnHovered, setBtnHovered] = useState(false);
   const btnScale = useRef(new Animated.Value(1)).current;
-  
+
   const login = useAuthStore((state) => state.login);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      const msg = 'Por favor complete todos los campos';
+      const msg = "Por favor complete todos los campos";
       setError(msg);
       showError(msg);
       return;
     }
 
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       await login(email, password);
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Error al iniciar sesión';
+      const errorMessage =
+        err.response?.data?.message || err.message || "Error al iniciar sesión";
       setError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -52,7 +63,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   const content = (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
     >
       <ScrollView
@@ -113,26 +124,40 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 onPress={handleLogin}
                 onPressIn={() => {
                   if (!isDesktop) {
-                    Animated.timing(btnScale, { toValue: 0.97, duration: 100, useNativeDriver: true }).start();
+                    Animated.timing(btnScale, {
+                      toValue: 0.97,
+                      duration: 100,
+                      useNativeDriver: true,
+                    }).start();
                   }
                 }}
                 onPressOut={() => {
                   if (!isDesktop) {
-                    Animated.timing(btnScale, { toValue: 1, duration: 100, useNativeDriver: true }).start();
+                    Animated.timing(btnScale, {
+                      toValue: 1,
+                      duration: 100,
+                      useNativeDriver: true,
+                    }).start();
                   }
                 }}
                 // @ts-ignore - web-only hover events
                 onMouseEnter={() => {
                   if (isDesktop) {
                     setBtnHovered(true);
-                    Animated.spring(btnScale, { toValue: 1.02, useNativeDriver: true }).start();
+                    Animated.spring(btnScale, {
+                      toValue: 1.02,
+                      useNativeDriver: true,
+                    }).start();
                   }
                 }}
                 // @ts-ignore - web-only hover events
                 onMouseLeave={() => {
                   if (isDesktop) {
                     setBtnHovered(false);
-                    Animated.spring(btnScale, { toValue: 1, useNativeDriver: true }).start();
+                    Animated.spring(btnScale, {
+                      toValue: 1,
+                      useNativeDriver: true,
+                    }).start();
                   }
                 }}
                 disabled={loading}
@@ -145,7 +170,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   ]}
                 >
                   {loading ? (
-                    <Text style={styles.primaryButtonTextLoading}>Cargando...</Text>
+                    <Text style={styles.primaryButtonTextLoading}>
+                      Cargando...
+                    </Text>
                   ) : (
                     <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
                   )}
@@ -156,7 +183,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
           {/* Forgot Password Link */}
           <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={[styles.forgotPasswordText, { color: colors.primary[500] }]}>
+            <Text
+              style={[
+                styles.forgotPasswordText,
+                { color: colors.primary[500] },
+              ]}
+            >
               ¿Olvidaste tu contraseña?
             </Text>
           </TouchableOpacity>
@@ -166,10 +198,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         {!isDesktop && (
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: colors.text.secondary }]}>
-              ¿No tienes cuenta?{' '}
+              ¿No tienes cuenta?{" "}
             </Text>
-            <TouchableOpacity onPress={() => navigation?.navigate('Register')}>
-              <Text style={[styles.registerLink, { color: colors.primary[500] }]}>
+            <TouchableOpacity onPress={() => navigation?.navigate("Register")}>
+              <Text
+                style={[styles.registerLink, { color: colors.primary[500] }]}
+              >
                 Regístrate
               </Text>
             </TouchableOpacity>
@@ -186,15 +220,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         <Text style={[styles.desktopTitle, { color: colors.text.primary }]}>
           Iniciar Sesión
         </Text>
-        <Text style={[styles.desktopSubtitle, { color: colors.text.secondary }]}>
+        <Text
+          style={[styles.desktopSubtitle, { color: colors.text.secondary }]}
+        >
           Ingresa tus credenciales para continuar
         </Text>
         {content}
         <View style={styles.desktopFooter}>
           <Text style={[styles.footerText, { color: colors.text.secondary }]}>
-            ¿No tienes cuenta?{' '}
+            ¿No tienes cuenta?{" "}
           </Text>
-          <TouchableOpacity onPress={() => navigation?.navigate('Register')}>
+          <TouchableOpacity onPress={() => navigation?.navigate("Register")}>
             <Text style={[styles.registerLink, { color: colors.primary[500] }]}>
               Regístrate
             </Text>
@@ -218,7 +254,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   scrollContentMobile: {
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   scrollContentDesktop: {
     paddingTop: spacing.xl,
@@ -228,17 +264,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontWeight: "700",
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: spacing.sm,
   },
   desktopTitle: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: spacing.xs,
   },
   desktopSubtitle: {
@@ -248,7 +284,7 @@ const styles = StyleSheet.create({
   formCard: {
     padding: spacing.lg,
     borderRadius: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -257,24 +293,24 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     marginTop: spacing.sm,
-    textAlign: 'center',
+    textAlign: "center",
   },
   forgotPassword: {
     marginTop: spacing.md,
-    alignItems: 'center',
+    alignItems: "center",
   },
   forgotPasswordText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: spacing.xl,
   },
   desktopFooter: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: spacing.lg,
   },
   footerText: {
@@ -282,24 +318,24 @@ const styles = StyleSheet.create({
   },
   registerLink: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   primaryButton: {
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   primaryButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
   primaryButtonTextLoading: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
 });
 

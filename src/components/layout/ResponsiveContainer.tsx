@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
-import { useResponsive, BREAKPOINTS } from '../../hooks/useResponsive';
-import { gridColumns, spacing } from '../../theme';
+import React, { useMemo } from "react";
+import { View, StyleSheet, ViewStyle } from "react-native";
+import { useResponsive, BREAKPOINTS } from "../../hooks/useResponsive";
+import { gridColumns, spacing } from "../../theme";
 
 interface ResponsiveContainerProps {
   children: React.ReactNode;
@@ -23,12 +23,12 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   // Determine grid columns based on breakpoint
   const columns = useMemo(() => {
     switch (breakpoint) {
-      case 'mobile':
+      case "mobile":
         return gridColumns.mobile;
-      case 'tablet':
+      case "tablet":
         return gridColumns.tablet;
-      case 'desktop':
-      case 'wide':
+      case "desktop":
+      case "wide":
         return gridColumns.desktop;
       default:
         return 1;
@@ -37,8 +37,8 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 
   // Calculate item width based on columns
   const itemWidth = useMemo(() => {
-    const availableWidth = maxWidth 
-      ? Math.min(width, maxWidth) - padding * 2 
+    const availableWidth = maxWidth
+      ? Math.min(width, maxWidth) - padding * 2
       : width - padding * 2;
     const totalGaps = (columns - 1) * gap;
     return (availableWidth - totalGaps) / columns;
@@ -48,19 +48,22 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   const renderGrid = () => {
     const childArray = React.Children.toArray(children);
     const rows: React.ReactNode[][] = [];
-    
+
     for (let i = 0; i < childArray.length; i += columns) {
       rows.push(childArray.slice(i, i + columns));
     }
 
     return rows.map((row, rowIndex) => (
-      <View 
-        key={`row-${rowIndex}`} 
-        style={[styles.row, { gap, marginBottom: rowIndex < rows.length - 1 ? gap : 0 }]}
+      <View
+        key={`row-${rowIndex}`}
+        style={[
+          styles.row,
+          { gap, marginBottom: rowIndex < rows.length - 1 ? gap : 0 },
+        ]}
       >
         {row.map((child, colIndex) => (
-          <View 
-            key={`col-${colIndex}`} 
+          <View
+            key={`col-${colIndex}`}
             style={[styles.item, { width: itemWidth, maxWidth: itemWidth }]}
           >
             {child}
@@ -71,11 +74,11 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   };
 
   return (
-    <View 
+    <View
       style={[
-        styles.container, 
-        { padding, maxWidth: maxWidth || '100%' },
-        style
+        styles.container,
+        { padding, maxWidth: maxWidth || "100%" },
+        style,
       ]}
     >
       {renderGrid()}
@@ -98,20 +101,24 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
   const { width, breakpoint } = useResponsive();
 
   const columns = useMemo(() => {
-    const maxColumns = breakpoint === 'mobile' ? 1 : breakpoint === 'tablet' ? 2 : 4;
-    return Math.max(1, Math.floor((width - spacing.md * 2) / (minItemWidth + spacing.md)));
+    const maxColumns =
+      breakpoint === "mobile" ? 1 : breakpoint === "tablet" ? 2 : 4;
+    return Math.max(
+      1,
+      Math.floor((width - spacing.md * 2) / (minItemWidth + spacing.md)),
+    );
   }, [width, breakpoint, minItemWidth]);
 
   return (
     <View style={[styles.gridContainer, style]}>
       <View style={[styles.gridRow, { gap: spacing.md }]}>
         {React.Children.map(children, (child, index) => (
-          <View 
+          <View
             key={index}
-            style={{ 
+            style={{
               flex: 1,
               minWidth: minItemWidth,
-              maxWidth: columns > 1 ? `${100 / columns}%` : '100%',
+              maxWidth: columns > 1 ? `${100 / columns}%` : "100%",
             }}
           >
             {child}
@@ -124,21 +131,21 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
   },
   row: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
   item: {
     flexShrink: 0,
   },
   gridContainer: {
-    width: '100%',
+    width: "100%",
   },
   gridRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
 });
 

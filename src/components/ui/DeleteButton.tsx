@@ -1,6 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { TouchableOpacity, StyleSheet, View, StyleProp, ViewStyle, Animated, Easing } from 'react-native';
-import Svg, { Path, G, Circle } from 'react-native-svg';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  TouchableOpacity,
+  StyleSheet,
+  View,
+  StyleProp,
+  ViewStyle,
+  Animated,
+  Easing,
+} from "react-native";
+import Svg, { Path, G, Circle } from "react-native-svg";
 
 // --- Constants ---
 const BUTTON_HEIGHT = 48;
@@ -12,10 +20,10 @@ interface DeleteButtonProps {
   label?: string;
 }
 
-export const DeleteButton: React.FC<DeleteButtonProps> = ({ 
-  onPress, 
+export const DeleteButton: React.FC<DeleteButtonProps> = ({
+  onPress,
   style,
-  label = 'Delete' 
+  label = "Delete",
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -24,7 +32,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
   const trashY = useRef(new Animated.Value(-15)).current;
   const trashOpacity = useRef(new Animated.Value(0)).current;
   const textScale = useRef(new Animated.Value(1)).current;
-  
+
   // Entrance Animations
   const entranceOpacity = useRef(new Animated.Value(0)).current;
   const textTranslateX = useRef(new Animated.Value(-20)).current;
@@ -72,7 +80,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
           useNativeDriver: true,
         }),
       ]),
-      
+
       // 2. Icon Animation Sequence
       Animated.sequence([
         // Open Lid
@@ -82,7 +90,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
           tension: 40,
           useNativeDriver: true,
         }),
-        
+
         // Drop Trash (Parallel with lid staying open)
         Animated.parallel([
           Animated.timing(trashOpacity, {
@@ -109,7 +117,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
               toValue: -15,
               duration: 0,
               useNativeDriver: true,
-            })
+            }),
           ]),
         ]),
 
@@ -120,7 +128,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
           tension: 40,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ]).start(({ finished }) => {
       if (finished && onPress) {
         setIsAnimating(false);
@@ -132,12 +140,12 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
   // --- Interpolations ---
   const lidRotateStr = lidRotation.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '-45deg'],
+    outputRange: ["0deg", "-45deg"],
   });
 
   // Animated Components
   const AnimatedG = Animated.createAnimatedComponent(G);
-  
+
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -146,37 +154,39 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
     >
       <View style={styles.contentContainer}>
         {/* Animated Text */}
-        <Animated.Text 
+        <Animated.Text
           style={[
-            styles.text, 
-            { 
+            styles.text,
+            {
               opacity: entranceOpacity,
-              transform: [
-                { translateX: textTranslateX },
-                { scale: textScale }
-              ] 
-            }
+              transform: [{ translateX: textTranslateX }, { scale: textScale }],
+            },
           ]}
         >
           {label}
         </Animated.Text>
 
         {/* Animated Icon Container */}
-        <Animated.View 
+        <Animated.View
           style={[
             styles.iconContainer,
             {
               opacity: entranceOpacity,
-              transform: [{ translateY: iconTranslateY }]
-            }
+              transform: [{ translateY: iconTranslateY }],
+            },
           ]}
         >
-          <Svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none">
+          <Svg
+            width={ICON_SIZE}
+            height={ICON_SIZE}
+            viewBox="0 0 24 24"
+            fill="none"
+          >
             {/* Trash Particles (Behind Body, Under Lid) */}
-            <AnimatedG 
+            <AnimatedG
               style={{
                 opacity: trashOpacity,
-                transform: [{ translateY: trashY }]
+                transform: [{ translateY: trashY }],
               }}
             >
               <Circle cx="10" cy="8" r="1.5" fill="white" />
@@ -191,19 +201,29 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
               strokeWidth="2"
               fill="transparent"
             />
-            <Path d="M10 11 V18" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-            <Path d="M14 11 V18" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+            <Path
+              d="M10 11 V18"
+              stroke="white"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <Path
+              d="M14 11 V18"
+              stroke="white"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
 
             {/* Trash Can Lid (Animated) */}
-            <AnimatedG 
+            <AnimatedG
               style={{
                 transform: [
                   { translateX: 12 }, // Pivot X
-                  { translateY: 5 },  // Pivot Y
+                  { translateY: 5 }, // Pivot Y
                   { rotate: lidRotateStr },
                   { translateX: -12 },
                   { translateY: -5 },
-                ]
+                ],
               }}
             >
               <Path d="M10 3 H14 V5 H10 V3 Z" fill="white" />
@@ -218,32 +238,32 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#EF4444', // Red-500
+    backgroundColor: "#EF4444", // Red-500
     borderRadius: 12,
     height: BUTTON_HEIGHT,
     paddingHorizontal: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
     minWidth: 120,
   },
   contentContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
     gap: 12,
   },
   text: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     letterSpacing: 0.5,
   },
   iconContainer: {
     width: ICON_SIZE,
     height: ICON_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -1,7 +1,7 @@
-import React from 'react';
-import { Pressable, ScrollView, Text, View, ViewStyle } from 'react-native';
-import { borderRadius, spacing } from '../../theme';
-import { useColors } from '../../store/themeStore';
+import React from "react";
+import { Pressable, ScrollView, Text, View, ViewStyle } from "react-native";
+import { borderRadius, spacing } from "../../theme";
+import { useColors } from "../../store/themeStore";
 
 export type SelectOption = {
   label: string;
@@ -28,10 +28,10 @@ export const Select: React.FC<SelectProps> = ({
   value,
   onValueChange,
   options,
-  placeholder = 'Selecciona una opción',
+  placeholder = "Selecciona una opción",
   loading = false,
   error,
-  emptyText = 'Sin opciones disponibles',
+  emptyText = "Sin opciones disponibles",
   disabled = false,
   containerStyle,
   testID,
@@ -39,14 +39,20 @@ export const Select: React.FC<SelectProps> = ({
   const themeColors = useColors();
   const selected = options.find((option) => option.value === value);
 
-  const statusText = loading ? 'Cargando opciones...' : error ? error : options.length === 0 ? emptyText : null;
+  const statusText = loading
+    ? "Cargando opciones..."
+    : error
+      ? error
+      : options.length === 0
+        ? emptyText
+        : null;
 
   return (
     <View style={containerStyle} testID={testID}>
       <Text
         style={{
           fontSize: 14,
-          fontWeight: '500',
+          fontWeight: "500",
           color: themeColors.text.primary,
           marginBottom: spacing.xs,
         }}
@@ -65,7 +71,9 @@ export const Select: React.FC<SelectProps> = ({
       >
         <Text
           style={{
-            color: selected ? themeColors.text.primary : themeColors.text.secondary,
+            color: selected
+              ? themeColors.text.primary
+              : themeColors.text.secondary,
             marginBottom: statusText || options.length === 0 ? 0 : spacing.sm,
           }}
         >
@@ -73,9 +81,20 @@ export const Select: React.FC<SelectProps> = ({
         </Text>
 
         {statusText ? (
-          <Text style={{ color: error ? themeColors.danger : themeColors.text.secondary, fontSize: 12 }}>{statusText}</Text>
+          <Text
+            style={{
+              color: error ? themeColors.danger : themeColors.text.secondary,
+              fontSize: 12,
+            }}
+          >
+            {statusText}
+          </Text>
         ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.xs }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: spacing.xs }}
+          >
             {options.map((option) => {
               const isSelected = option.value === value;
               return (
@@ -91,16 +110,34 @@ export const Select: React.FC<SelectProps> = ({
                     paddingVertical: spacing.xs,
                     borderRadius: borderRadius.full,
                     borderWidth: 1,
-                    borderColor: isSelected ? themeColors.primary[500] : themeColors.border,
-                    backgroundColor: isSelected ? `${themeColors.primary[500]}22` : themeColors.card,
-                    justifyContent: 'center',
+                    borderColor: isSelected
+                      ? themeColors.primary[500]
+                      : themeColors.border,
+                    backgroundColor: isSelected
+                      ? `${themeColors.primary[500]}22`
+                      : themeColors.card,
+                    justifyContent: "center",
                   }}
                 >
-                  <Text style={{ color: isSelected ? themeColors.primary[600] : themeColors.text.primary, fontWeight: '600' }}>
+                  <Text
+                    style={{
+                      color: isSelected
+                        ? themeColors.primary[600]
+                        : themeColors.text.primary,
+                      fontWeight: "600",
+                    }}
+                  >
                     {option.label}
                   </Text>
                   {option.description ? (
-                    <Text style={{ color: themeColors.text.secondary, fontSize: 11 }}>{option.description}</Text>
+                    <Text
+                      style={{
+                        color: themeColors.text.secondary,
+                        fontSize: 11,
+                      }}
+                    >
+                      {option.description}
+                    </Text>
                   ) : null}
                 </Pressable>
               );

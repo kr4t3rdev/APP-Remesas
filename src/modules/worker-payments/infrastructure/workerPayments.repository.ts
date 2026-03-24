@@ -1,15 +1,15 @@
-import api from '../../../services/api';
+import api from "../../../services/api";
 import type {
   Worker,
   CreateWorkerInput,
   UpdateWorkerInput,
   CreateTransactionInput,
   AddBalanceInput,
-} from '../../../types';
+} from "../../../types";
 
 export const workerPaymentsRepository = {
   async getWorkers(): Promise<Worker[]> {
-    const response = await api.get<Worker[]>('/worker-payments');
+    const response = await api.get<Worker[]>("/worker-payments");
     return response.data;
   },
 
@@ -19,7 +19,7 @@ export const workerPaymentsRepository = {
   },
 
   async createWorker(input: CreateWorkerInput): Promise<Worker> {
-    const response = await api.post<Worker>('/worker-payments', input);
+    const response = await api.post<Worker>("/worker-payments", input);
     return response.data;
   },
 
@@ -32,13 +32,22 @@ export const workerPaymentsRepository = {
     await api.delete(`/worker-payments/${id}`);
   },
 
-  async createTransaction(workerId: number, input: Omit<CreateTransactionInput, 'workerId'>): Promise<Worker> {
-    const response = await api.post<{ worker: Worker }>(`/worker-payments/${workerId}/transaction`, input);
+  async createTransaction(
+    workerId: number,
+    input: Omit<CreateTransactionInput, "workerId">,
+  ): Promise<Worker> {
+    const response = await api.post<{ worker: Worker }>(
+      `/worker-payments/${workerId}/transaction`,
+      input,
+    );
     return response.data.worker;
   },
 
   async addBalance(workerId: number, amount: number): Promise<Worker> {
-    const response = await api.post<{ worker: Worker }>(`/worker-payments/${workerId}/balance`, { amount });
+    const response = await api.post<{ worker: Worker }>(
+      `/worker-payments/${workerId}/balance`,
+      { amount },
+    );
     return response.data.worker;
   },
 };

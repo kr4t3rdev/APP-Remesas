@@ -3,9 +3,9 @@
  * Custom hook for fetching recent audit logs for admin profile
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { adminProfileRepository } from '../infrastructure/admin-profile.repository';
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { adminProfileRepository } from "../infrastructure/admin-profile.repository";
 
 export const useAdminAuditLogsProfileQuery = (limit: number = 5) =>
   useQuery({

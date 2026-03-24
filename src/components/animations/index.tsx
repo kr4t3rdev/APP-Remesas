@@ -1,5 +1,13 @@
-import React, { useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet, ViewStyle, Animated, TouchableOpacity, Easing, StyleProp } from 'react-native';
+import React, { useEffect, useRef, useCallback } from "react";
+import {
+  View,
+  StyleSheet,
+  ViewStyle,
+  Animated,
+  TouchableOpacity,
+  Easing,
+  StyleProp,
+} from "react-native";
 
 type AnimatedWrapperProps = {
   children: React.ReactNode;
@@ -8,11 +16,11 @@ type AnimatedWrapperProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export const FadeIn: React.FC<AnimatedWrapperProps> = ({ 
-  children, 
-  delay = 0, 
+export const FadeIn: React.FC<AnimatedWrapperProps> = ({
+  children,
+  delay = 0,
   duration = 400,
-  style 
+  style,
 }) => {
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -25,18 +33,14 @@ export const FadeIn: React.FC<AnimatedWrapperProps> = ({
     }).start();
   }, [opacity, duration, delay]);
 
-  return (
-    <Animated.View style={[style, { opacity }]}>
-      {children}
-    </Animated.View>
-  );
+  return <Animated.View style={[style, { opacity }]}>{children}</Animated.View>;
 };
 
-export const FadeInDown: React.FC<AnimatedWrapperProps> = ({ 
-  children, 
-  delay = 0, 
+export const FadeInDown: React.FC<AnimatedWrapperProps> = ({
+  children,
+  delay = 0,
   duration = 400,
-  style 
+  style,
 }) => {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(20)).current;
@@ -66,11 +70,11 @@ export const FadeInDown: React.FC<AnimatedWrapperProps> = ({
   );
 };
 
-export const FadeInUp: React.FC<AnimatedWrapperProps> = ({ 
-  children, 
-  delay = 0, 
+export const FadeInUp: React.FC<AnimatedWrapperProps> = ({
+  children,
+  delay = 0,
   duration = 400,
-  style 
+  style,
 }) => {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(-20)).current;
@@ -99,11 +103,11 @@ export const FadeInUp: React.FC<AnimatedWrapperProps> = ({
   );
 };
 
-export const ScaleIn: React.FC<AnimatedWrapperProps> = ({ 
-  children, 
-  delay = 0, 
+export const ScaleIn: React.FC<AnimatedWrapperProps> = ({
+  children,
+  delay = 0,
   duration = 400,
-  style 
+  style,
 }) => {
   const scale = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
@@ -133,10 +137,10 @@ export const ScaleIn: React.FC<AnimatedWrapperProps> = ({
   );
 };
 
-export const BounceInAnim: React.FC<AnimatedWrapperProps> = ({ 
-  children, 
+export const BounceInAnim: React.FC<AnimatedWrapperProps> = ({
+  children,
   delay = 0,
-  style 
+  style,
 }) => {
   const scale = useRef(new Animated.Value(0)).current;
 
@@ -165,11 +169,11 @@ export const BounceInAnim: React.FC<AnimatedWrapperProps> = ({
   );
 };
 
-export const SlideInRightAnim: React.FC<AnimatedWrapperProps> = ({ 
-  children, 
-  delay = 0, 
+export const SlideInRightAnim: React.FC<AnimatedWrapperProps> = ({
+  children,
+  delay = 0,
   duration = 400,
-  style 
+  style,
 }) => {
   const translateX = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
@@ -199,11 +203,11 @@ export const SlideInRightAnim: React.FC<AnimatedWrapperProps> = ({
   );
 };
 
-export const SlideInLeftAnim: React.FC<AnimatedWrapperProps> = ({ 
-  children, 
-  delay = 0, 
+export const SlideInLeftAnim: React.FC<AnimatedWrapperProps> = ({
+  children,
+  delay = 0,
   duration = 400,
-  style 
+  style,
 }) => {
   const translateX = useRef(new Animated.Value(-300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
@@ -239,18 +243,15 @@ type StaggerListProps = {
   initialDelay?: number;
 };
 
-export const StaggerList: React.FC<StaggerListProps> = ({ 
-  children, 
+export const StaggerList: React.FC<StaggerListProps> = ({
+  children,
   staggerDelay = 100,
-  initialDelay = 0 
+  initialDelay = 0,
 }) => {
   return (
     <>
       {React.Children.map(children, (child, index) => (
-        <FadeInDown
-          key={index}
-          delay={initialDelay + index * staggerDelay}
-        >
+        <FadeInDown key={index} delay={initialDelay + index * staggerDelay}>
           {child}
         </FadeInDown>
       ))}
@@ -271,8 +272,8 @@ type AnimatedNumberProps = {
 export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
   value,
   duration = 1000,
-  prefix = '',
-  suffix = '',
+  prefix = "",
+  suffix = "",
   decimals = 2,
   style,
   textStyle,
@@ -295,7 +296,9 @@ export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
   return (
     <View style={style}>
       <Animated.Text style={textStyle}>
-        {prefix}{formatNumber(value)}{suffix}
+        {prefix}
+        {formatNumber(value)}
+        {suffix}
       </Animated.Text>
     </View>
   );
@@ -306,9 +309,9 @@ type LoadingDotsProps = {
   color?: string;
 };
 
-export const LoadingDots: React.FC<LoadingDotsProps> = ({ 
-  size = 8, 
-  color = '#6366F1' 
+export const LoadingDots: React.FC<LoadingDotsProps> = ({
+  size = 8,
+  color = "#6366F1",
 }) => {
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
@@ -328,7 +331,7 @@ export const LoadingDots: React.FC<LoadingDotsProps> = ({
           duration: 300,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
   };
 
@@ -338,28 +341,50 @@ export const LoadingDots: React.FC<LoadingDotsProps> = ({
     createAnimation(dot3, 300).start();
   }, [dot1, dot2, dot3]);
 
-  const scaleInterpolate = (animValue: Animated.Value) => animValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.8, 1.2],
-  });
+  const scaleInterpolate = (animValue: Animated.Value) =>
+    animValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.8, 1.2],
+    });
 
   return (
     <View style={styles.dotsContainer}>
-      <Animated.View style={[
-        styles.dot, 
-        { width: size, height: size, backgroundColor: color, 
-          opacity: dot1, transform: [{ scale: scaleInterpolate(dot1) }] }
-      ]} />
-      <Animated.View style={[
-        styles.dot, 
-        { width: size, height: size, backgroundColor: color,
-          opacity: dot2, transform: [{ scale: scaleInterpolate(dot2) }] }
-      ]} />
-      <Animated.View style={[
-        styles.dot, 
-        { width: size, height: size, backgroundColor: color,
-          opacity: dot3, transform: [{ scale: scaleInterpolate(dot3) }] }
-      ]} />
+      <Animated.View
+        style={[
+          styles.dot,
+          {
+            width: size,
+            height: size,
+            backgroundColor: color,
+            opacity: dot1,
+            transform: [{ scale: scaleInterpolate(dot1) }],
+          },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.dot,
+          {
+            width: size,
+            height: size,
+            backgroundColor: color,
+            opacity: dot2,
+            transform: [{ scale: scaleInterpolate(dot2) }],
+          },
+        ]}
+      />
+      <Animated.View
+        style={[
+          styles.dot,
+          {
+            width: size,
+            height: size,
+            backgroundColor: color,
+            opacity: dot3,
+            transform: [{ scale: scaleInterpolate(dot3) }],
+          },
+        ]}
+      />
     </View>
   );
 };
@@ -369,9 +394,9 @@ type PulseLoaderProps = {
   color?: string;
 };
 
-export const PulseLoader: React.FC<PulseLoaderProps> = ({ 
-  size = 40, 
-  color = '#6366F1' 
+export const PulseLoader: React.FC<PulseLoaderProps> = ({
+  size = 40,
+  color = "#6366F1",
 }) => {
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
@@ -405,7 +430,7 @@ export const PulseLoader: React.FC<PulseLoaderProps> = ({
             useNativeDriver: true,
           }),
         ]),
-      ])
+      ]),
     ).start();
   }, [scale, opacity]);
 
@@ -413,7 +438,12 @@ export const PulseLoader: React.FC<PulseLoaderProps> = ({
     <Animated.View
       style={[
         styles.pulse,
-        { width: size, height: size, borderRadius: size / 2, backgroundColor: color },
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: color,
+        },
         { transform: [{ scale }], opacity },
       ]}
     />
@@ -428,7 +458,7 @@ type SkeletonProps = {
 };
 
 export const Skeleton: React.FC<SkeletonProps> = ({
-  width = '100%',
+  width = "100%",
   height = 20,
   borderRadius = 8,
   style,
@@ -448,7 +478,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
           duration: 800,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   }, [opacity]);
 
@@ -459,7 +489,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
           width: width as any,
           height,
           borderRadius,
-          backgroundColor: '#E5E5EA',
+          backgroundColor: "#E5E5EA",
         },
         { opacity },
         style,
@@ -517,8 +547,8 @@ export const PressableScale: React.FC<PressableScaleProps> = ({
 
 const styles = StyleSheet.create({
   dotsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   dot: {

@@ -1,5 +1,5 @@
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { User } from '../types';
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { User } from "../types";
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -47,6 +47,8 @@ export type AdminStackParamList = {
   AdminPlanCreate: undefined;
 };
 
-export type RootStackScreenProps<T extends keyof RootStackParamList> = NativeStackScreenProps<RootStackParamList, T>;
+export type RootStackScreenProps<T extends keyof RootStackParamList> =
+  NativeStackScreenProps<RootStackParamList, T>;
 
-export type MainTabScreenProps<T extends keyof MainTabParamList> = NativeStackScreenProps<MainTabParamList, T>;
+export type MainTabScreenProps<T extends keyof MainTabParamList> =
+  NativeStackScreenProps<MainTabParamList, T>;

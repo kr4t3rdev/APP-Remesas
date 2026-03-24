@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { useColors } from '../../store/themeStore';
-import { useResponsive } from '../../hooks/useResponsive';
-import { useResponsiveStore } from '../../store/responsiveStore';
-import { Sidebar } from './Sidebar';
-import { Header } from './Header';
+import React, { useEffect } from "react";
+import { View, StyleSheet, ScrollView } from "react-native";
+import { useColors } from "../../store/themeStore";
+import { useResponsive } from "../../hooks/useResponsive";
+import { useResponsiveStore } from "../../store/responsiveStore";
+import { Sidebar } from "./Sidebar";
+import { Header } from "./Header";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,10 +12,10 @@ interface MainLayoutProps {
   showHeader?: boolean;
 }
 
-export const MainLayout: React.FC<MainLayoutProps> = ({ 
-  children, 
+export const MainLayout: React.FC<MainLayoutProps> = ({
+  children,
   isAdmin = false,
-  showHeader = true 
+  showHeader = true,
 }) => {
   const colors = useColors();
   const { isMobile } = useResponsive();
@@ -39,7 +39,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       <Sidebar isAdmin={isAdmin} />
       <View style={styles.mainContent}>
         {showHeader && <Header />}
-        <ScrollView 
+        <ScrollView
           style={[styles.contentArea, { backgroundColor: colors.background }]}
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
@@ -54,11 +54,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   mainContent: {
     flex: 1,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   contentArea: {
     flex: 1,

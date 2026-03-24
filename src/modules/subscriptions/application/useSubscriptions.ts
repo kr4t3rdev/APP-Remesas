@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import type { BillingCycle } from '../../../types';
-import { subscriptionsRepository } from '../infrastructure/subscriptions.repository';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import type { BillingCycle } from "../../../types";
+import { subscriptionsRepository } from "../infrastructure/subscriptions.repository";
 
 export const useSubscriptionLicensesQuery = (userId?: number) =>
   useQuery({
@@ -23,8 +23,12 @@ export const useAssignLicenseMutation = () => {
       reason?: string;
     }) => subscriptionsRepository.assignLicense(data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.list() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.userLicenses() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.subscriptions.list(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.subscriptions.userLicenses(),
+      });
       await queryClient.invalidateQueries({ queryKey: queryKeys.admin.kpis() });
     },
   });
@@ -35,9 +39,14 @@ export const useRenewLicenseMutation = () => {
 
   return useMutation({
     mutationFn: (data: { id: number; planId: number; cycle: BillingCycle }) =>
-      subscriptionsRepository.renewLicense(data.id, { planId: data.planId, cycle: data.cycle }),
+      subscriptionsRepository.renewLicense(data.id, {
+        planId: data.planId,
+        cycle: data.cycle,
+      }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.userLicenses() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.subscriptions.userLicenses(),
+      });
       await queryClient.invalidateQueries({ queryKey: queryKeys.admin.kpis() });
     },
   });
@@ -47,9 +56,12 @@ export const useSuspendLicenseMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { id: number; reason?: string }) => subscriptionsRepository.suspendLicense(data.id, data.reason),
+    mutationFn: (data: { id: number; reason?: string }) =>
+      subscriptionsRepository.suspendLicense(data.id, data.reason),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.userLicenses() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.subscriptions.userLicenses(),
+      });
       await queryClient.invalidateQueries({ queryKey: queryKeys.admin.kpis() });
     },
   });
@@ -62,7 +74,9 @@ export const useReactivateLicenseMutation = () => {
     mutationFn: (data: { id: number; reason?: string }) =>
       subscriptionsRepository.reactivateLicense(data.id, data.reason),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.userLicenses() });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.subscriptions.userLicenses(),
+      });
       await queryClient.invalidateQueries({ queryKey: queryKeys.admin.kpis() });
     },
   });
@@ -85,10 +99,16 @@ export const useRegisterSubscriptionPaymentMutation = () => {
     }) => subscriptionsRepository.registerPayment(data),
     onSuccess: async (_, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.userLicenses(variables.userId) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions.payments(variables.userId) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.subscriptions.userLicenses(variables.userId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.subscriptions.payments(variables.userId),
+        }),
         queryClient.invalidateQueries({ queryKey: queryKeys.admin.kpis() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.list() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.bankAccounts.list(),
+        }),
       ]);
     },
   });

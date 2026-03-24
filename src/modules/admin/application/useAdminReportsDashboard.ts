@@ -1,22 +1,27 @@
-import { useCallback, useMemo, useState } from 'react';
-import { format, startOfDay, subDays } from 'date-fns';
-import type { AdminAuditLog, AdminKpiSnapshot, DailyBreakdownItem, PeriodReport } from '../../../types';
-import { useReportsPeriodQuery } from '../../reports/application/useReports';
-import { useAdminAuditLogsQuery, useAdminKpisQuery } from './useAdminMetrics';
+import { useCallback, useMemo, useState } from "react";
+import { format, startOfDay, subDays } from "date-fns";
+import type {
+  AdminAuditLog,
+  AdminKpiSnapshot,
+  DailyBreakdownItem,
+  PeriodReport,
+} from "../../../types";
+import { useReportsPeriodQuery } from "../../reports/application/useReports";
+import { useAdminAuditLogsQuery, useAdminKpisQuery } from "./useAdminMetrics";
 
-export type AdminReportsPeriod = 'weekly' | 'monthly' | 'annual';
+export type AdminReportsPeriod = "weekly" | "monthly" | "annual";
 
-export type TrendDirection = 'up' | 'down' | 'neutral';
+export type TrendDirection = "up" | "down" | "neutral";
 
 export type DashboardMetricTile = {
-  id: 'income' | 'users';
+  id: "income" | "users";
   title: string;
   valueLabel: string;
   trend: {
     direction: TrendDirection;
     valueLabel: string;
   };
-  icon: 'cash-outline' | 'people-outline';
+  icon: "cash-outline" | "people-outline";
 };
 
 export type DashboardCashFlowBar = {
@@ -31,11 +36,11 @@ export type DashboardGrowthPoint = {
 };
 
 export type DashboardSystemUsageRow = {
-  id: 'api' | 'storage';
+  id: "api" | "storage";
   title: string;
   subtitle: string;
-  icon: 'speedometer-outline' | 'server-outline';
-  status: 'ok' | 'warning' | 'unavailable';
+  icon: "speedometer-outline" | "server-outline";
+  status: "ok" | "warning" | "unavailable";
 };
 
 export type AdminReportsDashboardVM = {
@@ -60,39 +65,58 @@ export type AdminReportsDashboardVM = {
   refetchAll: () => Promise<void>;
 };
 
-const MONTH_LABELS = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+const MONTH_LABELS = [
+  "ENE",
+  "FEB",
+  "MAR",
+  "ABR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AGO",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DIC",
+];
 
-const SIMPLE_MONTH_LABELS = ['E', 'F', 'M', 'A', 'M', 'J'];
+const SIMPLE_MONTH_LABELS = ["E", "F", "M", "A", "M", "J"];
 
-export function resolvePeriodRange(period: AdminReportsPeriod, referenceDate = new Date()): {
+export function resolvePeriodRange(
+  period: AdminReportsPeriod,
+  referenceDate = new Date(),
+): {
   startDate: string;
   endDate: string;
 } {
   const end = startOfDay(referenceDate);
-  const daysBack = period === 'weekly' ? 6 : period === 'monthly' ? 29 : 364;
+  const daysBack = period === "weekly" ? 6 : period === "monthly" ? 29 : 364;
   const start = subDays(end, daysBack);
 
   return {
-    startDate: format(start, 'yyyy-MM-dd'),
-    endDate: format(end, 'yyyy-MM-dd'),
+    startDate: format(start, "yyyy-MM-dd"),
+    endDate: format(end, "yyyy-MM-dd"),
   };
 }
 
 export function formatCurrencyLabel(value: number): string {
-  return `$${Math.round(value || 0).toLocaleString('en-US')}`;
+  return `$${Math.round(value || 0).toLocaleString("en-US")}`;
 }
 
 export function formatIntegerLabel(value: number): string {
-  return Math.round(value || 0).toLocaleString('en-US');
+  return Math.round(value || 0).toLocaleString("en-US");
 }
 
-export function buildTrend(value: number): { direction: TrendDirection; valueLabel: string } {
+export function buildTrend(value: number): {
+  direction: TrendDirection;
+  valueLabel: string;
+} {
   if (!Number.isFinite(value) || value === 0) {
-    return { direction: 'neutral', valueLabel: '0.0%' };
+    return { direction: "neutral", valueLabel: "0.0%" };
   }
 
   return {
-    direction: value > 0 ? 'up' : 'down',
+    direction: value > 0 ? "up" : "down",
     valueLabel: `${Math.abs(value).toFixed(1)}%`,
   };
 }
@@ -127,16 +151,27 @@ export function buildCashFlowBars(
       continue;
     }
 
-    const value = chunk.reduce((acc, item) => acc + item.transactions - item.expenses, 0);
+    const value = chunk.reduce(
+      (acc, item) => acc + item.transactions - item.expenses,
+      0,
+    );
     const last = chunk[chunk.length - 1];
     const date = normalizeDateSafe(last.date);
-    const label = date ? MONTH_LABELS[date.getMonth()]?.[0] ?? SIMPLE_MONTH_LABELS[i] : SIMPLE_MONTH_LABELS[i];
+    const label = date
+      ? (MONTH_LABELS[date.getMonth()]?.[0] ?? SIMPLE_MONTH_LABELS[i])
+      : SIMPLE_MONTH_LABELS[i];
 
-    bars.push({ label: label || SIMPLE_MONTH_LABELS[i] || `${i + 1}`, value: Number(value.toFixed(2)) });
+    bars.push({
+      label: label || SIMPLE_MONTH_LABELS[i] || `${i + 1}`,
+      value: Number(value.toFixed(2)),
+    });
   }
 
   const maxAbs = Math.max(...bars.map((bar) => Math.abs(bar.value)), 0);
-  const activeIndex = maxAbs <= 0 ? Math.floor(bars.length / 2) : bars.findIndex((bar) => Math.abs(bar.value) === maxAbs);
+  const activeIndex =
+    maxAbs <= 0
+      ? Math.floor(bars.length / 2)
+      : bars.findIndex((bar) => Math.abs(bar.value) === maxAbs);
 
   return bars.map((bar, index) => ({
     ...bar,
@@ -144,7 +179,10 @@ export function buildCashFlowBars(
   }));
 }
 
-export function buildUsersGrowthPoints(logs: AdminAuditLog[] = [], referenceDate = new Date()): {
+export function buildUsersGrowthPoints(
+  logs: AdminAuditLog[] = [],
+  referenceDate = new Date(),
+): {
   points: DashboardGrowthPoint[];
   peakLabel?: string;
 } {
@@ -153,7 +191,11 @@ export function buildUsersGrowthPoints(logs: AdminAuditLog[] = [], referenceDate
     .filter((log) => !!log.dateObj) as Array<AdminAuditLog & { dateObj: Date }>;
 
   const months: Array<{ month: number; year: number; label: string }> = [];
-  const baseDate = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1);
+  const baseDate = new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth(),
+    1,
+  );
 
   for (let i = 5; i >= 0; i -= 1) {
     const date = new Date(baseDate.getFullYear(), baseDate.getMonth() - i, 1);
@@ -166,7 +208,8 @@ export function buildUsersGrowthPoints(logs: AdminAuditLog[] = [], referenceDate
 
   const points = months.map(({ month, year, label }) => {
     const value = normalizedLogs.filter(
-      (log) => log.dateObj.getMonth() === month && log.dateObj.getFullYear() === year,
+      (log) =>
+        log.dateObj.getMonth() === month && log.dateObj.getFullYear() === year,
     ).length;
 
     return {
@@ -182,37 +225,44 @@ export function buildUsersGrowthPoints(logs: AdminAuditLog[] = [], referenceDate
     return { points, peakLabel: undefined };
   }
 
-  const peakLabel = maxValue >= 1000 ? `Pico: ${(maxValue / 1000).toFixed(1)}k` : `Pico: ${maxValue}`;
+  const peakLabel =
+    maxValue >= 1000
+      ? `Pico: ${(maxValue / 1000).toFixed(1)}k`
+      : `Pico: ${maxValue}`;
 
   return { points, peakLabel };
 }
 
-function buildMetricTiles(kpis: AdminKpiSnapshot | null): DashboardMetricTile[] {
+function buildMetricTiles(
+  kpis: AdminKpiSnapshot | null,
+): DashboardMetricTile[] {
   const income = kpis?.mrrEstimateCup ?? 0;
   const users = kpis?.totalUsers ?? 0;
   const incomeTrend = buildTrend(kpis?.renewalRatePct ?? 0);
 
   const usersTrendRaw =
     kpis && kpis.totalUsers > 0
-      ? ((kpis.newUsersPeriod - kpis.suspendedUsers) / Math.max(kpis.totalUsers, 1)) * 100
+      ? ((kpis.newUsersPeriod - kpis.suspendedUsers) /
+          Math.max(kpis.totalUsers, 1)) *
+        100
       : 0;
 
   const usersTrend = buildTrend(usersTrendRaw);
 
   return [
     {
-      id: 'income',
-      title: 'Ingresos',
+      id: "income",
+      title: "Ingresos",
       valueLabel: formatCurrencyLabel(income),
       trend: incomeTrend,
-      icon: 'cash-outline',
+      icon: "cash-outline",
     },
     {
-      id: 'users',
-      title: 'Usuarios',
+      id: "users",
+      title: "Usuarios",
       valueLabel: formatIntegerLabel(users),
       trend: usersTrend,
-      icon: 'people-outline',
+      icon: "people-outline",
     },
   ];
 }
@@ -220,28 +270,32 @@ function buildMetricTiles(kpis: AdminKpiSnapshot | null): DashboardMetricTile[] 
 function buildSystemUsageRows(): DashboardSystemUsageRow[] {
   return [
     {
-      id: 'api',
-      title: 'Rendimiento API',
-      subtitle: 'No disponible',
-      icon: 'speedometer-outline',
-      status: 'unavailable',
+      id: "api",
+      title: "Rendimiento API",
+      subtitle: "No disponible",
+      icon: "speedometer-outline",
+      status: "unavailable",
     },
     {
-      id: 'storage',
-      title: 'Almacenamiento',
-      subtitle: 'No disponible',
-      icon: 'server-outline',
-      status: 'unavailable',
+      id: "storage",
+      title: "Almacenamiento",
+      subtitle: "No disponible",
+      icon: "server-outline",
+      status: "unavailable",
     },
   ];
 }
 
-function buildCashFlowModel(kpis: AdminKpiSnapshot | null, periodReport?: PeriodReport | null) {
+function buildCashFlowModel(
+  kpis: AdminKpiSnapshot | null,
+  periodReport?: PeriodReport | null,
+) {
   const bars = buildCashFlowBars(periodReport?.dailyBreakdown ?? []);
   const totalValue = periodReport?.summary?.totalProfit ?? 0;
   const delta = buildTrend(kpis?.trialToPaidConversionPct ?? 0);
 
-  const deltaPrefix = delta.direction === 'up' ? '+' : delta.direction === 'down' ? '-' : '';
+  const deltaPrefix =
+    delta.direction === "up" ? "+" : delta.direction === "down" ? "-" : "";
 
   return {
     totalLabel: formatCurrencyLabel(totalValue),
@@ -252,7 +306,7 @@ function buildCashFlowModel(kpis: AdminKpiSnapshot | null, periodReport?: Period
 }
 
 export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
-  const [period, setPeriod] = useState<AdminReportsPeriod>('monthly');
+  const [period, setPeriod] = useState<AdminReportsPeriod>("monthly");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshFailures, setLastRefreshFailures] = useState({
     kpis: false,
@@ -266,7 +320,10 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
     dateFrom: periodRange.startDate,
     dateTo: periodRange.endDate,
   });
-  const periodReportQuery = useReportsPeriodQuery(periodRange.startDate, periodRange.endDate);
+  const periodReportQuery = useReportsPeriodQuery(
+    periodRange.startDate,
+    periodRange.endDate,
+  );
   const auditLogsQuery = useAdminAuditLogsQuery();
 
   const refetchAll = useCallback(async () => {
@@ -279,18 +336,25 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
     ]);
 
     setLastRefreshFailures({
-      kpis: results[0].status === 'rejected',
-      period: results[1].status === 'rejected',
-      audit: results[2].status === 'rejected',
+      kpis: results[0].status === "rejected",
+      period: results[1].status === "rejected",
+      audit: results[2].status === "rejected",
     });
 
     setIsRefreshing(false);
   }, [auditLogsQuery, kpisQuery, periodReportQuery]);
 
-  const metricTiles = useMemo(() => buildMetricTiles(kpisQuery.data ?? null), [kpisQuery.data]);
+  const metricTiles = useMemo(
+    () => buildMetricTiles(kpisQuery.data ?? null),
+    [kpisQuery.data],
+  );
 
   const cashFlow = useMemo(
-    () => buildCashFlowModel(kpisQuery.data ?? null, periodReportQuery.data ?? null),
+    () =>
+      buildCashFlowModel(
+        kpisQuery.data ?? null,
+        periodReportQuery.data ?? null,
+      ),
     [kpisQuery.data, periodReportQuery.data],
   );
 
@@ -299,7 +363,10 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
     [auditLogsQuery.data],
   );
 
-  const isLoading = kpisQuery.isLoading || periodReportQuery.isLoading || auditLogsQuery.isLoading;
+  const isLoading =
+    kpisQuery.isLoading ||
+    periodReportQuery.isLoading ||
+    auditLogsQuery.isLoading;
 
   const hasPartialError =
     kpisQuery.isError ||

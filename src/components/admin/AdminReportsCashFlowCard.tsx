@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { FadeInDown } from '../animations';
-import { useColors } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
-import type { DashboardCashFlowBar } from '../../modules/admin/application/useAdminReportsDashboard';
+import React, { useMemo } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { FadeInDown } from "../animations";
+import { useColors } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
+import type { DashboardCashFlowBar } from "../../modules/admin/application/useAdminReportsDashboard";
 
 type AdminReportsCashFlowCardProps = {
   totalLabel: string;
@@ -13,13 +13,9 @@ type AdminReportsCashFlowCardProps = {
   delay?: number;
 };
 
-export const AdminReportsCashFlowCard: React.FC<AdminReportsCashFlowCardProps> = ({
-  totalLabel,
-  deltaLabel,
-  bars,
-  isEmpty = false,
-  delay = 90,
-}) => {
+export const AdminReportsCashFlowCard: React.FC<
+  AdminReportsCashFlowCardProps
+> = ({ totalLabel, deltaLabel, bars, isEmpty = false, delay = 90 }) => {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -30,7 +26,12 @@ export const AdminReportsCashFlowCard: React.FC<AdminReportsCashFlowCardProps> =
       <View style={styles.card} testID="admin-reports-cashflow-card">
         <View style={styles.headerRow}>
           <Text style={styles.title}>Flujo de Efectivo</Text>
-          <Text style={[styles.delta, { color: deltaLabel.startsWith('-') ? '#FF3F7D' : '#00D08C' }]}>
+          <Text
+            style={[
+              styles.delta,
+              { color: deltaLabel.startsWith("-") ? "#FF3F7D" : "#00D08C" },
+            ]}
+          >
             {deltaLabel}
           </Text>
         </View>
@@ -39,13 +40,18 @@ export const AdminReportsCashFlowCard: React.FC<AdminReportsCashFlowCardProps> =
 
         {isEmpty ? (
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyText}>Sin datos de flujo para este período</Text>
+            <Text style={styles.emptyText}>
+              Sin datos de flujo para este período
+            </Text>
           </View>
         ) : (
           <View style={styles.chartArea}>
             <View style={styles.barsRow}>
               {bars.map((bar, index) => {
-                const normalized = Math.max(0.2, Math.abs(bar.value) / maxValue);
+                const normalized = Math.max(
+                  0.2,
+                  Math.abs(bar.value) / maxValue,
+                );
                 return (
                   <View key={`${bar.label}-${index}`} style={styles.barColumn}>
                     <View
@@ -53,11 +59,20 @@ export const AdminReportsCashFlowCard: React.FC<AdminReportsCashFlowCardProps> =
                         styles.bar,
                         {
                           height: `${normalized * 100}%`,
-                          backgroundColor: bar.isActive ? colors.info : colors.primary[100],
+                          backgroundColor: bar.isActive
+                            ? colors.info
+                            : colors.primary[100],
                         },
                       ]}
                     />
-                    <Text style={[styles.barLabel, bar.isActive && styles.barLabelActive]}>{bar.label}</Text>
+                    <Text
+                      style={[
+                        styles.barLabel,
+                        bar.isActive && styles.barLabelActive,
+                      ]}
+                    >
+                      {bar.label}
+                    </Text>
                   </View>
                 );
               })}
@@ -80,47 +95,47 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       marginBottom: spacing.md,
     },
     headerRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       marginBottom: spacing.xs,
     },
     title: {
       color: colors.text.secondary,
       fontSize: 18,
-      fontWeight: '500',
+      fontWeight: "500",
     },
     delta: {
       fontSize: 28,
-      fontWeight: '800',
+      fontWeight: "800",
     },
     total: {
       color: colors.text.primary,
-      fontWeight: '800',
+      fontWeight: "800",
       fontSize: 48,
       marginBottom: spacing.md,
     },
     chartArea: {
       height: 180,
-      justifyContent: 'flex-end',
+      justifyContent: "flex-end",
       paddingTop: spacing.sm,
     },
     barsRow: {
       height: 150,
-      flexDirection: 'row',
-      alignItems: 'flex-end',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      alignItems: "flex-end",
+      justifyContent: "space-between",
       gap: spacing.xs,
     },
     barColumn: {
       flex: 1,
-      alignItems: 'center',
-      height: '100%',
-      justifyContent: 'flex-end',
+      alignItems: "center",
+      height: "100%",
+      justifyContent: "flex-end",
       gap: spacing.xs,
     },
     bar: {
-      width: '100%',
+      width: "100%",
       borderTopLeftRadius: borderRadius.lg,
       borderTopRightRadius: borderRadius.lg,
       minHeight: 24,
@@ -128,23 +143,23 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     barLabel: {
       color: colors.text.secondary,
       fontSize: 15,
-      fontWeight: '600',
+      fontWeight: "600",
       marginTop: spacing.xs,
     },
     barLabelActive: {
-      color: '#1D8FFF',
+      color: "#1D8FFF",
     },
     emptyWrap: {
       borderRadius: borderRadius.md,
       borderWidth: 1,
-      borderColor: '#15385B',
+      borderColor: "#15385B",
       paddingVertical: spacing.lg,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     emptyText: {
       color: colors.text.secondary,
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: "500",
     },
   });

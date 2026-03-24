@@ -1,7 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
-import type { DailyReport, CashBalance, Transaction, ExchangeRate, Expense, Objective } from '../types';
-import { queryKeys } from '../shared/query/queryKeys';
-import { dashboardRepository } from '../modules/dashboard/infrastructure/dashboard.repository';
+import { useQuery } from "@tanstack/react-query";
+import type {
+  DailyReport,
+  CashBalance,
+  Transaction,
+  ExchangeRate,
+  Expense,
+  Objective,
+} from "../types";
+import { queryKeys } from "../shared/query/queryKeys";
+import { dashboardRepository } from "../modules/dashboard/infrastructure/dashboard.repository";
 
 export const useDailyReport = (date?: string) => {
   return useQuery<DailyReport>({
@@ -32,8 +39,9 @@ export const useRecentTransactions = (limit?: number) => {
     queryKey: queryKeys.dashboard.recentTransactions(limit),
     queryFn: () => dashboardRepository.getTransactions(),
     select: (data) => {
-      const sorted = [...data].sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      const sorted = [...data].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
       return limit ? sorted.slice(0, limit) : sorted;
     },
@@ -54,8 +62,8 @@ export const useRecentExpenses = (limit?: number) => {
     queryKey: queryKeys.dashboard.recentExpenses(limit),
     queryFn: () => dashboardRepository.getExpenses(),
     select: (data) => {
-      const sorted = [...data].sort((a, b) => 
-        new Date(a.date).getTime() - new Date(b.date).getTime()
+      const sorted = [...data].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
       );
       return limit ? sorted.slice(0, limit) : sorted;
     },
@@ -66,7 +74,7 @@ export const useRecentExpenses = (limit?: number) => {
 export const useActiveObjectives = () => {
   return useQuery<Objective[]>({
     queryKey: queryKeys.dashboard.activeObjectives(),
-    queryFn: () => dashboardRepository.getObjectives('ACTIVO'),
+    queryFn: () => dashboardRepository.getObjectives("ACTIVO"),
     staleTime: 1000 * 60 * 5,
   });
 };
@@ -79,14 +87,13 @@ export const useDashboardData = () => {
   const pendingTransactions = usePendingTransactions();
   const activeObjectives = useActiveObjectives();
 
-  const isLoading = 
-    dailyReport.isLoading || 
-    cashBalances.isLoading || 
+  const isLoading =
+    dailyReport.isLoading ||
+    cashBalances.isLoading ||
     exchangeRates.isLoading ||
     recentTransactions.isLoading;
 
-  const isRefreshing = 
-    dailyReport.isFetching && !dailyReport.isLoading;
+  const isRefreshing = dailyReport.isFetching && !dailyReport.isLoading;
 
   const refetchAll = async () => {
     await Promise.all([
@@ -99,11 +106,14 @@ export const useDashboardData = () => {
     ]);
   };
 
-  const totalCashBalance = cashBalances.data?.reduce((sum, b) => {
-    const rate = exchangeRates.data?.find(r => r.currencyId === b.currencyId);
-    const cupValue = rate ? b.balance * rate.sellRate : b.balance;
-    return sum + cupValue;
-  }, 0) || 0;
+  const totalCashBalance =
+    cashBalances.data?.reduce((sum, b) => {
+      const rate = exchangeRates.data?.find(
+        (r) => r.currencyId === b.currencyId,
+      );
+      const cupValue = rate ? b.balance * rate.sellRate : b.balance;
+      return sum + cupValue;
+    }, 0) || 0;
 
   const todayProfit = dailyReport.data?.profit.net || 0;
   const todayTransactions = dailyReport.data?.transactions.total || 0;

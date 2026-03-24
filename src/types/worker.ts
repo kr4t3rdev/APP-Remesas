@@ -2,7 +2,7 @@ export type WorkerTransaction = {
   id: number;
   workerId: number;
   amount: number | string;
-  type: 'TRANSACTION' | 'BALANCE_ADD';
+  type: "TRANSACTION" | "BALANCE_ADD";
   profit?: number | string;
   balanceBefore: number | string;
   balanceAfter: number | string;

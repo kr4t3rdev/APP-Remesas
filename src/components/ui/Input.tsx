@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, TextInput, Text, TextInputProps, ViewStyle } from 'react-native';
-import { borderRadius, spacing } from '../../theme';
-import { useColors } from '../../store/themeStore';
+import React from "react";
+import { View, TextInput, Text, TextInputProps, ViewStyle } from "react-native";
+import { borderRadius, spacing } from "../../theme";
+import { useColors } from "../../store/themeStore";
 
 type InputProps = TextInputProps & {
   label?: string;
@@ -24,7 +24,7 @@ export const Input: React.FC<InputProps> = ({
         <Text
           style={{
             fontSize: 14,
-            fontWeight: '500',
+            fontWeight: "500",
             color: themeColors.text.primary,
             marginBottom: spacing.xs,
           }}
@@ -50,7 +50,13 @@ export const Input: React.FC<InputProps> = ({
         {...props}
       />
       {error && (
-        <Text style={{ color: themeColors.danger, fontSize: 12, marginTop: spacing.xs }}>
+        <Text
+          style={{
+            color: themeColors.danger,
+            fontSize: 12,
+            marginTop: spacing.xs,
+          }}
+        >
           {error}
         </Text>
       )}

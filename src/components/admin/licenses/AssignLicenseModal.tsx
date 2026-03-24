@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Modal,
@@ -7,17 +7,21 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useColors, useShadows } from '../../../store/themeStore';
-import { borderRadius, spacing } from '../../../theme';
-import { plansApi } from '../../../api/plansApi';
-import { licensesApi, BillingCycle, AssignLicensePayload } from '../../../api/licensesApi';
-import { adminRepository } from '../../../modules/admin/infrastructure/admin.repository';
-import type { Plan } from '../../../types/plans';
-import type { User } from '../../../types';
-import { Input } from '../../ui/Input';
-import { Button } from '../../ui/Button';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useColors, useShadows } from "../../../store/themeStore";
+import { borderRadius, spacing } from "../../../theme";
+import { plansApi } from "../../../api/plansApi";
+import {
+  licensesApi,
+  BillingCycle,
+  AssignLicensePayload,
+} from "../../../api/licensesApi";
+import { adminRepository } from "../../../modules/admin/infrastructure/admin.repository";
+import type { Plan } from "../../../types/plans";
+import type { User } from "../../../types";
+import { Input } from "../../ui/Input";
+import { Button } from "../../ui/Button";
 
 type AssignLicenseModalProps = {
   visible: boolean;
@@ -26,9 +30,9 @@ type AssignLicenseModalProps = {
 };
 
 const BILLING_CYCLES: { value: BillingCycle; label: string }[] = [
-  { value: 'MONTHLY', label: 'Mensual' },
-  { value: 'SEMIANNUAL', label: 'Semestral' },
-  { value: 'ANNUAL', label: 'Anual' },
+  { value: "MONTHLY", label: "Mensual" },
+  { value: "SEMIANNUAL", label: "Semestral" },
+  { value: "ANNUAL", label: "Anual" },
 ];
 
 export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
@@ -38,7 +42,10 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
 }) => {
   const colors = useColors();
   const shadows = useShadows();
-  const styles = useMemo(() => createStyles(colors, shadows), [colors, shadows]);
+  const styles = useMemo(
+    () => createStyles(colors, shadows),
+    [colors, shadows],
+  );
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,13 +56,15 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
   const [loadingData, setLoadingData] = useState(false);
 
   // Selection state
-  const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(new Set());
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(
+    new Set(),
+  );
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [selectedCycle, setSelectedCycle] = useState<BillingCycle>('MONTHLY');
-  const [customExpiry, setCustomExpiry] = useState<string>('');
+  const [selectedCycle, setSelectedCycle] = useState<BillingCycle>("MONTHLY");
+  const [customExpiry, setCustomExpiry] = useState<string>("");
 
   // Search
-  const [userSearch, setUserSearch] = useState('');
+  const [userSearch, setUserSearch] = useState("");
 
   useEffect(() => {
     if (visible) {
@@ -74,8 +83,8 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
       setUsers(fetchedUsers);
       setPlans(fetchedPlans.filter((p) => p.isActive));
     } catch (err) {
-      console.error('Error loading data:', err);
-      setError('Error al cargar datos');
+      console.error("Error loading data:", err);
+      setError("Error al cargar datos");
     } finally {
       setLoadingData(false);
     }
@@ -84,8 +93,8 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
   const resetState = () => {
     setSelectedUserIds(new Set());
     setSelectedPlanId(null);
-    setSelectedCycle('MONTHLY');
-    setCustomExpiry('');
+    setSelectedCycle("MONTHLY");
+    setCustomExpiry("");
     setError(null);
   };
 
@@ -121,17 +130,17 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
     return users.filter(
       (u) =>
         u.name.toLowerCase().includes(search) ||
-        u.email.toLowerCase().includes(search)
+        u.email.toLowerCase().includes(search),
     );
   };
 
   const handleAssign = async () => {
     if (selectedUserIds.size === 0) {
-      setError('Selecciona al menos un usuario');
+      setError("Selecciona al menos un usuario");
       return;
     }
     if (!selectedPlanId) {
-      setError('Selecciona un plan');
+      setError("Selecciona un plan");
       return;
     }
 
@@ -153,10 +162,12 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
       resetState();
       onSuccess();
     } catch (err: any) {
-      console.error('Error assigning license:', err);
+      console.error("Error assigning license:", err);
       // El error 400 generalmente viene con un mensaje del backend
       const backendMessage = err?.response?.data?.message;
-      const message = backendMessage || (err instanceof Error ? err.message : 'Error al asignar licencias');
+      const message =
+        backendMessage ||
+        (err instanceof Error ? err.message : "Error al asignar licencias");
       setError(message);
     } finally {
       setLoading(false);
@@ -169,7 +180,12 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
   if (!visible) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleCancel}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={handleCancel}
+    >
       <View style={styles.backdrop}>
         <View style={styles.dialog}>
           {/* Header */}
@@ -180,9 +196,14 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
             {/* Users Section */}
-            <Text style={styles.sectionTitle}>Usuarios ({selectedUserIds.size} seleccionados)</Text>
+            <Text style={styles.sectionTitle}>
+              Usuarios ({selectedUserIds.size} seleccionados)
+            </Text>
             <Input
               placeholder="Buscar usuarios..."
               value={userSearch}
@@ -195,7 +216,8 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
                 styles.selectAllRow,
                 {
                   backgroundColor:
-                    selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0
+                    selectedUserIds.size === filteredUsers.length &&
+                    filteredUsers.length > 0
                       ? `${colors.primary[500]}20`
                       : colors.background,
                 },
@@ -205,9 +227,10 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
             >
               <Ionicons
                 name={
-                  selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0
-                    ? 'checkbox'
-                    : 'square-outline'
+                  selectedUserIds.size === filteredUsers.length &&
+                  filteredUsers.length > 0
+                    ? "checkbox"
+                    : "square-outline"
                 }
                 size={20}
                 color={colors.primary[500]}
@@ -228,14 +251,20 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
                       key={user.id}
                       style={[
                         styles.userRow,
-                        isSelected && { backgroundColor: `${colors.primary[500]}10` },
+                        isSelected && {
+                          backgroundColor: `${colors.primary[500]}10`,
+                        },
                       ]}
                       onPress={() => toggleUser(user.id)}
                     >
                       <Ionicons
-                        name={isSelected ? 'checkbox' : 'square-outline'}
+                        name={isSelected ? "checkbox" : "square-outline"}
                         size={20}
-                        color={isSelected ? colors.primary[500] : colors.text.secondary}
+                        color={
+                          isSelected
+                            ? colors.primary[500]
+                            : colors.text.secondary
+                        }
                       />
                       <View style={styles.userInfo}>
                         <Text style={styles.userName}>{user.name}</Text>
@@ -260,26 +289,35 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
                       key={plan.id}
                       style={[
                         styles.planItem,
-                        { borderColor: isSelected ? colors.primary[500] : colors.border },
-                        isSelected && { backgroundColor: `${colors.primary[500]}10` },
+                        {
+                          borderColor: isSelected
+                            ? colors.primary[500]
+                            : colors.border,
+                        },
+                        isSelected && {
+                          backgroundColor: `${colors.primary[500]}10`,
+                        },
                       ]}
                       onPress={() => setSelectedPlanId(plan.id)}
                     >
                       <View
                         style={[
                           styles.planIcon,
-                          { backgroundColor: plan.themeColor || colors.primary[500] },
+                          {
+                            backgroundColor:
+                              plan.themeColor || colors.primary[500],
+                          },
                         ]}
                       >
                         <Ionicons
                           name={
-                            plan.icon === 'diamond'
-                              ? 'diamond'
-                              : plan.icon === 'rocket'
-                              ? 'rocket'
-                              : plan.icon === 'flash'
-                              ? 'flash'
-                              : 'star'
+                            plan.icon === "diamond"
+                              ? "diamond"
+                              : plan.icon === "rocket"
+                                ? "rocket"
+                                : plan.icon === "flash"
+                                  ? "flash"
+                                  : "star"
                           }
                           size={16}
                           color={colors.text.inverse}
@@ -305,15 +343,24 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
                     key={cycle.value}
                     style={[
                       styles.cycleItem,
-                      { borderColor: isSelected ? colors.primary[500] : colors.border },
-                      isSelected && { backgroundColor: `${colors.primary[500]}10` },
+                      {
+                        borderColor: isSelected
+                          ? colors.primary[500]
+                          : colors.border,
+                      },
+                      isSelected && {
+                        backgroundColor: `${colors.primary[500]}10`,
+                      },
                     ]}
                     onPress={() => setSelectedCycle(cycle.value)}
                   >
                     <Text
                       style={[
                         styles.cycleText,
-                        isSelected && { color: colors.primary[500], fontWeight: '600' },
+                        isSelected && {
+                          color: colors.primary[500],
+                          fontWeight: "600",
+                        },
                       ]}
                     >
                       {cycle.label}
@@ -324,13 +371,17 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
             </View>
 
             {/* Custom Expiry (Optional) */}
-            <Text style={styles.sectionTitle}>Fecha de Vencimiento (opcional)</Text>
+            <Text style={styles.sectionTitle}>
+              Fecha de Vencimiento (opcional)
+            </Text>
             <Input
               placeholder="YYYY-MM-DD"
               value={customExpiry}
               onChangeText={setCustomExpiry}
             />
-            <Text style={styles.hintText}>Dejar vacío para calcular según el ciclo</Text>
+            <Text style={styles.hintText}>
+              Dejar vacío para calcular según el ciclo
+            </Text>
 
             {/* Error Message */}
             {error && (
@@ -353,8 +404,8 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
             <Button
               title={
                 loading
-                  ? 'Asignando...'
-                  : `Asignar a ${selectedUserIds.size} usuario${selectedUserIds.size !== 1 ? 's' : ''}`
+                  ? "Asignando..."
+                  : `Asignar a ${selectedUserIds.size} usuario${selectedUserIds.size !== 1 ? "s" : ""}`
               }
               onPress={handleAssign}
               loading={loading}
@@ -367,31 +418,34 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
   );
 };
 
-const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<typeof useShadows>) =>
+const createStyles = (
+  colors: ReturnType<typeof useColors>,
+  shadows: ReturnType<typeof useShadows>,
+) =>
   StyleSheet.create({
     backdrop: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.45)',
-      justifyContent: 'center',
+      backgroundColor: "rgba(0,0,0,0.45)",
+      justifyContent: "center",
       padding: spacing.md,
     },
     dialog: {
       backgroundColor: colors.card,
       borderRadius: borderRadius.lg,
-      maxHeight: '92%',
+      maxHeight: "92%",
       ...shadows.md,
     },
     header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       padding: spacing.md,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
     title: {
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     closeButton: {
@@ -402,7 +456,7 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
     },
     sectionTitle: {
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.primary,
       marginBottom: spacing.sm,
       marginTop: spacing.md,
@@ -411,8 +465,8 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       marginBottom: spacing.sm,
     },
     selectAllRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       padding: spacing.sm,
       borderRadius: borderRadius.md,
       marginBottom: spacing.sm,
@@ -420,7 +474,7 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
     },
     selectAllText: {
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: "500",
       color: colors.primary[500],
     },
     userList: {
@@ -430,8 +484,8 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       borderColor: colors.border,
     },
     userRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       padding: spacing.sm,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
@@ -442,7 +496,7 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
     },
     userName: {
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: "500",
       color: colors.text.primary,
     },
     userEmail: {
@@ -451,22 +505,22 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
     },
     loadingText: {
       padding: spacing.md,
-      textAlign: 'center',
+      textAlign: "center",
       color: colors.text.secondary,
     },
     emptyText: {
       padding: spacing.md,
-      textAlign: 'center',
+      textAlign: "center",
       color: colors.text.tertiary,
     },
     planList: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexDirection: "row",
+      flexWrap: "wrap",
       gap: spacing.sm,
     },
     planItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       padding: spacing.sm,
       borderRadius: borderRadius.md,
       borderWidth: 1,
@@ -478,15 +532,15 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       width: 32,
       height: 32,
       borderRadius: borderRadius.sm,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     planInfo: {
       flex: 1,
     },
     planName: {
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: "500",
       color: colors.text.primary,
     },
     planPrice: {
@@ -494,7 +548,7 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       color: colors.text.secondary,
     },
     cycleRow: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: spacing.sm,
     },
     cycleItem: {
@@ -502,7 +556,7 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       padding: spacing.sm,
       borderRadius: borderRadius.md,
       borderWidth: 1,
-      alignItems: 'center',
+      alignItems: "center",
     },
     cycleText: {
       fontSize: 14,
@@ -514,8 +568,8 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       marginTop: spacing.xs,
     },
     errorContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.sm,
       marginTop: spacing.md,
       padding: spacing.sm,
@@ -528,9 +582,9 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       flex: 1,
     },
     actions: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      alignItems: "center",
       gap: spacing.sm,
       padding: spacing.md,
       borderTopWidth: 1,
@@ -538,12 +592,12 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
     },
     cancelButton: {
       minHeight: 44,
-      justifyContent: 'center',
+      justifyContent: "center",
       paddingHorizontal: spacing.md,
     },
     cancelText: {
       color: colors.text.secondary,
-      fontWeight: '600',
+      fontWeight: "600",
       fontSize: 16,
     },
   });

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -6,14 +6,14 @@ import {
   TouchableOpacity,
   View,
   Platform,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { addDays, format } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { useColors, useShadows } from '../../../store/themeStore';
-import { borderRadius, spacing } from '../../../theme';
-import { licensesApi, BillingCycle } from '../../../api/licensesApi';
-import api from '../../../services/api';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { addDays, format } from "date-fns";
+import { es } from "date-fns/locale";
+import { useColors, useShadows } from "../../../store/themeStore";
+import { borderRadius, spacing } from "../../../theme";
+import { licensesApi, BillingCycle } from "../../../api/licensesApi";
+import api from "../../../services/api";
 
 type ExtendLicenseModalProps = {
   visible: boolean;
@@ -26,15 +26,15 @@ type ExtendLicenseModalProps = {
 };
 
 const EXTENSION_OPTIONS = [
-  { days: 30, label: '30 días' },
-  { days: 60, label: '60 días' },
-  { days: 90, label: '90 días' },
+  { days: 30, label: "30 días" },
+  { days: 60, label: "60 días" },
+  { days: 90, label: "90 días" },
 ];
 
 const CYCLE_LABELS: Record<BillingCycle, string> = {
-  MONTHLY: 'Mensual',
-  SEMIANNUAL: 'Semestral',
-  ANNUAL: 'Anual',
+  MONTHLY: "Mensual",
+  SEMIANNUAL: "Semestral",
+  ANNUAL: "Anual",
 };
 
 export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
@@ -53,7 +53,7 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedDays, setSelectedDays] = useState<number>(30);
-  const [customDays, setCustomDays] = useState<string>('');
+  const [customDays, setCustomDays] = useState<string>("");
 
   const newExpiry = (() => {
     const days = customDays.trim() ? parseInt(customDays, 10) : selectedDays;
@@ -72,9 +72,9 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
       });
       onSuccess();
     } catch (err: unknown) {
-      console.error('Error extending license:', err);
+      console.error("Error extending license:", err);
       const message =
-        err instanceof Error ? err.message : 'Error al extender la licencia';
+        err instanceof Error ? err.message : "Error al extender la licencia";
       setError(message);
     } finally {
       setLoading(false);
@@ -84,12 +84,26 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
   if (!visible) return null;
 
   return (
-    <Modal transparent visible={visible} animationType="fade" onRequestClose={onCancel}>
+    <Modal
+      transparent
+      visible={visible}
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
       <View style={styles.overlay}>
         <View style={styles.dialog}>
           {/* Header */}
-          <View style={[styles.iconContainer, { backgroundColor: `${colors.primary[500]}20` }]}>
-            <Ionicons name="time-outline" size={32} color={colors.primary[500]} />
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: `${colors.primary[500]}20` },
+            ]}
+          >
+            <Ionicons
+              name="time-outline"
+              size={32}
+              color={colors.primary[500]}
+            />
           </View>
 
           <Text style={styles.title}>Extender Licencia</Text>
@@ -103,38 +117,59 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
               </Text>
             </View>
             <View style={styles.arrowRow}>
-              <Ionicons name="arrow-down" size={16} color={colors.text.secondary} />
+              <Ionicons
+                name="arrow-down"
+                size={16}
+                color={colors.text.secondary}
+              />
             </View>
             <View style={styles.dateRow}>
               <Text style={styles.dateLabel}>Nueva fecha:</Text>
-              <Text style={[styles.dateValue, { color: colors.primary[500], fontWeight: '700' }]}>
+              <Text
+                style={[
+                  styles.dateValue,
+                  { color: colors.primary[500], fontWeight: "700" },
+                ]}
+              >
                 {format(newExpiry, "d 'de' MMMM 'de' yyyy", { locale: es })}
               </Text>
             </View>
           </View>
 
           {/* Extension Period Options */}
-          <Text style={styles.sectionTitle}>Seleccionar período de extensión</Text>
+          <Text style={styles.sectionTitle}>
+            Seleccionar período de extensión
+          </Text>
           <View style={styles.optionsRow}>
             {EXTENSION_OPTIONS.map((option) => {
-              const isSelected = customDays.trim() === '' && selectedDays === option.days;
+              const isSelected =
+                customDays.trim() === "" && selectedDays === option.days;
               return (
                 <TouchableOpacity
                   key={option.days}
                   style={[
                     styles.optionItem,
-                    { borderColor: isSelected ? colors.primary[500] : colors.border },
-                    isSelected && { backgroundColor: `${colors.primary[500]}10` },
+                    {
+                      borderColor: isSelected
+                        ? colors.primary[500]
+                        : colors.border,
+                    },
+                    isSelected && {
+                      backgroundColor: `${colors.primary[500]}10`,
+                    },
                   ]}
                   onPress={() => {
                     setSelectedDays(option.days);
-                    setCustomDays('');
+                    setCustomDays("");
                   }}
                 >
                   <Text
                     style={[
                       styles.optionText,
-                      isSelected && { color: colors.primary[500], fontWeight: '600' },
+                      isSelected && {
+                        color: colors.primary[500],
+                        fontWeight: "600",
+                      },
                     ]}
                   >
                     {option.label}
@@ -151,7 +186,10 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
               <TouchableOpacity
                 style={[
                   styles.customOption,
-                  customDays.trim() !== '' && { borderColor: colors.primary[500], backgroundColor: `${colors.primary[500]}10` },
+                  customDays.trim() !== "" && {
+                    borderColor: colors.primary[500],
+                    backgroundColor: `${colors.primary[500]}10`,
+                  },
                 ]}
                 onPress={() => {}}
               >
@@ -169,7 +207,7 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
                           style={styles.textInput}
                           value={customDays}
                           onChangeText={(text) => {
-                            const num = text.replace(/[^0-9]/g, '');
+                            const num = text.replace(/[^0-9]/g, "");
                             setCustomDays(num);
                           }}
                           placeholder="0"
@@ -188,7 +226,7 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
           {/* Plan Info */}
           <View style={styles.planInfo}>
             <Text style={styles.planInfoText}>
-              Plan: {currentCycle ? CYCLE_LABELS[currentCycle] : 'N/A'}
+              Plan: {currentCycle ? CYCLE_LABELS[currentCycle] : "N/A"}
             </Text>
           </View>
 
@@ -213,13 +251,16 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
             <TouchableOpacity
               style={[
                 styles.confirmButton,
-                { backgroundColor: colors.primary[500], opacity: loading ? 0.7 : 1 },
+                {
+                  backgroundColor: colors.primary[500],
+                  opacity: loading ? 0.7 : 1,
+                },
               ]}
               onPress={handleExtend}
               disabled={loading}
             >
               <Text style={styles.confirmText}>
-                {loading ? 'Extendiendo...' : 'Confirmar Extensión'}
+                {loading ? "Extendiendo..." : "Confirmar Extensión"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -230,27 +271,27 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
 };
 
 // Simple TextInput without using the custom Input component
-import { TextInput } from 'react-native';
+import { TextInput } from "react-native";
 
 const createStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: 'rgba(15, 23, 42, 0.75)',
-      justifyContent: 'center',
-      alignItems: 'center',
+      backgroundColor: "rgba(15, 23, 42, 0.75)",
+      justifyContent: "center",
+      alignItems: "center",
       padding: spacing.lg,
     },
     dialog: {
-      width: '100%',
+      width: "100%",
       maxWidth: 340,
       backgroundColor: colors.card,
       borderRadius: 24,
       padding: spacing.xl,
-      alignItems: 'center',
+      alignItems: "center",
       ...Platform.select({
         ios: {
-          shadowColor: '#000',
+          shadowColor: "#000",
           shadowOffset: { width: 0, height: 10 },
           shadowOpacity: 0.3,
           shadowRadius: 20,
@@ -264,31 +305,31 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       width: 64,
       height: 64,
       borderRadius: 32,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       marginBottom: spacing.lg,
     },
     title: {
       fontSize: 20,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: spacing.md,
     },
     datePreview: {
-      width: '100%',
+      width: "100%",
       backgroundColor: colors.background,
       borderRadius: borderRadius.md,
       padding: spacing.md,
       marginBottom: spacing.md,
     },
     dateRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
     },
     arrowRow: {
-      alignItems: 'center',
+      alignItems: "center",
       paddingVertical: spacing.xs,
     },
     dateLabel: {
@@ -297,20 +338,20 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     },
     dateValue: {
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.primary,
     },
     sectionTitle: {
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.primary,
-      alignSelf: 'flex-start',
+      alignSelf: "flex-start",
       marginBottom: spacing.sm,
     },
     optionsRow: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: spacing.sm,
-      width: '100%',
+      width: "100%",
       marginBottom: spacing.md,
     },
     optionItem: {
@@ -319,16 +360,16 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       paddingHorizontal: spacing.xs,
       borderRadius: borderRadius.md,
       borderWidth: 1,
-      alignItems: 'center',
+      alignItems: "center",
     },
     optionText: {
       fontSize: 14,
       color: colors.text.secondary,
     },
     customRow: {
-      width: '100%',
-      flexDirection: 'row',
-      alignItems: 'center',
+      width: "100%",
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.sm,
       marginBottom: spacing.md,
     },
@@ -340,8 +381,8 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       flex: 1,
     },
     customOption: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: borderRadius.md,
@@ -349,8 +390,8 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       paddingVertical: spacing.xs,
     },
     inputWrapper: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.sm,
     },
     inputText: {
@@ -373,10 +414,10 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       color: colors.text.primary,
       paddingVertical: spacing.xs,
       minWidth: 50,
-      textAlign: 'center',
+      textAlign: "center",
     },
     planInfo: {
-      width: '100%',
+      width: "100%",
       padding: spacing.sm,
       backgroundColor: colors.surface,
       borderRadius: borderRadius.md,
@@ -385,13 +426,13 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     planInfoText: {
       fontSize: 13,
       color: colors.text.secondary,
-      textAlign: 'center',
+      textAlign: "center",
     },
     errorContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.sm,
-      width: '100%',
+      width: "100%",
       padding: spacing.sm,
       backgroundColor: `${colors.danger}10`,
       borderRadius: borderRadius.md,
@@ -403,31 +444,31 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       flex: 1,
     },
     actions: {
-      width: '100%',
+      width: "100%",
       gap: spacing.md,
     },
     confirmButton: {
-      width: '100%',
+      width: "100%",
       height: 50,
       borderRadius: 25,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     confirmText: {
       color: colors.text.inverse,
       fontSize: 16,
-      fontWeight: '600',
+      fontWeight: "600",
     },
     cancelButton: {
-      width: '100%',
+      width: "100%",
       height: 50,
       borderRadius: 25,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     cancelText: {
       color: colors.text.secondary,
       fontSize: 16,
-      fontWeight: '600',
+      fontWeight: "600",
     },
   });

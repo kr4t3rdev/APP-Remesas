@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CashAdjustmentType } from '../../../types';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { cashRepository } from '../infrastructure/cash.repository';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { CashAdjustmentType } from "../../../types";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { cashRepository } from "../infrastructure/cash.repository";
 
 export const useCashBalancesQuery = () =>
   useQuery({
@@ -38,8 +38,8 @@ export const useCreateCashAuditMutation = () => {
     mutationFn: cashRepository.createCashAudit,
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['cash'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ["cash"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
       ]);
     },
   });
@@ -57,8 +57,8 @@ export const useCreateCashAdjustmentMutation = () => {
     }) => cashRepository.createCashAdjustment(data),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['cash'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ["cash"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
       ]);
     },
   });

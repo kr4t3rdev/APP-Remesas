@@ -1,27 +1,33 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeInDown } from '../animations';
-import { useColors } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
+import React, { useMemo } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeInDown } from "../animations";
+import { useColors } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
 
 export type ReportTab = {
-  id: 'kpis' | 'users' | 'blocked' | 'audit';
+  id: "kpis" | "users" | "blocked" | "audit";
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
 };
 
 const defaultTabs: ReportTab[] = [
-  { id: 'kpis', label: 'KPIs', icon: 'analytics' },
-  { id: 'users', label: 'Usuarios', icon: 'people' },
-  { id: 'blocked', label: 'Bloqueados', icon: 'lock-closed' },
-  { id: 'audit', label: 'Auditoría', icon: 'document-text' },
+  { id: "kpis", label: "KPIs", icon: "analytics" },
+  { id: "users", label: "Usuarios", icon: "people" },
+  { id: "blocked", label: "Bloqueados", icon: "lock-closed" },
+  { id: "audit", label: "Auditoría", icon: "document-text" },
 ];
 
 type TabSelectorProps = {
   tabs?: ReportTab[];
-  activeTab: ReportTab['id'];
-  onTabChange: (tabId: ReportTab['id']) => void;
+  activeTab: ReportTab["id"];
+  onTabChange: (tabId: ReportTab["id"]) => void;
   delay?: number;
 };
 
@@ -72,14 +78,14 @@ export const TabSelector: React.FC<TabSelectorProps> = ({
 const createStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
     container: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: spacing.sm,
       marginBottom: spacing.md,
       paddingVertical: spacing.xs,
     },
     tab: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.xs,
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
@@ -95,7 +101,7 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     },
     tabText: {
       fontSize: 13,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.secondary,
     },
     tabTextActive: {

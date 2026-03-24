@@ -1,11 +1,13 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { PressableScale, FadeInDown } from '../animations';
-import { Badge } from '../ui/Badge';
-import { spacing, borderRadius } from '../../theme';
-import { useColors, useShadows } from '../../store/themeStore';
-import type { Objective } from '../../types';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Alert } from "../../utils/alert";
+
+import { Ionicons } from "@expo/vector-icons";
+import { PressableScale, FadeInDown } from "../animations";
+import { Badge } from "../ui/Badge";
+import { spacing, borderRadius } from "../../theme";
+import { useColors, useShadows } from "../../store/themeStore";
+import type { Objective } from "../../types";
 
 type ObjectiveCardProps = {
   objective: Objective;
@@ -13,13 +15,16 @@ type ObjectiveCardProps = {
   onPress?: (objective: Objective) => void;
   onEdit?: (objective: Objective) => void;
   onDelete?: (objective: Objective) => void;
-  onStatusChange?: (objective: Objective, newStatus: 'ACTIVO' | 'PAUSADO' | 'COMPLETADO') => void;
+  onStatusChange?: (
+    objective: Objective,
+    newStatus: "ACTIVO" | "PAUSADO" | "COMPLETADO",
+  ) => void;
 };
 
 const STATUS_COLORS = {
-  ACTIVO: '#10B981',
-  COMPLETADO: '#6366F1',
-  PAUSADO: '#F59E0B',
+  ACTIVO: "#10B981",
+  COMPLETADO: "#6366F1",
+  PAUSADO: "#F59E0B",
 };
 
 export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
@@ -34,8 +39,9 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
   const themeShadows = useShadows();
 
   const progress = Math.min(objective.percentage || 0, 100);
-  const progressColor = progress >= 100 ? '#10B981' : themeColors.primary[500];
-  const statusColor = STATUS_COLORS[objective.status] || themeColors.text.secondary;
+  const progressColor = progress >= 100 ? "#10B981" : themeColors.primary[500];
+  const statusColor =
+    STATUS_COLORS[objective.status] || themeColors.text.secondary;
 
   const handleEdit = () => {
     onEdit?.(objective);
@@ -43,29 +49,29 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
 
   const handleDelete = () => {
     Alert.alert(
-      'Eliminar Objetivo',
+      "Eliminar Objetivo",
       `¿Estás seguro de eliminar "${objective.name}"?`,
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: "Cancelar", style: "cancel" },
         {
-          text: 'Eliminar',
-          style: 'destructive',
+          text: "Eliminar",
+          style: "destructive",
           onPress: () => onDelete?.(objective),
         },
-      ]
+      ],
     );
   };
 
   const handleStatusPress = () => {
     const options = [
-      { label: 'Activo', value: 'ACTIVO' as const },
-      { label: 'Pausado', value: 'PAUSADO' as const },
-      { label: 'Completado', value: 'COMPLETADO' as const },
+      { label: "Activo", value: "ACTIVO" as const },
+      { label: "Pausado", value: "PAUSADO" as const },
+      { label: "Completado", value: "COMPLETADO" as const },
     ];
 
     Alert.alert(
-      'Cambiar Estado',
-      'Selecciona el nuevo estado',
+      "Cambiar Estado",
+      "Selecciona el nuevo estado",
       options.map((opt) => ({
         text: opt.label,
         onPress: () => {
@@ -73,7 +79,7 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
             onStatusChange?.(objective, opt.value);
           }
         },
-      }))
+      })),
     );
   };
 
@@ -83,7 +89,13 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
         onPress={() => onPress?.(objective)}
         style={styles.wrapper}
       >
-        <View style={[styles.card, { backgroundColor: themeColors.card }, themeShadows.sm]}>
+        <View
+          style={[
+            styles.card,
+            { backgroundColor: themeColors.card },
+            themeShadows.sm,
+          ]}
+        >
           <View style={styles.header}>
             <View style={styles.titleContainer}>
               <Text
@@ -94,7 +106,10 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
               </Text>
               {objective.description && (
                 <Text
-                  style={[styles.description, { color: themeColors.text.secondary }]}
+                  style={[
+                    styles.description,
+                    { color: themeColors.text.secondary },
+                  ]}
                   numberOfLines={2}
                 >
                   {objective.description}
@@ -104,9 +119,14 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
             <TouchableOpacity
               testID="objective-status-badge"
               onPress={handleStatusPress}
-              style={[styles.statusBadge, { backgroundColor: `${statusColor}15` }]}
+              style={[
+                styles.statusBadge,
+                { backgroundColor: `${statusColor}15` },
+              ]}
             >
-              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              <View
+                style={[styles.statusDot, { backgroundColor: statusColor }]}
+              />
               <Text style={[styles.statusText, { color: statusColor }]}>
                 {objective.status}
               </Text>
@@ -115,14 +135,24 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
 
           <View style={styles.progressSection}>
             <View style={styles.progressHeader}>
-              <Text style={[styles.progressLabel, { color: themeColors.text.secondary }]}>
+              <Text
+                style={[
+                  styles.progressLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
                 Progreso
               </Text>
               <Text style={[styles.progressPercent, { color: progressColor }]}>
                 {progress.toFixed(1)}%
               </Text>
             </View>
-            <View style={[styles.progressBarBg, { backgroundColor: themeColors.border }]}>
+            <View
+              style={[
+                styles.progressBarBg,
+                { backgroundColor: themeColors.border },
+              ]}
+            >
               <View
                 style={[
                   styles.progressBarFill,
@@ -134,21 +164,50 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
 
           <View style={[styles.footer, { borderTopColor: themeColors.border }]}>
             <View style={styles.amountItem}>
-              <Text style={[styles.amountLabel, { color: themeColors.text.secondary }]}>
+              <Text
+                style={[
+                  styles.amountLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
                 Actual
               </Text>
-              <Text style={[styles.amountValue, { color: themeColors.text.primary }]}>
+              <Text
+                style={[
+                  styles.amountValue,
+                  { color: themeColors.text.primary },
+                ]}
+              >
                 $ {Number(objective.currentAmount).toLocaleString()}
               </Text>
             </View>
             <View style={styles.amountItem}>
-              <Text style={[styles.amountLabel, { color: themeColors.text.secondary }]}>Meta</Text>
-              <Text style={[styles.amountValue, { color: themeColors.text.primary }]}>
+              <Text
+                style={[
+                  styles.amountLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
+                Meta
+              </Text>
+              <Text
+                style={[
+                  styles.amountValue,
+                  { color: themeColors.text.primary },
+                ]}
+              >
                 $ {Number(objective.targetAmount).toLocaleString()}
               </Text>
             </View>
             <View style={styles.amountItem}>
-              <Text style={[styles.amountLabel, { color: themeColors.text.secondary }]}>Falta</Text>
+              <Text
+                style={[
+                  styles.amountLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
+                Falta
+              </Text>
               <Text style={[styles.amountValue, { color: themeColors.danger }]}>
                 $ {Number(objective.remaining || 0).toLocaleString()}
               </Text>
@@ -159,14 +218,24 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
             <TouchableOpacity
               testID="objective-edit-button"
               onPress={handleEdit}
-              style={[styles.actionButton, { backgroundColor: `${themeColors.primary[500]}15` }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: `${themeColors.primary[500]}15` },
+              ]}
             >
-              <Ionicons name="pencil" size={16} color={themeColors.primary[500]} />
+              <Ionicons
+                name="pencil"
+                size={16}
+                color={themeColors.primary[500]}
+              />
             </TouchableOpacity>
             <TouchableOpacity
               testID="objective-delete-button"
               onPress={handleDelete}
-              style={[styles.actionButton, { backgroundColor: `${themeColors.danger}15` }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: `${themeColors.danger}15` },
+              ]}
             >
               <Ionicons name="trash" size={16} color={themeColors.danger} />
             </TouchableOpacity>
@@ -186,9 +255,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: spacing.md,
   },
   titleContainer: {
@@ -197,15 +266,15 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   description: {
     fontSize: 12,
     marginTop: 2,
   },
   statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
@@ -218,14 +287,14 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   progressSection: {
     marginBottom: spacing.md,
   },
   progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: spacing.xs,
   },
   progressLabel: {
@@ -233,37 +302,37 @@ const styles = StyleSheet.create({
   },
   progressPercent: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   progressBarBg: {
     height: 8,
     borderRadius: borderRadius.full,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressBarFill: {
-    height: '100%',
+    height: "100%",
     borderRadius: borderRadius.full,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingTop: spacing.sm,
     borderTopWidth: 1,
   },
   amountItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   amountLabel: {
     fontSize: 11,
   },
   amountValue: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 2,
   },
   actions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     gap: spacing.xs,
     marginTop: spacing.sm,
   },
@@ -271,7 +340,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: borderRadius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

@@ -3,7 +3,7 @@
  * Types specific to the admin profile screen
  */
 
-import type { User } from '../../../types';
+import type { User } from "../../../types";
 
 /**
  * Statistics displayed on admin profile dashboard

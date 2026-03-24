@@ -1,7 +1,13 @@
-import { create } from 'zustand';
-import { colors, darkColors, shadows, darkShadows, gradientPresets } from '../theme';
+import { create } from "zustand";
+import {
+  colors,
+  darkColors,
+  shadows,
+  darkShadows,
+  gradientPresets,
+} from "../theme";
 
-type ThemeMode = 'light' | 'dark';
+type ThemeMode = "light" | "dark";
 
 interface ThemeState {
   mode: ThemeMode;
@@ -14,28 +20,28 @@ interface ThemeState {
 }
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
-  mode: 'light',
+  mode: "light",
   isDark: false,
   currentColors: colors,
   currentShadows: shadows,
   gradients: gradientPresets,
-  
+
   toggleTheme: () => {
-    const newMode = get().mode === 'light' ? 'dark' : 'light';
+    const newMode = get().mode === "light" ? "dark" : "light";
     set({
       mode: newMode,
-      isDark: newMode === 'dark',
-      currentColors: newMode === 'dark' ? darkColors : colors,
-      currentShadows: newMode === 'dark' ? darkShadows : shadows,
+      isDark: newMode === "dark",
+      currentColors: newMode === "dark" ? darkColors : colors,
+      currentShadows: newMode === "dark" ? darkShadows : shadows,
     });
   },
-  
+
   setTheme: (mode: ThemeMode) => {
     set({
       mode,
-      isDark: mode === 'dark',
-      currentColors: mode === 'dark' ? darkColors : colors,
-      currentShadows: mode === 'dark' ? darkShadows : shadows,
+      isDark: mode === "dark",
+      currentColors: mode === "dark" ? darkColors : colors,
+      currentShadows: mode === "dark" ? darkShadows : shadows,
     });
   },
 }));

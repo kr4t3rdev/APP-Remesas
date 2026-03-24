@@ -1,7 +1,7 @@
-import api from '../services/api';
-import { plansApi } from './plansApi';
+import api from "../services/api";
+import { plansApi } from "./plansApi";
 
-jest.mock('../services/api', () => ({
+jest.mock("../services/api", () => ({
   __esModule: true,
   default: {
     get: jest.fn(),
@@ -11,17 +11,17 @@ jest.mock('../services/api', () => ({
   },
 }));
 
-describe('plansApi', () => {
+describe("plansApi", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('creates a plan with admin-defined cost', async () => {
+  it("creates a plan with admin-defined cost", async () => {
     (api.post as jest.Mock).mockResolvedValue({
       data: {
         id: 7,
-        name: 'Plan Pro',
-        description: 'desc',
+        name: "Plan Pro",
+        description: "desc",
         isActive: true,
         monthlyUsd: 99,
         semiannualUsd: 594,
@@ -30,20 +30,20 @@ describe('plansApi', () => {
     });
 
     await plansApi.createPlan({
-      name: 'Plan Pro',
+      name: "Plan Pro",
       price: 99,
-      description: 'desc',
-      benefits: [{ id: '1', text: 'X' }],
-      tags: ['tag'],
-      icon: 'star',
+      description: "desc",
+      benefits: [{ id: "1", text: "X" }],
+      tags: ["tag"],
+      icon: "star",
       isActive: true,
       isPopular: true,
-      themeColor: '#fff',
+      themeColor: "#fff",
     });
 
-    expect(api.post).toHaveBeenCalledWith('/plans', {
-      name: 'Plan Pro',
-      description: 'desc',
+    expect(api.post).toHaveBeenCalledWith("/plans", {
+      name: "Plan Pro",
+      description: "desc",
       isActive: true,
       monthlyUsd: 99,
       semiannualUsd: 594,
@@ -51,12 +51,12 @@ describe('plansApi', () => {
     });
   });
 
-  it('updates a plan using PATCH endpoint', async () => {
+  it("updates a plan using PATCH endpoint", async () => {
     (api.patch as jest.Mock).mockResolvedValue({
       data: {
         id: 7,
-        name: 'Plan Pro',
-        description: '',
+        name: "Plan Pro",
+        description: "",
         isActive: true,
         monthlyUsd: 120,
         semiannualUsd: 720,
@@ -64,10 +64,10 @@ describe('plansApi', () => {
       },
     });
 
-    await plansApi.updatePlan('7', { name: 'Plan Pro', price: 120 });
+    await plansApi.updatePlan("7", { name: "Plan Pro", price: 120 });
 
-    expect(api.patch).toHaveBeenCalledWith('/plans/7', {
-      name: 'Plan Pro',
+    expect(api.patch).toHaveBeenCalledWith("/plans/7", {
+      name: "Plan Pro",
       description: undefined,
       isActive: true,
       monthlyUsd: 120,

@@ -1,25 +1,34 @@
-import React, { useMemo } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeIn } from '../../components/animations';
-import { AdminHeader } from '../../components/admin/layout/AdminHeader';
-import { AdminReportsPeriodSegment } from '../../components/admin/AdminReportsPeriodSegment';
-import { AdminReportsMetricTile } from '../../components/admin/AdminReportsMetricTile';
-import { AdminReportsCashFlowCard } from '../../components/admin/AdminReportsCashFlowCard';
-import { AdminReportsUsersGrowthCard } from '../../components/admin/AdminReportsUsersGrowthCard';
-import { AdminReportsSystemUsageSection } from '../../components/admin/AdminReportsSystemUsageSection';
+import React, { useMemo } from "react";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeIn } from "../../components/animations";
+import { AdminHeader } from "../../components/admin/layout/AdminHeader";
+import { AdminReportsPeriodSegment } from "../../components/admin/AdminReportsPeriodSegment";
+import { AdminReportsMetricTile } from "../../components/admin/AdminReportsMetricTile";
+import { AdminReportsCashFlowCard } from "../../components/admin/AdminReportsCashFlowCard";
+import { AdminReportsUsersGrowthCard } from "../../components/admin/AdminReportsUsersGrowthCard";
+import { AdminReportsSystemUsageSection } from "../../components/admin/AdminReportsSystemUsageSection";
 import {
   useAdminReportsDashboard,
   type DashboardSystemUsageRow,
-} from '../../modules/admin/application/useAdminReportsDashboard';
-import { useColors } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
-import type { AdminTabParamList } from '../../navigation/types';
+} from "../../modules/admin/application/useAdminReportsDashboard";
+import { useColors } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
+import type { AdminTabParamList } from "../../navigation/types";
 
-type AdminReportsNavigation = BottomTabNavigationProp<AdminTabParamList, 'AdminReports'>;
+type AdminReportsNavigation = BottomTabNavigationProp<
+  AdminTabParamList,
+  "AdminReports"
+>;
 
 export const AdminReportsScreen: React.FC = () => {
   const colors = useColors();
@@ -39,12 +48,12 @@ export const AdminReportsScreen: React.FC = () => {
   } = useAdminReportsDashboard();
 
   const handleSystemRowPress = (row: DashboardSystemUsageRow) => {
-    if (row.id === 'api') {
-      navigation.navigate('AdminServices');
+    if (row.id === "api") {
+      navigation.navigate("AdminServices");
       return;
     }
 
-    navigation.navigate('AdminProfile');
+    navigation.navigate("AdminProfile");
   };
 
   return (
@@ -61,16 +70,18 @@ export const AdminReportsScreen: React.FC = () => {
         }
       >
         <FadeIn duration={260}>
-          <AdminHeader
-            title="Reportes"
-            onRefresh={() => void refetchAll()}
-          />
+          <AdminHeader title="Reportes" onRefresh={() => void refetchAll()} />
         </FadeIn>
 
         {hasPartialError ? (
-          <View style={styles.warningRow} testID="admin-reports-partial-warning">
+          <View
+            style={styles.warningRow}
+            testID="admin-reports-partial-warning"
+          >
             <Ionicons name="warning-outline" size={16} color={colors.warning} />
-            <Text style={styles.warningText}>Datos parciales, algunos bloques muestran fallback.</Text>
+            <Text style={styles.warningText}>
+              Datos parciales, algunos bloques muestran fallback.
+            </Text>
           </View>
         ) : null}
 
@@ -78,7 +89,11 @@ export const AdminReportsScreen: React.FC = () => {
 
         <View style={styles.metricsRow}>
           {metricTiles.map((metric, index) => (
-            <AdminReportsMetricTile key={metric.id} metric={metric} delay={60 + index * 40} />
+            <AdminReportsMetricTile
+              key={metric.id}
+              metric={metric}
+              delay={60 + index * 40}
+            />
           ))}
         </View>
 
@@ -93,10 +108,13 @@ export const AdminReportsScreen: React.FC = () => {
           points={usersGrowth.points}
           peakLabel={usersGrowth.peakLabel}
           isEmpty={usersGrowth.isEmpty}
-          onPressSeeAll={() => navigation.navigate('AdminUsers')}
+          onPressSeeAll={() => navigation.navigate("AdminUsers")}
         />
 
-        <AdminReportsSystemUsageSection rows={systemUsageRows} onRowPress={handleSystemRowPress} />
+        <AdminReportsSystemUsageSection
+          rows={systemUsageRows}
+          onRowPress={handleSystemRowPress}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -121,18 +139,18 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       backgroundColor: `${colors.warning}1A`,
       paddingVertical: spacing.xs + 2,
       paddingHorizontal: spacing.sm,
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.xs,
     },
     warningText: {
       color: colors.text.secondary,
       fontSize: 12,
-      fontWeight: '500',
+      fontWeight: "500",
       flex: 1,
     },
     metricsRow: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: spacing.sm,
       marginBottom: spacing.md,
     },

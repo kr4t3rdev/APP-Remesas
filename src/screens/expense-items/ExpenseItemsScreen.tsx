@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,28 +6,47 @@ import {
   RefreshControl,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeInDown, StaggerList } from '../../components/animations';
-import { CategoryTooltip } from '../../components/expense-items/CategoryTooltip';
-import { ExpenseItemFormModal } from '../../components/expense-items/ExpenseItemFormModal';
-import { ExpenseItemCard } from '../../components/expense-items/ExpenseItemCard';
-import { spacing, borderRadius } from '../../theme';
-import { useColors, useShadows } from '../../store/themeStore';
-import type { ExpenseItem, CreateExpenseItemInput, UpdateExpenseItemInput } from '../../types';
+} from "react-native";
+import { Alert } from "../../utils/alert";
+
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeInDown, StaggerList } from "../../components/animations";
+import { CategoryTooltip } from "../../components/expense-items/CategoryTooltip";
+import { ExpenseItemFormModal } from "../../components/expense-items/ExpenseItemFormModal";
+import { ExpenseItemCard } from "../../components/expense-items/ExpenseItemCard";
+import { spacing, borderRadius } from "../../theme";
+import { useColors, useShadows } from "../../store/themeStore";
+import type {
+  ExpenseItem,
+  CreateExpenseItemInput,
+  UpdateExpenseItemInput,
+} from "../../types";
 import {
   useExpenseItemsQuery,
   useCategoriesQuery,
   useCreateExpenseItemMutation,
   useUpdateExpenseItemMutation,
   useDeleteExpenseItemMutation,
-} from '../../modules/expense-items/application/useExpenseItems';
+} from "../../modules/expense-items/application/useExpenseItems";
+import { ConfirmModal } from "../../components/ui/ConfirmModal";
 
 export const ExpenseItemsScreen: React.FC = () => {
   const themeColors = useColors();
   const themeShadows = useShadows();
+
+  const [confirmModal, setConfirmModal] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    variant?: "danger" | "primary" | "warning";
+  }>({
+    visible: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ExpenseItem | null>(null);
@@ -52,48 +71,44 @@ export const ExpenseItemsScreen: React.FC = () => {
         categoriesQuery.refetch(),
       ]);
     } catch {
-      Alert.alert('Error', 'No se pudieron cargar los gastos');
+      Alert.alert("Error", "No se pudieron cargar los gastos");
     }
   };
 
   const handleCreateItem = async (data: CreateExpenseItemInput) => {
     await createMutation.mutateAsync(data);
-    Alert.alert('Éxito', 'Gasto creado correctamente');
+    Alert.alert("Éxito", "Gasto creado correctamente");
   };
 
   const handleUpdateItem = async (data: CreateExpenseItemInput) => {
     if (!editingItem) return;
-    await updateMutation.mutateAsync({ 
-      id: editingItem.id, 
+    await updateMutation.mutateAsync({
+      id: editingItem.id,
       data: {
         name: data.name,
         amount: data.amount,
         category: data.category,
-      }
+      },
     });
-    Alert.alert('Éxito', 'Gasto actualizado correctamente');
+    Alert.alert("Éxito", "Gasto actualizado correctamente");
   };
 
   const handleDeleteItem = (item: ExpenseItem) => {
-    Alert.alert(
-      'Eliminar Gasto',
-      `¿Eliminar "${item.name}"? Esta acción no se puede deshacer.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteMutation.mutateAsync(item.id);
-              Alert.alert('Éxito', 'Gasto eliminado correctamente');
-            } catch {
-              Alert.alert('Error', 'No se pudo eliminar el gasto');
-            }
-          },
-        },
-      ]
-    );
+    setConfirmModal({
+      visible: true,
+      title: "Eliminar Ítem",
+      message: `¿Estás seguro de eliminar "${item.name}"? Esta acción no se puede deshacer.`,
+      variant: "danger",
+      onConfirm: async () => {
+        setConfirmModal((prev) => ({ ...prev, visible: false }));
+        try {
+          await deleteMutation.mutateAsync(item.id);
+          Alert.alert("Éxito", "Ítem eliminado correctamente");
+        } catch {
+          Alert.alert("Error", "No se pudo eliminar el ítem");
+        }
+      },
+    });
   };
 
   const handleEditItem = (item: ExpenseItem) => {
@@ -111,15 +126,21 @@ export const ExpenseItemsScreen: React.FC = () => {
     setEditingItem(null);
   };
 
-  const formattedTotal = `$${totalAmount.toLocaleString('es-MX')}`;
+  const formattedTotal = `$${totalAmount.toLocaleString("es-MX")}`;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: themeColors.background }]}
+    >
       <View style={styles.header}>
         <FadeInDown delay={0}>
           <View>
-            <Text style={[styles.title, { color: themeColors.text.primary }]}>Gastos</Text>
-            <Text style={[styles.subtitle, { color: themeColors.text.secondary }]}>
+            <Text style={[styles.title, { color: themeColors.text.primary }]}>
+              Gastos
+            </Text>
+            <Text
+              style={[styles.subtitle, { color: themeColors.text.secondary }]}
+            >
               Elementos de gasto operativos
             </Text>
           </View>
@@ -128,12 +149,32 @@ export const ExpenseItemsScreen: React.FC = () => {
 
       <FadeInDown delay={50}>
         <View style={styles.statsCard}>
-          <View style={[styles.totalCard, { backgroundColor: themeColors.card }, themeShadows.sm]}>
-            <View style={[styles.totalIcon, { backgroundColor: `${themeColors.danger}15` }]}>
-              <Ionicons name="wallet-outline" size={20} color={themeColors.danger} />
+          <View
+            style={[
+              styles.totalCard,
+              { backgroundColor: themeColors.card },
+              themeShadows.sm,
+            ]}
+          >
+            <View
+              style={[
+                styles.totalIcon,
+                { backgroundColor: `${themeColors.danger}15` },
+              ]}
+            >
+              <Ionicons
+                name="wallet-outline"
+                size={20}
+                color={themeColors.danger}
+              />
             </View>
             <View style={styles.totalInfo}>
-              <Text style={[styles.totalLabel, { color: themeColors.text.secondary }]}>
+              <Text
+                style={[
+                  styles.totalLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
                 Total Gastos
               </Text>
               <Text style={[styles.totalValue, { color: themeColors.danger }]}>
@@ -146,7 +187,7 @@ export const ExpenseItemsScreen: React.FC = () => {
 
       <View style={styles.listHeader}>
         <Text style={[styles.listTitle, { color: themeColors.text.primary }]}>
-          {expenseItems.length} elemento{expenseItems.length !== 1 ? 's' : ''}
+          {expenseItems.length} elemento{expenseItems.length !== 1 ? "s" : ""}
         </Text>
       </View>
 
@@ -171,11 +212,22 @@ export const ExpenseItemsScreen: React.FC = () => {
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Ionicons name="receipt-outline" size={64} color={themeColors.text.tertiary} />
-            <Text style={[styles.emptyTitle, { color: themeColors.text.primary }]}>
+            <Ionicons
+              name="receipt-outline"
+              size={64}
+              color={themeColors.text.tertiary}
+            />
+            <Text
+              style={[styles.emptyTitle, { color: themeColors.text.primary }]}
+            >
               No hay gastos registrados
             </Text>
-            <Text style={[styles.emptySubtitle, { color: themeColors.text.secondary }]}>
+            <Text
+              style={[
+                styles.emptySubtitle,
+                { color: themeColors.text.secondary },
+              ]}
+            >
               Toca el botón + para registrar un nuevo gasto
             </Text>
           </View>
@@ -184,7 +236,11 @@ export const ExpenseItemsScreen: React.FC = () => {
 
       <TouchableOpacity
         testID="add-expense-item-fab"
-        style={[styles.fab, { backgroundColor: themeColors.primary[500] }, themeShadows.lg]}
+        style={[
+          styles.fab,
+          { backgroundColor: themeColors.primary[500] },
+          themeShadows.lg,
+        ]}
         onPress={handleOpenModal}
         activeOpacity={0.8}
       >
@@ -201,6 +257,17 @@ export const ExpenseItemsScreen: React.FC = () => {
         isLoading={createMutation.isPending || updateMutation.isPending}
         categories={categories}
       />
+
+      <ConfirmModal
+        visible={confirmModal.visible}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        variant={confirmModal.variant}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() =>
+          setConfirmModal((prev) => ({ ...prev, visible: false }))
+        }
+      />
     </SafeAreaView>
   );
 };
@@ -215,7 +282,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   subtitle: {
     fontSize: 14,
@@ -226,8 +293,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   totalCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     gap: spacing.md,
@@ -236,8 +303,8 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   totalInfo: {
     flex: 1,
@@ -248,7 +315,7 @@ const styles = StyleSheet.create({
   },
   totalValue: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   listHeader: {
     paddingHorizontal: spacing.md,
@@ -256,34 +323,34 @@ const styles = StyleSheet.create({
   },
   listTitle: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   listContent: {
     paddingHorizontal: spacing.md,
     paddingBottom: 160,
   },
   emptyState: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: spacing.xxl * 2,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: spacing.md,
   },
   emptySubtitle: {
     fontSize: 14,
     marginTop: spacing.xs,
-    textAlign: 'center',
+    textAlign: "center",
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 32,
     right: spacing.lg,
     width: 56,
     height: 56,
     borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { expensesRepository } from '../infrastructure/expenses.repository';
-import type { CreateExpenseInput, UpdateExpenseInput } from '../../../types';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { expensesRepository } from "../infrastructure/expenses.repository";
+import type { CreateExpenseInput, UpdateExpenseInput } from "../../../types";
 
 export const useExpensesQuery = (params?: {
   category?: string;
@@ -34,11 +34,14 @@ export const useCreateExpenseMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateExpenseInput) => expensesRepository.createExpense(data),
+    mutationFn: (data: CreateExpenseInput) =>
+      expensesRepository.createExpense(data),
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenses.pending() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.expenses.pending(),
+        }),
       ]);
     },
   });
@@ -53,8 +56,12 @@ export const useUpdateExpenseMutation = () => {
     onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenses.pending() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenses.detail(variables.id) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.expenses.pending(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.expenses.detail(variables.id),
+        }),
       ]);
     },
   });
@@ -68,8 +75,12 @@ export const useDeleteExpenseMutation = () => {
     onSuccess: async (_data, id) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenses.pending() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenses.detail(id) }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.expenses.pending(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.expenses.detail(id),
+        }),
       ]);
     },
   });

@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '../../../shared/query/queryKeys';
-import { exchangeRatesRepository } from '../infrastructure/exchange-rates.repository';
-import type { CreateRateHistoryInput } from '../../../types';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../../shared/query/queryKeys";
+import { exchangeRatesRepository } from "../infrastructure/exchange-rates.repository";
+import type { CreateRateHistoryInput } from "../../../types";
 
 export const useCurrenciesQuery = () =>
   useQuery({
@@ -77,11 +77,30 @@ export const useUpdateExchangeRateMutation = () => {
     mutationFn: (payload: {
       currencyId: number;
       data: { referenceRate: number; buyMargin: number; sellMargin: number };
-    }) => exchangeRatesRepository.updateExchangeRate(payload.currencyId, payload.data),
+    }) =>
+      exchangeRatesRepository.updateExchangeRate(
+        payload.currencyId,
+        payload.data,
+      ),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['exchangeRates'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ["exchangeRates"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+      ]);
+    },
+  });
+};
+
+export const useDeleteExchangeRateMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (currencyId: number) =>
+      exchangeRatesRepository.deleteExchangeRate(currencyId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["exchangeRates"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
       ]);
     },
   });
@@ -91,11 +110,30 @@ export const useCreateRateHistoryMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateRateHistoryInput) => exchangeRatesRepository.createRateHistory(data),
+    mutationFn: (data: CreateRateHistoryInput) =>
+      exchangeRatesRepository.createRateHistory(data),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.exchangeRates.history(undefined) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.exchangeRates.manualRates() }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.exchangeRates.history(undefined),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.exchangeRates.manualRates(),
+        }),
+      ]);
+    },
+  });
+};
+
+export const useResetRateHistoryMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (currencyId?: number) =>
+      exchangeRatesRepository.resetHistory(currencyId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["exchangeRates"] }),
       ]);
     },
   });

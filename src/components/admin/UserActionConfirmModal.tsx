@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { FadeInDown } from '../animations';
-import { useColors, useShadows } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
+import React, { useMemo, useState } from "react";
+import { Modal, View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
+import { FadeInDown } from "../animations";
+import { useColors, useShadows } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
 
 type UserActionConfirmModalProps = {
   visible: boolean;
@@ -20,20 +20,23 @@ export const UserActionConfirmModal: React.FC<UserActionConfirmModalProps> = ({
   visible,
   title,
   message,
-  confirmLabel = 'Confirmar acción',
+  confirmLabel = "Confirmar acción",
   onCancel,
   onConfirm,
   loading = false,
 }) => {
   const colors = useColors();
   const shadows = useShadows();
-  const styles = useMemo(() => createStyles(colors, shadows), [colors, shadows]);
+  const styles = useMemo(
+    () => createStyles(colors, shadows),
+    [colors, shadows],
+  );
 
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState<string | undefined>();
 
   const handleCancel = () => {
-    setReason('');
+    setReason("");
     setReasonError(undefined);
     onCancel();
   };
@@ -41,17 +44,22 @@ export const UserActionConfirmModal: React.FC<UserActionConfirmModalProps> = ({
   const handleConfirm = () => {
     const trimmed = reason.trim();
     if (!trimmed) {
-      setReasonError('El motivo es obligatorio para esta acción');
+      setReasonError("El motivo es obligatorio para esta acción");
       return;
     }
 
     setReasonError(undefined);
     onConfirm(trimmed);
-    setReason('');
+    setReason("");
   };
 
   return (
-    <Modal transparent visible={visible} animationType="fade" onRequestClose={handleCancel}>
+    <Modal
+      transparent
+      visible={visible}
+      animationType="fade"
+      onRequestClose={handleCancel}
+    >
       <View style={styles.backdrop}>
         <FadeInDown duration={180}>
           <View style={styles.dialog}>
@@ -94,12 +102,15 @@ export const UserActionConfirmModal: React.FC<UserActionConfirmModalProps> = ({
   );
 };
 
-const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<typeof useShadows>) =>
+const createStyles = (
+  colors: ReturnType<typeof useColors>,
+  shadows: ReturnType<typeof useShadows>,
+) =>
   StyleSheet.create({
     backdrop: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.45)',
-      justifyContent: 'center',
+      backgroundColor: "rgba(0,0,0,0.45)",
+      justifyContent: "center",
       padding: spacing.md,
     },
     dialog: {
@@ -110,7 +121,7 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
     },
     title: {
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
       marginBottom: spacing.xs,
     },
@@ -121,20 +132,20 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
     },
     actions: {
       marginTop: spacing.md,
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      alignItems: "center",
       gap: spacing.sm,
     },
     cancelButton: {
       minHeight: 44,
-      justifyContent: 'center',
+      justifyContent: "center",
       paddingHorizontal: spacing.md,
       borderRadius: borderRadius.md,
     },
     cancelText: {
       color: colors.text.secondary,
-      fontWeight: '600',
+      fontWeight: "600",
     },
     confirmButton: {
       minHeight: 44,

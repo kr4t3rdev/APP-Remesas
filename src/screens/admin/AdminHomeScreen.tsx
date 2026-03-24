@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo } from "react";
 import {
   View,
   Text,
@@ -6,48 +6,48 @@ import {
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import type { CompositeNavigationProp } from '@react-navigation/native';
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeIn, FadeInDown, StaggerList } from '../../components/animations';
-import { BarChart } from '../../components/charts/Charts';
-import { AdminHomeHeroCard } from '../../components/admin/AdminHomeHeroCard';
-import { AdminHomeEventRow } from '../../components/admin/AdminHomeEventRow';
-import { useAdminHomeData } from '../../modules/admin/application/useAdminHomeData';
-import { useAuthStore } from '../../store/authStore';
-import { useColors, useShadows } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
-import type { AdminAuditLog } from '../../types';
-import type { AdminTabParamList } from '../../navigation/types';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import type { CompositeNavigationProp } from "@react-navigation/native";
+import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeIn, FadeInDown, StaggerList } from "../../components/animations";
+import { BarChart } from "../../components/charts/Charts";
+import { AdminHomeHeroCard } from "../../components/admin/AdminHomeHeroCard";
+import { AdminHomeEventRow } from "../../components/admin/AdminHomeEventRow";
+import { useAdminHomeData } from "../../modules/admin/application/useAdminHomeData";
+import { useAuthStore } from "../../store/authStore";
+import { useColors, useShadows } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
+import type { AdminAuditLog } from "../../types";
+import type { AdminTabParamList } from "../../navigation/types";
 
 /**
  * AdminHomeScreen - Pantalla de inicio del panel de administración
- * 
+ *
  * Esta pantalla sigue el diseño "estilo finanzas" con:
  * - Cabecera con avatar del usuario admin (usa useAuthStore para obtener datos del usuario)
  * - Tarjeta hero con gradiente azul mostrando métricas principales
  * - Tarjeta de progreso semanal con gráfico de actividad
  * - Lista de eventos recientes estilo transacción
- * 
+ *
  * Navegación:
  * - El botón "Reportes" en la tarjeta hero navega a AdminReportsScreen
  * - "Ver todo" en la sección de eventos navega a AdminReportsScreen
  * - El icono de actualizar en la cabecera ejecuta refetchAll()
- * 
+ *
  * @see design.md para detalles técnicos
  * @see specs/admin-home/spec.md para requisitos de comportamiento
  */
 
-const PARTIAL_DATA_MESSAGE = 'Datos parciales, intenta actualizar';
+const PARTIAL_DATA_MESSAGE = "Datos parciales, intenta actualizar";
 
-const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const WEEKDAY_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 /** Agrupa eventos por día de la semana (Lun=0 .. Dom=6) y devuelve total de la semana para la tarjeta de progreso. */
 export function getWeeklyProgressFromEvents(
-  recentEvents: Pick<AdminAuditLog, 'createdAt'>[],
+  recentEvents: Pick<AdminAuditLog, "createdAt">[],
 ): { valuesByDay: number[]; totalWeek: number } {
   const valuesByDay = [0, 0, 0, 0, 0, 0, 0];
   for (const event of recentEvents) {
@@ -63,27 +63,33 @@ function getInitials(name: string | null | undefined, email?: string): string {
   if (name && name.trim()) {
     const parts = name.trim().split(/\s+/);
     if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase().slice(0, 2);
+      return (parts[0][0] + parts[parts.length - 1][0])
+        .toUpperCase()
+        .slice(0, 2);
     }
     return name.slice(0, 2).toUpperCase();
   }
   if (email && email.length) return email[0].toUpperCase();
-  return '?';
+  return "?";
 }
 
 type AdminHomeNavigationProp = CompositeNavigationProp<
-  BottomTabNavigationProp<AdminTabParamList, 'AdminHome'>,
+  BottomTabNavigationProp<AdminTabParamList, "AdminHome">,
   undefined
 >;
 
 export const AdminHomeScreen: React.FC = () => {
   const colors = useColors();
   const shadows = useShadows();
-  const styles = useMemo(() => createStyles(colors, shadows), [colors, shadows]);
+  const styles = useMemo(
+    () => createStyles(colors, shadows),
+    [colors, shadows],
+  );
   const navigation = useNavigation<AdminHomeNavigationProp>();
   const user = useAuthStore((s) => s.user);
 
-  const { kpis, recentEvents, isRefreshing, blockErrors, refetchAll } = useAdminHomeData();
+  const { kpis, recentEvents, isRefreshing, blockErrors, refetchAll } =
+    useAdminHomeData();
 
   const weeklyProgress = useMemo(
     () => getWeeklyProgressFromEvents(recentEvents),
@@ -100,7 +106,10 @@ export const AdminHomeScreen: React.FC = () => {
     [weeklyProgress.valuesByDay, colors.primary],
   );
 
-  const initials = useMemo(() => getInitials(user?.name, user?.email), [user?.name, user?.email]);
+  const initials = useMemo(
+    () => getInitials(user?.name, user?.email),
+    [user?.name, user?.email],
+  );
 
   const showHero = !blockErrors.kpis || kpis != null;
 
@@ -119,7 +128,12 @@ export const AdminHomeScreen: React.FC = () => {
         <FadeIn duration={280}>
           <View style={styles.header}>
             <View style={styles.avatarContainer}>
-              <View style={[styles.avatar, { backgroundColor: colors.primary[500] }]}>
+              <View
+                style={[
+                  styles.avatar,
+                  { backgroundColor: colors.primary[500] },
+                ]}
+              >
                 <Text style={styles.avatarText}>{initials}</Text>
               </View>
             </View>
@@ -148,7 +162,7 @@ export const AdminHomeScreen: React.FC = () => {
             <AdminHomeHeroCard
               title="Total usuarios"
               value={kpis?.totalUsers ?? 0}
-              onPrimaryAction={() => navigation.navigate('AdminReports')}
+              onPrimaryAction={() => navigation.navigate("AdminReports")}
               onSecondaryAction={() => void refetchAll()}
               primaryLabel="Reportes"
               secondaryLabel="Actualizar"
@@ -164,7 +178,9 @@ export const AdminHomeScreen: React.FC = () => {
             ) : (
               <>
                 <View style={styles.weeklyHeader}>
-                  <Text style={[styles.weeklyValue, { color: colors.text.primary }]}>
+                  <Text
+                    style={[styles.weeklyValue, { color: colors.text.primary }]}
+                  >
                     +{weeklyProgress.totalWeek} eventos
                   </Text>
                 </View>
@@ -185,7 +201,7 @@ export const AdminHomeScreen: React.FC = () => {
             <View style={styles.eventsHeader}>
               <Text style={styles.eventsTitle}>Eventos recientes</Text>
               <TouchableOpacity
-                onPress={() => navigation.navigate('AdminReports')}
+                onPress={() => navigation.navigate("AdminReports")}
                 style={styles.seeAllButton}
                 accessibilityRole="button"
                 accessibilityLabel="Ver todos los reportes"
@@ -195,8 +211,15 @@ export const AdminHomeScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
             {blockErrors.events && (
-              <View style={styles.warningRow} testID="admin-home-events-warning">
-                <Ionicons name="warning-outline" size={16} color={colors.warning} />
+              <View
+                style={styles.warningRow}
+                testID="admin-home-events-warning"
+              >
+                <Ionicons
+                  name="warning-outline"
+                  size={16}
+                  color={colors.warning}
+                />
                 <Text style={styles.warningText}>{PARTIAL_DATA_MESSAGE}</Text>
               </View>
             )}
@@ -222,14 +245,17 @@ export const AdminHomeScreen: React.FC = () => {
   );
 };
 
-const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<typeof useShadows>) =>
+const createStyles = (
+  colors: ReturnType<typeof useColors>,
+  shadows: ReturnType<typeof useShadows>,
+) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
     content: { padding: spacing.md },
     header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       marginBottom: spacing.md,
     },
     avatarContainer: { width: 44, height: 44 },
@@ -237,30 +263,30 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       width: 44,
       height: 44,
       borderRadius: 22,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     avatarText: {
       color: colors.text.inverse,
-      fontWeight: '700',
+      fontWeight: "700",
       fontSize: 16,
     },
     headerTitle: {
       flex: 1,
-      textAlign: 'center',
+      textAlign: "center",
       fontSize: 20,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     headerIconButton: {
       width: 44,
       height: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     warningRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: 6,
       marginBottom: spacing.sm,
       paddingVertical: 6,
@@ -278,12 +304,12 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
     },
     panelTitle: {
       fontSize: 16,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
       marginBottom: spacing.sm,
     },
     weeklyHeader: { marginBottom: spacing.sm },
-    weeklyValue: { fontSize: 18, fontWeight: '700' },
+    weeklyValue: { fontSize: 18, fontWeight: "700" },
     empty: { color: colors.text.secondary, paddingVertical: spacing.sm },
     eventsSection: {
       backgroundColor: colors.card,
@@ -293,22 +319,22 @@ const createStyles = (colors: ReturnType<typeof useColors>, shadows: ReturnType<
       marginBottom: spacing.md,
     },
     eventsHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       marginBottom: spacing.sm,
     },
     eventsTitle: {
       fontSize: 16,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     seeAllButton: {
       paddingVertical: 4,
       paddingHorizontal: 8,
       minHeight: 44,
-      justifyContent: 'center',
+      justifyContent: "center",
     },
-    seeAllText: { fontSize: 14, fontWeight: '600', color: colors.primary[500] },
+    seeAllText: { fontSize: 14, fontWeight: "600", color: colors.primary[500] },
     eventsList: { gap: 0 },
   });

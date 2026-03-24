@@ -1,17 +1,17 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { PressableScale } from '../animations';
-import { useColors, useShadows } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
-import type { AdminUserControlActionType } from '../../types';
+import React, { useMemo } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { PressableScale } from "../animations";
+import { useColors, useShadows } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
+import type { AdminUserControlActionType } from "../../types";
 
 type UserControlActionCardProps = {
   actionType: AdminUserControlActionType;
   title: string;
   description: string;
   onPress: () => void;
-  risk?: 'low' | 'medium' | 'high';
+  risk?: "low" | "medium" | "high";
   testID?: string;
 };
 
@@ -20,25 +20,28 @@ export const UserControlActionCard: React.FC<UserControlActionCardProps> = ({
   title,
   description,
   onPress,
-  risk = 'low',
+  risk = "low",
   testID,
 }) => {
   const colors = useColors();
   const shadows = useShadows();
-  const styles = useMemo(() => createStyles(colors, shadows, risk), [colors, shadows, risk]);
+  const styles = useMemo(
+    () => createStyles(colors, shadows, risk),
+    [colors, shadows, risk],
+  );
 
   const iconName: keyof typeof Ionicons.glyphMap =
-    actionType === 'SUSPEND_ACCOUNT' || actionType === 'TEMP_BLOCK'
-      ? 'lock-closed'
-      : actionType === 'CHANGE_ROLE'
-      ? 'person-circle'
-      : actionType === 'REVOKE_ALL_SESSIONS'
-      ? 'shield-checkmark'
-      : actionType === 'FORCE_PASSWORD_RESET'
-      ? 'key'
-      : actionType === 'EXTEND_LICENSE'
-      ? 'calendar'
-      : 'construct';
+    actionType === "SUSPEND_ACCOUNT" || actionType === "TEMP_BLOCK"
+      ? "lock-closed"
+      : actionType === "CHANGE_ROLE"
+        ? "person-circle"
+        : actionType === "REVOKE_ALL_SESSIONS"
+          ? "shield-checkmark"
+          : actionType === "FORCE_PASSWORD_RESET"
+            ? "key"
+            : actionType === "EXTEND_LICENSE"
+              ? "calendar"
+              : "construct";
 
   return (
     <PressableScale onPress={onPress} scale={0.97} style={styles.animatedWrap}>
@@ -64,9 +67,14 @@ export const UserControlActionCard: React.FC<UserControlActionCardProps> = ({
 const createStyles = (
   colors: ReturnType<typeof useColors>,
   shadows: ReturnType<typeof useShadows>,
-  risk: 'low' | 'medium' | 'high',
+  risk: "low" | "medium" | "high",
 ) => {
-  const riskColor = risk === 'high' ? colors.danger : risk === 'medium' ? colors.warning : colors.primary[500];
+  const riskColor =
+    risk === "high"
+      ? colors.danger
+      : risk === "medium"
+        ? colors.warning
+        : colors.primary[500];
 
   return StyleSheet.create({
     animatedWrap: {
@@ -79,8 +87,8 @@ const createStyles = (
       borderColor: `${riskColor}66`,
       backgroundColor: colors.card,
       padding: spacing.sm,
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.sm,
       ...shadows.sm,
     },
@@ -89,8 +97,8 @@ const createStyles = (
       height: 30,
       borderRadius: 999,
       backgroundColor: `${riskColor}20`,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     iconColor: {
       color: riskColor,
@@ -100,7 +108,7 @@ const createStyles = (
     },
     title: {
       color: colors.text.primary,
-      fontWeight: '700',
+      fontWeight: "700",
       fontSize: 13,
     },
     description: {

@@ -1,11 +1,11 @@
-import api from '../../../services/api';
+import api from "../../../services/api";
 import type {
   ExpenseItem,
   CreateExpenseItemInput,
   UpdateExpenseItemInput,
   ExpenseReport,
   ReportPeriod,
-} from '../../../types';
+} from "../../../types";
 
 export const expenseItemsRepository = {
   async getExpenseItems(params?: {
@@ -13,7 +13,7 @@ export const expenseItemsRepository = {
     startDate?: string;
     endDate?: string;
   }): Promise<ExpenseItem[]> {
-    const response = await api.get<ExpenseItem[]>('/expense-items', { params });
+    const response = await api.get<ExpenseItem[]>("/expense-items", { params });
     return response.data;
   },
 
@@ -23,11 +23,14 @@ export const expenseItemsRepository = {
   },
 
   async createExpenseItem(data: CreateExpenseItemInput): Promise<ExpenseItem> {
-    const response = await api.post<ExpenseItem>('/expense-items', data);
+    const response = await api.post<ExpenseItem>("/expense-items", data);
     return response.data;
   },
 
-  async updateExpenseItem(id: number, data: UpdateExpenseItemInput): Promise<ExpenseItem> {
+  async updateExpenseItem(
+    id: number,
+    data: UpdateExpenseItemInput,
+  ): Promise<ExpenseItem> {
     const response = await api.patch<ExpenseItem>(`/expense-items/${id}`, data);
     return response.data;
   },
@@ -36,15 +39,21 @@ export const expenseItemsRepository = {
     await api.delete(`/expense-items/${id}`);
   },
 
-  async getExpenseReport(period: ReportPeriod, date?: string): Promise<ExpenseReport> {
-    const response = await api.get<ExpenseReport>(`/expense-items/reports/${period}`, {
-      params: date ? { date } : undefined,
-    });
+  async getExpenseReport(
+    period: ReportPeriod,
+    date?: string,
+  ): Promise<ExpenseReport> {
+    const response = await api.get<ExpenseReport>(
+      `/expense-items/reports/${period}`,
+      {
+        params: date ? { date } : undefined,
+      },
+    );
     return response.data;
   },
 
   async getCategories(): Promise<string[]> {
-    const response = await api.get<string[]>('/expense-items/categories');
+    const response = await api.get<string[]>("/expense-items/categories");
     return response.data;
   },
 };

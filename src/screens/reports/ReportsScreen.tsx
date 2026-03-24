@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,25 +7,45 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeIn, FadeInDown, ScaleIn, PressableScale } from '../../components/animations';
-import { BarChart, HorizontalBarChart, StatsCard } from '../../components/charts/Charts';
-import { Card } from '../../components/ui/Card';
-import { ExpenseDatePicker } from '../../components/expenses/ExpenseDatePicker';
-import { colors, spacing, borderRadius, shadows, gradientPresets } from '../../theme';
-import { useColors, useShadows, useGradients, useIsDark } from '../../store/themeStore';
-import { format, subDays } from 'date-fns';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  FadeIn,
+  FadeInDown,
+  ScaleIn,
+  PressableScale,
+} from "../../components/animations";
+import {
+  BarChart,
+  HorizontalBarChart,
+  StatsCard,
+} from "../../components/charts/Charts";
+import { Card } from "../../components/ui/Card";
+import { ExpenseDatePicker } from "../../components/expenses/ExpenseDatePicker";
+import {
+  colors,
+  spacing,
+  borderRadius,
+  shadows,
+  gradientPresets,
+} from "../../theme";
+import {
+  useColors,
+  useShadows,
+  useGradients,
+  useIsDark,
+} from "../../store/themeStore";
+import { format, subDays } from "date-fns";
 import {
   useReportsCashBalancesQuery,
   useReportsDailyReportQuery,
   useReportsPeriodQuery,
-} from '../../modules/reports/application/useReports';
+} from "../../modules/reports/application/useReports";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-type ReportType = 'daily' | 'period' | 'profit' | 'cash-flow';
+type ReportType = "daily" | "period" | "profit" | "cash-flow";
 
 interface ReportCardData {
   id: ReportType;
@@ -42,16 +62,20 @@ export const ReportsScreen: React.FC = () => {
   const gradients = useGradients();
   const isDark = useIsDark();
 
-  const [selectedReport, setSelectedReport] = useState<ReportType>('daily');
+  const [selectedReport, setSelectedReport] = useState<ReportType>("daily");
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [periodStart, setPeriodStart] = useState(subDays(new Date(), 7).toISOString().split('T')[0]);
-  const [periodEnd, setPeriodEnd] = useState(new Date().toISOString().split('T')[0]);
+  const [periodStart, setPeriodStart] = useState(
+    subDays(new Date(), 7).toISOString().split("T")[0],
+  );
+  const [periodEnd, setPeriodEnd] = useState(
+    new Date().toISOString().split("T")[0],
+  );
   const [periodError, setPeriodError] = useState<string | null>(null);
 
   const dailyReportQuery = useReportsDailyReportQuery(selectedDate);
   const cashBalancesQuery = useReportsCashBalancesQuery();
   const periodReportQuery = useReportsPeriodQuery(periodStart, periodEnd);
-  
+
   const dailyReport = dailyReportQuery.data;
   const periodReport = periodReportQuery.data;
   const cashBalances = cashBalancesQuery.data ?? [];
@@ -68,7 +92,7 @@ export const ReportsScreen: React.FC = () => {
 
   const formatNumber = (value: number | string) => {
     const num = Number(value) || 0;
-    return num.toLocaleString('es-CU', { minimumFractionDigits: 2 });
+    return num.toLocaleString("es-CU", { minimumFractionDigits: 2 });
   };
 
   const validatePeriodRange = (start: string, end: string): boolean => {
@@ -77,7 +101,7 @@ export const ReportsScreen: React.FC = () => {
     const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     if (diffDays > 30) {
-      setPeriodError('El período no puede exceder 30 días');
+      setPeriodError("El período no puede exceder 30 días");
       return false;
     }
     setPeriodError(null);
@@ -95,90 +119,113 @@ export const ReportsScreen: React.FC = () => {
   };
 
   const getGradientColors = (reportType: ReportType) => {
-    const gradientKey = reportType === 'period' ? 'period' : 
-                        reportType === 'profit' ? 'profit' :
-                        reportType === 'cash-flow' ? 'cashFlow' : 'daily';
+    const gradientKey =
+      reportType === "period"
+        ? "period"
+        : reportType === "profit"
+          ? "profit"
+          : reportType === "cash-flow"
+            ? "cashFlow"
+            : "daily";
     return isDark ? gradients[gradientKey].dark : gradients[gradientKey].light;
   };
 
   const reports: ReportCardData[] = [
     {
-      id: 'daily',
-      title: 'Diario',
-      description: 'Resumen del día',
-      icon: 'today',
+      id: "daily",
+      title: "Diario",
+      description: "Resumen del día",
+      icon: "today",
       color: themeColors.primary[500],
-      gradientColors: getGradientColors('daily'),
+      gradientColors: getGradientColors("daily"),
     },
     {
-      id: 'period',
-      title: 'Por Período',
-      description: 'Análisis entre fechas',
-      icon: 'calendar',
+      id: "period",
+      title: "Por Período",
+      description: "Análisis entre fechas",
+      icon: "calendar",
       color: themeColors.warning,
-      gradientColors: getGradientColors('period'),
+      gradientColors: getGradientColors("period"),
     },
     {
-      id: 'profit',
-      title: 'Ganancias',
-      description: 'Margen de utilidades',
-      icon: 'trending-up',
+      id: "profit",
+      title: "Ganancias",
+      description: "Margen de utilidades",
+      icon: "trending-up",
       color: themeColors.success,
-      gradientColors: getGradientColors('profit'),
+      gradientColors: getGradientColors("profit"),
     },
     {
-      id: 'cash-flow',
-      title: 'Flujo de Caja',
-      description: 'Entradas y salidas',
-      icon: 'swap-vertical',
+      id: "cash-flow",
+      title: "Flujo de Caja",
+      description: "Entradas y salidas",
+      icon: "swap-vertical",
       color: themeColors.secondary[500],
-      gradientColors: getGradientColors('cash-flow'),
+      gradientColors: getGradientColors("cash-flow"),
     },
   ];
 
   const transactionChartData = dailyReport
     ? [
-        { label: 'Compras', value: dailyReport.transactions.compras, color: themeColors.financial.compra },
-        { label: 'Ventas', value: dailyReport.transactions.ventas, color: themeColors.financial.venta },
+        {
+          label: "Compras",
+          value: dailyReport.transactions.compras,
+          color: themeColors.financial.compra,
+        },
+        {
+          label: "Ventas",
+          value: dailyReport.transactions.ventas,
+          color: themeColors.financial.venta,
+        },
       ]
     : [];
 
   const expenseCategoryData = dailyReport?.expenses.byCategory
-    ? Object.entries(dailyReport.expenses.byCategory).map(([category, data]) => ({
-        label: category.charAt(0).toUpperCase() + category.slice(1),
-        value: data.total,
-        color: themeColors.dashboard.categories?.[category as keyof typeof themeColors.dashboard.categories]?.icon || themeColors.text.secondary,
-      }))
+    ? Object.entries(dailyReport.expenses.byCategory).map(
+        ([category, data]) => ({
+          label: category.charAt(0).toUpperCase() + category.slice(1),
+          value: data.total,
+          color:
+            themeColors.dashboard.categories?.[
+              category as keyof typeof themeColors.dashboard.categories
+            ]?.icon || themeColors.text.secondary,
+        }),
+      )
     : [];
 
   const balanceChartData = cashBalances.slice(0, 4).map((b) => ({
-    label: b.currency?.code || '',
+    label: b.currency?.code || "",
     value: Math.abs(Number(b.balance)),
     color:
-      b.currency?.code === 'USD'
+      b.currency?.code === "USD"
         ? themeColors.currencies.usd.primary
-        : b.currency?.code === 'EUR'
-        ? themeColors.currencies.eur.primary
-        : b.currency?.code === 'MLC'
-        ? themeColors.currencies.mlc.primary
-        : themeColors.primary[500],
+        : b.currency?.code === "EUR"
+          ? themeColors.currencies.eur.primary
+          : b.currency?.code === "MLC"
+            ? themeColors.currencies.mlc.primary
+            : themeColors.primary[500],
   }));
 
   // Period Report data transformation
   const periodDailyChartData = periodReport?.dailyBreakdown
     ? periodReport.dailyBreakdown.map((item) => ({
-        label: format(new Date(item.date), 'dd/MM'),
+        label: format(new Date(item.date), "dd/MM"),
         value: item.transactions,
         color: themeColors.primary[500],
       }))
     : [];
 
   const periodExpenseCategoryData = periodReport?.expensesByCategory
-    ? Object.entries(periodReport.expensesByCategory).map(([category, data]) => ({
-        label: category.charAt(0).toUpperCase() + category.slice(1),
-        value: data.total,
-        color: themeColors.dashboard.categories?.[category as keyof typeof themeColors.dashboard.categories]?.icon || themeColors.text.secondary,
-      }))
+    ? Object.entries(periodReport.expensesByCategory).map(
+        ([category, data]) => ({
+          label: category.charAt(0).toUpperCase() + category.slice(1),
+          value: data.total,
+          color:
+            themeColors.dashboard.categories?.[
+              category as keyof typeof themeColors.dashboard.categories
+            ]?.icon || themeColors.text.secondary,
+        }),
+      )
     : [];
 
   const isPeriodLoading = periodReportQuery.isLoading;
@@ -200,7 +247,12 @@ export const ReportsScreen: React.FC = () => {
         <View
           style={[
             styles.reportCard,
-            isSelected && { borderColor: gradientColors[0], backgroundColor: isDark ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)' },
+            isSelected && {
+              borderColor: gradientColors[0],
+              backgroundColor: isDark
+                ? "rgba(30, 41, 59, 0.95)"
+                : "rgba(255, 255, 255, 0.95)",
+            },
             !isSelected && { backgroundColor: themeColors.card },
           ]}
         >
@@ -230,13 +282,17 @@ export const ReportsScreen: React.FC = () => {
           </Text>
           <Text style={styles.reportDesc}>{report.description}</Text>
           {isSelected && (
-            <View style={[styles.selectedIndicator, { backgroundColor: gradientColors[0] }]} />
+            <View
+              style={[
+                styles.selectedIndicator,
+                { backgroundColor: gradientColors[0] },
+              ]}
+            />
           )}
         </View>
       </PressableScale>
     );
   };
-
 
   const renderDailyReport = () => {
     if (!dailyReport) return null;
@@ -245,24 +301,54 @@ export const ReportsScreen: React.FC = () => {
       <>
         <View style={styles.statsGrid}>
           <ScaleIn delay={100}>
-            <View style={[styles.statsCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+            <View
+              style={[
+                styles.statsCardWrapper,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
               <StatsCard
                 title="Ganancia Neta"
                 value={`$ ${formatNumber(dailyReport.profit.net)}`}
-                icon={<Ionicons name="trending-up" size={20} color={themeColors.success} />}
+                icon={
+                  <Ionicons
+                    name="trending-up"
+                    size={20}
+                    color={themeColors.success}
+                  />
+                }
                 color={themeColors.success}
-                trend={dailyReport.profit.net > 0 ? 'up' : dailyReport.profit.net < 0 ? 'down' : 'neutral'}
+                trend={
+                  dailyReport.profit.net > 0
+                    ? "up"
+                    : dailyReport.profit.net < 0
+                      ? "down"
+                      : "neutral"
+                }
                 style={styles.statCard}
               />
             </View>
           </ScaleIn>
           <ScaleIn delay={150}>
-            <View style={[styles.statsCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+            <View
+              style={[
+                styles.statsCardWrapper,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
               <StatsCard
                 title="Transacciones"
                 value={dailyReport.transactions.total.toString()}
                 subtitle={`${dailyReport.transactions.compras} compras, ${dailyReport.transactions.ventas} ventas`}
-                icon={<Ionicons name="swap-horizontal" size={20} color={themeColors.primary[500]} />}
+                icon={
+                  <Ionicons
+                    name="swap-horizontal"
+                    size={20}
+                    color={themeColors.primary[500]}
+                  />
+                }
                 color={themeColors.primary[500]}
                 style={styles.statCard}
               />
@@ -272,22 +358,46 @@ export const ReportsScreen: React.FC = () => {
 
         <View style={styles.statsGrid}>
           <ScaleIn delay={200}>
-            <View style={[styles.statsCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+            <View
+              style={[
+                styles.statsCardWrapper,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
               <StatsCard
                 title="Total Compras"
                 value={`$ ${formatNumber(dailyReport.transactions.totalCompras)}`}
-                icon={<Ionicons name="arrow-down-circle" size={20} color={themeColors.financial.compra} />}
+                icon={
+                  <Ionicons
+                    name="arrow-down-circle"
+                    size={20}
+                    color={themeColors.financial.compra}
+                  />
+                }
                 color={themeColors.financial.compra}
                 style={styles.statCard}
               />
             </View>
           </ScaleIn>
           <ScaleIn delay={250}>
-            <View style={[styles.statsCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+            <View
+              style={[
+                styles.statsCardWrapper,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
               <StatsCard
                 title="Total Ventas"
                 value={`$ ${formatNumber(dailyReport.transactions.totalVentas)}`}
-                icon={<Ionicons name="arrow-up-circle" size={20} color={themeColors.financial.venta} />}
+                icon={
+                  <Ionicons
+                    name="arrow-up-circle"
+                    size={20}
+                    color={themeColors.financial.venta}
+                  />
+                }
                 color={themeColors.financial.venta}
                 style={styles.statCard}
               />
@@ -296,33 +406,81 @@ export const ReportsScreen: React.FC = () => {
         </View>
 
         <FadeInDown delay={300}>
-          <View style={[styles.section, { backgroundColor: themeColors.card }, themeShadows.md]}>
-            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Compras vs Ventas</Text>
+          <View
+            style={[
+              styles.section,
+              { backgroundColor: themeColors.card },
+              themeShadows.md,
+            ]}
+          >
+            <Text
+              style={[styles.sectionTitle, { color: themeColors.text.primary }]}
+            >
+              Compras vs Ventas
+            </Text>
             <View style={styles.chartCard}>
               <BarChart
                 data={transactionChartData}
                 height={100}
                 showLabels
                 showValues
-                maxValue={Math.max(dailyReport.transactions.compras, dailyReport.transactions.ventas, 5)}
+                maxValue={Math.max(
+                  dailyReport.transactions.compras,
+                  dailyReport.transactions.ventas,
+                  5,
+                )}
               />
             </View>
           </View>
         </FadeInDown>
 
         <FadeInDown delay={350}>
-          <View style={[styles.section, { backgroundColor: themeColors.card }, themeShadows.md]}>
-            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Gastos</Text>
+          <View
+            style={[
+              styles.section,
+              { backgroundColor: themeColors.card },
+              themeShadows.md,
+            ]}
+          >
+            <Text
+              style={[styles.sectionTitle, { color: themeColors.text.primary }]}
+            >
+              Gastos
+            </Text>
             <View style={styles.statsRow}>
               <View style={styles.expenseStat}>
-                <Text style={[styles.expenseLabel, { color: themeColors.text.secondary }]}>Total Gastos</Text>
-                <Text style={[styles.expenseValue, { color: themeColors.text.primary }]}>
+                <Text
+                  style={[
+                    styles.expenseLabel,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  Total Gastos
+                </Text>
+                <Text
+                  style={[
+                    styles.expenseValue,
+                    { color: themeColors.text.primary },
+                  ]}
+                >
                   $ {formatNumber(dailyReport.expenses.totalAmount)}
                 </Text>
               </View>
               <View style={styles.expenseStat}>
-                <Text style={[styles.expenseLabel, { color: themeColors.text.secondary }]}>Cantidad</Text>
-                <Text style={[styles.expenseValue, { color: themeColors.text.primary }]}>
+                <Text
+                  style={[
+                    styles.expenseLabel,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  Cantidad
+                </Text>
+                <Text
+                  style={[
+                    styles.expenseValue,
+                    { color: themeColors.text.primary },
+                  ]}
+                >
                   {dailyReport.expenses.total}
                 </Text>
               </View>
@@ -331,7 +489,10 @@ export const ReportsScreen: React.FC = () => {
               <View style={[styles.chartCard, { marginTop: spacing.md }]}>
                 <HorizontalBarChart
                   data={expenseCategoryData}
-                  maxValue={Math.max(...expenseCategoryData.map((d) => d.value), 100)}
+                  maxValue={Math.max(
+                    ...expenseCategoryData.map((d) => d.value),
+                    100,
+                  )}
                 />
               </View>
             )}
@@ -347,7 +508,13 @@ export const ReportsScreen: React.FC = () => {
       return (
         <FadeInDown>
           <View style={styles.section}>
-            <View style={[styles.dateRangeCard, { backgroundColor: themeColors.card }, themeShadows.md]}>
+            <View
+              style={[
+                styles.dateRangeCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
               <View style={styles.dateField}>
                 <ExpenseDatePicker
                   value={periodStart}
@@ -364,11 +531,34 @@ export const ReportsScreen: React.FC = () => {
                 />
               </View>
             </View>
-            <View style={[styles.chartCard, { backgroundColor: themeColors.card }, themeShadows.md, { padding: spacing.xl }]}>
+            <View
+              style={[
+                styles.chartCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+                { padding: spacing.xl },
+              ]}
+            >
               <View style={styles.emptyState}>
-                <Ionicons name="hourglass-outline" size={48} color={themeColors.text.tertiary} />
-                <Text style={[styles.emptyTitle, { color: themeColors.text.primary }]}>Cargando...</Text>
-                <Text style={[styles.emptySubtitle, { color: themeColors.text.secondary }]}>
+                <Ionicons
+                  name="hourglass-outline"
+                  size={48}
+                  color={themeColors.text.tertiary}
+                />
+                <Text
+                  style={[
+                    styles.emptyTitle,
+                    { color: themeColors.text.primary },
+                  ]}
+                >
+                  Cargando...
+                </Text>
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
                   Obteniendo datos del período
                 </Text>
               </View>
@@ -383,7 +573,13 @@ export const ReportsScreen: React.FC = () => {
       return (
         <FadeInDown>
           <View style={styles.section}>
-            <View style={[styles.dateRangeCard, { backgroundColor: themeColors.card }, themeShadows.md]}>
+            <View
+              style={[
+                styles.dateRangeCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
               <View style={styles.dateField}>
                 <ExpenseDatePicker
                   value={periodStart}
@@ -400,11 +596,34 @@ export const ReportsScreen: React.FC = () => {
                 />
               </View>
             </View>
-            <View style={[styles.chartCard, { backgroundColor: themeColors.card }, themeShadows.md, { padding: spacing.xl }]}>
+            <View
+              style={[
+                styles.chartCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+                { padding: spacing.xl },
+              ]}
+            >
               <View style={styles.emptyState}>
-                <Ionicons name="alert-circle-outline" size={48} color={themeColors.danger} />
-                <Text style={[styles.emptyTitle, { color: themeColors.text.primary }]}>Error</Text>
-                <Text style={[styles.emptySubtitle, { color: themeColors.text.secondary }]}>
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={48}
+                  color={themeColors.danger}
+                />
+                <Text
+                  style={[
+                    styles.emptyTitle,
+                    { color: themeColors.text.primary },
+                  ]}
+                >
+                  Error
+                </Text>
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
                   No se pudo cargar el reporte. Intenta de nuevo.
                 </Text>
               </View>
@@ -419,7 +638,13 @@ export const ReportsScreen: React.FC = () => {
       return (
         <FadeInDown>
           <View style={styles.section}>
-            <View style={[styles.dateRangeCard, { backgroundColor: themeColors.card }, themeShadows.md]}>
+            <View
+              style={[
+                styles.dateRangeCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
               <View style={styles.dateField}>
                 <ExpenseDatePicker
                   value={periodStart}
@@ -436,11 +661,34 @@ export const ReportsScreen: React.FC = () => {
                 />
               </View>
             </View>
-            <View style={[styles.chartCard, { backgroundColor: themeColors.card }, themeShadows.md, { padding: spacing.xl }]}>
+            <View
+              style={[
+                styles.chartCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+                { padding: spacing.xl },
+              ]}
+            >
               <View style={styles.emptyState}>
-                <Ionicons name="calendar-outline" size={48} color={themeColors.text.tertiary} />
-                <Text style={[styles.emptyTitle, { color: themeColors.text.primary }]}>Sin datos</Text>
-                <Text style={[styles.emptySubtitle, { color: themeColors.text.secondary }]}>
+                <Ionicons
+                  name="calendar-outline"
+                  size={48}
+                  color={themeColors.text.tertiary}
+                />
+                <Text
+                  style={[
+                    styles.emptyTitle,
+                    { color: themeColors.text.primary },
+                  ]}
+                >
+                  Sin datos
+                </Text>
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
                   No hay transacciones en este período
                 </Text>
               </View>
@@ -455,7 +703,13 @@ export const ReportsScreen: React.FC = () => {
       <>
         <FadeInDown>
           <View style={styles.section}>
-            <View style={[styles.dateRangeCard, { backgroundColor: themeColors.card }, themeShadows.md]}>
+            <View
+              style={[
+                styles.dateRangeCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
               <View style={styles.dateField}>
                 <ExpenseDatePicker
                   value={periodStart}
@@ -479,22 +733,46 @@ export const ReportsScreen: React.FC = () => {
         <FadeInDown delay={50}>
           <View style={styles.statsGrid}>
             <ScaleIn delay={100}>
-              <View style={[styles.statsCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+              <View
+                style={[
+                  styles.statsCardWrapper,
+                  { backgroundColor: themeColors.card },
+                  themeShadows.md,
+                ]}
+              >
                 <StatsCard
                   title="Transacciones"
                   value={periodReport.summary.totalTransactions.toString()}
-                  icon={<Ionicons name="swap-horizontal" size={20} color={themeColors.primary[500]} />}
+                  icon={
+                    <Ionicons
+                      name="swap-horizontal"
+                      size={20}
+                      color={themeColors.primary[500]}
+                    />
+                  }
                   color={themeColors.primary[500]}
                   style={styles.statCard}
                 />
               </View>
             </ScaleIn>
             <ScaleIn delay={150}>
-              <View style={[styles.statsCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+              <View
+                style={[
+                  styles.statsCardWrapper,
+                  { backgroundColor: themeColors.card },
+                  themeShadows.md,
+                ]}
+              >
                 <StatsCard
                   title="Gastos"
                   value={`$ ${formatNumber(periodReport.summary.totalExpenses)}`}
-                  icon={<Ionicons name="arrow-up-circle" size={20} color={themeColors.danger} />}
+                  icon={
+                    <Ionicons
+                      name="arrow-up-circle"
+                      size={20}
+                      color={themeColors.danger}
+                    />
+                  }
                   color={themeColors.danger}
                   style={styles.statCard}
                 />
@@ -506,13 +784,31 @@ export const ReportsScreen: React.FC = () => {
         <FadeInDown delay={100}>
           <View style={styles.statsGrid}>
             <ScaleIn delay={200}>
-              <View style={[styles.statsCardWrapper, { backgroundColor: themeColors.card }, themeShadows.md]}>
+              <View
+                style={[
+                  styles.statsCardWrapper,
+                  { backgroundColor: themeColors.card },
+                  themeShadows.md,
+                ]}
+              >
                 <StatsCard
                   title="Ganancia Neta"
                   value={`$ ${formatNumber(periodReport.summary.totalProfit)}`}
-                  icon={<Ionicons name="trending-up" size={20} color={themeColors.success} />}
+                  icon={
+                    <Ionicons
+                      name="trending-up"
+                      size={20}
+                      color={themeColors.success}
+                    />
+                  }
                   color={themeColors.success}
-                  trend={periodReport.summary.totalProfit > 0 ? 'up' : periodReport.summary.totalProfit < 0 ? 'down' : 'neutral'}
+                  trend={
+                    periodReport.summary.totalProfit > 0
+                      ? "up"
+                      : periodReport.summary.totalProfit < 0
+                        ? "down"
+                        : "neutral"
+                  }
                   style={styles.statCard}
                 />
               </View>
@@ -523,15 +819,31 @@ export const ReportsScreen: React.FC = () => {
         {/* Daily Breakdown Chart */}
         {periodDailyChartData.length > 0 && (
           <FadeInDown delay={150}>
-            <View style={[styles.section, { backgroundColor: themeColors.card }, themeShadows.md]}>
-              <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Evolución Diaria</Text>
+            <View
+              style={[
+                styles.section,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: themeColors.text.primary },
+                ]}
+              >
+                Evolución Diaria
+              </Text>
               <View style={styles.chartCard}>
                 <BarChart
                   data={periodDailyChartData}
                   height={120}
                   showLabels
                   showValues
-                  maxValue={Math.max(...periodDailyChartData.map((d) => d.value), 10)}
+                  maxValue={Math.max(
+                    ...periodDailyChartData.map((d) => d.value),
+                    10,
+                  )}
                 />
               </View>
             </View>
@@ -541,12 +853,28 @@ export const ReportsScreen: React.FC = () => {
         {/* Expenses by Category */}
         {periodExpenseCategoryData.length > 0 && (
           <FadeInDown delay={200}>
-            <View style={[styles.section, { backgroundColor: themeColors.card }, themeShadows.md]}>
-              <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Gastos por Categoría</Text>
+            <View
+              style={[
+                styles.section,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: themeColors.text.primary },
+                ]}
+              >
+                Gastos por Categoría
+              </Text>
               <View style={styles.chartCard}>
                 <HorizontalBarChart
                   data={periodExpenseCategoryData}
-                  maxValue={Math.max(...periodExpenseCategoryData.map((d) => d.value), 100)}
+                  maxValue={Math.max(
+                    ...periodExpenseCategoryData.map((d) => d.value),
+                    100,
+                  )}
                 />
               </View>
             </View>
@@ -559,22 +887,64 @@ export const ReportsScreen: React.FC = () => {
   const renderProfitReport = () => (
     <>
       <FadeInDown delay={100}>
-        <View style={[styles.section, { backgroundColor: themeColors.card }, themeShadows.lg]}>
-          <View style={[styles.profitHeader, { borderBottomColor: themeColors.border }]}>
-            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Margen de Ganancias</Text>
-            <View style={[styles.profitBadge, { backgroundColor: `${themeColors.success}20` }]}>
-              <Ionicons name="trending-up" size={16} color={themeColors.success} />
-              <Text style={[styles.profitBadgeText, { color: themeColors.success }]}>
-                {dailyReport ? `${dailyReport.profit.margin.toFixed(1)}%` : '0%'}
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: themeColors.card },
+            themeShadows.lg,
+          ]}
+        >
+          <View
+            style={[
+              styles.profitHeader,
+              { borderBottomColor: themeColors.border },
+            ]}
+          >
+            <Text
+              style={[styles.sectionTitle, { color: themeColors.text.primary }]}
+            >
+              Margen de Ganancias
+            </Text>
+            <View
+              style={[
+                styles.profitBadge,
+                { backgroundColor: `${themeColors.success}20` },
+              ]}
+            >
+              <Ionicons
+                name="trending-up"
+                size={16}
+                color={themeColors.success}
+              />
+              <Text
+                style={[styles.profitBadgeText, { color: themeColors.success }]}
+              >
+                {dailyReport
+                  ? `${dailyReport.profit.margin.toFixed(1)}%`
+                  : "0%"}
               </Text>
             </View>
           </View>
           <View style={styles.profitContent}>
-            <View style={[styles.profitCircle, { borderColor: themeColors.success }]}>
-              <Text style={[styles.profitValue, { color: themeColors.success }]}>
-                {dailyReport ? `$ ${formatNumber(dailyReport.profit.net)}` : '$ 0.00'}
+            <View
+              style={[
+                styles.profitCircle,
+                { borderColor: themeColors.success },
+              ]}
+            >
+              <Text
+                style={[styles.profitValue, { color: themeColors.success }]}
+              >
+                {dailyReport
+                  ? `$ ${formatNumber(dailyReport.profit.net)}`
+                  : "$ 0.00"}
               </Text>
-              <Text style={[styles.profitLabel, { color: themeColors.text.secondary }]}>
+              <Text
+                style={[
+                  styles.profitLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
                 Ganancia Neta
               </Text>
             </View>
@@ -583,8 +953,18 @@ export const ReportsScreen: React.FC = () => {
       </FadeInDown>
 
       <FadeInDown delay={150}>
-        <View style={[styles.section, { backgroundColor: themeColors.card }, themeShadows.md]}>
-          <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Distribución de Saldos</Text>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: themeColors.card },
+            themeShadows.md,
+          ]}
+        >
+          <Text
+            style={[styles.sectionTitle, { color: themeColors.text.primary }]}
+          >
+            Distribución de Saldos
+          </Text>
           <View style={styles.chartCard}>
             {balanceChartData.length > 0 ? (
               <BarChart
@@ -595,7 +975,12 @@ export const ReportsScreen: React.FC = () => {
               />
             ) : (
               <View style={styles.emptyState}>
-                <Text style={[styles.emptySubtitle, { color: themeColors.text.secondary }]}>
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
                   No hay datos de saldo
                 </Text>
               </View>
@@ -608,49 +993,131 @@ export const ReportsScreen: React.FC = () => {
 
   const renderCashFlowReport = () => {
     const entradas = dailyReport ? dailyReport.transactions.totalVentas : 0;
-    const salidas = dailyReport ? dailyReport.transactions.totalCompras + dailyReport.expenses.totalAmount : 0;
+    const salidas = dailyReport
+      ? dailyReport.transactions.totalCompras + dailyReport.expenses.totalAmount
+      : 0;
     const balance = entradas - salidas;
     const isPositive = balance >= 0;
 
     return (
       <FadeInDown>
-        <View style={[styles.section, { backgroundColor: themeColors.card }, themeShadows.lg]}>
-          <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Flujo de Caja</Text>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: themeColors.card },
+            themeShadows.lg,
+          ]}
+        >
+          <Text
+            style={[styles.sectionTitle, { color: themeColors.text.primary }]}
+          >
+            Flujo de Caja
+          </Text>
 
           <View style={styles.flowSummary}>
-            <View style={[styles.flowBalanceCard, { backgroundColor: isPositive ? `${themeColors.success}15` : `${themeColors.danger}15` }]}>
+            <View
+              style={[
+                styles.flowBalanceCard,
+                {
+                  backgroundColor: isPositive
+                    ? `${themeColors.success}15`
+                    : `${themeColors.danger}15`,
+                },
+              ]}
+            >
               <Ionicons
-                name={isPositive ? 'arrow-up' : 'arrow-down'}
+                name={isPositive ? "arrow-up" : "arrow-down"}
                 size={24}
                 color={isPositive ? themeColors.success : themeColors.danger}
               />
-              <Text style={[styles.flowBalanceLabel, { color: themeColors.text.secondary }]}>
+              <Text
+                style={[
+                  styles.flowBalanceLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
                 Balance Neto
               </Text>
-              <Text style={[styles.flowBalanceValue, { color: isPositive ? themeColors.success : themeColors.danger }]}>
-                {isPositive ? '+' : '-'}${formatNumber(Math.abs(balance))}
+              <Text
+                style={[
+                  styles.flowBalanceValue,
+                  {
+                    color: isPositive
+                      ? themeColors.success
+                      : themeColors.danger,
+                  },
+                ]}
+              >
+                {isPositive ? "+" : "-"}${formatNumber(Math.abs(balance))}
               </Text>
             </View>
           </View>
 
           <View style={styles.flowRow}>
-            <View style={[styles.flowItem, { backgroundColor: themeColors.surface }]}>
-              <View style={[styles.flowIcon, { backgroundColor: `${themeColors.success}15` }]}>
-                <Ionicons name="arrow-down" size={24} color={themeColors.success} />
+            <View
+              style={[
+                styles.flowItem,
+                { backgroundColor: themeColors.surface },
+              ]}
+            >
+              <View
+                style={[
+                  styles.flowIcon,
+                  { backgroundColor: `${themeColors.success}15` },
+                ]}
+              >
+                <Ionicons
+                  name="arrow-down"
+                  size={24}
+                  color={themeColors.success}
+                />
               </View>
-              <Text style={[styles.flowLabel, { color: themeColors.text.secondary }]}>Entradas</Text>
+              <Text
+                style={[
+                  styles.flowLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
+                Entradas
+              </Text>
               <Text style={[styles.flowValue, { color: themeColors.success }]}>
-                {dailyReport ? `$ ${formatNumber(entradas)}` : '$ 0.00'}
+                {dailyReport ? `$ ${formatNumber(entradas)}` : "$ 0.00"}
               </Text>
             </View>
-            <View style={[styles.flowDivider, { backgroundColor: themeColors.border }]} />
-            <View style={[styles.flowItem, { backgroundColor: themeColors.surface }]}>
-              <View style={[styles.flowIcon, { backgroundColor: `${themeColors.danger}15` }]}>
-                <Ionicons name="arrow-up" size={24} color={themeColors.danger} />
+            <View
+              style={[
+                styles.flowDivider,
+                { backgroundColor: themeColors.border },
+              ]}
+            />
+            <View
+              style={[
+                styles.flowItem,
+                { backgroundColor: themeColors.surface },
+              ]}
+            >
+              <View
+                style={[
+                  styles.flowIcon,
+                  { backgroundColor: `${themeColors.danger}15` },
+                ]}
+              >
+                <Ionicons
+                  name="arrow-up"
+                  size={24}
+                  color={themeColors.danger}
+                />
               </View>
-              <Text style={[styles.flowLabel, { color: themeColors.text.secondary }]}>Salidas</Text>
+              <Text
+                style={[
+                  styles.flowLabel,
+                  { color: themeColors.text.secondary },
+                ]}
+              >
+                Salidas
+              </Text>
               <Text style={[styles.flowValue, { color: themeColors.danger }]}>
-                {dailyReport ? `$ ${formatNumber(salidas)}` : '$ 0.00'}
+                {dailyReport ? `$ ${formatNumber(salidas)}` : "$ 0.00"}
               </Text>
             </View>
           </View>
@@ -661,13 +1128,13 @@ export const ReportsScreen: React.FC = () => {
 
   const renderContent = () => {
     switch (selectedReport) {
-      case 'daily':
+      case "daily":
         return renderDailyReport();
-      case 'period':
+      case "period":
         return renderPeriodReport();
-      case 'profit':
+      case "profit":
         return renderProfitReport();
-      case 'cash-flow':
+      case "cash-flow":
         return renderCashFlowReport();
       default:
         return renderDailyReport();
@@ -675,12 +1142,16 @@ export const ReportsScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: themeColors.background }]}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
-            refreshing={dailyReportQuery.isRefetching || cashBalancesQuery.isRefetching}
+            refreshing={
+              dailyReportQuery.isRefetching || cashBalancesQuery.isRefetching
+            }
             onRefresh={handleRefresh}
             tintColor={themeColors.primary[500]}
           />
@@ -688,8 +1159,12 @@ export const ReportsScreen: React.FC = () => {
       >
         <FadeIn>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: themeColors.text.primary }]}>Reportes</Text>
-            <Text style={[styles.subtitle, { color: themeColors.text.secondary }]}>
+            <Text style={[styles.title, { color: themeColors.text.primary }]}>
+              Reportes
+            </Text>
+            <Text
+              style={[styles.subtitle, { color: themeColors.text.secondary }]}
+            >
               Análisis y estadísticas
             </Text>
           </View>
@@ -705,21 +1180,54 @@ export const ReportsScreen: React.FC = () => {
 
         <FadeInDown delay={400}>
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Acciones</Text>
+            <Text
+              style={[styles.sectionTitle, { color: themeColors.text.primary }]}
+            >
+              Acciones
+            </Text>
             <TouchableOpacity
-              style={[styles.actionCard, { backgroundColor: themeColors.card }, themeShadows.sm]}
+              style={[
+                styles.actionCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.sm,
+              ]}
               activeOpacity={0.7}
             >
-              <View style={[styles.actionIcon, { backgroundColor: themeColors.primary[50] }]}>
-                <Ionicons name="document-text-outline" size={22} color={themeColors.primary[500]} />
+              <View
+                style={[
+                  styles.actionIcon,
+                  { backgroundColor: themeColors.primary[50] },
+                ]}
+              >
+                <Ionicons
+                  name="document-text-outline"
+                  size={22}
+                  color={themeColors.primary[500]}
+                />
               </View>
               <View style={styles.actionInfo}>
-                <Text style={[styles.actionTitle, { color: themeColors.text.primary }]}>Exportar PDF</Text>
-                <Text style={[styles.actionSubtitle, { color: themeColors.text.secondary }]}>
+                <Text
+                  style={[
+                    styles.actionTitle,
+                    { color: themeColors.text.primary },
+                  ]}
+                >
+                  Exportar PDF
+                </Text>
+                <Text
+                  style={[
+                    styles.actionSubtitle,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
                   Descargar reporte en formato PDF
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={themeColors.text.tertiary} />
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={themeColors.text.tertiary}
+              />
             </TouchableOpacity>
           </View>
         </FadeInDown>
@@ -730,7 +1238,7 @@ export const ReportsScreen: React.FC = () => {
   );
 };
 
-  const styles = StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -742,15 +1250,15 @@ export const ReportsScreen: React.FC = () => {
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   subtitle: {
     fontSize: 14,
     marginTop: 4,
   },
   reportsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.sm,
     marginBottom: spacing.lg,
   },
@@ -761,11 +1269,11 @@ export const ReportsScreen: React.FC = () => {
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: "transparent",
     minHeight: 120,
   },
   gradientAccent: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -777,21 +1285,21 @@ export const ReportsScreen: React.FC = () => {
     width: 44,
     height: 44,
     borderRadius: borderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: spacing.sm,
   },
   reportTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 2,
   },
   reportDesc: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: "#94A3B8",
   },
   selectedIndicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: spacing.sm,
     right: spacing.sm,
     width: 8,
@@ -805,11 +1313,11 @@ export const ReportsScreen: React.FC = () => {
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: spacing.md,
   },
   statsGrid: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
     marginBottom: spacing.md,
   },
@@ -826,12 +1334,12 @@ export const ReportsScreen: React.FC = () => {
     padding: spacing.sm,
   },
   statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     paddingVertical: spacing.md,
   },
   expenseStat: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   expenseLabel: {
     fontSize: 12,
@@ -839,37 +1347,37 @@ export const ReportsScreen: React.FC = () => {
   },
   expenseValue: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   emptyState: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: spacing.xl,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: spacing.md,
   },
   emptySubtitle: {
     fontSize: 14,
     marginTop: 4,
-    textAlign: 'center',
+    textAlign: "center",
   },
   profitValue: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   profitHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     borderBottomWidth: 1,
     paddingBottom: spacing.md,
     marginBottom: spacing.md,
   },
   profitBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.full,
@@ -877,10 +1385,10 @@ export const ReportsScreen: React.FC = () => {
   },
   profitBadgeText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   profitContent: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: spacing.lg,
   },
   profitCircle: {
@@ -888,15 +1396,15 @@ export const ReportsScreen: React.FC = () => {
     height: 160,
     borderRadius: 80,
     borderWidth: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   profitLabel: {
     fontSize: 12,
     marginTop: 4,
   },
   dateRangeCard: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     gap: spacing.md,
@@ -910,22 +1418,22 @@ export const ReportsScreen: React.FC = () => {
     marginBottom: spacing.xs,
   },
   dateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: spacing.sm,
     borderRadius: borderRadius.md,
     gap: spacing.xs,
   },
   dateText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   flowSummary: {
     marginBottom: spacing.lg,
   },
   flowBalanceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: spacing.lg,
     borderRadius: borderRadius.lg,
     gap: spacing.md,
@@ -936,16 +1444,16 @@ export const ReportsScreen: React.FC = () => {
   },
   flowBalanceValue: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   flowRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.md,
   },
   flowItem: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     padding: spacing.lg,
     borderRadius: borderRadius.lg,
   },
@@ -953,8 +1461,8 @@ export const ReportsScreen: React.FC = () => {
     width: 48,
     height: 48,
     borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: spacing.sm,
   },
   flowLabel: {
@@ -963,7 +1471,7 @@ export const ReportsScreen: React.FC = () => {
   },
   flowValue: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   flowDivider: {
     width: 1,
@@ -972,15 +1480,15 @@ export const ReportsScreen: React.FC = () => {
   actionCard: {
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   actionIcon: {
     width: 44,
     height: 44,
     borderRadius: borderRadius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   actionInfo: {
     flex: 1,
@@ -988,7 +1496,7 @@ export const ReportsScreen: React.FC = () => {
   },
   actionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   actionSubtitle: {
     fontSize: 12,

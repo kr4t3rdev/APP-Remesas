@@ -1,13 +1,13 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { API_CONFIG, STORAGE_KEYS } from '../config/constants';
-import * as SecureStore from 'expo-secure-store';
-import type { ApiError } from '../types';
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { API_CONFIG, STORAGE_KEYS } from "../config/constants";
+import * as SecureStore from "expo-secure-store";
+import type { ApiError } from "../types";
 
 const api = axios.create({
   baseURL: API_CONFIG.baseURL,
   timeout: API_CONFIG.timeout,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -15,7 +15,7 @@ const getStorageItem = async (key: string): Promise<string | null> => {
   try {
     return await SecureStore.getItemAsync(key);
   } catch {
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       return localStorage.getItem(key);
     }
     return null;
@@ -26,7 +26,7 @@ const deleteStorageItem = async (key: string): Promise<void> => {
   try {
     await SecureStore.deleteItemAsync(key);
   } catch {
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       localStorage.removeItem(key);
     }
   }
@@ -40,7 +40,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 api.interceptors.response.use(
@@ -51,7 +51,7 @@ api.interceptors.response.use(
       await deleteStorageItem(STORAGE_KEYS.USER);
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

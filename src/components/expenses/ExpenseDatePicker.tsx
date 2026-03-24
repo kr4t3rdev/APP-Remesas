@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { spacing, borderRadius } from '../../theme';
-import { useColors } from '../../store/themeStore';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  StyleSheet,
+  Platform,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { spacing, borderRadius } from "../../theme";
+import { useColors } from "../../store/themeStore";
 
 type ExpenseDatePickerProps = {
   value: string;
@@ -14,25 +21,27 @@ type ExpenseDatePickerProps = {
 export const ExpenseDatePicker: React.FC<ExpenseDatePickerProps> = ({
   value,
   onChange,
-  label = 'Fecha',
+  label = "Fecha",
   error,
 }) => {
   const themeColors = useColors();
   const [showPicker, setShowPicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(value ? new Date(value) : new Date());
+  const [selectedDate, setSelectedDate] = useState(
+    value ? new Date(value) : new Date(),
+  );
 
   const formatDisplayDate = (dateString: string) => {
-    if (!dateString) return 'Seleccionar fecha';
+    if (!dateString) return "Seleccionar fecha";
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
+    return date.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
     });
   };
 
   const handleConfirm = () => {
-    onChange(selectedDate.toISOString().split('T')[0]);
+    onChange(selectedDate.toISOString().split("T")[0]);
     setShowPicker(false);
   };
 
@@ -43,8 +52,18 @@ export const ExpenseDatePicker: React.FC<ExpenseDatePickerProps> = ({
   };
 
   const generateMonths = () => [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
 
   const generateYears = () => {
@@ -56,7 +75,9 @@ export const ExpenseDatePicker: React.FC<ExpenseDatePickerProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: themeColors.text.primary }]}>{label}</Text>
+      <Text style={[styles.label, { color: themeColors.text.primary }]}>
+        {label}
+      </Text>
       <TouchableOpacity
         testID="expense-date-picker"
         onPress={() => setShowPicker(true)}
@@ -65,37 +86,69 @@ export const ExpenseDatePicker: React.FC<ExpenseDatePickerProps> = ({
           { borderColor: error ? themeColors.danger : themeColors.border },
         ]}
       >
-        <Ionicons name="calendar-outline" size={20} color={themeColors.text.secondary} />
-        <Text style={[styles.dateText, { color: value ? themeColors.text.primary : themeColors.text.tertiary }]}>
+        <Ionicons
+          name="calendar-outline"
+          size={20}
+          color={themeColors.text.secondary}
+        />
+        <Text
+          style={[
+            styles.dateText,
+            {
+              color: value
+                ? themeColors.text.primary
+                : themeColors.text.tertiary,
+            },
+          ]}
+        >
           {formatDisplayDate(value)}
         </Text>
       </TouchableOpacity>
       {error && (
-        <Text style={[styles.error, { color: themeColors.danger }]}>{error}</Text>
+        <Text style={[styles.error, { color: themeColors.danger }]}>
+          {error}
+        </Text>
       )}
 
       <Modal visible={showPicker} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
+          <View
+            style={[styles.modalContent, { backgroundColor: themeColors.card }]}
+          >
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: themeColors.text.primary }]}>
+              <Text
+                style={[styles.modalTitle, { color: themeColors.text.primary }]}
+              >
                 Seleccionar fecha
               </Text>
               <TouchableOpacity onPress={() => setShowPicker(false)}>
-                <Ionicons name="close" size={24} color={themeColors.text.primary} />
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color={themeColors.text.primary}
+                />
               </TouchableOpacity>
             </View>
 
             <View style={styles.pickerRow}>
               <View style={styles.pickerColumn}>
-                <Text style={[styles.pickerLabel, { color: themeColors.text.secondary }]}>Día</Text>
+                <Text
+                  style={[
+                    styles.pickerLabel,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  Día
+                </Text>
                 <View style={styles.pickerScroll}>
                   {generateDays().map((day) => (
                     <TouchableOpacity
                       key={day}
                       style={[
                         styles.pickerItem,
-                        selectedDate.getDate() === day && { backgroundColor: themeColors.primary[500] },
+                        selectedDate.getDate() === day && {
+                          backgroundColor: themeColors.primary[500],
+                        },
                       ]}
                       onPress={() => {
                         const newDate = new Date(selectedDate);
@@ -106,7 +159,12 @@ export const ExpenseDatePicker: React.FC<ExpenseDatePickerProps> = ({
                       <Text
                         style={[
                           styles.pickerItemText,
-                          { color: selectedDate.getDate() === day ? '#fff' : themeColors.text.primary },
+                          {
+                            color:
+                              selectedDate.getDate() === day
+                                ? "#fff"
+                                : themeColors.text.primary,
+                          },
                         ]}
                       >
                         {day}
@@ -117,14 +175,23 @@ export const ExpenseDatePicker: React.FC<ExpenseDatePickerProps> = ({
               </View>
 
               <View style={styles.pickerColumn}>
-                <Text style={[styles.pickerLabel, { color: themeColors.text.secondary }]}>Mes</Text>
+                <Text
+                  style={[
+                    styles.pickerLabel,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  Mes
+                </Text>
                 <View style={styles.pickerScroll}>
                   {generateMonths().map((month, index) => (
                     <TouchableOpacity
                       key={month}
                       style={[
                         styles.pickerItem,
-                        selectedDate.getMonth() === index && { backgroundColor: themeColors.primary[500] },
+                        selectedDate.getMonth() === index && {
+                          backgroundColor: themeColors.primary[500],
+                        },
                       ]}
                       onPress={() => {
                         const newDate = new Date(selectedDate);
@@ -135,7 +202,12 @@ export const ExpenseDatePicker: React.FC<ExpenseDatePickerProps> = ({
                       <Text
                         style={[
                           styles.pickerItemText,
-                          { color: selectedDate.getMonth() === index ? '#fff' : themeColors.text.primary },
+                          {
+                            color:
+                              selectedDate.getMonth() === index
+                                ? "#fff"
+                                : themeColors.text.primary,
+                          },
                         ]}
                       >
                         {month.substring(0, 3)}
@@ -146,14 +218,23 @@ export const ExpenseDatePicker: React.FC<ExpenseDatePickerProps> = ({
               </View>
 
               <View style={styles.pickerColumn}>
-                <Text style={[styles.pickerLabel, { color: themeColors.text.secondary }]}>Año</Text>
+                <Text
+                  style={[
+                    styles.pickerLabel,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  Año
+                </Text>
                 <View style={styles.pickerScroll}>
                   {generateYears().map((year) => (
                     <TouchableOpacity
                       key={year}
                       style={[
                         styles.pickerItem,
-                        selectedDate.getFullYear() === year && { backgroundColor: themeColors.primary[500] },
+                        selectedDate.getFullYear() === year && {
+                          backgroundColor: themeColors.primary[500],
+                        },
                       ]}
                       onPress={() => {
                         const newDate = new Date(selectedDate);
@@ -164,7 +245,12 @@ export const ExpenseDatePicker: React.FC<ExpenseDatePickerProps> = ({
                       <Text
                         style={[
                           styles.pickerItemText,
-                          { color: selectedDate.getFullYear() === year ? '#fff' : themeColors.text.primary },
+                          {
+                            color:
+                              selectedDate.getFullYear() === year
+                                ? "#fff"
+                                : themeColors.text.primary,
+                          },
                         ]}
                       >
                         {year}
@@ -177,7 +263,10 @@ export const ExpenseDatePicker: React.FC<ExpenseDatePickerProps> = ({
 
             <TouchableOpacity
               testID="expense-date-confirm"
-              style={[styles.confirmButton, { backgroundColor: themeColors.primary[500] }]}
+              style={[
+                styles.confirmButton,
+                { backgroundColor: themeColors.primary[500] },
+              ]}
               onPress={handleConfirm}
             >
               <Text style={styles.confirmButtonText}>Confirmar</Text>
@@ -195,13 +284,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: spacing.sm,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
     borderRadius: borderRadius.md,
     borderWidth: 1,
     paddingVertical: 12,
@@ -217,27 +306,27 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
   },
   modalContent: {
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
     padding: spacing.lg,
-    maxHeight: '70%',
+    maxHeight: "70%",
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: spacing.lg,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   pickerRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.sm,
   },
   pickerColumn: {
@@ -245,8 +334,8 @@ const styles = StyleSheet.create({
   },
   pickerLabel: {
     fontSize: 12,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: "500",
+    textAlign: "center",
     marginBottom: spacing.sm,
   },
   pickerScroll: {
@@ -254,7 +343,7 @@ const styles = StyleSheet.create({
   },
   pickerItem: {
     paddingVertical: spacing.sm,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: borderRadius.sm,
     marginBottom: 2,
   },
@@ -265,11 +354,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: borderRadius.md,
-    alignItems: 'center',
+    alignItems: "center",
   },
   confirmButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

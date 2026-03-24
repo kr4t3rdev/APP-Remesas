@@ -1,6 +1,6 @@
-import React from 'react';
-import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { useColors } from '../../../store/themeStore';
+import React from "react";
+import { ScrollView, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { useColors } from "../../../store/themeStore";
 
 export interface TabItem {
   key: string;
@@ -13,12 +13,16 @@ interface TabSelectorProps {
   onTabChange: (key: string) => void;
 }
 
-export const TabSelector = ({ tabs, activeTab, onTabChange }: TabSelectorProps) => {
+export const TabSelector = ({
+  tabs,
+  activeTab,
+  onTabChange,
+}: TabSelectorProps) => {
   const colors = useColors();
 
   return (
-    <ScrollView 
-      horizontal 
+    <ScrollView
+      horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.container}
     >
@@ -29,17 +33,17 @@ export const TabSelector = ({ tabs, activeTab, onTabChange }: TabSelectorProps) 
             key={tab.key}
             style={[
               styles.chip,
-              { 
+              {
                 backgroundColor: isActive ? colors.primary[500] : colors.card,
-                borderColor: isActive ? colors.primary[500] : colors.border
-              }
+                borderColor: isActive ? colors.primary[500] : colors.border,
+              },
             ]}
             onPress={() => onTabChange(tab.key)}
           >
-            <Text 
+            <Text
               style={[
                 styles.label,
-                { color: isActive ? '#fff' : colors.text.secondary }
+                { color: isActive ? "#fff" : colors.text.secondary },
               ]}
             >
               {tab.label}
@@ -65,6 +69,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

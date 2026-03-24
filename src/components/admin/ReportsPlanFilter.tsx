@@ -1,9 +1,15 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeInDown } from '../animations';
-import { useColors } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
+import React, { useMemo } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeInDown } from "../animations";
+import { useColors } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
 
 type PlanFilterProps = {
   selectedPlanId?: number;
@@ -13,9 +19,9 @@ type PlanFilterProps = {
 };
 
 const defaultPlans = [
-  { id: 1, name: 'Básico' },
-  { id: 2, name: 'Premium' },
-  { id: 3, name: 'Empresarial' },
+  { id: 1, name: "Básico" },
+  { id: 2, name: "Premium" },
+  { id: 3, name: "Empresarial" },
 ];
 
 export const PlanFilter: React.FC<PlanFilterProps> = ({
@@ -47,7 +53,12 @@ export const PlanFilter: React.FC<PlanFilterProps> = ({
             accessibilityRole="button"
             accessibilityLabel="Todos los planes"
           >
-            <Text style={[styles.planText, !selectedPlanId && styles.planTextActive]}>
+            <Text
+              style={[
+                styles.planText,
+                !selectedPlanId && styles.planTextActive,
+              ]}
+            >
               Todos
             </Text>
           </TouchableOpacity>
@@ -63,11 +74,15 @@ export const PlanFilter: React.FC<PlanFilterProps> = ({
                 accessibilityLabel={`Plan ${plan.name}`}
               >
                 <Ionicons
-                  name={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
+                  name={isSelected ? "checkmark-circle" : "ellipse-outline"}
                   size={14}
-                  color={isSelected ? colors.primary[500] : colors.text.secondary}
+                  color={
+                    isSelected ? colors.primary[500] : colors.text.secondary
+                  }
                 />
-                <Text style={[styles.planText, isSelected && styles.planTextActive]}>
+                <Text
+                  style={[styles.planText, isSelected && styles.planTextActive]}
+                >
                   {plan.name}
                 </Text>
               </TouchableOpacity>
@@ -86,17 +101,17 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     },
     label: {
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: "500",
       color: colors.text.primary,
       marginBottom: spacing.sm,
     },
     plansRow: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: spacing.sm,
     },
     planChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.xs,
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
@@ -113,7 +128,7 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     planText: {
       fontSize: 13,
       color: colors.text.secondary,
-      fontWeight: '500',
+      fontWeight: "500",
     },
     planTextActive: {
       color: colors.primary[500],

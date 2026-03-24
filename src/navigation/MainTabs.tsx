@@ -1,13 +1,13 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { HomeScreen } from '../screens/home/HomeScreen';
-import { ProfileScreen } from '../screens/profile/ProfileScreen';
-import { TransactionsScreen } from '../screens/transactions/TransactionsScreen';
-import { ExpenseItemsScreen } from '../screens/expense-items/ExpenseItemsScreen';
-import { ReportsScreen } from '../screens/reports/ReportsScreen';
-import { BusinessScreen } from '../screens/business/BusinessScreen';
-import { useColors } from '../store/themeStore';
-import type { MainTabParamList } from './types';
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { HomeScreen } from "../screens/home/HomeScreen";
+import { ProfileScreen } from "../screens/profile/ProfileScreen";
+import { TransactionsScreen } from "../screens/transactions/TransactionsScreen";
+import { ExpenseItemsScreen } from "../screens/expense-items/ExpenseItemsScreen";
+import { ReportsScreen } from "../screens/reports/ReportsScreen";
+import { BusinessScreen } from "../screens/business/BusinessScreen";
+import { useColors } from "../store/themeStore";
+import type { MainTabParamList } from "./types";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -30,7 +30,7 @@ export const MainTabs: React.FC = () => {
         tabBarInactiveTintColor: themeColors.text.secondary,
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '500',
+          fontWeight: "500",
         },
       }}
     >
@@ -38,17 +38,15 @@ export const MainTabs: React.FC = () => {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: 'Inicio',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="home" color={color} />
-          ),
+          tabBarLabel: "Inicio",
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
         }}
       />
       <Tab.Screen
         name="Business"
         component={BusinessScreen}
         options={{
-          tabBarLabel: 'Negocios',
+          tabBarLabel: "Negocios",
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="briefcase" color={color} />
           ),
@@ -68,7 +66,7 @@ export const MainTabs: React.FC = () => {
         name="ExpenseItems"
         component={ExpenseItemsScreen}
         options={{
-          tabBarLabel: 'Gastos',
+          tabBarLabel: "Gastos",
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="receipt" color={color} />
           ),
@@ -78,7 +76,7 @@ export const MainTabs: React.FC = () => {
         name="Reports"
         component={ReportsScreen}
         options={{
-          tabBarLabel: 'Reportes',
+          tabBarLabel: "Reportes",
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="bar-chart" color={color} />
           ),
@@ -88,17 +86,15 @@ export const MainTabs: React.FC = () => {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarLabel: 'Perfil',
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="person" color={color} />
-          ),
+          tabBarLabel: "Perfil",
+          tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
         }}
       />
     </Tab.Navigator>
   );
 };
 
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 
 type TabBarIconProps = {
   name: keyof typeof Ionicons.glyphMap;

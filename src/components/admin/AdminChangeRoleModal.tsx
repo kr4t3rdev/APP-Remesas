@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -9,15 +9,15 @@ import {
   Dimensions,
   Platform,
   ScrollView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useColors } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
-import type { User, UserRole } from '../../types';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useColors } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
+import type { User, UserRole } from "../../types";
 
 // Mock avatar for consistency
-const AVATAR_MOCK = 'https://i.pravatar.cc/150';
-const { height } = Dimensions.get('window');
+const AVATAR_MOCK = "https://i.pravatar.cc/150";
+const { height } = Dimensions.get("window");
 
 type AdminChangeRoleModalProps = {
   visible: boolean;
@@ -30,24 +30,28 @@ type AdminChangeRoleModalProps = {
 // Define available roles with descriptions
 const ROLES = [
   {
-    id: 'ADMIN',
-    label: 'Admin',
-    description: 'Full access to all financial records, system settings, and user management.',
+    id: "ADMIN",
+    label: "Admin",
+    description:
+      "Full access to all financial records, system settings, and user management.",
   },
   {
-    id: 'MANAGER', // Assuming this might be added later, or mapping to a specific permission set
-    label: 'Manager',
-    description: 'Can approve transactions, manage department reports, and oversee workflows.',
+    id: "MANAGER", // Assuming this might be added later, or mapping to a specific permission set
+    label: "Manager",
+    description:
+      "Can approve transactions, manage department reports, and oversee workflows.",
   },
   {
-    id: 'EDITOR', // Mapping to USER role but with implied permissions conceptually
-    label: 'Editor',
-    description: 'Can create and edit entries but cannot approve payments or modify settings.',
+    id: "EDITOR", // Mapping to USER role but with implied permissions conceptually
+    label: "Editor",
+    description:
+      "Can create and edit entries but cannot approve payments or modify settings.",
   },
   {
-    id: 'VIEWER', // Read-only concept
-    label: 'Viewer',
-    description: 'Read-only access to dashboards, transaction history, and exported reports.',
+    id: "VIEWER", // Read-only concept
+    label: "Viewer",
+    description:
+      "Read-only access to dashboards, transaction history, and exported reports.",
   },
 ];
 
@@ -67,17 +71,19 @@ export const AdminChangeRoleModal: React.FC<AdminChangeRoleModalProps> = ({
     textSecondary: colors.text.secondary,
     primary: colors.primary[500],
     border: colors.border,
-    overlay: 'rgba(15, 23, 42, 0.9)', // Kept dark for overlay contrast
+    overlay: "rgba(15, 23, 42, 0.9)", // Kept dark for overlay contrast
   };
 
-  const [selectedRole, setSelectedRole] = useState<string>(user?.role === 'ADMIN' ? 'ADMIN' : 'EDITOR');
+  const [selectedRole, setSelectedRole] = useState<string>(
+    user?.role === "ADMIN" ? "ADMIN" : "EDITOR",
+  );
 
   if (!visible || !user) return null;
 
   const handleConfirm = () => {
     // Map UI roles back to system roles (USER/ADMIN)
     // For this demo, Manager/Editor/Viewer all map to USER but could have different permissions
-    const systemRole: UserRole = selectedRole === 'ADMIN' ? 'ADMIN' : 'USER';
+    const systemRole: UserRole = selectedRole === "ADMIN" ? "ADMIN" : "USER";
     onConfirm(systemRole);
   };
 
@@ -94,22 +100,31 @@ export const AdminChangeRoleModal: React.FC<AdminChangeRoleModalProps> = ({
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={theme.text} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: theme.text }]}>Change Role</Text>
-          <View style={{ width: 40 }} /> 
+          <Text style={[styles.headerTitle, { color: theme.text }]}>
+            Change Role
+          </Text>
+          <View style={{ width: 40 }} />
         </View>
 
         <ScrollView contentContainerStyle={styles.content}>
           {/* User Profile Summary */}
           <View style={styles.profileSection}>
-            <Image 
-              source={{ uri: `${AVATAR_MOCK}?u=${user.id}` }} 
-              style={styles.avatar} 
+            <Image
+              source={{ uri: `${AVATAR_MOCK}?u=${user.id}` }}
+              style={styles.avatar}
             />
-            <Text style={[styles.userName, { color: theme.text }]}>{user.name}</Text>
-            
-            <View style={[styles.currentRoleBadge, { backgroundColor: `${theme.primary}20` }]}>
+            <Text style={[styles.userName, { color: theme.text }]}>
+              {user.name}
+            </Text>
+
+            <View
+              style={[
+                styles.currentRoleBadge,
+                { backgroundColor: `${theme.primary}20` },
+              ]}
+            >
               <Text style={[styles.currentRoleText, { color: theme.primary }]}>
-                Current: {user.role === 'ADMIN' ? 'Super Admin' : 'Editor'}
+                Current: {user.role === "ADMIN" ? "Super Admin" : "Editor"}
               </Text>
             </View>
 
@@ -133,28 +148,39 @@ export const AdminChangeRoleModal: React.FC<AdminChangeRoleModalProps> = ({
                   onPress={() => setSelectedRole(role.id)}
                   style={[
                     styles.roleCard,
-                    { 
+                    {
                       backgroundColor: theme.card,
-                      borderColor: isSelected ? theme.primary : theme.border 
-                    }
+                      borderColor: isSelected ? theme.primary : theme.border,
+                    },
                   ]}
                 >
                   <View style={styles.roleContent}>
                     <Text style={[styles.roleLabel, { color: theme.text }]}>
                       {role.label}
                     </Text>
-                    <Text style={[styles.roleDescription, { color: theme.textSecondary }]}>
+                    <Text
+                      style={[
+                        styles.roleDescription,
+                        { color: theme.textSecondary },
+                      ]}
+                    >
                       {role.description}
                     </Text>
                   </View>
-                  
-                  <View style={[
-                    styles.radioButton, 
-                    { 
-                      borderColor: isSelected ? theme.primary : theme.textSecondary,
-                      backgroundColor: isSelected ? theme.primary : 'transparent'
-                    }
-                  ]}>
+
+                  <View
+                    style={[
+                      styles.radioButton,
+                      {
+                        borderColor: isSelected
+                          ? theme.primary
+                          : theme.textSecondary,
+                        backgroundColor: isSelected
+                          ? theme.primary
+                          : "transparent",
+                      },
+                    ]}
+                  >
                     {isSelected && <View style={styles.radioInner} />}
                   </View>
                 </TouchableOpacity>
@@ -171,10 +197,10 @@ export const AdminChangeRoleModal: React.FC<AdminChangeRoleModalProps> = ({
             disabled={loading}
           >
             <Text style={styles.confirmButtonText}>
-              {loading ? 'Updating...' : 'Update Role'}
+              {loading ? "Updating..." : "Update Role"}
             </Text>
           </TouchableOpacity>
-          
+
           <Text style={[styles.securityNote, { color: theme.textSecondary }]}>
             SECURITY LEVEL: HIGH
           </Text>
@@ -189,29 +215,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: spacing.md,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingTop: Platform.OS === "ios" ? 60 : 40,
     paddingBottom: spacing.md,
   },
   backButton: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   content: {
     paddingHorizontal: spacing.lg,
     paddingBottom: 120,
   },
   profileSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: spacing.xl,
     marginTop: spacing.md,
   },
@@ -221,11 +247,11 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: spacing.md,
     borderWidth: 4,
-    borderColor: '#1E293B', 
+    borderColor: "#1E293B",
   },
   userName: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: spacing.xs,
   },
   currentRoleBadge: {
@@ -236,15 +262,15 @@ const styles = StyleSheet.create({
   },
   currentRoleText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   userInfo: {
     fontSize: 14,
   },
   sectionTitle: {
     fontSize: 13,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    textTransform: "uppercase",
     letterSpacing: 1,
     marginBottom: spacing.md,
   },
@@ -252,8 +278,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   roleCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: spacing.lg,
     borderRadius: 20,
     borderWidth: 1,
@@ -264,7 +290,7 @@ const styles = StyleSheet.create({
   },
   roleLabel: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 4,
   },
   roleDescription: {
@@ -276,45 +302,45 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   radioInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   footer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
     padding: spacing.lg,
-    paddingBottom: Platform.OS === 'ios' ? 40 : spacing.lg,
+    paddingBottom: Platform.OS === "ios" ? 40 : spacing.lg,
   },
   confirmButton: {
     height: 56,
     borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: spacing.md,
-    shadowColor: '#3B82F6',
+    shadowColor: "#3B82F6",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
   },
   confirmButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   securityNote: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    textTransform: "uppercase",
     letterSpacing: 1,
     opacity: 0.6,
   },

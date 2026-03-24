@@ -4,7 +4,7 @@
  * Shows admin-specific stats, menu options, and configurations
  */
 
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -14,20 +14,20 @@ import {
   StyleSheet,
   Image,
   ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeIn, FadeInDown, ScaleIn } from '../../components/animations';
-import { StatsCard } from '../../components/charts/Charts';
-import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
-import { spacing, borderRadius } from '../../theme';
-import { useAdminProfile } from '../../modules/admin/application/useAdminProfile';
-import { API_CONFIG } from '../../config/constants';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeIn, FadeInDown, ScaleIn } from "../../components/animations";
+import { StatsCard } from "../../components/charts/Charts";
+import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/Button";
+import { spacing, borderRadius } from "../../theme";
+import { useAdminProfile } from "../../modules/admin/application/useAdminProfile";
+import { API_CONFIG } from "../../config/constants";
 
-import { AdminLogoutModal } from '../../components/admin/AdminLogoutModal';
-import { AdminChangePasswordSuccessModal } from '../../components/admin/AdminChangePasswordSuccessModal';
-import { ErrorModal } from '../../components/admin/ErrorModal';
+import { AdminLogoutModal } from "../../components/admin/AdminLogoutModal";
+import { AdminChangePasswordSuccessModal } from "../../components/admin/AdminChangePasswordSuccessModal";
+import { ErrorModal } from "../../components/admin/ErrorModal";
 
 export const AdminScreenPerfil: React.FC = () => {
   const {
@@ -64,7 +64,7 @@ export const AdminScreenPerfil: React.FC = () => {
   const getAvatarSource = () => {
     if (user?.avatarUrl) {
       // If it's a full URL, use it
-      if (user.avatarUrl.startsWith('http')) return { uri: user.avatarUrl };
+      if (user.avatarUrl.startsWith("http")) return { uri: user.avatarUrl };
       // Otherwise prepend base URL
       return { uri: `${API_CONFIG.baseURL}${user.avatarUrl}` };
     }
@@ -88,7 +88,9 @@ export const AdminScreenPerfil: React.FC = () => {
           <View style={styles.header}>
             <Text style={styles.title}>Perfil Admin</Text>
             <Text style={styles.subtitle}>
-              {isAdmin ? 'Cuenta administrativa y configuración operativa' : 'Tu cuenta'}
+              {isAdmin
+                ? "Cuenta administrativa y configuración operativa"
+                : "Tu cuenta"}
             </Text>
           </View>
         </FadeIn>
@@ -97,31 +99,43 @@ export const AdminScreenPerfil: React.FC = () => {
         <FadeInDown delay={50}>
           <View style={styles.profileCard}>
             <View style={styles.avatarContainer}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.avatarWrapper}
                 onPress={handleAvatarPress}
                 disabled={uploadingAvatar}
               >
                 {user?.avatarUrl ? (
-                  <Image source={getAvatarSource()} style={styles.avatarImage} />
+                  <Image
+                    source={getAvatarSource()}
+                    style={styles.avatarImage}
+                  />
                 ) : (
                   <View style={styles.avatarPlaceholder}>
-                    <Ionicons name="person" size={40} color={themeColors.primary[500]} />
+                    <Ionicons
+                      name="person"
+                      size={40}
+                      color={themeColors.primary[500]}
+                    />
                   </View>
                 )}
-                
+
                 {uploadingAvatar && (
                   <View style={styles.avatarOverlay}>
                     <ActivityIndicator color="#fff" />
                   </View>
                 )}
-                
+
                 <View style={styles.editIconBadge}>
                   <Ionicons name="camera" size={12} color="#fff" />
                 </View>
               </TouchableOpacity>
-              
-              <View style={[styles.roleBadge, { backgroundColor: themeColors.danger }]}>
+
+              <View
+                style={[
+                  styles.roleBadge,
+                  { backgroundColor: themeColors.danger },
+                ]}
+              >
                 <Text style={styles.roleText}>ADMIN</Text>
               </View>
             </View>
@@ -143,7 +157,13 @@ export const AdminScreenPerfil: React.FC = () => {
                 <StatsCard
                   title="Total Usuarios"
                   value={stats.totalUsers.toString()}
-                  icon={<Ionicons name="people" size={20} color={themeColors.primary[500]} />}
+                  icon={
+                    <Ionicons
+                      name="people"
+                      size={20}
+                      color={themeColors.primary[500]}
+                    />
+                  }
                   color={themeColors.primary[500]}
                   style={styles.statCard}
                 />
@@ -152,7 +172,13 @@ export const AdminScreenPerfil: React.FC = () => {
                 <StatsCard
                   title="Activos"
                   value={stats.activeUsers.toString()}
-                  icon={<Ionicons name="checkmark-circle" size={20} color={themeColors.success} />}
+                  icon={
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color={themeColors.success}
+                    />
+                  }
                   color={themeColors.success}
                   style={styles.statCard}
                 />
@@ -168,7 +194,13 @@ export const AdminScreenPerfil: React.FC = () => {
                 <StatsCard
                   title="Licencias Activas"
                   value={stats.activeLicenses.toString()}
-                  icon={<Ionicons name="key" size={20} color={themeColors.warning} />}
+                  icon={
+                    <Ionicons
+                      name="key"
+                      size={20}
+                      color={themeColors.warning}
+                    />
+                  }
                   color={themeColors.warning}
                   style={styles.statCard}
                 />
@@ -177,7 +209,13 @@ export const AdminScreenPerfil: React.FC = () => {
                 <StatsCard
                   title="Ingresos del Día"
                   value={`$ ${formatNumber(stats.dailyRevenue)}`}
-                  icon={<Ionicons name="trending-up" size={20} color={themeColors.success} />}
+                  icon={
+                    <Ionicons
+                      name="trending-up"
+                      size={20}
+                      color={themeColors.success}
+                    />
+                  }
                   color={themeColors.success}
                   style={styles.statCard}
                 />
@@ -197,19 +235,37 @@ export const AdminScreenPerfil: React.FC = () => {
                   onPress={item.onPress}
                   activeOpacity={0.7}
                 >
-                  <View style={[styles.menuIcon, { backgroundColor: `${item.color}15` }]}>
-                    <Ionicons name={item.icon as any} size={20} color={item.color} />
+                  <View
+                    style={[
+                      styles.menuIcon,
+                      { backgroundColor: `${item.color}15` },
+                    ]}
+                  >
+                    <Ionicons
+                      name={item.icon as any}
+                      size={20}
+                      color={item.color}
+                    />
                   </View>
                   <View style={styles.menuInfo}>
                     <Text style={styles.menuTitle}>{item.title}</Text>
                     <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
                   </View>
                   {item.badge !== undefined && (
-                    <View style={[styles.badge, { backgroundColor: themeColors.danger }]}>
+                    <View
+                      style={[
+                        styles.badge,
+                        { backgroundColor: themeColors.danger },
+                      ]}
+                    >
                       <Text style={styles.badgeText}>{item.badge}</Text>
                     </View>
                   )}
-                  <Ionicons name="chevron-forward" size={20} color={themeColors.text.tertiary} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={themeColors.text.tertiary}
+                  />
                 </TouchableOpacity>
               </ScaleIn>
             ))}
@@ -243,8 +299,8 @@ export const AdminScreenPerfil: React.FC = () => {
                   variant="outline"
                   onPress={() => {
                     setShowPasswordForm(false);
-                    setCurrentPassword('');
-                    setNewPassword('');
+                    setCurrentPassword("");
+                    setNewPassword("");
                   }}
                   style={{ flex: 1 }}
                 />
@@ -307,7 +363,7 @@ const createStyles = (themeColors: any, themeShadows: any) =>
     },
     title: {
       fontSize: 28,
-      fontWeight: '700',
+      fontWeight: "700",
       color: themeColors.text.primary,
     },
     subtitle: {
@@ -319,16 +375,16 @@ const createStyles = (themeColors: any, themeShadows: any) =>
       backgroundColor: themeColors.card,
       borderRadius: borderRadius.xl,
       padding: spacing.lg,
-      alignItems: 'center',
+      alignItems: "center",
       marginBottom: spacing.lg,
       ...themeShadows.glow, // Updated to glow for better prominence
     },
     avatarContainer: {
-      position: 'relative',
+      position: "relative",
       marginBottom: spacing.md,
     },
     avatarWrapper: {
-      position: 'relative',
+      position: "relative",
       width: 80,
       height: 80,
     },
@@ -337,8 +393,8 @@ const createStyles = (themeColors: any, themeShadows: any) =>
       height: 80,
       borderRadius: 40,
       backgroundColor: themeColors.primary[100],
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     avatarImage: {
       width: 80,
@@ -347,29 +403,29 @@ const createStyles = (themeColors: any, themeShadows: any) =>
     },
     avatarOverlay: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: 'rgba(0,0,0,0.4)',
+      backgroundColor: "rgba(0,0,0,0.4)",
       borderRadius: 40,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     editIconBadge: {
-      position: 'absolute',
+      position: "absolute",
       bottom: 0,
       right: 0,
       backgroundColor: themeColors.primary[500],
       width: 28, // Slightly larger for touch target
       height: 28,
       borderRadius: 14,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       borderWidth: 2,
       borderColor: themeColors.card,
       ...themeShadows.sm, // Add shadow for depth
     },
     roleBadge: {
-      position: 'absolute',
+      position: "absolute",
       bottom: -10,
-      alignSelf: 'center',
+      alignSelf: "center",
       paddingHorizontal: 8,
       paddingVertical: 2,
       borderRadius: borderRadius.full,
@@ -377,13 +433,13 @@ const createStyles = (themeColors: any, themeShadows: any) =>
     },
     roleText: {
       fontSize: 10,
-      fontWeight: '600',
-      color: '#fff',
-      textTransform: 'uppercase',
+      fontWeight: "600",
+      color: "#fff",
+      textTransform: "uppercase",
     },
     userName: {
       fontSize: 22,
-      fontWeight: '700',
+      fontWeight: "700",
       color: themeColors.text.primary,
     },
     userEmail: {
@@ -392,7 +448,7 @@ const createStyles = (themeColors: any, themeShadows: any) =>
       marginTop: 4,
     },
     statsGrid: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: spacing.md,
       marginBottom: spacing.md,
     },
@@ -403,28 +459,28 @@ const createStyles = (themeColors: any, themeShadows: any) =>
       marginBottom: spacing.lg,
     },
     sectionHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       marginBottom: spacing.md,
     },
     sectionTitle: {
       fontSize: 18,
-      fontWeight: '600',
+      fontWeight: "600",
       color: themeColors.text.primary,
       marginBottom: spacing.sm,
     },
     seeAll: {
       fontSize: 14,
       color: themeColors.primary[500],
-      fontWeight: '500',
+      fontWeight: "500",
     },
     auditItem: {
       backgroundColor: themeColors.card,
       borderRadius: borderRadius.lg,
       padding: spacing.md,
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       marginBottom: spacing.sm,
       ...themeShadows.sm,
     },
@@ -432,8 +488,8 @@ const createStyles = (themeColors: any, themeShadows: any) =>
       width: 36,
       height: 36,
       borderRadius: borderRadius.md,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     auditInfo: {
       flex: 1,
@@ -441,7 +497,7 @@ const createStyles = (themeColors: any, themeShadows: any) =>
     },
     auditAction: {
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: "600",
       color: themeColors.text.primary,
     },
     auditDate: {
@@ -453,8 +509,8 @@ const createStyles = (themeColors: any, themeShadows: any) =>
       backgroundColor: themeColors.card,
       borderRadius: borderRadius.lg,
       padding: spacing.md,
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       marginBottom: spacing.sm,
       ...themeShadows.sm,
     },
@@ -462,8 +518,8 @@ const createStyles = (themeColors: any, themeShadows: any) =>
       width: 40,
       height: 40,
       borderRadius: borderRadius.md,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     menuInfo: {
       flex: 1,
@@ -471,7 +527,7 @@ const createStyles = (themeColors: any, themeShadows: any) =>
     },
     menuTitle: {
       fontSize: 15,
-      fontWeight: '600',
+      fontWeight: "600",
       color: themeColors.text.primary,
     },
     menuSubtitle: {
@@ -483,15 +539,15 @@ const createStyles = (themeColors: any, themeShadows: any) =>
       minWidth: 24,
       height: 24,
       borderRadius: 12,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       paddingHorizontal: 6,
       marginRight: spacing.sm,
     },
     badgeText: {
       fontSize: 12,
-      fontWeight: '600',
-      color: '#fff',
+      fontWeight: "600",
+      color: "#fff",
     },
     passwordForm: {
       backgroundColor: themeColors.card,
@@ -502,12 +558,12 @@ const createStyles = (themeColors: any, themeShadows: any) =>
     },
     formTitle: {
       fontSize: 16,
-      fontWeight: '600',
+      fontWeight: "600",
       color: themeColors.text.primary,
       marginBottom: spacing.md,
     },
     formButtons: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: spacing.sm,
       marginTop: spacing.md,
     },

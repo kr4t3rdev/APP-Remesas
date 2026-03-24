@@ -1,19 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, ScrollView, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeInDown } from '../animations';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { ObjectiveStatusPicker } from './ObjectiveStatusPicker';
-import { ExpenseAmountInput } from '../expenses/ExpenseAmountInput';
-import { spacing, borderRadius } from '../../theme';
-import { useColors, useShadows } from '../../store/themeStore';
-import type { Objective, CreateObjectiveInput, UpdateObjectiveInput, ObjectiveStatus } from '../../types';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  Modal,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { Alert } from "../../utils/alert";
+
+import { Ionicons } from "@expo/vector-icons";
+import { FadeInDown } from "../animations";
+import { Input } from "../ui/Input";
+import { Button } from "../ui/Button";
+import { ObjectiveStatusPicker } from "./ObjectiveStatusPicker";
+import { ExpenseAmountInput } from "../expenses/ExpenseAmountInput";
+import { spacing, borderRadius } from "../../theme";
+import { useColors, useShadows } from "../../store/themeStore";
+import type {
+  Objective,
+  CreateObjectiveInput,
+  UpdateObjectiveInput,
+  ObjectiveStatus,
+} from "../../types";
 
 type ObjectiveFormModalProps = {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateObjectiveInput | UpdateObjectiveInput) => Promise<void>;
+  onSubmit: (
+    data: CreateObjectiveInput | UpdateObjectiveInput,
+  ) => Promise<void>;
   objective?: Objective | null;
   isLoading?: boolean;
 };
@@ -28,10 +46,10 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
   const themeColors = useColors();
   const themeShadows = useShadows();
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [targetAmount, setTargetAmount] = useState('');
-  const [status, setStatus] = useState<ObjectiveStatus>('ACTIVO');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [targetAmount, setTargetAmount] = useState("");
+  const [status, setStatus] = useState<ObjectiveStatus>("ACTIVO");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,14 +59,14 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
     if (visible) {
       if (objective) {
         setName(objective.name);
-        setDescription(objective.description || '');
+        setDescription(objective.description || "");
         setTargetAmount(objective.targetAmount.toString());
         setStatus(objective.status);
       } else {
-        setName('');
-        setDescription('');
-        setTargetAmount('');
-        setStatus('ACTIVO');
+        setName("");
+        setDescription("");
+        setTargetAmount("");
+        setStatus("ACTIVO");
       }
       setErrors({});
     }
@@ -58,10 +76,10 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!name.trim()) {
-      newErrors.name = 'El nombre es requerido';
+      newErrors.name = "El nombre es requerido";
     }
     if (!targetAmount || Number(targetAmount) <= 0) {
-      newErrors.targetAmount = 'El monto objetivo debe ser mayor a 0';
+      newErrors.targetAmount = "El monto objetivo debe ser mayor a 0";
     }
 
     setErrors(newErrors);
@@ -83,7 +101,7 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
       await onSubmit(payload);
       onClose();
     } catch (error) {
-      Alert.alert('Error', 'No se pudo guardar el objetivo. Intenta de nuevo.');
+      Alert.alert("Error", "No se pudo guardar el objetivo. Intenta de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
@@ -93,20 +111,37 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
     <Modal visible={visible} animationType="slide" transparent>
       <KeyboardAvoidingView
         style={styles.overlay}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <FadeInDown>
-          <View style={[styles.container, { backgroundColor: themeColors.card }, themeShadows.lg]}>
+          <View
+            style={[
+              styles.container,
+              { backgroundColor: themeColors.card },
+              themeShadows.lg,
+            ]}
+          >
             <View style={styles.header}>
               <Text style={[styles.title, { color: themeColors.text.primary }]}>
-                {isEditing ? 'Editar Objetivo' : 'Nuevo Objetivo'}
+                {isEditing ? "Editar Objetivo" : "Nuevo Objetivo"}
               </Text>
-              <TouchableOpacity testID="close-objective-modal" onPress={onClose} style={styles.closeButton}>
-                <Ionicons name="close" size={24} color={themeColors.text.primary} />
+              <TouchableOpacity
+                testID="close-objective-modal"
+                onPress={onClose}
+                style={styles.closeButton}
+              >
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color={themeColors.text.primary}
+                />
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.content}
+              showsVerticalScrollIndicator={false}
+            >
               <Input
                 testID="objective-name-input"
                 label="Nombre del objetivo"
@@ -123,7 +158,7 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
                 placeholder="Agregar descripción..."
                 multiline
                 numberOfLines={2}
-                style={{ minHeight: 60, textAlignVertical: 'top' }}
+                style={{ minHeight: 60, textAlignVertical: "top" }}
               />
 
               <ExpenseAmountInput
@@ -152,7 +187,7 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
               />
               <Button
                 testID="objective-submit-button"
-                title={isEditing ? 'Guardar' : 'Crear'}
+                title={isEditing ? "Guardar" : "Crear"}
                 onPress={handleSubmit}
                 loading={isSubmitting || isLoading}
                 disabled={isSubmitting || isLoading}
@@ -169,25 +204,25 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
   },
   container: {
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
-    maxHeight: '90%',
+    maxHeight: "90%",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    borderBottomColor: "rgba(0,0,0,0.1)",
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   closeButton: {
     padding: spacing.xs,
@@ -196,11 +231,11 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   footer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
     padding: spacing.lg,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
+    borderTopColor: "rgba(0,0,0,0.1)",
   },
 });

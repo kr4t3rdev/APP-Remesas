@@ -1,14 +1,14 @@
-import { create } from 'zustand';
-import * as SecureStore from 'expo-secure-store';
-import { STORAGE_KEYS } from '../config/constants';
-import type { User, AuthResponse } from '../types';
-import api from '../services/api';
+import { create } from "zustand";
+import * as SecureStore from "expo-secure-store";
+import { STORAGE_KEYS } from "../config/constants";
+import type { User, AuthResponse } from "../types";
+import api from "../services/api";
 
 const getStorageItem = async (key: string): Promise<string | null> => {
   try {
     return await SecureStore.getItemAsync(key);
   } catch {
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       return localStorage.getItem(key);
     }
     return null;
@@ -19,7 +19,7 @@ const setStorageItem = async (key: string, value: string): Promise<void> => {
   try {
     await SecureStore.setItemAsync(key, value);
   } catch {
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       localStorage.setItem(key, value);
     }
   }
@@ -29,7 +29,7 @@ const deleteStorageItem = async (key: string): Promise<void> => {
   try {
     await SecureStore.deleteItemAsync(key);
   } catch {
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       localStorage.removeItem(key);
     }
   }
@@ -42,7 +42,7 @@ type AuthState = {
   isLoading: boolean;
   error: string | null;
   mustChangePassword: boolean;
-  
+
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
   setMustChangePassword: (value: boolean) => void;
@@ -50,7 +50,10 @@ type AuthState = {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   getCurrentUser: () => Promise<void>;
-  changePassword: (currentPassword: string | undefined, newPassword: string) => Promise<void>;
+  changePassword: (
+    currentPassword: string | undefined,
+    newPassword: string,
+  ) => Promise<void>;
   clearError: () => void;
 };
 
@@ -62,30 +65,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
   mustChangePassword: false,
 
-  setUser: (user) => set({ user, mustChangePassword: user?.mustChangePassword ?? false }),
+  setUser: (user) =>
+    set({ user, mustChangePassword: user?.mustChangePassword ?? false }),
   setToken: (token) => set({ token, isAuthenticated: !!token }),
   setMustChangePassword: (value: boolean) => set({ mustChangePassword: value }),
 
   login: async (email, password) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await api.post<AuthResponse>('/auth/login', { email, password });
+      const response = await api.post<AuthResponse>("/auth/login", {
+        email,
+        password,
+      });
       const { access_token, user, mustChangePassword } = response.data;
-      
+
       await setStorageItem(STORAGE_KEYS.AUTH_TOKEN, access_token);
       await setStorageItem(STORAGE_KEYS.USER, JSON.stringify(user));
-      
-      set({ 
-        user, 
-        token: access_token, 
-        isAuthenticated: true, 
+
+      set({
+        user,
+        token: access_token,
+        isAuthenticated: true,
         isLoading: false,
-        mustChangePassword: mustChangePassword ?? false 
+        mustChangePassword: mustChangePassword ?? false,
       });
-      
+
       return mustChangePassword ?? false;
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Error al iniciar sesión';
+      const message =
+        error.response?.data?.message || "Error al iniciar sesión";
       set({ error: message, isLoading: false });
       throw error;
     }
@@ -101,7 +109,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const token = await getStorageItem(STORAGE_KEYS.AUTH_TOKEN);
       const userStr = await getStorageItem(STORAGE_KEYS.USER);
-      
+
       if (token && userStr) {
         const user = JSON.parse(userStr);
         set({ user, token, isAuthenticated: true, isLoading: false });
@@ -116,7 +124,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   getCurrentUser: async () => {
     try {
       set({ isLoading: true });
-      const response = await api.get<User>('/auth/me');
+      const response = await api.get<User>("/auth/me");
       await setStorageItem(STORAGE_KEYS.USER, JSON.stringify(response.data));
       set({ user: response.data, isLoading: false });
     } catch (error: any) {
@@ -128,11 +136,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   changePassword: async (currentPassword, newPassword) => {
     try {
       set({ isLoading: true, error: null });
-      await api.post<{ message: string }>('/auth/change-password', {
+      await api.post<{ message: string }>("/auth/change-password", {
         currentPassword,
         newPassword,
       });
-      
+
       // Actualizar el usuario en el store y local storage
       const { user } = get();
       if (user) {
@@ -143,7 +151,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: false, mustChangePassword: false });
       }
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Error al cambiar contraseña';
+      const message =
+        error.response?.data?.message || "Error al cambiar contraseña";
       set({ error: message, isLoading: false });
       throw error;
     }

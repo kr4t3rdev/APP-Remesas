@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { spacing, borderRadius } from '../../theme';
-import { useColors } from '../../store/themeStore';
-import type { ExpenseCategory } from '../../types';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { spacing, borderRadius } from "../../theme";
+import { useColors } from "../../store/themeStore";
+import type { ExpenseCategory } from "../../types";
 
 type ExpenseCategoryPickerProps = {
   value: ExpenseCategory;
@@ -11,12 +11,22 @@ type ExpenseCategoryPickerProps = {
   error?: string;
 };
 
-const CATEGORIES: { id: ExpenseCategory; label: string; icon: string; color: string }[] = [
-  { id: 'renta', label: 'Renta', icon: 'home', color: '#EF4444' },
-  { id: 'servicios', label: 'Servicios', icon: 'bulb', color: '#F59E0B' },
-  { id: 'salario', label: 'Salario', icon: 'people', color: '#10B981' },
-  { id: 'insumos', label: 'Insumos', icon: 'cube', color: '#6366F1' },
-  { id: 'otros', label: 'Otros', icon: 'ellipsis-horizontal', color: '#64748B' },
+const CATEGORIES: {
+  id: ExpenseCategory;
+  label: string;
+  icon: string;
+  color: string;
+}[] = [
+  { id: "renta", label: "Renta", icon: "home", color: "#EF4444" },
+  { id: "servicios", label: "Servicios", icon: "bulb", color: "#F59E0B" },
+  { id: "salario", label: "Salario", icon: "people", color: "#10B981" },
+  { id: "insumos", label: "Insumos", icon: "cube", color: "#6366F1" },
+  {
+    id: "otros",
+    label: "Otros",
+    icon: "ellipsis-horizontal",
+    color: "#64748B",
+  },
 ];
 
 export const ExpenseCategoryPicker: React.FC<ExpenseCategoryPickerProps> = ({
@@ -28,7 +38,9 @@ export const ExpenseCategoryPicker: React.FC<ExpenseCategoryPickerProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: themeColors.text.primary }]}>Categoría</Text>
+      <Text style={[styles.label, { color: themeColors.text.primary }]}>
+        Categoría
+      </Text>
       <View style={styles.chipsContainer}>
         {CATEGORIES.map((cat) => {
           const isSelected = value === cat.id;
@@ -51,12 +63,12 @@ export const ExpenseCategoryPicker: React.FC<ExpenseCategoryPickerProps> = ({
               <Ionicons
                 name={cat.icon as any}
                 size={18}
-                color={isSelected ? '#fff' : cat.color}
+                color={isSelected ? "#fff" : cat.color}
               />
               <Text
                 style={[
                   styles.chipText,
-                  { color: isSelected ? '#fff' : themeColors.text.secondary },
+                  { color: isSelected ? "#fff" : themeColors.text.secondary },
                 ]}
               >
                 {cat.label}
@@ -66,7 +78,9 @@ export const ExpenseCategoryPicker: React.FC<ExpenseCategoryPickerProps> = ({
         })}
       </View>
       {error && (
-        <Text style={[styles.error, { color: themeColors.danger }]}>{error}</Text>
+        <Text style={[styles.error, { color: themeColors.danger }]}>
+          {error}
+        </Text>
       )}
     </View>
   );
@@ -78,17 +92,17 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: spacing.sm,
   },
   chipsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.sm,
   },
   chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: spacing.sm + 2,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.full,
@@ -99,7 +113,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   error: {
     fontSize: 12,

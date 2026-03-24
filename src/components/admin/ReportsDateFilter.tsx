@@ -1,9 +1,15 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { FadeInDown } from '../animations';
-import { useColors } from '../../store/themeStore';
-import { borderRadius, spacing } from '../../theme';
+import React, { useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { FadeInDown } from "../animations";
+import { useColors } from "../../store/themeStore";
+import { borderRadius, spacing } from "../../theme";
 
 type DateFilterProps = {
   dateFrom?: string;
@@ -27,9 +33,13 @@ export const DateFilter: React.FC<DateFilterProps> = ({
   const [showToPicker, setShowToPicker] = useState(false);
 
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return 'Seleccionar';
+    if (!dateStr) return "Seleccionar";
     const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+    return date.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   };
 
   const hasFilters = dateFrom || dateTo;
@@ -52,11 +62,11 @@ export const DateFilter: React.FC<DateFilterProps> = ({
 
   // Quick date presets
   const presets = [
-    { label: 'Hoy', days: 0 },
-    { label: '7 días', days: 7 },
-    { label: '30 días', days: 30 },
-    { label: 'Este mes', days: -1 },
-    { label: 'Mes pasado', days: -2 },
+    { label: "Hoy", days: 0 },
+    { label: "7 días", days: 7 },
+    { label: "30 días", days: 30 },
+    { label: "Este mes", days: -1 },
+    { label: "Mes pasado", days: -2 },
   ];
 
   const applyPreset = (days: number) => {
@@ -65,25 +75,25 @@ export const DateFilter: React.FC<DateFilterProps> = ({
 
     if (days === 0) {
       // Today
-      onDateFromChange(today.toISOString().split('T')[0]);
-      onDateToChange(today.toISOString().split('T')[0]);
+      onDateFromChange(today.toISOString().split("T")[0]);
+      onDateToChange(today.toISOString().split("T")[0]);
     } else if (days === -1) {
       // This month
       fromDate.setDate(1);
-      onDateFromChange(fromDate.toISOString().split('T')[0]);
-      onDateToChange(today.toISOString().split('T')[0]);
+      onDateFromChange(fromDate.toISOString().split("T")[0]);
+      onDateToChange(today.toISOString().split("T")[0]);
     } else if (days === -2) {
       // Last month
       fromDate.setMonth(fromDate.getMonth() - 1);
       fromDate.setDate(1);
       const toDate = new Date();
       toDate.setDate(0);
-      onDateFromChange(fromDate.toISOString().split('T')[0]);
-      onDateToChange(toDate.toISOString().split('T')[0]);
+      onDateFromChange(fromDate.toISOString().split("T")[0]);
+      onDateToChange(toDate.toISOString().split("T")[0]);
     } else {
       fromDate.setDate(today.getDate() - days);
-      onDateFromChange(fromDate.toISOString().split('T')[0]);
-      onDateToChange(today.toISOString().split('T')[0]);
+      onDateFromChange(fromDate.toISOString().split("T")[0]);
+      onDateToChange(today.toISOString().split("T")[0]);
     }
   };
 
@@ -107,11 +117,12 @@ export const DateFilter: React.FC<DateFilterProps> = ({
 
         {/* Date inputs */}
         <View style={styles.inputsRow}>
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={handleFromPress}
-          >
-            <Ionicons name="calendar-outline" size={16} color={colors.text.secondary} />
+          <TouchableOpacity style={styles.dateButton} onPress={handleFromPress}>
+            <Ionicons
+              name="calendar-outline"
+              size={16}
+              color={colors.text.secondary}
+            />
             <Text style={[styles.dateText, dateFrom && styles.dateTextActive]}>
               {formatDate(dateFrom)}
             </Text>
@@ -119,11 +130,12 @@ export const DateFilter: React.FC<DateFilterProps> = ({
 
           <Text style={styles.dateSeparator}>—</Text>
 
-          <TouchableOpacity
-            style={styles.dateButton}
-            onPress={handleToPress}
-          >
-            <Ionicons name="calendar-outline" size={16} color={colors.text.secondary} />
+          <TouchableOpacity style={styles.dateButton} onPress={handleToPress}>
+            <Ionicons
+              name="calendar-outline"
+              size={16}
+              color={colors.text.secondary}
+            />
             <Text style={[styles.dateText, dateTo && styles.dateTextActive]}>
               {formatDate(dateTo)}
             </Text>
@@ -148,7 +160,7 @@ export const DateFilter: React.FC<DateFilterProps> = ({
               <Text style={styles.inputLabel}>Desde (YYYY-MM-DD)</Text>
               <View style={styles.textInput}>
                 <Text style={styles.textInputPlaceholder}>
-                  {dateFrom || 'Ej: 2024-01-01'}
+                  {dateFrom || "Ej: 2024-01-01"}
                 </Text>
               </View>
             </View>
@@ -156,7 +168,7 @@ export const DateFilter: React.FC<DateFilterProps> = ({
               <Text style={styles.inputLabel}>Hasta (YYYY-MM-DD)</Text>
               <View style={styles.textInput}>
                 <Text style={styles.textInputPlaceholder}>
-                  {dateTo || 'Ej: 2024-01-31'}
+                  {dateTo || "Ej: 2024-01-31"}
                 </Text>
               </View>
             </View>
@@ -174,13 +186,13 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     },
     label: {
       fontSize: 14,
-      fontWeight: '500',
+      fontWeight: "500",
       color: colors.text.primary,
       marginBottom: spacing.sm,
     },
     presetsRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexDirection: "row",
+      flexWrap: "wrap",
       gap: spacing.xs,
       marginBottom: spacing.sm,
     },
@@ -195,17 +207,17 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     presetText: {
       fontSize: 12,
       color: colors.text.secondary,
-      fontWeight: '500',
+      fontWeight: "500",
     },
     inputsRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.sm,
     },
     dateButton: {
       flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: spacing.xs,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
@@ -221,7 +233,7 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     },
     dateTextActive: {
       color: colors.text.primary,
-      fontWeight: '500',
+      fontWeight: "500",
     },
     dateSeparator: {
       color: colors.text.secondary,

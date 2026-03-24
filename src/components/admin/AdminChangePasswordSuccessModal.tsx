@@ -1,19 +1,24 @@
-
-import React from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useColors } from '../../store/themeStore';
-import { spacing } from '../../theme';
+import React from "react";
+import {
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useColors } from "../../store/themeStore";
+import { spacing } from "../../theme";
 
 type AdminChangePasswordSuccessModalProps = {
   visible: boolean;
   onClose: () => void;
 };
 
-export const AdminChangePasswordSuccessModal: React.FC<AdminChangePasswordSuccessModalProps> = ({
-  visible,
-  onClose,
-}) => {
+export const AdminChangePasswordSuccessModal: React.FC<
+  AdminChangePasswordSuccessModalProps
+> = ({ visible, onClose }) => {
   const colors = useColors();
   const theme = {
     background: colors.background,
@@ -28,9 +33,10 @@ export const AdminChangePasswordSuccessModal: React.FC<AdminChangePasswordSucces
   return (
     <Modal visible={visible} transparent={false} animationType="fade">
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        
         <View style={styles.content}>
-          <View style={[styles.iconContainer, { backgroundColor: theme.success }]}>
+          <View
+            style={[styles.iconContainer, { backgroundColor: theme.success }]}
+          >
             <Ionicons name="checkmark" size={48} color="#fff" />
           </View>
 
@@ -39,7 +45,8 @@ export const AdminChangePasswordSuccessModal: React.FC<AdminChangePasswordSucces
           </Text>
 
           <Text style={[styles.message, { color: theme.textSecondary }]}>
-            Tu contraseña ha sido modificada exitosamente. Utiliza tu nueva credencial en el próximo inicio de sesión.
+            Tu contraseña ha sido modificada exitosamente. Utiliza tu nueva
+            credencial en el próximo inicio de sesión.
           </Text>
         </View>
 
@@ -63,16 +70,16 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: spacing.xl,
   },
   iconContainer: {
     width: 96,
     height: 96,
     borderRadius: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: spacing.xl,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
@@ -81,32 +88,32 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontWeight: "700",
+    textAlign: "center",
     marginBottom: spacing.md,
   },
   message: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 24,
   },
   footer: {
     padding: spacing.lg,
-    paddingBottom: Platform.OS === 'ios' ? 40 : spacing.lg,
+    paddingBottom: Platform.OS === "ios" ? 40 : spacing.lg,
   },
   button: {
     height: 56,
     borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });
