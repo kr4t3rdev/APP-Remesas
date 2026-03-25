@@ -33,7 +33,7 @@ import {
 import { useCurrentExchangeRatesQuery } from "../../modules/exchange-rates/application/useExchangeRates";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { getCountryCode } from "../../utils/currencyUtils";
+import { getCountryCode, getCurrencySymbol } from "../../utils/currencyUtils";
 
 export const CurrenciesScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -288,7 +288,11 @@ export const CurrenciesScreen: React.FC = () => {
           </View>
 
           {primaryCurrency ? (
-            <View style={styles.primaryCard}>
+            <TouchableOpacity
+              style={styles.primaryCard}
+              onPress={() => openModal(primaryCurrency)}
+              activeOpacity={0.85}
+            >
               <View style={styles.primaryCardTop}>
                 <View style={styles.primaryFlagPlaceholder}>
                   {getCountryCode(primaryCurrency.code) ? (
@@ -325,7 +329,7 @@ export const CurrenciesScreen: React.FC = () => {
                   <Text style={styles.primaryInfoValue}>Configurado</Text>
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ) : (
             <View
               style={[
@@ -444,9 +448,21 @@ export const CurrenciesScreen: React.FC = () => {
               <Input
                 label="Código (ISO 4217)"
                 value={formData.code}
-                onChangeText={(text) =>
-                  setFormData((prev) => ({ ...prev, code: text }))
-                }
+                onChangeText={(text) => {
+                  const upperText = text.toUpperCase();
+                  setFormData((prev) => {
+                    const updates: typeof prev = { ...prev, code: upperText };
+                    if (upperText.length >= 2 && !prev.symbol) {
+                      const newSymbol = getCurrencySymbol(upperText);
+                      if (newSymbol && newSymbol !== "$") {
+                        updates.symbol = newSymbol;
+                      } else if (newSymbol === "$" && ["USD", "CUP", "MLC", "CAD", "MXN", "COP", "ARS", "CLP", "AUD", "NZD"].includes(upperText)) {
+                        updates.symbol = "$";
+                      }
+                    }
+                    return updates;
+                  });
+                }}
                 placeholder="ej. USD"
                 autoCapitalize="characters"
                 maxLength={3}
@@ -599,6 +615,17 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     overflow: "hidden",
     ...shadows.lg,
+  },
+  primaryEditBtn: {
+    position: "absolute",
+    top: spacing.md,
+    right: spacing.md,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
   primaryCardTop: {
     flexDirection: "row",
@@ -838,4 +865,3 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 20, fontWeight: "700", color: colors.text.primary },
   submitButton: { marginTop: spacing.md },
 });
-

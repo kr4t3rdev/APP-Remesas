@@ -23,10 +23,10 @@ export const getCurrencySymbol = (currencyCode: string): string => {
   if (!currencyCode) return "$";
 
   const symbolMap: Record<string, string> = {
-    USD: "$", EUR: "€", CUP: "$", MLC: "$", GBP: "£",
-    CAD: "$", MXN: "$", COP: "$", ARS: "$", BRL: "R$",
-    CLP: "$", PEN: "S/", JPY: "¥", CNY: "¥", AUD: "$",
-    CHF: "Fr", RUB: "₽", INR: "₹", KRW: "₩", NZD: "$",
+    USD: "$", EUR: "€", CUP: "CUP", MLC: "MLC", GBP: "£",
+    CAD: "CAD$", MXN: "MXN$", COP: "COP$", ARS: "ARS$", BRL: "R$",
+    CLP: "CLP$", PEN: "S/", JPY: "¥", CNY: "¥", AUD: "AUD$",
+    CHF: "Fr", RUB: "₽", INR: "₹", KRW: "₩", NZD: "NZD$",
     ZAR: "R", TRY: "₺", SEK: "kr",
   };
 

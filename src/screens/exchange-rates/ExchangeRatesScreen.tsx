@@ -41,6 +41,7 @@ import {
 import CountryFlag from "react-native-country-flag";
 import { getCountryCode } from "../../utils/currencyUtils";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
+import { useAuthStore } from "../../store/authStore";
 
 type TabType = "current" | "history" | "manual";
 
@@ -62,6 +63,13 @@ export const ExchangeRatesScreen: React.FC = () => {
     () => history.filter((h) => h.source === "MANUAL"),
     [history],
   );
+
+  const { user } = useAuthStore();
+  const primaryCurrencyId = user?.primaryCurrencyId ?? null;
+  const secondaryCurrencies = currencies.filter(
+    (c) => c.id !== primaryCurrencyId && c.code !== "CUP"
+  );
+  const canCreateRate = primaryCurrencyId !== null && secondaryCurrencies.length >= 1;
 
   const [activeTab, setActiveTab] = useState<TabType>("current");
   const [modalVisible, setModalVisible] = useState(false);
@@ -161,10 +169,10 @@ export const ExchangeRatesScreen: React.FC = () => {
   };
 
   const openEditModal = (rate?: ExchangeRate) => {
-    if (!rate && currencies.length < 2) {
+    if (!rate && !canCreateRate) {
       Alert.alert(
         "Error",
-        "para crear una tasa de cambio debe añadir minimo una moneda principal y una secundaria",
+        "Para crear una tasa de cambio debe tener una moneda principal configurada y al menos una moneda secundaria.",
       );
       return;
     }
@@ -736,6 +744,15 @@ export const ExchangeRatesScreen: React.FC = () => {
               >
                 Toca + para agregar una nueva tasa
               </Text>
+              <Text
+                style={[
+                  styles.emptyStateSubtext,
+                  { color: themeColors.text.tertiary },
+                ]}
+              >
+                <Ionicons name="hand-left" size={10} color={themeColors.warning} />
+                Recuerda agregar al menos una moneda secundaria para crear una tasa de cambio.
+              </Text>
             </View>
           }
         />
@@ -829,10 +846,12 @@ export const ExchangeRatesScreen: React.FC = () => {
             style={[
               styles.fab,
               { backgroundColor: themeColors.primary[500] },
+              !canCreateRate && { opacity: 0.5 },
               themeShadows.lg,
             ]}
-            onPress={() => openEditModal()}
+            onPress={() => canCreateRate ? openEditModal() : Alert.alert("Error", "Para crear una tasa de cambio debe tener una moneda principal configurada y al menos una moneda secundaria.")}
             activeOpacity={0.8}
+            disabled={!canCreateRate}
           >
             <Ionicons name="add" size={28} color="#fff" />
           </TouchableOpacity>

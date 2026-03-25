@@ -28,7 +28,7 @@ import {
   useUpdateBankAccountMutation,
   useDeleteBankAccountMutation,
 } from "../../modules/bank-accounts/application/useBankAccounts";
-import { useCurrenciesQuery } from "../../modules/currencies/application/useCurrencies";
+import { useCurrenciesWithPrimaryQuery } from "../../modules/currencies/application/useCurrencies";
 
 export const BankAccountsScreen: React.FC = () => {
   const [confirmModal, setConfirmModal] = useState<{
@@ -45,13 +45,17 @@ export const BankAccountsScreen: React.FC = () => {
   });
 
   const bankAccountsQuery = useBankAccountsQuery();
-  const currenciesQuery = useCurrenciesQuery();
+  const currenciesQuery = useCurrenciesWithPrimaryQuery();
   const createBankAccountMutation = useCreateBankAccountMutation();
   const updateBankAccountMutation = useUpdateBankAccountMutation();
   const deleteBankAccountMutation = useDeleteBankAccountMutation();
 
   const accounts = bankAccountsQuery.data ?? [];
-  const currencies = currenciesQuery.data ?? [];
+  const currencies = currenciesQuery.data?.currencies ?? [];
+  const primaryCurrencyId = currenciesQuery.data?.primaryCurrencyId ?? null;
+  const availableCurrencies = currencies.filter(
+    (c) => c.id !== primaryCurrencyId && c.isActive !== false,
+  );
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(
@@ -68,29 +72,31 @@ export const BankAccountsScreen: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!formData.currencyId && currencies.length > 0) {
-      setFormData((prev) => ({ ...prev, currencyId: currencies[0].id }));
+    if (!formData.currencyId && availableCurrencies.length > 0) {
+      setFormData((prev) => ({ ...prev, currencyId: availableCurrencies[0].id }));
     }
-  }, [currencies, formData.currencyId]);
+  }, [availableCurrencies, formData.currencyId]);
 
   const handleRefresh = async () => {
     await Promise.all([bankAccountsQuery.refetch(), currenciesQuery.refetch()]);
   };
 
   const openCreateModal = () => {
-    if (currencies.length === 0) {
+    // Validación: NO permitir abrir el modal si no hay monedas configuradas
+    if (availableCurrencies.length === 0) {
       Alert.alert(
-        "Acción no permitida",
-        "Debe agregar monedas antes de añadir cuentas bancarias.",
+        "Error",
+        "Debe agregar monedas antes de añadir cuentas bancarias",
       );
       return;
     }
+
     setSelectedAccount(null);
     setIsEditing(false);
     setFormData({
       name: "",
       bankName: "",
-      currencyId: currencies[0]?.id || 0,
+      currencyId: availableCurrencies[0]?.id || 0,
       accountNumber: "",
       initialBalance: "",
     });
@@ -120,6 +126,8 @@ export const BankAccountsScreen: React.FC = () => {
       Alert.alert("Error", "Complete todos los campos");
       return;
     }
+
+    // Segunda validación por seguridad (ya se valida en openCreateModal)
 
     try {
       if (isEditing && selectedAccount) {
@@ -379,42 +387,46 @@ export const BankAccountsScreen: React.FC = () => {
                 />
               )}
 
-              <Text style={styles.sectionLabel}>Moneda</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.currencyScroll}
-              >
-                {currencies.map((currency) => {
-                  const currencyInfo = getCurrencyInfo(currency.code);
-                  return (
-                    <TouchableOpacity
-                      key={currency.id}
-                      style={[
-                        styles.currencyButton,
-                        formData.currencyId === currency.id &&
-                          styles.currencyButtonActive,
-                      ]}
-                      onPress={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          currencyId: currency.id,
-                        }))
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.currencyButtonText,
-                          formData.currencyId === currency.id &&
-                            styles.currencyButtonTextActive,
-                        ]}
-                      >
-                        {currencyInfo.flag} {currency.code}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
+              {availableCurrencies.length > 0 && (
+                <>
+                  <Text style={styles.sectionLabel}>Moneda</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.currencyScroll}
+                  >
+                    {availableCurrencies.map((currency) => {
+                      const currencyInfo = getCurrencyInfo(currency.code);
+                      return (
+                        <TouchableOpacity
+                          key={currency.id}
+                          style={[
+                            styles.currencyButton,
+                            formData.currencyId === currency.id &&
+                              styles.currencyButtonActive,
+                          ]}
+                          onPress={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              currencyId: currency.id,
+                            }))
+                          }
+                        >
+                          <Text
+                            style={[
+                              styles.currencyButtonText,
+                              formData.currencyId === currency.id &&
+                                styles.currencyButtonTextActive,
+                            ]}
+                          >
+                            {currencyInfo.flag} {currency.code}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+                </>
+              )}
 
               <Button
                 title={
