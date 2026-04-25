@@ -71,6 +71,11 @@ export const AdminScreenPerfil: React.FC = () => {
     return null;
   };
 
+  // Safe access to stats properties with fallback to 0
+  const getSafeStatValue = (value: number | undefined): number => {
+    return typeof value === "number" ? value : 0;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -154,34 +159,34 @@ export const AdminScreenPerfil: React.FC = () => {
           <FadeInDown delay={100}>
             <View style={styles.statsGrid}>
               <ScaleIn delay={120}>
-                <StatsCard
-                  title="Total Usuarios"
-                  value={stats.totalUsers.toString()}
-                  icon={
-                    <Ionicons
-                      name="people"
-                      size={20}
-                      color={themeColors.primary[500]}
-                    />
-                  }
-                  color={themeColors.primary[500]}
-                  style={styles.statCard}
-                />
+               <StatsCard
+                   title="Total Usuarios"
+                   value={getSafeStatValue(stats?.totalUsers).toString()}
+                   icon={
+                     <Ionicons
+                       name="people"
+                       size={20}
+                       color={themeColors.primary[500]}
+                     />
+                   }
+                   color={themeColors.primary[500]}
+                   style={styles.statCard}
+                 />
               </ScaleIn>
               <ScaleIn delay={140}>
-                <StatsCard
-                  title="Activos"
-                  value={stats.activeUsers.toString()}
-                  icon={
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={20}
-                      color={themeColors.success}
-                    />
-                  }
-                  color={themeColors.success}
-                  style={styles.statCard}
-                />
+                 <StatsCard
+                   title="Activos"
+                   value={getSafeStatValue(stats?.activeUsers).toString()}
+                   icon={
+                     <Ionicons
+                       name="checkmark-circle"
+                       size={20}
+                       color={themeColors.success}
+                     />
+                   }
+                   color={themeColors.success}
+                   style={styles.statCard}
+                 />
               </ScaleIn>
             </View>
           </FadeInDown>
@@ -191,34 +196,34 @@ export const AdminScreenPerfil: React.FC = () => {
           <FadeInDown delay={160}>
             <View style={styles.statsGrid}>
               <ScaleIn delay={180}>
-                <StatsCard
-                  title="Licencias Activas"
-                  value={stats.activeLicenses.toString()}
-                  icon={
-                    <Ionicons
-                      name="key"
-                      size={20}
-                      color={themeColors.warning}
-                    />
-                  }
-                  color={themeColors.warning}
-                  style={styles.statCard}
-                />
+                 <StatsCard
+                   title="Licencias Activas"
+                   value={getSafeStatValue(stats?.activeLicenses).toString()}
+                   icon={
+                     <Ionicons
+                       name="key"
+                       size={20}
+                       color={themeColors.warning}
+                     />
+                   }
+                   color={themeColors.warning}
+                   style={styles.statCard}
+                 />
               </ScaleIn>
               <ScaleIn delay={200}>
-                <StatsCard
-                  title="Ingresos del Día"
-                  value={`$ ${formatNumber(stats.dailyRevenue)}`}
-                  icon={
-                    <Ionicons
-                      name="trending-up"
-                      size={20}
-                      color={themeColors.success}
-                    />
-                  }
-                  color={themeColors.success}
-                  style={styles.statCard}
-                />
+                 <StatsCard
+                   title="Ingresos del Día"
+                   value={`$ ${formatNumber(getSafeStatValue(stats?.dailyRevenue))}`}
+                   icon={
+                     <Ionicons
+                       name="trending-up"
+                       size={20}
+                       color={themeColors.success}
+                     />
+                   }
+                   color={themeColors.success}
+                   style={styles.statCard}
+                 />
               </ScaleIn>
             </View>
           </FadeInDown>

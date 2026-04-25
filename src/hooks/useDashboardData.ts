@@ -11,31 +11,34 @@ import { queryKeys } from "../shared/query/queryKeys";
 import { dashboardRepository } from "../modules/dashboard/infrastructure/dashboard.repository";
 
 export const useDailyReport = (date?: string) => {
-  return useQuery<DailyReport>({
+  return useQuery<DailyReport, Error>({
     queryKey: queryKeys.dashboard.dailyReport(date),
     queryFn: () => dashboardRepository.getDailyReport(date),
     staleTime: 1000 * 60 * 5,
+    throwOnError: false,
   });
 };
 
 export const useCashBalances = () => {
-  return useQuery<CashBalance[]>({
+  return useQuery<CashBalance[], Error>({
     queryKey: queryKeys.dashboard.cashBalances(),
     queryFn: dashboardRepository.getCashBalances,
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
   });
 };
 
 export const useExchangeRates = () => {
-  return useQuery<ExchangeRate[]>({
+  return useQuery<ExchangeRate[], Error>({
     queryKey: queryKeys.dashboard.exchangeRates(),
     queryFn: dashboardRepository.getExchangeRates,
     staleTime: 1000 * 60 * 5,
+    throwOnError: false,
   });
 };
 
 export const useRecentTransactions = (limit?: number) => {
-  return useQuery<Transaction[]>({
+  return useQuery<Transaction[], Error>({
     queryKey: queryKeys.dashboard.recentTransactions(limit),
     queryFn: () => dashboardRepository.getTransactions(),
     select: (data) => {
@@ -46,19 +49,21 @@ export const useRecentTransactions = (limit?: number) => {
       return limit ? sorted.slice(0, limit) : sorted;
     },
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
   });
 };
 
 export const usePendingTransactions = () => {
-  return useQuery<Transaction[]>({
+  return useQuery<Transaction[], Error>({
     queryKey: queryKeys.dashboard.pendingTransactions(),
     queryFn: dashboardRepository.getPendingTransactions,
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
   });
 };
 
 export const useRecentExpenses = (limit?: number) => {
-  return useQuery<Expense[]>({
+  return useQuery<Expense[], Error>({
     queryKey: queryKeys.dashboard.recentExpenses(limit),
     queryFn: () => dashboardRepository.getExpenses(),
     select: (data) => {
@@ -68,14 +73,16 @@ export const useRecentExpenses = (limit?: number) => {
       return limit ? sorted.slice(0, limit) : sorted;
     },
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
   });
 };
 
 export const useActiveObjectives = () => {
-  return useQuery<Objective[]>({
+  return useQuery<Objective[], Error>({
     queryKey: queryKeys.dashboard.activeObjectives(),
     queryFn: () => dashboardRepository.getObjectives("ACTIVO"),
     staleTime: 1000 * 60 * 5,
+    throwOnError: false,
   });
 };
 

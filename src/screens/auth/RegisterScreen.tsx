@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -30,6 +30,7 @@ import {
   checkNicknameExists,
 } from "../../services/authValidationApi";
 import { useRegisterAnimations } from "../../hooks/useRegisterAnimations";
+import { useDebounce } from "../../hooks/useDebounce";
 
 interface RegisterScreenProps {
   navigation: any;
@@ -72,81 +73,97 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
     onMouseLeave,
   } = useRegisterAnimations(isDesktop);
 
+  // Debounce email and nickname for API validation (500ms delay)
+  const debouncedEmail = useDebounce(email, 500);
+  const debouncedNickname = useDebounce(nickname, 500);
+
   /**
    * Async email validation handler
    * Checks email format first, then API for uniqueness
    */
-  const handleEmailChange = useCallback(
-    async (newEmail: string) => {
-      setEmail(newEmail);
-
-      // Only validate after user stops typing and email is valid format
-      if (newEmail && validateEmail(newEmail)) {
-        setCheckingEmail(true);
-        try {
-          const exists = await checkEmailExists(newEmail);
-          if (exists) {
-            setErrors((prev) => ({
-              ...prev,
-              email: "Este correo ya está registrado",
-            }));
-          } else {
-            setErrors((prev) => ({
-              ...prev,
-              email: undefined,
-            }));
-          }
-        } catch (error) {
-          // Silently fail - let server validation handle it
-          console.error("Error checking email:", error);
-        } finally {
-          setCheckingEmail(false);
-        }
-      }
-    },
-    []
-  );
+  const handleEmailChange = useCallback((newEmail: string) => {
+    setEmail(newEmail);
+    // Validation happens in useEffect with debounced email
+  }, []);
 
   /**
    * Async nickname validation handler
    * Checks nickname format first, then API for uniqueness
    */
-  const handleNicknameChange = useCallback(
-    async (newNickname: string) => {
-      setNickname(newNickname);
-
-      // Only check if non-empty and valid format
-      if (newNickname && validateNickname(newNickname)) {
-        setCheckingNickname(true);
-        try {
-          const exists = await checkNicknameExists(newNickname);
-          if (exists) {
-            setErrors((prev) => ({
-              ...prev,
-              nickname: "Este nickname ya está en uso",
-            }));
-          } else {
-            setErrors((prev) => ({
-              ...prev,
-              nickname: undefined,
-            }));
-          }
-        } catch (error) {
-          // Silently fail
-          console.error("Error checking nickname:", error);
-        } finally {
-          setCheckingNickname(false);
-        }
-      }
-    },
-    []
-  );
+  const handleNicknameChange = useCallback((newNickname: string) => {
+    setNickname(newNickname);
+    // Validation happens in useEffect with debounced nickname
+  }, []);
 
   /**
    * Handle registration submission
    * Validates client-side first, then submits to server
    */
   const handleRegister = async () => {
+  // Effect: Validate email when debounced value changes
+  useEffect(() => {
+    if (!debouncedEmail) {
+      setErrors((prev) => ({ ...prev, email: undefined }));
+      setCheckingEmail(false);
+      return;
+    }
+
+    if (!validateEmail(debouncedEmail)) {
+      setErrors((prev) => ({ ...prev, email: "Email inválido" }));
+      return;
+    }
+
+    setCheckingEmail(true);
+    checkEmailExists(debouncedEmail)
+      .then((exists) => {
+        if (exists) {
+          setErrors((prev) => ({
+            ...prev,
+            email: "Este correo ya está registrado",
+          }));
+        } else {
+          setErrors((prev) => ({ ...prev, email: undefined }));
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking email:", error);
+        // Fail silently - let server validation handle it
+      })
+      .finally(() => setCheckingEmail(false));
+  }, [debouncedEmail]);
+
+  // Effect: Validate nickname when debounced value changes
+  useEffect(() => {
+    if (!debouncedNickname) {
+      setErrors((prev) => ({ ...prev, nickname: undefined }));
+      setCheckingNickname(false);
+      return;
+    }
+
+    if (!validateNickname(debouncedNickname)) {
+      setErrors((prev) => ({ ...prev, nickname: "Apodo inválido" }));
+      return;
+    }
+
+    setCheckingNickname(true);
+    checkNicknameExists(debouncedNickname)
+      .then((exists) => {
+        if (exists) {
+          setErrors((prev) => ({
+            ...prev,
+            nickname: "Este nickname ya está en uso",
+          }));
+        } else {
+          setErrors((prev) => ({ ...prev, nickname: undefined }));
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking nickname:", error);
+        // Fail silently
+      })
+      .finally(() => setCheckingNickname(false));
+  }, [debouncedNickname]);
+
     // First validate client-side
     const formData: FormData = {
       name,

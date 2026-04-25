@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Animated } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   useToastStore,
@@ -36,7 +36,7 @@ const getIcon = (type: TType) => {
   }
 };
 
-const ToastItem: React.FC<{ toast: ToastType }> = ({ toast }) => {
+const ToastBase: React.FC<{ toast: ToastType }> = ({ toast }) => {
   return (
     <View
       style={[
@@ -50,6 +50,36 @@ const ToastItem: React.FC<{ toast: ToastType }> = ({ toast }) => {
       </Text>
     </View>
   );
+};
+
+export const SuccessToast: React.FC<{ toast: ToastType }> = ({ toast }) => (
+  <ToastBase toast={toast} />
+);
+
+export const ErrorToast: React.FC<{ toast: ToastType }> = ({ toast }) => (
+  <ToastBase toast={toast} />
+);
+
+export const InfoToast: React.FC<{ toast: ToastType }> = ({ toast }) => (
+  <ToastBase toast={toast} />
+);
+
+export const WarningToast: React.FC<{ toast: ToastType }> = ({ toast }) => (
+  <ToastBase toast={toast} />
+);
+
+const ToastItem: React.FC<{ toast: ToastType }> = ({ toast }) => {
+  switch (toast.type) {
+    case "success":
+      return <SuccessToast toast={toast} />;
+    case "error":
+      return <ErrorToast toast={toast} />;
+    case "warning":
+      return <WarningToast toast={toast} />;
+    case "info":
+    default:
+      return <InfoToast toast={toast} />;
+  }
 };
 
 export const ToastContainer: React.FC = () => {

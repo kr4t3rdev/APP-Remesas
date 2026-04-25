@@ -1,10 +1,27 @@
-import { Alert as NativeAlert, AlertButton, AlertOptions } from "react-native";
-import * as Burnt from "burnt";
+import { AlertButton, AlertOptions } from "react-native";
+import { toast as webToast } from "sonner";
+
+type ToastKind = "done" | "error" | "none";
+
+const toastWeb = (title: string, message?: string, kind: ToastKind = "done") => {
+  const content = message ? `${title}: ${message}` : title;
+
+  switch (kind) {
+    case "error":
+      webToast.error(content);
+      break;
+    case "none":
+      webToast(content);
+      break;
+    default:
+      webToast.success(content);
+      break;
+  }
+};
 
 /**
  * @deprecated Use the custom ConfirmModal component for interactive confirmations (buttons).
- * This utility now maps simple informative alerts to Burnt Toast notifications.
- * If multiple buttons are provided, it will fallback to NativeAlert.alert, but this is discouraged.
+ * Web alerts are mapped to Sonner toasts.
  */
 export const Alert = {
   alert: (
@@ -13,7 +30,6 @@ export const Alert = {
     buttons?: AlertButton[],
     options?: AlertOptions,
   ) => {
-    // Determine if it's a simple alert (no buttons, or just an 'OK' button without custom onPress)
     const isSimple =
       !buttons ||
       buttons.length === 0 ||
@@ -24,11 +40,10 @@ export const Alert = {
         !buttons[0].onPress);
 
     if (isSimple) {
-      // Determine preset based on title/message
       const titleLower = title.toLowerCase();
       const messageLower = (message || "").toLowerCase();
 
-      let preset: "done" | "error" | "none" = "done";
+      let preset: ToastKind = "done";
 
       if (
         titleLower.includes("error") ||
@@ -41,16 +56,14 @@ export const Alert = {
         preset = "none";
       }
 
-      Burnt.toast({
-        title: title,
-        message: message,
-        preset: preset,
-        duration: 3,
-      });
+      toastWeb(title, message, preset);
       return;
     }
 
-    // Fallback to Native Alert for confirmations
-    NativeAlert.alert(title, message, buttons, options);
+    // For web confirmation dialogs, keep native alert fallback behavior
+    // only if it is actually available in the runtime.
+    if (typeof window !== "undefined" && window.confirm) {
+      window.confirm(`${title}${message ? `: ${message}` : ""}`);
+    }
   },
 };
