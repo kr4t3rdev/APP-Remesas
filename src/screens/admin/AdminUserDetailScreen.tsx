@@ -35,6 +35,8 @@ import { AdminSuspendSuccessModal } from "../../components/admin/AdminSuspendSuc
 import { AdminChangeRoleModal } from "../../components/admin/AdminChangeRoleModal";
 import { AdminRoleChangeSuccessModal } from "../../components/admin/AdminRoleChangeSuccessModal";
 import { AdminDeleteConfirmModal } from "../../components/admin/AdminDeleteConfirmModal";
+import { AdminResetPasswordModal } from "../../components/admin/AdminResetPasswordModal";
+import { AdminResetPasswordSuccessModal } from "../../components/admin/AdminResetPasswordSuccessModal";
 import { Input } from "../../components/ui/Input";
 import { DeleteButton } from "../../components/ui/DeleteButton";
 
@@ -130,6 +132,11 @@ export const AdminUserDetailScreen: React.FC = () => {
   const [suspendMode, setSuspendMode] = useState<"SUSPEND" | "ACTIVATE">(
     "SUSPEND",
   );
+  const [isResetPasswordModalVisible, setIsResetPasswordModalVisible] =
+    useState(false);
+  const [isResetPasswordSuccessVisible, setIsResetPasswordSuccessVisible] =
+    useState(false);
+  const [resetPasswordUserEmail, setResetPasswordUserEmail] = useState("");
 
   const handleBack = () => {
     navigation.goBack();
@@ -211,6 +218,9 @@ export const AdminUserDetailScreen: React.FC = () => {
           message: `Are you sure you want to revoke all active sessions for ${user.name}? The user will need to log in again.`,
         });
         break;
+      case "RESET_PASSWORD":
+        setIsResetPasswordModalVisible(true);
+        break;
       case "EXTEND_LICENSE":
         if (fullUser?.license?.id) {
           // Navigate to license detail if user has a license
@@ -279,6 +289,10 @@ export const AdminUserDetailScreen: React.FC = () => {
       } else if (actionType === "CHANGE_ROLE") {
         setIsChangeRoleModalVisible(false);
         setSuccessRole(additionalData?.role);
+      } else if (actionType === "RESET_PASSWORD") {
+        setIsResetPasswordModalVisible(false);
+        setResetPasswordUserEmail(displayUser.email);
+        setIsResetPasswordSuccessVisible(true);
       } else {
         setConfirmModalState((prev) => ({ ...prev, visible: false }));
         setSuccessModalState({
@@ -591,6 +605,13 @@ export const AdminUserDetailScreen: React.FC = () => {
               "FORCE_PASSWORD_RESET",
             )}
             {renderActionCard(
+              "Reset Password",
+              "Change user password immediately",
+              "key",
+              "#3B82F6",
+              "RESET_PASSWORD",
+            )}
+            {renderActionCard(
               "Revoke Sessions",
               "Log out everywhere",
               "log-out",
@@ -750,6 +771,26 @@ export const AdminUserDetailScreen: React.FC = () => {
         onClose={() =>
           setErrorModalState((prev) => ({ ...prev, visible: false }))
         }
+      />
+
+      <AdminResetPasswordModal
+        visible={isResetPasswordModalVisible}
+        user={user}
+        onClose={() => setIsResetPasswordModalVisible(false)}
+        onConfirm={() =>
+          executeAction("RESET_PASSWORD")
+        }
+        loading={userControlActionMutation.isPending}
+      />
+
+      <AdminResetPasswordSuccessModal
+        visible={isResetPasswordSuccessVisible}
+        userEmail={resetPasswordUserEmail}
+        onBackToProfile={() => setIsResetPasswordSuccessVisible(false)}
+        onGoToDashboard={() => {
+          setIsResetPasswordSuccessVisible(false);
+          navigation.navigate("Main");
+        }}
       />
     </SafeAreaView>
   );
