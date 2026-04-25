@@ -5,14 +5,17 @@ import {
   useAdminUserControlActionMutation,
   useAdminUpdateUserBasicMutation,
   useAdminUserDetailQuery,
-} from "../../modules/admin/application/useAdminUsers";
+} from "../../modules/admin/application/useAdminMetrics";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { AdminResetPasswordModal } from "../../components/admin/AdminResetPasswordModal";
+import { AdminResetPasswordSuccessModal } from "../../components/admin/AdminResetPasswordSuccessModal";
 
 // Mocks
-jest.mock("../../modules/admin/application/useAdminUsers", () => ({
+jest.mock("../../modules/admin/application/useAdminMetrics", () => ({
   useAdminUserControlActionMutation: jest.fn(),
   useAdminUpdateUserBasicMutation: jest.fn(),
   useAdminUserDetailQuery: jest.fn(),
+  useAdminDeleteUserMutation: jest.fn(),
 }));
 
 jest.mock("@react-navigation/native", () => ({
@@ -31,6 +34,13 @@ jest.mock("../../store/themeStore", () => ({
     danger: "#EF4444",
     border: "#E5E7EB",
   }),
+}));
+
+jest.mock("../../components/admin/AdminResetPasswordModal", () => ({
+  AdminResetPasswordModal: jest.fn(() => null),
+}));
+jest.mock("../../components/admin/AdminResetPasswordSuccessModal", () => ({
+  AdminResetPasswordSuccessModal: jest.fn(() => null),
 }));
 
 const mockNavigation = {
@@ -62,6 +72,12 @@ describe("AdminUserDetailScreen", () => {
       isPending: false,
     });
     (useAdminUpdateUserBasicMutation as jest.Mock).mockReturnValue({
+      mutateAsync: jest.fn(),
+      isPending: false,
+    });
+    const { useAdminDeleteUserMutation } =
+      require("../../modules/admin/application/useAdminMetrics");
+    (useAdminDeleteUserMutation as jest.Mock).mockReturnValue({
       mutateAsync: jest.fn(),
       isPending: false,
     });
@@ -162,5 +178,65 @@ describe("AdminUserDetailScreen", () => {
     expect(getByText("Force Password Reset")).toBeTruthy();
     expect(getByText("Revoke Sessions")).toBeTruthy();
     expect(getByText("Change Role")).toBeTruthy();
+  });
+
+  it("renders Reset Password action card", () => {
+    (useAdminUserDetailQuery as jest.Mock).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+    });
+
+    const { getByText } = render(<AdminUserDetailScreen />);
+
+    expect(getByText("Reset Password")).toBeTruthy();
+    expect(getByText("Change user password immediately")).toBeTruthy();
+  });
+
+  it("opens reset password modal when action card is pressed", () => {
+    (useAdminUserDetailQuery as jest.Mock).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+    });
+
+    const { getByText } = render(<AdminUserDetailScreen />);
+
+    fireEvent.press(getByText("Reset Password"));
+
+    // Modal should receive visible={true}
+    // Get the last call with visible=true
+    const calls = (AdminResetPasswordModal as jest.Mock).mock.calls;
+    const visibleCall = calls.find((call) => call[0]?.visible === true);
+    
+    expect(visibleCall).toBeDefined();
+    expect(visibleCall[0]).toMatchObject({
+      visible: true,
+      user: expect.objectContaining({ id: 1 }),
+    });
+  });
+
+  it("shows success modal after reset password action", async () => {
+    (useAdminUserDetailQuery as jest.Mock).mockReturnValue({
+      data: {
+        id: 1,
+        email: "test@example.com",
+        name: "Test User",
+        isActive: true,
+        role: "USER",
+      },
+      isLoading: false,
+    });
+
+    (useAdminUserControlActionMutation as jest.Mock).mockReturnValue({
+      mutateAsync: jest.fn().mockResolvedValue({ success: true }),
+      isPending: false,
+    });
+
+    const { getByText } = render(<AdminUserDetailScreen />);
+
+    // First render should have Reset Password card
+    expect(getByText("Reset Password")).toBeTruthy();
+
+    // Check that success modal is rendered (initially with visible=false)
+    expect(AdminResetPasswordSuccessModal).toHaveBeenCalled();
   });
 });
