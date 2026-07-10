@@ -95,11 +95,6 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
     // Validation happens in useEffect with debounced nickname
   }, []);
 
-  /**
-   * Handle registration submission
-   * Validates client-side first, then submits to server
-   */
-  const handleRegister = async () => {
   // Effect: Validate email when debounced value changes
   useEffect(() => {
     if (!debouncedEmail) {
@@ -164,6 +159,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
       .finally(() => setCheckingNickname(false));
   }, [debouncedNickname]);
 
+  /**
+   * Handle registration submission
+   * Validates client-side first, then submits to server
+   */
+  const handleRegister = async () => {
     // First validate client-side
     const formData: FormData = {
       name,
@@ -560,6 +560,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               }}
             >
               <TouchableOpacity
+                testID="register-submit-button"
                 onPress={handleRegister}
                 onPressIn={onPressIn}
                 onPressOut={onPressOut}
