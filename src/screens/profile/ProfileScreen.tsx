@@ -16,6 +16,7 @@ import { StatsCard, CircularProgress } from "../../components/charts/Charts";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { spacing, borderRadius } from "../../theme";
+import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 import { useAuthStore } from "../../store/authStore";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
 import {
@@ -80,6 +81,10 @@ export const ProfileScreen: React.FC = () => {
   const objectives = objectivesQuery.data ?? [];
   const cashBalances = cashBalancesQuery.data ?? [];
   const dailyReport = dailyReportQuery.data;
+  const safeDailyReport = dailyReport ?? {
+    profit: { net: 0 },
+    transactions: { total: 0 },
+  };
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -320,7 +325,7 @@ export const ProfileScreen: React.FC = () => {
                         { color: themeColors.success },
                       ]}
                     >
-                      $ {formatNumber(dailyReport.profit.net)}
+                      $ {formatNumber(safeDailyReport.profit.net)}
                     </Text>
                   </View>
                   <View style={styles.summaryDivider} />
@@ -332,7 +337,7 @@ export const ProfileScreen: React.FC = () => {
                     />
                     <Text style={styles.summaryLabel}>Transacciones</Text>
                     <Text style={styles.summaryValue}>
-                      {dailyReport.transactions.total}
+                      {safeDailyReport.transactions.total}
                     </Text>
                   </View>
                 </View>
@@ -502,7 +507,6 @@ export const ProfileScreen: React.FC = () => {
           textStyle={{ color: themeColors.danger }}
         />
 
-        <View style={{ height: 100 }} />
       </ScrollView>
       <ConfirmModal
         visible={confirmModal.visible}
@@ -529,6 +533,7 @@ const createStyles = (
     },
     scrollContent: {
       padding: spacing.md,
+      paddingBottom: floatingTabBarMetrics.contentBottomPadding,
     },
     header: {
       marginBottom: spacing.lg,

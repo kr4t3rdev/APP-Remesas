@@ -31,6 +31,7 @@ import {
   useGradients,
 } from "../../store/themeStore";
 import { spacing, borderRadius } from "../../theme";
+import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -810,6 +811,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: spacing.md,
+    paddingBottom: floatingTabBarMetrics.contentBottomPadding,
   },
   header: {
     flexDirection: "row",

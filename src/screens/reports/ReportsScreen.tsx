@@ -30,6 +30,7 @@ import {
   shadows,
   gradientPresets,
 } from "../../theme";
+import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 import {
   useColors,
   useShadows,
@@ -79,6 +80,11 @@ export const ReportsScreen: React.FC = () => {
   const dailyReport = dailyReportQuery.data;
   const periodReport = periodReportQuery.data;
   const cashBalances = cashBalancesQuery.data ?? [];
+  const safeDailyReport = dailyReport ?? {
+    profit: { net: 0, margin: 0 },
+    transactions: { total: 0, compras: 0, ventas: 0, totalCompras: 0, totalVentas: 0 },
+    expenses: { totalAmount: 0, total: 0, byCategory: {} },
+  };
 
   const [selectedReportIndex, setSelectedReportIndex] = useState(0);
 
@@ -169,22 +175,22 @@ export const ReportsScreen: React.FC = () => {
     ? [
         {
           label: "Compras",
-          value: dailyReport.transactions.compras,
+          value: safeDailyReport.transactions.compras,
           color: themeColors.financial.compra,
         },
         {
           label: "Ventas",
-          value: dailyReport.transactions.ventas,
+          value: safeDailyReport.transactions.ventas,
           color: themeColors.financial.venta,
         },
       ]
     : [];
 
-  const expenseCategoryData = dailyReport?.expenses.byCategory
-    ? Object.entries(dailyReport.expenses.byCategory).map(
+  const expenseCategoryData = safeDailyReport.expenses.byCategory
+    ? Object.entries(safeDailyReport.expenses.byCategory).map(
         ([category, data]) => ({
           label: category.charAt(0).toUpperCase() + category.slice(1),
-          value: data.total,
+          value: data?.total ?? 0,
           color:
             themeColors.dashboard.categories?.[
               category as keyof typeof themeColors.dashboard.categories
@@ -310,7 +316,7 @@ export const ReportsScreen: React.FC = () => {
             >
               <StatsCard
                 title="Ganancia Neta"
-                value={`$ ${formatNumber(dailyReport.profit.net)}`}
+                value={`$ ${formatNumber(safeDailyReport.profit.net)}`}
                 icon={
                   <Ionicons
                     name="trending-up"
@@ -320,9 +326,9 @@ export const ReportsScreen: React.FC = () => {
                 }
                 color={themeColors.success}
                 trend={
-                  dailyReport.profit.net > 0
+                  safeDailyReport.profit.net > 0
                     ? "up"
-                    : dailyReport.profit.net < 0
+                    : safeDailyReport.profit.net < 0
                       ? "down"
                       : "neutral"
                 }
@@ -340,8 +346,8 @@ export const ReportsScreen: React.FC = () => {
             >
               <StatsCard
                 title="Transacciones"
-                value={dailyReport.transactions.total.toString()}
-                subtitle={`${dailyReport.transactions.compras} compras, ${dailyReport.transactions.ventas} ventas`}
+                value={safeDailyReport.transactions.total.toString()}
+                subtitle={`${safeDailyReport.transactions.compras} compras, ${safeDailyReport.transactions.ventas} ventas`}
                 icon={
                   <Ionicons
                     name="swap-horizontal"
@@ -367,7 +373,7 @@ export const ReportsScreen: React.FC = () => {
             >
               <StatsCard
                 title="Total Compras"
-                value={`$ ${formatNumber(dailyReport.transactions.totalCompras)}`}
+                value={`$ ${formatNumber(safeDailyReport.transactions.totalCompras)}`}
                 icon={
                   <Ionicons
                     name="arrow-down-circle"
@@ -390,7 +396,7 @@ export const ReportsScreen: React.FC = () => {
             >
               <StatsCard
                 title="Total Ventas"
-                value={`$ ${formatNumber(dailyReport.transactions.totalVentas)}`}
+                value={`$ ${formatNumber(safeDailyReport.transactions.totalVentas)}`}
                 icon={
                   <Ionicons
                     name="arrow-up-circle"
@@ -425,8 +431,8 @@ export const ReportsScreen: React.FC = () => {
                 showLabels
                 showValues
                 maxValue={Math.max(
-                  dailyReport.transactions.compras,
-                  dailyReport.transactions.ventas,
+                  safeDailyReport.transactions.compras,
+                  safeDailyReport.transactions.ventas,
                   5,
                 )}
               />
@@ -463,7 +469,7 @@ export const ReportsScreen: React.FC = () => {
                     { color: themeColors.text.primary },
                   ]}
                 >
-                  $ {formatNumber(dailyReport.expenses.totalAmount)}
+                  $ {formatNumber(safeDailyReport.expenses.totalAmount)}
                 </Text>
               </View>
               <View style={styles.expenseStat}>
@@ -481,7 +487,7 @@ export const ReportsScreen: React.FC = () => {
                     { color: themeColors.text.primary },
                   ]}
                 >
-                  {dailyReport.expenses.total}
+                  {safeDailyReport.expenses.total}
                 </Text>
               </View>
             </View>
@@ -920,7 +926,7 @@ export const ReportsScreen: React.FC = () => {
                 style={[styles.profitBadgeText, { color: themeColors.success }]}
               >
                 {dailyReport
-                  ? `${dailyReport.profit.margin.toFixed(1)}%`
+                  ? `${safeDailyReport.profit.margin.toFixed(1)}%`
                   : "0%"}
               </Text>
             </View>
@@ -936,7 +942,7 @@ export const ReportsScreen: React.FC = () => {
                 style={[styles.profitValue, { color: themeColors.success }]}
               >
                 {dailyReport
-                  ? `$ ${formatNumber(dailyReport.profit.net)}`
+                  ? `$ ${formatNumber(safeDailyReport.profit.net)}`
                   : "$ 0.00"}
               </Text>
               <Text
@@ -992,9 +998,9 @@ export const ReportsScreen: React.FC = () => {
   );
 
   const renderCashFlowReport = () => {
-    const entradas = dailyReport ? dailyReport.transactions.totalVentas : 0;
+    const entradas = safeDailyReport.transactions.totalVentas;
     const salidas = dailyReport
-      ? dailyReport.transactions.totalCompras + dailyReport.expenses.totalAmount
+      ? safeDailyReport.transactions.totalCompras + safeDailyReport.expenses.totalAmount
       : 0;
     const balance = entradas - salidas;
     const isPositive = balance >= 0;
@@ -1232,7 +1238,6 @@ export const ReportsScreen: React.FC = () => {
           </View>
         </FadeInDown>
 
-        <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -1244,6 +1249,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: spacing.md,
+    paddingBottom: floatingTabBarMetrics.contentBottomPadding,
   },
   header: {
     marginBottom: spacing.lg,

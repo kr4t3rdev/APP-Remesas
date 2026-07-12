@@ -1,60 +1,138 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
-import { useCashMovements } from "../../../hooks/queries/useBusinessQueries";
-import { useColors } from "../../../store/themeStore";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { CashMovementCard } from "../components/CashMovementCard";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Alert } from "../../../utils/alert";
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { useColors } from "../../../store/themeStore";
+import { floatingTabBarMetrics } from "../../../navigation/fintechTabBar";
+import {
+  useCashOverviewQuery,
+  useCreateCashAdjustmentMutation,
+  useCreateCashAuditMutation,
+} from "../../../modules/cash/application/useCash";
+import {
+  useCurrenciesQuery,
+  useCurrenciesWithPrimaryQuery,
+} from "../../../modules/currencies/application/useCurrencies";
 import { CashAuditCard } from "../components/CashAuditCard";
-import { CashSafetyBuffer } from "../components/CashSafetyBuffer";
+import { CashMovementCard } from "../components/CashMovementCard";
+
+type CashAction = "AUDIT" | "ADJUSTMENT" | null;
+type AdjustmentType = "INGRESO" | "EGRESO";
 
 export const CashRegisterTab = () => {
-  const { data: movements, isLoading } = useCashMovements();
   const colors = useColors();
+  const navigation = useNavigation();
+  const overviewQuery = useCashOverviewQuery();
+  const currenciesListQuery = useCurrenciesQuery();
+  const currenciesQuery = useCurrenciesWithPrimaryQuery();
+  const createAuditMutation = useCreateCashAuditMutation();
+  const createAdjustmentMutation = useCreateCashAdjustmentMutation();
+  const overview = overviewQuery.data;
+  const balances = overview?.balances ?? [];
+  const availableCurrencies = (
+    currenciesListQuery.data ??
+    currenciesQuery.data?.currencies ??
+    overview?.currencies ??
+    []
+  ).filter((currency) => currency.isActive !== false);
+  const primaryCurrencyId =
+    currenciesQuery.data?.primaryCurrencyId ?? overview?.primaryCurrency?.id;
+  const [selectedCurrencyId, setSelectedCurrencyId] = useState<number | null>(null);
+  const [activeAction, setActiveAction] = useState<CashAction>(null);
+  const [amount, setAmount] = useState("");
+  const [notes, setNotes] = useState("");
+  const [reason, setReason] = useState("");
+  const [adjustmentType, setAdjustmentType] = useState<AdjustmentType>("INGRESO");
+  const scrollRef = useRef<ScrollView>(null);
 
-  // Mocks para la UI hasta que los hooks tengan datos reales adaptados al nuevo diseño
-  const mockMovements = [
-    {
-      id: "1",
-      title: "Petty Cash: Office Supplies",
-      subtitle: "Invoice #8821 • 10:45 AM",
-      amount: 45.0,
-      type: "EXPENSE" as const,
-      badgeLabel: "Expense",
-    },
-    {
-      id: "2",
-      title: "Daily Register Closing",
-      subtitle: "Store Terminal A • 09:12 AM",
-      amount: 1240.0,
-      type: "INCOME" as const,
-      badgeLabel: "Income",
-    },
-    {
-      id: "3",
-      title: "Cash Withdrawal (Bank Deposit)",
-      subtitle: "Ref: DEP-0021 • 04:30 PM",
-      amount: 5000.0,
-      type: "TRANSFER" as const,
-      badgeLabel: "Transfer",
-    },
-  ];
+  useEffect(() => {
+    if (selectedCurrencyId === null && availableCurrencies.length > 0) {
+      setSelectedCurrencyId(
+        primaryCurrencyId ?? availableCurrencies[0].id,
+      );
+    }
+  }, [availableCurrencies, primaryCurrencyId, selectedCurrencyId]);
 
-  const mockAudit = {
-    dateFormatted: "Oct 23, 2023 • 06:15 PM",
-    expected: 16285.5,
-    actual: 16285.5,
-    status: "MATCHED" as const,
-    auditorName: "Michael Scott (Manager)",
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    });
+  }, [balances.length]);
+
+  const closeAction = () => {
+    setActiveAction(null);
+    setAmount("");
+    setNotes("");
+    setReason("");
+    setAdjustmentType("INGRESO");
   };
 
-  if (isLoading) {
+  const handleAudit = async () => {
+    const parsedAmount = Number(amount);
+    if (!selectedCurrencyId || !Number.isFinite(parsedAmount) || parsedAmount < 0) {
+      Alert.alert("Error", "Ingresa un saldo real válido");
+      return;
+    }
+
+    try {
+      await createAuditMutation.mutateAsync({
+        currencyId: selectedCurrencyId,
+        actualBalance: parsedAmount,
+        notes: notes.trim() || undefined,
+      });
+      Alert.alert("Éxito", "Arqueo registrado correctamente");
+      closeAction();
+    } catch {
+      Alert.alert("Error", "No se pudo registrar el arqueo");
+    }
+  };
+
+  const handleAdjustment = async () => {
+    const parsedAmount = Number(amount);
+    if (
+      !selectedCurrencyId ||
+      !Number.isFinite(parsedAmount) ||
+      parsedAmount <= 0 ||
+      !reason.trim()
+    ) {
+      Alert.alert("Error", "Completa el monto y el motivo del ajuste");
+      return;
+    }
+
+    try {
+      await createAdjustmentMutation.mutateAsync({
+        currencyId: selectedCurrencyId,
+        amount: parsedAmount,
+        type: adjustmentType,
+        reason: reason.trim(),
+      });
+      Alert.alert("Éxito", "Ajuste registrado correctamente");
+      closeAction();
+    } catch {
+      Alert.alert("Error", "No se pudo registrar el ajuste");
+    }
+  };
+
+  const formatAmount = (value: number, symbol: string) =>
+    `${symbol} ${value.toLocaleString("es-CU", { minimumFractionDigits: 2 })}`;
+
+  if (overviewQuery.isLoading) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary[500]} />
@@ -63,154 +141,206 @@ export const CashRegisterTab = () => {
   }
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* TOTAL LIQUID ASSETS SECTION */}
-      <View style={styles.headerSection}>
-        <Text style={[styles.headerSubtitle, { color: colors.text.secondary }]}>
-          TOTAL LIQUID ASSETS
-        </Text>
-        <Text style={[styles.headerAmount, { color: colors.text.primary }]}>
-          $12,480.50
-        </Text>
-        <View style={styles.trendContainer}>
-          <Ionicons name="trending-up" size={14} color="#10B981" />
-          <Text style={styles.trendText}>
-            +2.4%{" "}
-            <Text
-              style={{ color: colors.text.secondary, fontWeight: "normal" }}
-            >
-              vs. last audit
-            </Text>
+    <>
+      <ScrollView
+        ref={scrollRef}
+        style={[styles.container, { backgroundColor: colors.background }]}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={overviewQuery.isRefetching}
+            onRefresh={() => overviewQuery.refetch()}
+            tintColor={colors.primary[500]}
+          />
+        }
+      >
+        <View style={styles.headerSection}>
+          <Text style={[styles.title, { color: colors.text.primary }]}>Caja</Text>
+          <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
+            Saldos y control de efectivo por moneda
           </Text>
         </View>
 
-        <View style={styles.actionButtonsRow}>
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: "#F3F4F6" }]}
-          >
-            <Text style={[styles.actionButtonText, { color: "#1D4ED8" }]}>
-              Add Adjustment
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: "#1D4ED8" }]}
-          >
-            <Text style={[styles.actionButtonText, { color: "#FFFFFF" }]}>
-              Start Audit
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        {overviewQuery.isError ? (
+          <View style={[styles.stateCard, { backgroundColor: colors.card }]}>
+            <Ionicons name="cloud-offline-outline" size={28} color={colors.danger} />
+            <Text style={[styles.stateTitle, { color: colors.text.primary }]}>No se pudo cargar Caja</Text>
+            <Text style={[styles.stateText, { color: colors.text.secondary }]}>Revisa tu conexión e intenta nuevamente.</Text>
+            <Button title="Reintentar" onPress={() => overviewQuery.refetch()} size="sm" />
+          </View>
+        ) : (
+          <>
+            {balances.length > 0 ? (
+              <>
+                <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Saldos por moneda</Text>
+                <View style={styles.balanceGrid}>
+                  {balances.map((balance) => (
+                    <View key={balance.currencyId} style={[styles.balanceCard, { backgroundColor: colors.card, borderColor: colors.border }]}> 
+                      <View style={[styles.currencyIcon, { backgroundColor: colors.primary[50] }]}> 
+                        <Text style={[styles.currencyCode, { color: colors.primary[700] }]}>{balance.currency.code}</Text>
+                      </View>
+                      <Text style={[styles.balanceLabel, { color: colors.text.secondary }]}>{balance.currency.name}</Text>
+                      <Text style={[styles.balanceValue, { color: colors.text.primary }]}>
+                        {formatAmount(balance.balance, balance.currency.symbol)}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            ) : (
+              <View style={[styles.stateCard, { backgroundColor: colors.card }]}> 
+                <Ionicons name="wallet-outline" size={28} color={colors.text.tertiary} />
+                <Text style={[styles.stateTitle, { color: colors.text.primary }]}>Caja sin saldos</Text>
+                <Text style={[styles.stateText, { color: colors.text.secondary }]}>Registra un ajuste inicial para comenzar a operar.</Text>
+              </View>
+            )}
 
-      {/* RECENT MOVEMENTS SECTION */}
-      <View style={styles.sectionHeader}>
-        <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-          Recent Movements
-        </Text>
-        <TouchableOpacity>
-          <Text style={styles.viewAllText}>View All</Text>
-        </TouchableOpacity>
-      </View>
+            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Acciones</Text>
+            <View style={styles.actionsRow}>
+              <Button title="Registrar ajuste" onPress={() => setActiveAction("ADJUSTMENT")} variant="secondary" style={styles.actionButton} />
+              <Button title="Registrar arqueo" onPress={() => setActiveAction("AUDIT")} style={styles.actionButton} />
+            </View>
 
-      <Text style={[styles.dateGroupLabel, { color: colors.text.secondary }]}>
-        TODAY, OCT 24
-      </Text>
-      {mockMovements.slice(0, 2).map((mov) => (
-        <CashMovementCard key={mov.id} movement={mov} />
-      ))}
+            {overview?.recentMovements.length ? <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Movimientos recientes</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("CashHistory" as never)}>
+                <Text style={[styles.link, { color: colors.primary[600] }]}>Ver historial</Text>
+              </TouchableOpacity>
+            </View> : null}
 
-      <Text
-        style={[
-          styles.dateGroupLabel,
-          { color: colors.text.secondary, marginTop: 12 },
-        ]}
-      >
-        YESTERDAY, OCT 23
-      </Text>
-      {mockMovements.slice(2).map((mov) => (
-        <CashMovementCard key={mov.id} movement={mov} />
-      ))}
+            {overview?.recentMovements.length ? (
+              overview.recentMovements.map((movement) => (
+                <CashMovementCard
+                  key={movement.id}
+                  movement={{
+                    id: movement.id,
+                    title: movement.title,
+                    subtitle: `${movement.description} · ${format(new Date(movement.createdAt), "d MMM, HH:mm", { locale: es })}`,
+                    amount: movement.totalBase ?? movement.amount,
+                    type: movement.direction === "IN" ? "INCOME" : "EXPENSE",
+                    badgeLabel: movement.currency.code,
+                    currencySymbol: movement.totalBase !== null
+                      ? overview.primaryCurrency?.symbol
+                      : movement.currency.symbol,
+                  }}
+                />
+              ))
+            ) : balances.length > 0 ? (
+              <Text style={[styles.emptyText, { color: colors.text.secondary }]}>No hay movimientos recientes.</Text>
+            ) : null}
 
-      {/* AUDIT AND SAFETY BUFFER */}
-      <View style={{ marginTop: 24 }}>
-        <CashAuditCard audit={mockAudit} />
-        <CashSafetyBuffer percentage={82} recommendedDeposit={2000} />
-      </View>
-    </ScrollView>
+            {overview?.latestAudits.length ? (
+              <>
+                <Text style={[styles.sectionTitle, styles.auditTitle, { color: colors.text.primary }]}>Último arqueo</Text>
+                {overview.latestAudits.map((audit) => (
+                  <CashAuditCard
+                    key={audit.id}
+                    audit={{
+                      dateFormatted: format(new Date(audit.createdAt), "d MMM, yyyy · HH:mm", { locale: es }),
+                      expected: audit.expectedBalance,
+                      actual: audit.actualBalance,
+                      status: audit.difference === 0 ? "MATCHED" : audit.difference < 0 ? "SHORTAGE" : "OVERAGE",
+                      auditorName: "Usuario actual",
+                    }}
+                  />
+                ))}
+              </>
+            ) : null}
+          </>
+        )}
+      </ScrollView>
+
+      <Modal visible={activeAction !== null} transparent animationType="slide" onRequestClose={closeAction}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.modalOverlay}>
+          <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={closeAction} />
+          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
+                {activeAction === "AUDIT" ? "Registrar arqueo" : "Registrar ajuste"}
+              </Text>
+              <TouchableOpacity onPress={closeAction} accessibilityLabel="Cerrar">
+                <Ionicons name="close" size={24} color={colors.text.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.fieldLabel, { color: colors.text.primary }]}>Moneda</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyOptions}>
+              {availableCurrencies.map((currency) => (
+                <TouchableOpacity
+                  key={currency.id}
+                  onPress={() => setSelectedCurrencyId(currency.id)}
+                  style={[styles.currencyOption, { borderColor: selectedCurrencyId === currency.id ? colors.primary[500] : colors.border, backgroundColor: selectedCurrencyId === currency.id ? colors.primary[50] : colors.card }]}
+                >
+                  <Text style={{ color: selectedCurrencyId === currency.id ? colors.primary[700] : colors.text.secondary, fontWeight: "700" }}>{currency.code}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Input label={activeAction === "AUDIT" ? "Saldo real" : "Monto"} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" />
+
+            {activeAction === "ADJUSTMENT" ? (
+              <>
+                <Text style={[styles.fieldLabel, { color: colors.text.primary }]}>Tipo</Text>
+                <View style={styles.typeRow}>
+                  {(["INGRESO", "EGRESO"] as AdjustmentType[]).map((type) => (
+                    <TouchableOpacity key={type} onPress={() => setAdjustmentType(type)} style={[styles.typeOption, { borderColor: adjustmentType === type ? colors.primary[500] : colors.border, backgroundColor: adjustmentType === type ? colors.primary[50] : colors.card }]}>
+                      <Text style={{ color: adjustmentType === type ? colors.primary[700] : colors.text.secondary, fontWeight: "700" }}>{type === "INGRESO" ? "Ingreso" : "Egreso"}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Input label="Motivo" value={reason} onChangeText={setReason} placeholder="Motivo del ajuste" />
+              </>
+            ) : (
+              <Input label="Notas (opcional)" value={notes} onChangeText={setNotes} placeholder="Observaciones" multiline numberOfLines={3} />
+            )}
+
+            <Button
+              title={activeAction === "AUDIT" ? "Guardar arqueo" : "Guardar ajuste"}
+              onPress={activeAction === "AUDIT" ? handleAudit : handleAdjustment}
+              loading={createAuditMutation.isPending || createAdjustmentMutation.isPending}
+              disabled={selectedCurrencyId === null}
+              style={styles.submitButton}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 40,
-  },
-  headerSection: {
-    marginBottom: 32,
-  },
-  headerSubtitle: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  headerAmount: {
-    fontSize: 48,
-    fontWeight: "800",
-    letterSpacing: -1.5,
-    marginBottom: 8,
-  },
-  trendContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginBottom: 24,
-  },
-  trendText: {
-    color: "#10B981",
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  actionButtonsRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  actionButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  actionButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  viewAllText: {
-    fontSize: 14,
-    color: "#2563EB",
-    fontWeight: "600",
-  },
-  dateGroupLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1,
-    marginBottom: 12,
-  },
+  container: { flex: 1 },
+  content: { padding: 20, paddingBottom: floatingTabBarMetrics.contentBottomPadding },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  headerSection: { marginBottom: 24 },
+  title: { fontSize: 30, fontWeight: "800", marginBottom: 4 },
+  subtitle: { fontSize: 14 },
+  sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 12 },
+  balanceGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 24 },
+  balanceCard: { width: "48%", minHeight: 126, borderWidth: 1, borderRadius: 14, padding: 14 },
+  currencyIcon: { alignItems: "center", justifyContent: "center", width: 42, height: 28, borderRadius: 8, marginBottom: 10 },
+  currencyCode: { fontSize: 12, fontWeight: "800" },
+  balanceLabel: { fontSize: 12, marginBottom: 4 },
+  balanceValue: { fontSize: 18, fontWeight: "800" },
+  actionsRow: { flexDirection: "row", gap: 10, marginBottom: 28 },
+  actionButton: { flex: 1 },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  link: { fontSize: 14, fontWeight: "700" },
+  emptyText: { marginBottom: 20 },
+  auditTitle: { marginTop: 20 },
+  stateCard: { alignItems: "center", borderRadius: 14, padding: 24, gap: 8 },
+  stateTitle: { fontSize: 17, fontWeight: "700", textAlign: "center" },
+  stateText: { fontSize: 14, textAlign: "center", marginBottom: 8 },
+  modalOverlay: { flex: 1, justifyContent: "flex-end" },
+  modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15, 23, 42, 0.35)" },
+  modalCard: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, gap: 12 },
+  modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
+  modalTitle: { fontSize: 20, fontWeight: "800" },
+  fieldLabel: { fontSize: 14, fontWeight: "600" },
+  currencyOptions: { gap: 8, paddingBottom: 4 },
+  currencyOption: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 },
+  typeRow: { flexDirection: "row", gap: 8 },
+  typeOption: { flex: 1, borderWidth: 1, borderRadius: 10, alignItems: "center", paddingVertical: 11 },
+  submitButton: { marginTop: 4 },
 });
