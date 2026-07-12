@@ -9,26 +9,26 @@ export type FintechTabBarColors = {
 };
 
 export const floatingTabBarMetrics = {
-  bottom: 12,
+  bottom: 24,
   height: 64,
-  actionBottom: 96,
-  standaloneActionBottom: 140,
-  contentBottomPadding: 96,
+  actionBottom: 108,
+  standaloneActionBottom: 152,
+  contentBottomPadding: 108,
 } as const;
 
 export const fintechTabBarColors: Record<"light" | "dark", FintechTabBarColors> = {
   light: {
-    background: "#FFFFFF",
-    border: "#E2E8F0",
+    background: "rgba(255, 255, 255, 0.82)",
+    border: "rgba(226, 232, 240, 0.6)",
     active: "#4F46E5",
-    activeBackground: "#EEF2FF",
+    activeBackground: "rgba(79, 70, 229, 0.1)",
     inactive: "#64748B",
   },
   dark: {
-    background: "#111827",
-    border: "#334155",
+    background: "rgba(17, 24, 39, 0.82)",
+    border: "rgba(51, 65, 85, 0.6)",
     active: "#A5B4FC",
-    activeBackground: "#27335C",
+    activeBackground: "rgba(165, 180, 252, 0.12)",
     inactive: "#94A3B8",
   },
 };
@@ -41,8 +41,8 @@ export const getFintechTabBarStyle = (
 
   return {
     position: "absolute",
-    left: 16,
-    right: 16,
+    left: 32,
+    right: 32,
     bottom: bottomInset + floatingTabBarMetrics.bottom,
     backgroundColor: theme.background,
     borderColor: theme.border,
@@ -56,5 +56,6 @@ export const getFintechTabBarStyle = (
     shadowOpacity: isDark ? 0.32 : 0.14,
     shadowRadius: 10,
     elevation: 8,
+    overflow: "visible",
   };
 };

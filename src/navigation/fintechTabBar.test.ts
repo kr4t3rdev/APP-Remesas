@@ -1,18 +1,25 @@
-import { getFintechTabBarStyle } from "./fintechTabBar";
+import {
+  floatingTabBarMetrics,
+  getFintechTabBarStyle,
+} from "./fintechTabBar";
 
 describe("fintech tab bar styling", () => {
   it("keeps the tab bar above the home indicator", () => {
-    expect(getFintechTabBarStyle(34)).toMatchObject({
-      height: 98,
-      paddingBottom: 42,
-      borderTopWidth: 0,
+    expect(getFintechTabBarStyle(34, false)).toMatchObject({
+      height: floatingTabBarMetrics.height,
+      bottom: 34 + floatingTabBarMetrics.bottom,
+      position: "absolute",
     });
   });
 
-  it("uses a dark elevated surface for the fintech treatment", () => {
-    expect(getFintechTabBarStyle(0)).toMatchObject({
-      backgroundColor: "#0B1220",
-      elevation: 12,
+  it("uses separate light and dark fintech surfaces", () => {
+    expect(getFintechTabBarStyle(0, false)).toMatchObject({
+      backgroundColor: "rgba(255, 255, 255, 0.82)",
+      borderColor: "rgba(226, 232, 240, 0.6)",
+    });
+    expect(getFintechTabBarStyle(0, true)).toMatchObject({
+      backgroundColor: "rgba(17, 24, 39, 0.82)",
+      borderColor: "rgba(51, 65, 85, 0.6)",
     });
   });
 });
