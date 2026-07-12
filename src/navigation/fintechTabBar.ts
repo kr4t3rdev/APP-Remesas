@@ -9,7 +9,7 @@ export type FintechTabBarColors = {
 };
 
 export const floatingTabBarMetrics = {
-  bottom: 0,
+  bottom: -5,
   height: 64,
   actionBottom: 108,
   standaloneActionBottom: 152,
