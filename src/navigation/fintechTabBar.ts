@@ -41,8 +41,8 @@ export const getFintechTabBarStyle = (
 
   return {
     position: "absolute",
-    left: 32,
-    right: 32,
+    left: 44,
+    right: 44,
     bottom: bottomInset + floatingTabBarMetrics.bottom,
     backgroundColor: theme.background,
     borderColor: theme.border,
