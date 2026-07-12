@@ -241,7 +241,7 @@ const createStyles = (themeColors: any) =>
     container: {
       flex: 1,
       backgroundColor: themeColors.background,
-      minHeight: "100vh",
+      minHeight: "100%",
       width: "100%",
     },
     content: { flexGrow: 1, padding: spacing.lg, justifyContent: "center" },

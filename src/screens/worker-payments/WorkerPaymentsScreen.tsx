@@ -110,19 +110,29 @@ export const WorkerPaymentsScreen: React.FC = () => {
   const handleCreateWorker = async (
     data: CreateWorkerInput | UpdateWorkerInput,
   ) => {
-    await createMutation.mutateAsync(data as CreateWorkerInput);
-    Alert.alert("Éxito", "Trabajador creado correctamente");
+    try {
+      await createMutation.mutateAsync(data as CreateWorkerInput);
+      Alert.alert("Éxito", "Trabajador creado correctamente");
+    } catch (error) {
+      Alert.alert("Error", "No se pudo crear el trabajador");
+      throw error;
+    }
   };
 
   const handleUpdateWorker = async (
     data: CreateWorkerInput | UpdateWorkerInput,
   ) => {
-    if (!editingWorker) return;
-    await updateMutation.mutateAsync({
-      id: editingWorker.id,
-      input: data as UpdateWorkerInput,
-    });
-    Alert.alert("Éxito", "Trabajador actualizado correctamente");
+    try {
+      if (!editingWorker) return;
+      await updateMutation.mutateAsync({
+        id: editingWorker.id,
+        input: data as UpdateWorkerInput,
+      });
+      Alert.alert("Éxito", "Trabajador actualizado correctamente");
+    } catch (error) {
+      Alert.alert("Error", "No se pudo actualizar el trabajador");
+      throw error;
+    }
   };
 
   const handleDeleteWorker = useCallback(

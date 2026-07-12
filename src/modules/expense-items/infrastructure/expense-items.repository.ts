@@ -14,17 +14,17 @@ export const expenseItemsRepository = {
     endDate?: string;
   }): Promise<ExpenseItem[]> {
     const response = await api.get<ExpenseItem[]>("/expense-items", { params });
-    return response.data;
+    return response.data!;
   },
 
   async getExpenseItemById(id: number): Promise<ExpenseItem> {
     const response = await api.get<ExpenseItem>(`/expense-items/${id}`);
-    return response.data;
+    return response.data!;
   },
 
   async createExpenseItem(data: CreateExpenseItemInput): Promise<ExpenseItem> {
     const response = await api.post<ExpenseItem>("/expense-items", data);
-    return response.data;
+    return response.data!;
   },
 
   async updateExpenseItem(
@@ -32,7 +32,7 @@ export const expenseItemsRepository = {
     data: UpdateExpenseItemInput,
   ): Promise<ExpenseItem> {
     const response = await api.patch<ExpenseItem>(`/expense-items/${id}`, data);
-    return response.data;
+    return response.data!;
   },
 
   async deleteExpenseItem(id: number): Promise<void> {
@@ -49,11 +49,11 @@ export const expenseItemsRepository = {
         params: date ? { date } : undefined,
       },
     );
-    return response.data;
+    return response.data!;
   },
 
   async getCategories(): Promise<string[]> {
     const response = await api.get<string[]>("/expense-items/categories");
-    return response.data;
+    return response.data!;
   },
 };

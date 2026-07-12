@@ -17,6 +17,8 @@ export const useExpenseItemsQuery = (params?: {
     queryKey: queryKeys.expenseItems.all(params),
     queryFn: () => expenseItemsRepository.getExpenseItems(params),
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useExpenseItemQuery = (id: number) =>
@@ -32,6 +34,8 @@ export const useCategoriesQuery = () =>
     queryKey: queryKeys.expenseItems.categories(),
     queryFn: expenseItemsRepository.getCategories,
     staleTime: 1000 * 60 * 10,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useExpenseReportQuery = (period: ReportPeriod, date?: string) =>

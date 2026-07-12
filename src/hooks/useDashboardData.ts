@@ -9,6 +9,7 @@ import type {
 } from "../types";
 import { queryKeys } from "../shared/query/queryKeys";
 import { dashboardRepository } from "../modules/dashboard/infrastructure/dashboard.repository";
+import { safeArray, safePath } from "../services/api-response";
 
 export const useDailyReport = (date?: string) => {
   return useQuery<DailyReport, Error>({
@@ -25,6 +26,7 @@ export const useCashBalances = () => {
     queryFn: dashboardRepository.getCashBalances,
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
+    initialData: [],
   });
 };
 
@@ -34,6 +36,7 @@ export const useExchangeRates = () => {
     queryFn: dashboardRepository.getExchangeRates,
     staleTime: 1000 * 60 * 5,
     throwOnError: false,
+    initialData: [],
   });
 };
 
@@ -41,6 +44,7 @@ export const useRecentTransactions = (limit?: number) => {
   return useQuery<Transaction[], Error>({
     queryKey: queryKeys.dashboard.recentTransactions(limit),
     queryFn: () => dashboardRepository.getTransactions(),
+    initialData: [],
     select: (data) => {
       const sorted = [...data].sort(
         (a, b) =>
@@ -59,6 +63,7 @@ export const usePendingTransactions = () => {
     queryFn: dashboardRepository.getPendingTransactions,
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
+    initialData: [],
   });
 };
 
@@ -66,6 +71,7 @@ export const useRecentExpenses = (limit?: number) => {
   return useQuery<Expense[], Error>({
     queryKey: queryKeys.dashboard.recentExpenses(limit),
     queryFn: () => dashboardRepository.getExpenses(),
+    initialData: [],
     select: (data) => {
       const sorted = [...data].sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
@@ -83,6 +89,7 @@ export const useActiveObjectives = () => {
     queryFn: () => dashboardRepository.getObjectives("ACTIVO"),
     staleTime: 1000 * 60 * 5,
     throwOnError: false,
+    initialData: [],
   });
 };
 
@@ -114,26 +121,30 @@ export const useDashboardData = () => {
   };
 
   const totalCashBalance =
-    cashBalances.data?.reduce((sum, b) => {
-      const rate = exchangeRates.data?.find(
+    safeArray(cashBalances.data).reduce((sum, b) => {
+      const rate = safeArray(exchangeRates.data).find(
         (r) => r.currencyId === b.currencyId,
       );
       const cupValue = rate ? b.balance * rate.sellRate : b.balance;
       return sum + cupValue;
     }, 0) || 0;
 
-  const todayProfit = dailyReport.data?.profit.net || 0;
-  const todayTransactions = dailyReport.data?.transactions.total || 0;
-  const todayExpenses = dailyReport.data?.expenses.totalAmount || 0;
+  const todayProfit = safePath<number>(dailyReport.data, "profit.net", 0) || 0;
+  const todayTransactions = safePath<number>(dailyReport.data, "transactions.total", 0) || 0;
+  const todayExpenses = safePath<number>(dailyReport.data, "expenses.totalAmount", 0) || 0;
 
   const transactionSummary = {
-    compras: dailyReport.data?.transactions.totalCompras || 0,
-    ventas: dailyReport.data?.transactions.totalVentas || 0,
-    comprasCount: dailyReport.data?.transactions.compras || 0,
-    ventasCount: dailyReport.data?.transactions.ventas || 0,
+    compras: safePath<number>(dailyReport.data, "transactions.totalCompras", 0) || 0,
+    ventas: safePath<number>(dailyReport.data, "transactions.totalVentas", 0) || 0,
+    comprasCount: safePath<number>(dailyReport.data, "transactions.compras", 0) || 0,
+    ventasCount: safePath<number>(dailyReport.data, "transactions.ventas", 0) || 0,
   };
 
-  const expensesByCategory = dailyReport.data?.expenses.byCategory || {};
+  const expensesByCategory = safePath<Record<string, number>>(
+    dailyReport.data,
+    "expenses.byCategory",
+    {},
+  ) || {};
 
   return {
     dailyReport: dailyReport.data,

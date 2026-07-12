@@ -14,6 +14,8 @@ export const useWorkersQuery = () =>
     queryKey: queryKeys.workerPayments.list(),
     queryFn: () => workerPaymentsRepository.getWorkers(),
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useWorkerDetailQuery = (id: number) =>
@@ -22,6 +24,7 @@ export const useWorkerDetailQuery = (id: number) =>
     queryFn: () => workerPaymentsRepository.getWorkerById(id),
     staleTime: 1000 * 60 * 2,
     enabled: !!id,
+    throwOnError: false,
   });
 
 export const useFetchWorkerByIdMutation = () =>

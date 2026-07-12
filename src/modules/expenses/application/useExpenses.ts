@@ -13,6 +13,8 @@ export const useExpensesQuery = (params?: {
     queryKey: queryKeys.expenses.list(),
     queryFn: () => expensesRepository.getExpenses(params),
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useExpenseDetailQuery = (id: number) =>
@@ -28,6 +30,8 @@ export const usePendingExpensesQuery = () =>
     queryKey: queryKeys.expenses.pending(),
     queryFn: () => expensesRepository.getPendingExpenses(),
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useCreateExpenseMutation = () => {

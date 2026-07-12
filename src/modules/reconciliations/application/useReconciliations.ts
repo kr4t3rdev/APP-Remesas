@@ -11,6 +11,8 @@ export const useReconciliationsQuery = () =>
   useQuery({
     queryKey: queryKeys.reconciliations.list(),
     queryFn: reconciliationsRepository.getAll,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useReconciliationDetailQuery = (
@@ -21,6 +23,7 @@ export const useReconciliationDetailQuery = (
     queryKey: queryKeys.reconciliations.detail(id, type),
     queryFn: () => reconciliationsRepository.getOne(id, type),
     enabled: !!id,
+    throwOnError: false,
   });
 
 export const useReconcileExpenseMutation = () => {

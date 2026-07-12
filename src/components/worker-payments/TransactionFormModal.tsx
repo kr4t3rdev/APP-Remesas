@@ -255,7 +255,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
                   >
                     $
                     {(
-                      (worker?.accumulatedProfit || 0) + Number(profit || 0)
+                      Number(worker?.accumulatedProfit || 0) + Number(profit || 0)
                     ).toLocaleString()}
                   </Text>
                 </View>
@@ -289,7 +289,6 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
   },
   container: {

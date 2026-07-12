@@ -15,7 +15,7 @@ export const forgotPassword = async (
     "/auth/forgot-password",
     { email },
   );
-  return response.data;
+  return response.data!;
 };
 
 export const resetPassword = async (
@@ -29,5 +29,5 @@ export const resetPassword = async (
       newPassword,
     },
   );
-  return response.data;
+  return response.data!;
 };

@@ -17,12 +17,12 @@ export const reportsRepository = {
     const response = await api.get<DailyReport>("/reports/daily", {
       params: { date },
     });
-    return response.data;
+    return response.data!;
   },
 
   async getCashBalances(): Promise<CashBalance[]> {
     const response = await api.get<CashBalance[]>("/cash-balances");
-    return response.data;
+    return response.data!;
   },
 
   async getPeriodReport(
@@ -32,7 +32,7 @@ export const reportsRepository = {
     const response = await api.get<PeriodReport>("/reports/period", {
       params: { startDate, endDate },
     });
-    return response.data;
+    return response.data!;
   },
 
   async getProfitReport(
@@ -42,7 +42,7 @@ export const reportsRepository = {
     const response = await api.get<ProfitReport>("/reports/profit", {
       params: { startDate, endDate },
     });
-    return response.data;
+    return response.data!;
   },
 
   async getCurrencyReport(
@@ -56,7 +56,7 @@ export const reportsRepository = {
         params: { startDate, endDate },
       },
     );
-    return response.data;
+    return response.data!;
   },
 
   async getExpensesReport(
@@ -67,17 +67,17 @@ export const reportsRepository = {
     const response = await api.get<ExpensesReport>("/reports/expenses", {
       params: { startDate, endDate, category },
     });
-    return response.data;
+    return response.data!;
   },
 
   async getAccountsReport(): Promise<AccountsReport> {
     const response = await api.get<AccountsReport>("/reports/accounts");
-    return response.data;
+    return response.data!;
   },
 
   async getObjectivesReport(): Promise<ObjectivesReport> {
     const response = await api.get<ObjectivesReport>("/reports/objectives");
-    return response.data;
+    return response.data!;
   },
 
   async getCashFlowReport(
@@ -87,7 +87,7 @@ export const reportsRepository = {
     const response = await api.get<CashFlowReport>("/reports/cash-flow", {
       params: { startDate, endDate },
     });
-    return response.data;
+    return response.data!;
   },
 
   async getAuditSummary(
@@ -100,6 +100,6 @@ export const reportsRepository = {
         params: { startDate, endDate },
       },
     );
-    return response.data;
+    return response.data!;
   },
 };

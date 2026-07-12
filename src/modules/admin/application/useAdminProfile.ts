@@ -4,6 +4,7 @@
  */
 
 import { useState, useMemo } from "react";
+import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useAuthStore } from "../../../store/authStore";
 import {
@@ -13,6 +14,7 @@ import {
   useIsDark,
 } from "../../../store/themeStore";
 import { useAdminStatsQuery } from "./useAdminStats";
+import { useAdminAuditLogsProfileQuery } from "./useAdminAuditLogsProfile";
 import { uploadApi } from "../../../api/uploadApi";
 import type { AdminMenuItem } from "../domain/admin-profile.types";
 import type { RootStackScreenProps } from "../../../navigation/types";
@@ -34,6 +36,7 @@ export const useAdminProfile = () => {
 
   // Queries
   const statsQuery = useAdminStatsQuery();
+  const auditLogsQuery = useAdminAuditLogsProfileQuery();
 
   // Local state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -206,6 +209,7 @@ export const useAdminProfile = () => {
     stats,
     isAdmin,
     isDarkMode,
+    recentAuditLogs: auditLogsQuery.data ?? [],
 
     // State
     isLoading,

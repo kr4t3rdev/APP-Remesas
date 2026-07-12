@@ -7,6 +7,8 @@ export const useCurrenciesQuery = () =>
     queryKey: queryKeys.currencies.list(),
     queryFn: currenciesRepository.getAll,
     staleTime: 1000 * 60 * 30,
+    throwOnError: false,
+    placeholderData: [],
   });
 
 export const useCurrenciesWithPrimaryQuery = () =>
@@ -14,6 +16,11 @@ export const useCurrenciesWithPrimaryQuery = () =>
     queryKey: queryKeys.currencies.withPrimary(),
     queryFn: currenciesRepository.getWithPrimary,
     staleTime: 1000 * 60 * 10,
+    throwOnError: false,
+    placeholderData: {
+      currencies: [],
+      primaryCurrencyId: null,
+    },
   });
 
 export const useCreateCurrencyMutation = () => {
@@ -88,6 +95,7 @@ export const useCurrencyDetailQuery = (id: number) =>
     queryFn: () => currenciesRepository.getById(id),
     staleTime: 1000 * 60 * 10,
     enabled: !!id,
+    throwOnError: false,
   });
 
 export const useDeleteCurrencyMutation = () => {

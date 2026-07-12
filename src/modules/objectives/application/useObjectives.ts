@@ -12,6 +12,8 @@ export const useObjectivesQuery = (status?: ObjectiveStatus) =>
     queryKey: queryKeys.objectives.list(status),
     queryFn: () => objectivesRepository.getObjectives(status),
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useObjectiveDetailQuery = (id: number) =>

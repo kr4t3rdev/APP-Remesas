@@ -16,7 +16,7 @@ export const adminRepository = {
     planId?: number;
   }): Promise<AdminKpiSnapshot> {
     const response = await api.get<AdminKpiSnapshot>("/admin/kpis", { params });
-    return response.data;
+    return response.data!;
   },
 
   async getUsers(): Promise<User[]> {
@@ -26,12 +26,12 @@ export const adminRepository = {
 
   async createAdminUser(input: AdminCreateUserRequest): Promise<User> {
     const response = await api.post<User>("/admin/users", input);
-    return response.data;
+    return response.data!;
   },
 
   async getUserDetail(userId: number): Promise<AdminUserDetail> {
     const response = await api.get<AdminUserDetail>(`/admin/users/${userId}`);
-    return response.data;
+    return response.data!;
   },
 
   async updateUserBasic(
@@ -39,7 +39,7 @@ export const adminRepository = {
     data: { name?: string; email?: string; isActive?: boolean },
   ): Promise<User> {
     const response = await api.patch<User>(`/admin/users/${userId}`, data);
-    return response.data;
+    return response.data!;
   },
 
   async applyUserControlAction(
@@ -47,7 +47,7 @@ export const adminRepository = {
     request: AdminUserControlRequest,
   ): Promise<unknown> {
     const response = await api.post(`/admin/users/${userId}/actions`, request);
-    return response.data;
+    return response.data!;
   },
 
   async getBlockedUsers(): Promise<User[]> {

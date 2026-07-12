@@ -1,10 +1,17 @@
 import React from "react";
-import { ScrollView, TouchableOpacity, Text, StyleSheet } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+  StyleSheet,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "../../../store/themeStore";
 
 export interface TabItem {
   key: string;
   label: string;
+  icon: keyof typeof Ionicons.glyphMap;
 }
 
 interface TabSelectorProps {
@@ -21,54 +28,102 @@ export const TabSelector = ({
   const colors = useColors();
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
         return (
-          <TouchableOpacity
+          <Pressable
             key={tab.key}
-            style={[
-              styles.chip,
+            accessibilityRole="tab"
+            accessibilityLabel={tab.label}
+            accessibilityState={{ selected: isActive }}
+            onPress={() => onTabChange(tab.key)}
+            style={({ pressed }) => [
+              styles.tab,
               {
-                backgroundColor: isActive ? colors.primary[500] : colors.card,
-                borderColor: isActive ? colors.primary[500] : colors.border,
+                backgroundColor: isActive
+                  ? colors.primary[50]
+                  : colors.card,
+                borderColor: isActive ? colors.primary[300] : colors.border,
+                opacity: pressed ? 0.75 : 1,
               },
             ]}
-            onPress={() => onTabChange(tab.key)}
           >
+            <View
+              style={[
+                styles.iconContainer,
+                {
+                  backgroundColor: isActive
+                    ? colors.primary[100]
+                    : colors.surface,
+                },
+              ]}
+            >
+              <Ionicons
+                name={tab.icon}
+                size={18}
+                color={isActive ? colors.primary[600] : colors.text.secondary}
+              />
+            </View>
             <Text
+              numberOfLines={2}
               style={[
                 styles.label,
-                { color: isActive ? "#fff" : colors.text.secondary },
+                {
+                  color: isActive
+                    ? colors.primary[700]
+                    : colors.text.primary,
+                },
               ]}
             >
               {tab.label}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         );
       })}
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 8,
+    borderWidth: 1,
+    borderRadius: 16,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     gap: 6,
   },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
+  tab: {
+    width: "48%",
+    minHeight: 56,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
     borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  iconContainer: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
   label: {
-    fontSize: 12,
+    flex: 1,
+    fontSize: 13,
     fontWeight: "600",
+    lineHeight: 17,
   },
 });

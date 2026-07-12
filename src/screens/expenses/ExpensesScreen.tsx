@@ -18,7 +18,12 @@ import { ExpenseCard } from "../../components/expenses/ExpenseCard";
 import { ExpenseFormModal } from "../../components/expenses/ExpenseFormModal";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
-import type { Expense, ExpenseCategory, CreateExpenseInput } from "../../types";
+import type {
+  Expense,
+  ExpenseCategory,
+  CreateExpenseInput,
+  UpdateExpenseInput,
+} from "../../types";
 import {
   useExpensesQuery,
   useCreateExpenseMutation,
@@ -92,12 +97,16 @@ export const ExpensesScreen: React.FC = () => {
     }
   };
 
-  const handleCreateExpense = async (data: CreateExpenseInput) => {
-    await createMutation.mutateAsync(data);
+  const handleCreateExpense = async (
+    data: CreateExpenseInput | UpdateExpenseInput,
+  ) => {
+    await createMutation.mutateAsync(data as CreateExpenseInput);
     Alert.alert("Éxito", "Gasto creado correctamente");
   };
 
-  const handleUpdateExpense = async (data: CreateExpenseInput) => {
+  const handleUpdateExpense = async (
+    data: CreateExpenseInput | UpdateExpenseInput,
+  ) => {
     if (!editingExpense) return;
     await updateMutation.mutateAsync({ id: editingExpense.id, data });
     Alert.alert("Éxito", "Gasto actualizado correctamente");

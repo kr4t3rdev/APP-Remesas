@@ -88,6 +88,28 @@ export type CashAdjustment = {
   createdAt: string;
 };
 
+export type CashOverviewMovement = {
+  id: string;
+  kind: "TRANSACTION" | "ADJUSTMENT";
+  type: TransactionType | CashAdjustmentType;
+  direction: "IN" | "OUT";
+  title: string;
+  description: string;
+  amount: number;
+  totalBase: number | null;
+  currency: Currency;
+  createdAt: string;
+};
+
+export type CashOverview = {
+  asOf: string;
+  primaryCurrency: Currency | null;
+  currencies: Currency[];
+  balances: CashBalance[];
+  recentMovements: CashOverviewMovement[];
+  latestAudits: CashAudit[];
+};
+
 export type BankAccount = {
   id: number;
   name: string;

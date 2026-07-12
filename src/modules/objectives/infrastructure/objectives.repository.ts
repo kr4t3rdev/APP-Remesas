@@ -11,24 +11,24 @@ export const objectivesRepository = {
   async getObjectives(status?: ObjectiveStatus): Promise<Objective[]> {
     const params = status ? { status } : undefined;
     const response = await api.get<Objective[]>("/objectives", { params });
-    return response.data;
+    return response.data!;
   },
 
   async getObjectiveById(id: number): Promise<Objective> {
     const response = await api.get<Objective>(`/objectives/${id}`);
-    return response.data;
+    return response.data!;
   },
 
   async getObjectiveProgress(id: number): Promise<ObjectiveProgress> {
     const response = await api.get<ObjectiveProgress>(
       `/objectives/${id}/progress`,
     );
-    return response.data;
+    return response.data!;
   },
 
   async createObjective(data: CreateObjectiveInput): Promise<Objective> {
     const response = await api.post<Objective>("/objectives", data);
-    return response.data;
+    return response.data!;
   },
 
   async updateObjective(
@@ -36,7 +36,7 @@ export const objectivesRepository = {
     data: UpdateObjectiveInput,
   ): Promise<Objective> {
     const response = await api.patch<Objective>(`/objectives/${id}`, data);
-    return response.data;
+    return response.data!;
   },
 
   async updateObjectiveStatus(
@@ -46,7 +46,7 @@ export const objectivesRepository = {
     const response = await api.patch<Objective>(`/objectives/${id}/status`, {
       status,
     });
-    return response.data;
+    return response.data!;
   },
 
   async deleteObjective(id: number): Promise<void> {

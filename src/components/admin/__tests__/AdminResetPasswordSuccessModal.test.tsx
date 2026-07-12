@@ -2,6 +2,10 @@ import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import { AdminResetPasswordSuccessModal } from "../AdminResetPasswordSuccessModal";
 
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: () => null,
+}));
+
 describe("AdminResetPasswordSuccessModal", () => {
   it("renders success message with email address", () => {
     const { getByText } = render(

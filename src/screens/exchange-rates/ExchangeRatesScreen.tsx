@@ -28,7 +28,6 @@ import type { ExchangeRate, RateHistory } from "../../types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
-  useCurrenciesQuery,
   useCurrentExchangeRatesQuery,
   useRateHistoryQuery,
   useUpdateExchangeRateMutation,
@@ -37,11 +36,11 @@ import {
   useResetRateHistoryMutation,
   useDeleteExchangeRateMutation,
 } from "../../modules/exchange-rates/application/useExchangeRates";
+import { useCurrenciesWithPrimaryQuery } from "../../modules/currencies/application/useCurrencies";
 
 import CountryFlag from "react-native-country-flag";
 import { getCountryCode } from "../../utils/currencyUtils";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
-import { useAuthStore } from "../../store/authStore";
 
 type TabType = "current" | "history" | "manual";
 
@@ -49,27 +48,24 @@ export const ExchangeRatesScreen: React.FC = () => {
   const themeColors = useColors();
   const themeShadows = useShadows();
 
-  const currenciesQuery = useCurrenciesQuery();
+  const currenciesQuery = useCurrenciesWithPrimaryQuery();
   const currentRatesQuery = useCurrentExchangeRatesQuery();
   const historyQuery = useRateHistoryQuery();
   const updateExchangeRateMutation = useUpdateExchangeRateMutation();
   const deleteExchangeRateMutation = useDeleteExchangeRateMutation();
   const resetRateHistoryMutation = useResetRateHistoryMutation();
 
-  const currencies = currenciesQuery.data ?? [];
+  const currencies = currenciesQuery.data?.currencies ?? [];
   const rates = currentRatesQuery.data ?? [];
-  const history = historyQuery.data ?? [];
-  const manualEntries = useMemo(
-    () => history.filter((h) => h.source === "MANUAL"),
-    [history],
-  );
 
-  const { user } = useAuthStore();
-  const primaryCurrencyId = user?.primaryCurrencyId ?? null;
+  const primaryCurrencyId = currenciesQuery.data?.primaryCurrencyId ?? null;
   const secondaryCurrencies = currencies.filter(
     (c) => c.id !== primaryCurrencyId && c.code !== "CUP"
   );
   const canCreateRate = primaryCurrencyId !== null && secondaryCurrencies.length >= 1;
+
+  const history = historyQuery.data ?? [];
+  const manualEntries = history.filter((item) => item.source === "MANUAL");
 
   const [activeTab, setActiveTab] = useState<TabType>("current");
   const [modalVisible, setModalVisible] = useState(false);

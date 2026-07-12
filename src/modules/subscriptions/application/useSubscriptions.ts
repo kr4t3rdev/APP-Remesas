@@ -8,6 +8,8 @@ export const useSubscriptionLicensesQuery = (userId?: number) =>
     queryKey: queryKeys.subscriptions.userLicenses(userId),
     queryFn: () => subscriptionsRepository.getLicenses(userId),
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useAssignLicenseMutation = () => {

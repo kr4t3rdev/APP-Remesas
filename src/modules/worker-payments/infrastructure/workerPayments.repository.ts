@@ -10,22 +10,22 @@ import type {
 export const workerPaymentsRepository = {
   async getWorkers(): Promise<Worker[]> {
     const response = await api.get<Worker[]>("/worker-payments");
-    return response.data;
+    return response.data!;
   },
 
   async getWorkerById(id: number): Promise<Worker> {
     const response = await api.get<Worker>(`/worker-payments/${id}`);
-    return response.data;
+    return response.data!;
   },
 
   async createWorker(input: CreateWorkerInput): Promise<Worker> {
     const response = await api.post<Worker>("/worker-payments", input);
-    return response.data;
+    return response.data!;
   },
 
   async updateWorker(id: number, input: UpdateWorkerInput): Promise<Worker> {
     const response = await api.put<Worker>(`/worker-payments/${id}`, input);
-    return response.data;
+    return response.data!;
   },
 
   async deleteWorker(id: number): Promise<void> {
@@ -40,7 +40,7 @@ export const workerPaymentsRepository = {
       `/worker-payments/${workerId}/transaction`,
       input,
     );
-    return response.data.worker;
+    return response.data!.worker;
   },
 
   async addBalance(workerId: number, amount: number): Promise<Worker> {
@@ -48,6 +48,6 @@ export const workerPaymentsRepository = {
       `/worker-payments/${workerId}/balance`,
       { amount },
     );
-    return response.data.worker;
+    return response.data!.worker;
   },
 };

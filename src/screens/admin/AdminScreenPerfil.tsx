@@ -111,7 +111,7 @@ export const AdminScreenPerfil: React.FC = () => {
               >
                 {user?.avatarUrl ? (
                   <Image
-                    source={getAvatarSource()}
+                    source={getAvatarSource()!}
                     style={styles.avatarImage}
                   />
                 ) : (
@@ -348,7 +348,7 @@ export const AdminScreenPerfil: React.FC = () => {
         visible={modalState.showErrorModal}
         title="Error"
         message={modalState.errorMessage}
-        onClose={() => modalState.setShowErrorModal(false)}
+         onCancel={() => modalState.setShowErrorModal(false)}
       />
     </SafeAreaView>
   );

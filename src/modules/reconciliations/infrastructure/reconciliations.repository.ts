@@ -9,7 +9,7 @@ import type {
 export const reconciliationsRepository = {
   async getAll(): Promise<Reconciliation[]> {
     const response = await api.get<Reconciliation[]>("/reconciliations");
-    return response.data;
+    return response.data!;
   },
 
   async getOne(
@@ -19,7 +19,7 @@ export const reconciliationsRepository = {
     const response = await api.get<Reconciliation>(`/reconciliations/${id}`, {
       params: { type },
     });
-    return response.data;
+    return response.data!;
   },
 
   async reconcileExpense(data: ReconcileExpenseRequest): Promise<void> {

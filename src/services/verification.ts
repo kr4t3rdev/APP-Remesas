@@ -14,7 +14,7 @@ export const verifyEmail = async (
   const response = await api.post<VerifyEmailResponse>("/auth/verify-email", {
     token,
   });
-  return response.data;
+  return response.data!;
 };
 
 export const resendVerification = async (
@@ -24,5 +24,5 @@ export const resendVerification = async (
     "/auth/resend-verification",
     { email },
   );
-  return response.data;
+  return response.data!;
 };

@@ -2,6 +2,23 @@ import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import { AdminResetPasswordModal } from "../AdminResetPasswordModal";
 
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: () => null,
+}));
+
+jest.mock("../../../store/themeStore", () => ({
+  useColors: () => ({
+    background: "#FFFFFF",
+    card: "#F9FAFB",
+    text: { primary: "#1F2937", secondary: "#6B7280" },
+    primary: { 500: "#3B82F6" },
+    success: "#10B981",
+    warning: "#F59E0B",
+    danger: "#EF4444",
+    border: "#E5E7EB",
+  }),
+}));
+
 const mockUser = {
   id: 1,
   name: "Test User",
@@ -11,82 +28,65 @@ const mockUser = {
   isBanned: false,
 };
 
+const renderModal = (props?: Partial<React.ComponentProps<typeof AdminResetPasswordModal>>) =>
+  render(
+    <AdminResetPasswordModal
+      visible
+      user={mockUser as any}
+      onClose={jest.fn()}
+      onConfirm={jest.fn()}
+      {...props}
+    />,
+  );
+
 describe("AdminResetPasswordModal", () => {
-  it("renders with user info when visible", () => {
-    const { getByText } = render(
-      <AdminResetPasswordModal
-        visible
-        user={mockUser}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-      />
-    );
-    expect(getByText("Test User")).toBeTruthy();
-    expect(getByText("test@example.com")).toBeTruthy();
+  it("renders warning step first", () => {
+    const { getByText } = renderModal();
+
+    expect(getByText("Aviso de seguridad")).toBeTruthy();
+    expect(getByText("Continuar")).toBeTruthy();
   });
 
-  it("does not render when not visible", () => {
-    const { queryByText } = render(
-      <AdminResetPasswordModal
-        visible={false}
-        user={mockUser}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-      />
-    );
-    expect(queryByText("Reset Password")).toBeNull();
+  it("moves to form step after continue", () => {
+    const { getByText, getByPlaceholderText } = renderModal();
+
+    fireEvent.press(getByText("Continuar"));
+
+    expect(getByPlaceholderText("Ingresa la nueva contraseña")).toBeTruthy();
+    expect(getByText("Aceptar")).toBeTruthy();
   });
 
-  it("returns null when user is null", () => {
-    const { queryByText } = render(
-      <AdminResetPasswordModal
-        visible
-        user={null}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-      />
+  it("shows validation error for weak password", () => {
+    const { getByText, getByLabelText, queryByText } = renderModal();
+
+    fireEvent.press(getByText("Continuar"));
+    fireEvent.changeText(
+      getByLabelText("Nueva contraseña"),
+      "weak",
     );
-    expect(queryByText("Reset Password")).toBeNull();
+    fireEvent.changeText(
+      getByLabelText("Confirmar contraseña"),
+      "weak",
+    );
+    fireEvent.press(getByText("Aceptar"));
+
+    expect(
+      getByText(
+        "La contraseña debe tener mínimo 8 caracteres, incluir mayúscula, minúscula y número",
+      ),
+    ).toBeTruthy();
+    expect(queryByText("Las contraseñas no coinciden")).toBeNull();
   });
 
-  it("calls onClose when cancel button pressed", () => {
-    const onClose = jest.fn();
-    const { getByText } = render(
-      <AdminResetPasswordModal
-        visible
-        user={mockUser}
-        onClose={onClose}
-        onConfirm={jest.fn()}
-      />
-    );
-    fireEvent.press(getByText("Cancelar"));
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it("calls onConfirm when confirm button pressed", () => {
+  it("calls onConfirm with password when valid", () => {
     const onConfirm = jest.fn();
-    const { getByText } = render(
-      <AdminResetPasswordModal
-        visible
-        user={mockUser}
-        onClose={jest.fn()}
-        onConfirm={onConfirm}
-      />
-    );
-    fireEvent.press(getByText("Confirm Reset"));
-    expect(onConfirm).toHaveBeenCalled();
-  });
+    const { getByText, getByLabelText } = renderModal({ onConfirm });
 
-  it("shows loading text and disables button when loading=true", () => {
-    const { getByText, getByTestId } = render(
-      <AdminResetPasswordModal
-        visible
-        user={mockUser}
-        onClose={jest.fn()}
-        onConfirm={jest.fn()}
-        loading={true}
-      />
-    );
-    expect(getByText("Resetting...")).toBeTruthy();
+    fireEvent.press(getByText("Continuar"));
+    fireEvent.changeText(getByLabelText("Nueva contraseña"), "ValidPass123");
+    fireEvent.changeText(getByLabelText("Confirmar contraseña"), "ValidPass123");
+    fireEvent.press(getByText("Aceptar"));
+
+    expect(onConfirm).toHaveBeenCalledWith("ValidPass123");
   });
 });

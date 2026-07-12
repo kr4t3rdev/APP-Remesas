@@ -19,7 +19,7 @@ describe("expensesRepository", () => {
   });
 
   it("requests expenses list with params", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: [{ id: 1 }] as never[] });
+    mockedApi.get.mockResolvedValueOnce({ data: [{ id: 1 }] as never[], status: 200, statusText: 'OK', headers: new Headers() });
 
     const params = { category: "otros", startDate: "2026-03-01" };
     const result = await expensesRepository.getExpenses(params);
@@ -29,7 +29,7 @@ describe("expensesRepository", () => {
   });
 
   it("requests expense detail by id", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { id: 7 } });
+    mockedApi.get.mockResolvedValueOnce({ data: { id: 7 }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await expensesRepository.getExpenseById(7);
 
@@ -45,7 +45,7 @@ describe("expensesRepository", () => {
       category: "servicios" as const,
       date: "2026-03-06",
     };
-    mockedApi.post.mockResolvedValueOnce({ data: { id: 9, ...payload } });
+    mockedApi.post.mockResolvedValueOnce({ data: { id: 9, ...payload }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await expensesRepository.createExpense(payload);
 
@@ -55,7 +55,7 @@ describe("expensesRepository", () => {
 
   it("updates an expense", async () => {
     const payload = { notes: "Actualizado" };
-    mockedApi.patch.mockResolvedValueOnce({ data: { id: 3, ...payload } });
+    mockedApi.patch.mockResolvedValueOnce({ data: { id: 3, ...payload }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await expensesRepository.updateExpense(3, payload);
 
@@ -64,7 +64,7 @@ describe("expensesRepository", () => {
   });
 
   it("deletes an expense", async () => {
-    mockedApi.delete.mockResolvedValueOnce({ data: undefined });
+    mockedApi.delete.mockResolvedValueOnce({ data: undefined, status: 200, statusText: 'OK', headers: new Headers() });
 
     await expensesRepository.deleteExpense(4);
 
@@ -72,7 +72,7 @@ describe("expensesRepository", () => {
   });
 
   it("requests pending expenses", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: [{ id: 5 }] as never[] });
+    mockedApi.get.mockResolvedValueOnce({ data: [{ id: 5 }] as never[], status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await expensesRepository.getPendingExpenses();
 

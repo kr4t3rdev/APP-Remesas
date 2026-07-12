@@ -30,6 +30,7 @@ import {
   useDeleteExpenseItemMutation,
 } from "../../modules/expense-items/application/useExpenseItems";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
+import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 
 export const ExpenseItemsScreen: React.FC = () => {
   const themeColors = useColors();
@@ -345,7 +346,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: "absolute",
-    bottom: 32,
+    bottom: floatingTabBarMetrics.standaloneActionBottom,
     right: spacing.lg,
     width: 56,
     height: 56,

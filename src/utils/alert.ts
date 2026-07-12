@@ -1,27 +1,29 @@
-import { AlertButton, AlertOptions } from "react-native";
-import { toast as webToast } from "sonner";
+import { Alert as NativeAlert, AlertButton, AlertOptions, Platform } from "react-native";
+import { showError, showInfo, showSuccess } from "../store/toastStore";
+
+const isWeb = Platform.OS === "web";
 
 type ToastKind = "done" | "error" | "none";
 
-const toastWeb = (title: string, message?: string, kind: ToastKind = "done") => {
+const toast = (title: string, message?: string, kind: ToastKind = "done") => {
   const content = message ? `${title}: ${message}` : title;
 
   switch (kind) {
     case "error":
-      webToast.error(content);
+      isWeb ? require("sonner").toast.error(content) : showError(content);
       break;
     case "none":
-      webToast(content);
+      isWeb ? require("sonner").toast(content) : showInfo(content);
       break;
     default:
-      webToast.success(content);
+      isWeb ? require("sonner").toast.success(content) : showSuccess(content);
       break;
   }
 };
 
 /**
  * @deprecated Use the custom ConfirmModal component for interactive confirmations (buttons).
- * Web alerts are mapped to Sonner toasts.
+ * Native alerts are mapped to the local toast store for informative messages.
  */
 export const Alert = {
   alert: (
@@ -56,14 +58,14 @@ export const Alert = {
         preset = "none";
       }
 
-      toastWeb(title, message, preset);
+      toast(title, message, preset);
       return;
     }
 
-    // For web confirmation dialogs, keep native alert fallback behavior
-    // only if it is actually available in the runtime.
-    if (typeof window !== "undefined" && window.confirm) {
+    if (isWeb && typeof window !== "undefined" && window.confirm) {
       window.confirm(`${title}${message ? `: ${message}` : ""}`);
+    } else {
+      NativeAlert.alert(title, message, buttons, options);
     }
   },
 };

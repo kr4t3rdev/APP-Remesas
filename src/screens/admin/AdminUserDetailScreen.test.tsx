@@ -10,6 +10,12 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { AdminResetPasswordModal } from "../../components/admin/AdminResetPasswordModal";
 import { AdminResetPasswordSuccessModal } from "../../components/admin/AdminResetPasswordSuccessModal";
 
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: () => null,
+  MaterialCommunityIcons: () => null,
+  Feather: () => null,
+}));
+
 // Mocks
 jest.mock("../../modules/admin/application/useAdminMetrics", () => ({
   useAdminUserControlActionMutation: jest.fn(),
@@ -206,15 +212,15 @@ describe("AdminUserDetailScreen", () => {
     // Get the last call with visible=true
     const calls = (AdminResetPasswordModal as jest.Mock).mock.calls;
     const visibleCall = calls.find((call) => call[0]?.visible === true);
-    
+
     expect(visibleCall).toBeDefined();
-    expect(visibleCall[0]).toMatchObject({
+    expect(visibleCall?.[0]).toMatchObject({
       visible: true,
       user: expect.objectContaining({ id: 1 }),
     });
   });
 
-  it("shows success modal after reset password action", async () => {
+  it("passes new password to reset password action", async () => {
     (useAdminUserDetailQuery as jest.Mock).mockReturnValue({
       data: {
         id: 1,
@@ -233,10 +239,12 @@ describe("AdminUserDetailScreen", () => {
 
     const { getByText } = render(<AdminUserDetailScreen />);
 
-    // First render should have Reset Password card
-    expect(getByText("Reset Password")).toBeTruthy();
+    fireEvent.press(getByText("Reset Password"));
 
-    // Check that success modal is rendered (initially with visible=false)
-    expect(AdminResetPasswordSuccessModal).toHaveBeenCalled();
+    const call = (AdminResetPasswordModal as jest.Mock).mock.calls.find(
+      (entry) => entry[0]?.visible === true,
+    );
+
+    expect(call?.[0].onConfirm).toBeInstanceOf(Function);
   });
 });

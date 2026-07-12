@@ -18,7 +18,7 @@ export const transactionsRepository = {
     endDate?: string;
   }): Promise<Transaction[]> {
     const response = await api.get<Transaction[]>("/transactions", { params });
-    return response.data;
+    return response.data!;
   },
 
   async createTransaction(data: {
@@ -29,16 +29,16 @@ export const transactionsRepository = {
     notes?: string;
   }): Promise<Transaction> {
     const response = await api.post<Transaction>("/transactions", data);
-    return response.data;
+    return response.data!;
   },
 
   async getCurrencies(): Promise<Currency[]> {
     const response = await api.get<Currency[]>("/currencies");
-    return response.data;
+    return response.data!;
   },
 
   async getExchangeRates(): Promise<ExchangeRate[]> {
     const response = await api.get<ExchangeRatesResponse>("/exchange-rates");
-    return response.data.rates ?? [];
+    return response.data!.rates ?? [];
   },
 };

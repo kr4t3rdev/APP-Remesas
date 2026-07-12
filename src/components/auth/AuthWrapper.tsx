@@ -107,7 +107,7 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       backgroundColor: colors.background,
       height: "100%",
       width: "100%",
-      minHeight: "100vh",
+      minHeight: "100%",
     },
     brandingPanelContainer: {
       flex: 0.4,

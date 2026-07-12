@@ -9,6 +9,7 @@ import { ReportsScreen } from "../screens/reports/ReportsScreen";
 import { BusinessScreen } from "../screens/business/BusinessScreen";
 import type { MainTabParamList } from "./types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useIsDark } from "../store/themeStore";
 import {
   fintechTabBarColors,
   getFintechTabBarStyle,
@@ -18,14 +19,16 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabs: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const isDark = useIsDark();
+  const tabBarColors = fintechTabBarColors[isDark ? "dark" : "light"];
 
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: getFintechTabBarStyle(insets.bottom),
-        tabBarActiveTintColor: fintechTabBarColors.active,
-        tabBarInactiveTintColor: fintechTabBarColors.inactive,
+        tabBarStyle: getFintechTabBarStyle(insets.bottom, isDark),
+        tabBarActiveTintColor: tabBarColors.active,
+        tabBarInactiveTintColor: tabBarColors.inactive,
         tabBarHideOnKeyboard: true,
         tabBarItemStyle: {
           paddingVertical: 0,
@@ -42,7 +45,12 @@ export const MainTabs: React.FC = () => {
         options={{
           tabBarLabel: "Inicio",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="home" color={color} focused={focused} />
+            <TabBarIcon
+              name="home"
+              color={color}
+              focused={focused}
+              activeBackground={tabBarColors.activeBackground}
+            />
           ),
         }}
       />
@@ -52,7 +60,12 @@ export const MainTabs: React.FC = () => {
         options={{
           tabBarLabel: "Negocios",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="briefcase" color={color} focused={focused} />
+            <TabBarIcon
+              name="briefcase"
+              color={color}
+              focused={focused}
+              activeBackground={tabBarColors.activeBackground}
+            />
           ),
         }}
       />
@@ -72,7 +85,12 @@ export const MainTabs: React.FC = () => {
         options={{
           tabBarLabel: "Gastos",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="receipt" color={color} focused={focused} />
+            <TabBarIcon
+              name="receipt"
+              color={color}
+              focused={focused}
+              activeBackground={tabBarColors.activeBackground}
+            />
           ),
         }}
       />
@@ -82,7 +100,12 @@ export const MainTabs: React.FC = () => {
         options={{
           tabBarLabel: "Reportes",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="bar-chart" color={color} focused={focused} />
+            <TabBarIcon
+              name="bar-chart"
+              color={color}
+              focused={focused}
+              activeBackground={tabBarColors.activeBackground}
+            />
           ),
         }}
       />
@@ -92,7 +115,12 @@ export const MainTabs: React.FC = () => {
         options={{
           tabBarLabel: "Perfil",
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name="person" color={color} focused={focused} />
+            <TabBarIcon
+              name="person"
+              color={color}
+              focused={focused}
+              activeBackground={tabBarColors.activeBackground}
+            />
           ),
         }}
       />
@@ -106,14 +134,20 @@ type TabBarIconProps = {
   name: keyof typeof Ionicons.glyphMap;
   color: string;
   focused: boolean;
+  activeBackground: string;
 };
 
-const TabBarIcon: React.FC<TabBarIconProps> = ({ name, color, focused }) => {
+const TabBarIcon: React.FC<TabBarIconProps> = ({
+  name,
+  color,
+  focused,
+  activeBackground,
+}) => {
   return (
     <View
       style={[
         styles.iconContainer,
-        focused && styles.focusedIconContainer,
+        focused && { backgroundColor: activeBackground },
       ]}
     >
       <Ionicons name={name} size={22} color={color} />
@@ -128,8 +162,5 @@ const styles = StyleSheet.create({
     width: 34,
     height: 28,
     borderRadius: 14,
-  },
-  focusedIconContainer: {
-    backgroundColor: fintechTabBarColors.activeBackground,
   },
 });

@@ -39,6 +39,7 @@ import {
 } from "./TransactionFilterModal";
 import CountryFlag from "react-native-country-flag";
 import { getCountryCode } from "../../utils/currencyUtils";
+import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 
 export const TransactionsScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -912,7 +913,7 @@ const styles = StyleSheet.create({
   },
   historyFabWrap: {
     position: "absolute",
-    bottom: spacing.lg,
+    bottom: floatingTabBarMetrics.actionBottom,
     left: spacing.lg,
   },
   historyFab: {
@@ -925,7 +926,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: "absolute",
-    bottom: spacing.lg,
+    bottom: floatingTabBarMetrics.actionBottom,
     right: spacing.lg,
     width: 56,
     height: 56,

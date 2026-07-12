@@ -110,18 +110,18 @@ export const licensesApi = {
       return {
         ...baseLicense,
         billingCycle:
-          response.data.cycle === "MONTHLY"
+          response.data!.cycle === "MONTHLY"
             ? "Mensual"
-            : response.data.cycle === "SEMIANNUAL"
+            : response.data!.cycle === "SEMIANNUAL"
               ? "Semestral"
               : "Anual",
         maxUsers: 1,
         usedUsers: 1,
         fullUserList: [
           {
-            id: response.data.user?.id?.toString() || "0",
-            name: response.data.user?.name || "Usuario",
-            email: response.data.user?.email || "",
+            id: response.data!.user?.id?.toString() || "0",
+            name: response.data!.user?.name || "Usuario",
+            email: response.data!.user?.email || "",
             role: "Admin", // Default role
             status: "online",
           },

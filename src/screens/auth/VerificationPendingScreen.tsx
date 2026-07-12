@@ -255,7 +255,7 @@ const createStyles = (themeColors: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      minHeight: "100vh",
+      minHeight: "100%",
       width: "100%",
     },
     content: {

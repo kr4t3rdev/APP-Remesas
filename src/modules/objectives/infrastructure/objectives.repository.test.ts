@@ -19,7 +19,7 @@ describe("objectivesRepository", () => {
   });
 
   it("requests objectives list with status filter", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: [{ id: 1 }] as never[] });
+    mockedApi.get.mockResolvedValueOnce({ data: [{ id: 1 }] as never[], status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await objectivesRepository.getObjectives("ACTIVO");
 
@@ -30,7 +30,7 @@ describe("objectivesRepository", () => {
   });
 
   it("requests objective detail by id", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { id: 7 } });
+    mockedApi.get.mockResolvedValueOnce({ data: { id: 7 }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await objectivesRepository.getObjectiveById(7);
 
@@ -41,6 +41,9 @@ describe("objectivesRepository", () => {
   it("requests objective progress", async () => {
     mockedApi.get.mockResolvedValueOnce({
       data: { objectiveId: 3, percentage: 45 },
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers(),
     });
 
     const result = await objectivesRepository.getObjectiveProgress(3);
@@ -55,7 +58,7 @@ describe("objectivesRepository", () => {
       targetAmount: 1000,
       currencyId: 1,
     };
-    mockedApi.post.mockResolvedValueOnce({ data: { id: 9, ...payload } });
+    mockedApi.post.mockResolvedValueOnce({ data: { id: 9, ...payload }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await objectivesRepository.createObjective(payload);
 
@@ -65,7 +68,7 @@ describe("objectivesRepository", () => {
 
   it("updates an objective", async () => {
     const payload = { targetAmount: 2000 };
-    mockedApi.patch.mockResolvedValueOnce({ data: { id: 3, ...payload } });
+    mockedApi.patch.mockResolvedValueOnce({ data: { id: 3, ...payload }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await objectivesRepository.updateObjective(3, payload);
 
@@ -77,6 +80,9 @@ describe("objectivesRepository", () => {
     const payload = { status: "COMPLETADO" };
     mockedApi.patch.mockResolvedValueOnce({
       data: { id: 5, status: "COMPLETADO" },
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers(),
     });
 
     const result = await objectivesRepository.updateObjectiveStatus(
@@ -92,7 +98,7 @@ describe("objectivesRepository", () => {
   });
 
   it("deletes an objective", async () => {
-    mockedApi.delete.mockResolvedValueOnce({ data: undefined });
+    mockedApi.delete.mockResolvedValueOnce({ data: undefined, status: 200, statusText: 'OK', headers: new Headers() });
 
     await objectivesRepository.deleteObjective(4);
 

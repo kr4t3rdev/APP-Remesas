@@ -9,7 +9,7 @@ import {
 import { borderRadius } from "../../theme";
 import { useColors } from "../../store/themeStore";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
 
 type ButtonProps = {
@@ -53,6 +53,8 @@ export const Button: React.FC<ButtonProps> = ({
         };
       case "ghost":
         return { backgroundColor: "transparent" };
+      case "danger":
+        return { backgroundColor: colors.danger };
     }
   };
 
@@ -77,6 +79,8 @@ export const Button: React.FC<ButtonProps> = ({
         return colors.primary[500];
       case "ghost":
         return colors.primary[500];
+      case "danger":
+        return "#FFFFFF";
     }
   };
 

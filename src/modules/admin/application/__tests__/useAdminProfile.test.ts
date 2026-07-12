@@ -45,11 +45,15 @@ jest.mock("@react-navigation/native", () => ({
   })),
 }));
 
-const mockUseAuthStore = useAuthStore as jest.Mock;
-const mockUseThemeStore = useThemeStore as jest.Mock;
-const mockUseAdminStatsQuery = useAdminStatsQuery as jest.Mock;
-const mockUseAdminAuditLogsProfileQuery =
-  useAdminAuditLogsProfileQuery as jest.Mock;
+const mockUseAuthStore = useAuthStore as unknown as jest.Mock<any, any, any>;
+const mockUseThemeStore = useThemeStore as unknown as jest.Mock<any, any, any>;
+    const mockUseAdminStatsQuery = useAdminStatsQuery as unknown as jest.Mock<
+      any,
+      any,
+      any
+    >;
+    const mockUseAdminAuditLogsProfileQuery =
+      useAdminAuditLogsProfileQuery as unknown as jest.Mock<any, any, any>;
 
 const mockUser = {
   id: 1,

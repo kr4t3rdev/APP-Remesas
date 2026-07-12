@@ -15,20 +15,20 @@ export const plansRepository = {
   async getOne(id: number): Promise<Plan> {
     try {
       const response = await api.get<Plan>(`/subscriptions/plans/${id}`);
-      return response.data;
+      return response.data!;
     } catch {
       const response = await api.get<Plan>(`/plans/${id}`);
-      return response.data;
+      return response.data!;
     }
   },
 
   async create(data: CreatePlanInput): Promise<Plan> {
     try {
       const response = await api.post<Plan>("/subscriptions/plans", data);
-      return response.data;
+      return response.data!;
     } catch {
       const response = await api.post<Plan>("/plans", data);
-      return response.data;
+      return response.data!;
     }
   },
 
@@ -38,10 +38,10 @@ export const plansRepository = {
         `/subscriptions/plans/${id}`,
         data,
       );
-      return response.data;
+      return response.data!;
     } catch {
       const response = await api.patch<Plan>(`/plans/${id}`, data);
-      return response.data;
+      return response.data!;
     }
   },
 

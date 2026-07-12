@@ -16,7 +16,7 @@ describe("reportsRepository", () => {
   });
 
   it("requests daily report", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { date: "2026-03-06" } });
+    mockedApi.get.mockResolvedValueOnce({ data: { date: "2026-03-06" }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await reportsRepository.getDailyReport("2026-03-06");
 
@@ -27,7 +27,7 @@ describe("reportsRepository", () => {
   });
 
   it("requests period report", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { period: {} } });
+    mockedApi.get.mockResolvedValueOnce({ data: { period: {} }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await reportsRepository.getPeriodReport(
       "2026-01-01",
@@ -41,7 +41,7 @@ describe("reportsRepository", () => {
   });
 
   it("requests profit report", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { totalMarginProfit: 5000 } });
+    mockedApi.get.mockResolvedValueOnce({ data: { totalMarginProfit: 5000 }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await reportsRepository.getProfitReport(
       "2026-01-01",
@@ -55,7 +55,7 @@ describe("reportsRepository", () => {
   });
 
   it("requests currency report", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { currencyId: 1 } });
+    mockedApi.get.mockResolvedValueOnce({ data: { currencyId: 1 }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await reportsRepository.getCurrencyReport(
       1,
@@ -70,7 +70,7 @@ describe("reportsRepository", () => {
   });
 
   it("requests expenses report", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { total: 10 } });
+    mockedApi.get.mockResolvedValueOnce({ data: { total: 10 }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await reportsRepository.getExpensesReport(
       "2026-01-01",
@@ -89,7 +89,7 @@ describe("reportsRepository", () => {
   });
 
   it("requests accounts report", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { totalAccounts: 3 } });
+    mockedApi.get.mockResolvedValueOnce({ data: { totalAccounts: 3 }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await reportsRepository.getAccountsReport();
 
@@ -98,7 +98,7 @@ describe("reportsRepository", () => {
   });
 
   it("requests objectives report", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { total: 5 } });
+    mockedApi.get.mockResolvedValueOnce({ data: { total: 5 }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await reportsRepository.getObjectivesReport();
 
@@ -107,7 +107,7 @@ describe("reportsRepository", () => {
   });
 
   it("requests cash flow report", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { inflows: {} } });
+    mockedApi.get.mockResolvedValueOnce({ data: { inflows: {} }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await reportsRepository.getCashFlowReport(
       "2026-01-01",
@@ -121,7 +121,7 @@ describe("reportsRepository", () => {
   });
 
   it("requests audit summary report", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { totalAudits: 2 } });
+    mockedApi.get.mockResolvedValueOnce({ data: { totalAudits: 2 }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await reportsRepository.getAuditSummary(
       "2026-01-01",

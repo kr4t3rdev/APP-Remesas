@@ -18,6 +18,7 @@ export const queryKeys = {
     exchangeRates: () => ["transactions", "exchangeRates"] as const,
   },
   cash: {
+    overview: () => ["cash", "overview"] as const,
     balances: () => ["cash", "balances"] as const,
     transactions: () => ["cash", "transactions"] as const,
     audits: (currencyId?: number) =>

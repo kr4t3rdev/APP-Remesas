@@ -7,6 +7,8 @@ export const useBankAccountsQuery = () =>
     queryKey: queryKeys.bankAccounts.list(),
     queryFn: bankAccountsRepository.getAll,
     staleTime: 1000 * 60 * 5,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useBankAccountQuery = (id: number) =>
@@ -15,6 +17,7 @@ export const useBankAccountQuery = (id: number) =>
     queryFn: () => bankAccountsRepository.getOne(id),
     enabled: !!id,
     staleTime: 1000 * 60 * 5,
+    throwOnError: false,
   });
 
 export const useBankAccountBalanceQuery = (id: number) =>
@@ -23,6 +26,7 @@ export const useBankAccountBalanceQuery = (id: number) =>
     queryFn: () => bankAccountsRepository.getBalance(id),
     enabled: !!id,
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
   });
 
 export const useBankAccountTransactionsQuery = (id: number) =>
@@ -31,6 +35,7 @@ export const useBankAccountTransactionsQuery = (id: number) =>
     queryFn: () => bankAccountsRepository.getTransactions(id),
     enabled: !!id,
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
   });
 
 export const useCreateBankAccountMutation = () => {

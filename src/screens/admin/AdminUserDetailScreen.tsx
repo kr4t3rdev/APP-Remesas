@@ -18,7 +18,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useColors } from "../../store/themeStore";
 import { borderRadius, spacing } from "../../theme";
 import type { RootStackParamList } from "../../navigation/types";
-import type { User, AdminUserControlActionType } from "../../types";
+import type { User, AdminUserDetail, AdminUserControlActionType } from "../../types";
 import {
   useAdminUserControlActionMutation,
   useAdminUpdateUserBasicMutation,
@@ -81,6 +81,7 @@ export const AdminUserDetailScreen: React.FC = () => {
 
   // Use full user data if available, otherwise fallback to route params
   const displayUser = fullUser || user;
+  const safeLicense = (displayUser as AdminUserDetail).license ?? null;
 
   // Edit Mode State
   const [isEditing, setIsEditing] = useState(false);
@@ -222,10 +223,10 @@ export const AdminUserDetailScreen: React.FC = () => {
         setIsResetPasswordModalVisible(true);
         break;
       case "EXTEND_LICENSE":
-        if (fullUser?.license?.id) {
+        if (safeLicense?.id) {
           // Navigate to license detail if user has a license
           navigation.navigate("AdminLicenseDetail", {
-            licenseId: fullUser.license.id,
+            licenseId: safeLicense.id,
           });
         } else {
           // Navigate to licenses list if no license assigned
@@ -258,6 +259,10 @@ export const AdminUserDetailScreen: React.FC = () => {
           blockUntilDate.getHours() + additionalData.duration,
         );
         requestPayload.blockUntil = blockUntilDate.toISOString();
+      }
+
+      if (actionType === "RESET_PASSWORD" && additionalData?.newPassword) {
+        requestPayload.newPassword = additionalData.newPassword;
       }
 
       // Default reason if not provided
@@ -424,13 +429,13 @@ export const AdminUserDetailScreen: React.FC = () => {
             )}
 
             {/* License Status Badge */}
-            {fullUser?.license && (
+            {safeLicense && (
               <View
                 style={[
                   styles.badge,
                   {
                     backgroundColor:
-                      fullUser.license.state === "ACTIVE"
+                      safeLicense.state === "ACTIVE"
                         ? "#10B98120"
                         : "#F59E0B20",
                   },
@@ -441,15 +446,15 @@ export const AdminUserDetailScreen: React.FC = () => {
                     styles.badgeText,
                     {
                       color:
-                        fullUser.license.state === "ACTIVE"
+                        safeLicense.state === "ACTIVE"
                           ? "#34D399"
                           : "#F59E0B",
                     },
                   ]}
                 >
-                  {fullUser.license.state === "ACTIVE"
+                  {safeLicense.state === "ACTIVE"
                     ? "LICENSED"
-                    : fullUser.license.state}
+                    : safeLicense.state}
                 </Text>
               </View>
             )}
@@ -768,7 +773,7 @@ export const AdminUserDetailScreen: React.FC = () => {
         visible={errorModalState.visible}
         title={errorModalState.title}
         message={errorModalState.message}
-        onClose={() =>
+        onCancel={() =>
           setErrorModalState((prev) => ({ ...prev, visible: false }))
         }
       />
@@ -777,8 +782,8 @@ export const AdminUserDetailScreen: React.FC = () => {
         visible={isResetPasswordModalVisible}
         user={user}
         onClose={() => setIsResetPasswordModalVisible(false)}
-        onConfirm={() =>
-          executeAction("RESET_PASSWORD")
+        onConfirm={(newPassword) =>
+          executeAction("RESET_PASSWORD", { newPassword })
         }
         loading={userControlActionMutation.isPending}
       />

@@ -10,7 +10,7 @@ export const subscriptionsRepository = {
     const response = await api.get<UserLicense[]>("/subscriptions/licenses", {
       params: userId ? { userId } : undefined,
     });
-    return response.data;
+    return response.data!;
   },
 
   async assignLicense(data: {
@@ -25,7 +25,7 @@ export const subscriptionsRepository = {
       "/subscriptions/licenses",
       data,
     );
-    return response.data;
+    return response.data!;
   },
 
   async renewLicense(
@@ -36,7 +36,7 @@ export const subscriptionsRepository = {
       `/subscriptions/licenses/${id}/renew`,
       data,
     );
-    return response.data;
+    return response.data!;
   },
 
   async suspendLicense(id: number, reason?: string): Promise<UserLicense> {
@@ -46,7 +46,7 @@ export const subscriptionsRepository = {
         reason,
       },
     );
-    return response.data;
+    return response.data!;
   },
 
   async reactivateLicense(id: number, reason?: string): Promise<UserLicense> {
@@ -56,7 +56,7 @@ export const subscriptionsRepository = {
         reason,
       },
     );
-    return response.data;
+    return response.data!;
   },
 
   async registerPayment(data: {
@@ -74,6 +74,6 @@ export const subscriptionsRepository = {
       "/subscriptions/payments",
       data,
     );
-    return response.data;
+    return response.data!;
   },
 };

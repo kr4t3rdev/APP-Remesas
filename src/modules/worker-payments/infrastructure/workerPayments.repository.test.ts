@@ -22,7 +22,7 @@ describe("workerPaymentsRepository", () => {
   describe("getWorkers", () => {
     it("requests workers list", async () => {
       const mockWorkers = [{ id: 1, name: "Juan" }] as never;
-      mockedApi.get.mockResolvedValueOnce({ data: mockWorkers });
+      mockedApi.get.mockResolvedValueOnce({ data: mockWorkers, status: 200, statusText: 'OK', headers: new Headers() });
 
       const result = await workerPaymentsRepository.getWorkers();
 
@@ -33,7 +33,7 @@ describe("workerPaymentsRepository", () => {
 
   describe("getWorkerById", () => {
     it("requests worker detail by id", async () => {
-      mockedApi.get.mockResolvedValueOnce({ data: { id: 1, name: "Juan" } });
+      mockedApi.get.mockResolvedValueOnce({ data: { id: 1, name: "Juan" }, status: 200, statusText: 'OK', headers: new Headers() });
 
       const result = await workerPaymentsRepository.getWorkerById(1);
 
@@ -45,7 +45,7 @@ describe("workerPaymentsRepository", () => {
   describe("createWorker", () => {
     it("creates a worker", async () => {
       const payload = { name: "Nuevo Trabajador", phone: "1234567890" };
-      mockedApi.post.mockResolvedValueOnce({ data: { id: 1, ...payload } });
+      mockedApi.post.mockResolvedValueOnce({ data: { id: 1, ...payload }, status: 200, statusText: 'OK', headers: new Headers() });
 
       const result = await workerPaymentsRepository.createWorker(payload);
 
@@ -57,7 +57,7 @@ describe("workerPaymentsRepository", () => {
   describe("updateWorker", () => {
     it("updates a worker", async () => {
       const payload = { name: "Trabajador Actualizado" };
-      mockedApi.put.mockResolvedValueOnce({ data: { id: 1, ...payload } });
+      mockedApi.put.mockResolvedValueOnce({ data: { id: 1, ...payload }, status: 200, statusText: 'OK', headers: new Headers() });
 
       const result = await workerPaymentsRepository.updateWorker(1, payload);
 
@@ -68,7 +68,7 @@ describe("workerPaymentsRepository", () => {
 
   describe("deleteWorker", () => {
     it("deletes a worker", async () => {
-      mockedApi.delete.mockResolvedValueOnce({ data: undefined });
+      mockedApi.delete.mockResolvedValueOnce({ data: undefined, status: 200, statusText: 'OK', headers: new Headers() });
 
       await workerPaymentsRepository.deleteWorker(1);
 
@@ -79,7 +79,7 @@ describe("workerPaymentsRepository", () => {
   describe("createTransaction", () => {
     it("creates a transaction for a worker", async () => {
       const payload = { amount: 200, profit: 50 };
-      mockedApi.post.mockResolvedValueOnce({ data: { worker: { id: 1 } } });
+      mockedApi.post.mockResolvedValueOnce({ data: { worker: { id: 1 } }, status: 200, statusText: 'OK', headers: new Headers() });
 
       const result = await workerPaymentsRepository.createTransaction(
         1,
@@ -98,6 +98,9 @@ describe("workerPaymentsRepository", () => {
     it("adds balance to a worker", async () => {
       mockedApi.post.mockResolvedValueOnce({
         data: { worker: { id: 1, balance: 1300 } },
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers(),
       });
 
       const result = await workerPaymentsRepository.addBalance(1, 300);

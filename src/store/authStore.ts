@@ -77,7 +77,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         email,
         password,
       });
-      const { access_token, user, mustChangePassword } = response.data;
+      const data = response.data;
+      if (!data) throw new Error("No se recibieron datos de autenticación");
+      const { access_token, user, mustChangePassword } = data;
 
       await setStorageItem(STORAGE_KEYS.AUTH_TOKEN, access_token);
       await setStorageItem(STORAGE_KEYS.USER, JSON.stringify(user));

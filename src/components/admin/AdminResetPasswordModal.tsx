@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -6,22 +6,21 @@ import {
   TouchableOpacity,
   View,
   Image,
-  Dimensions,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "../../store/themeStore";
 import { borderRadius, spacing } from "../../theme";
 import type { User } from "../../types";
+import { Input } from "../ui/Input";
+import { validatePassword } from "../../utils/validators";
 
 const AVATAR_MOCK = "https://i.pravatar.cc/150";
-const { width } = Dimensions.get("window");
-
 type AdminResetPasswordModalProps = {
   visible: boolean;
   user: User | null;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (newPassword: string) => void;
   loading?: boolean;
 };
 
@@ -35,6 +34,11 @@ export const AdminResetPasswordModal: React.FC<
   loading = false,
 }) => {
   const colors = useColors();
+  const [step, setStep] = useState<"warning" | "form">("warning");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+
   const theme = {
     background: colors.background,
     card: colors.card,
@@ -48,12 +52,46 @@ export const AdminResetPasswordModal: React.FC<
 
   if (!visible || !user) return null;
 
+  const passwordError = (() => {
+    if (step !== "form") return "";
+    if (!newPassword.trim()) return "La contraseña es obligatoria";
+    if (!validatePassword(newPassword)) {
+      return "La contraseña debe tener mínimo 8 caracteres, incluir mayúscula, minúscula y número";
+    }
+    if (newPassword !== confirmPassword) return "Las contraseñas no coinciden";
+    return "";
+  })();
+
   const mainColor = theme.primary;
   const buttonColor = theme.primary;
-  const iconName = "lock-reset";
+  const iconName = "key";
   const title = "Reset Password";
-  const cardTitle = "Confirm Password Reset";
-  const confirmText = "Confirm Reset";
+  const cardTitle = step === "warning" ? "Aviso de seguridad" : "Nueva contraseña";
+  const confirmText = step === "warning" ? "Continuar" : "Aceptar";
+
+  const handleConfirm = () => {
+    if (step === "warning") {
+      setStep("form");
+      return;
+    }
+
+    const validation = passwordError;
+    if (validation) {
+      setError(validation);
+      return;
+    }
+
+    setError("");
+    onConfirm(newPassword);
+  };
+
+  const handleClose = () => {
+    setStep("warning");
+    setNewPassword("");
+    setConfirmPassword("");
+    setError("");
+    onClose();
+  };
 
   return (
     <Modal
@@ -123,14 +161,46 @@ export const AdminResetPasswordModal: React.FC<
               {cardTitle}
             </Text>
 
-            <Text style={[styles.cardDescription, { color: theme.textSecondary }]}>
-              Al confirmar esta acción, la contraseña del usuario será{" "}
-              <Text style={{ color: theme.primary, fontWeight: "700" }}>
-                resetada inmediatamente
-              </Text>{" "}
-              y recibirá un correo con sus credenciales temporales. El usuario
-              deberá cambiar su contraseña en el próximo inicio de sesión.
-            </Text>
+            {step === "warning" ? (
+              <Text style={[styles.cardDescription, { color: theme.textSecondary }]}>
+                La contraseña actual será reemplazada por una nueva definida por
+                el administrador. El usuario recibirá un aviso por seguridad y
+                deberá usar esta contraseña en su próximo ingreso.
+              </Text>
+            ) : (
+              <View style={styles.form}>
+                <Input
+                  label="Nueva contraseña"
+                  accessibilityLabel="Nueva contraseña"
+                  placeholder="Ingresa la nueva contraseña"
+                  value={newPassword}
+                  onChangeText={(text) => {
+                    setNewPassword(text);
+                    if (error) setError("");
+                  }}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  error={error || (newPassword && !validatePassword(newPassword) ? passwordError : "")}
+                />
+                <Input
+                  label="Confirmar contraseña"
+                  accessibilityLabel="Confirmar contraseña"
+                  placeholder="Confirma la contraseña"
+                  value={confirmPassword}
+                  onChangeText={(text) => {
+                    setConfirmPassword(text);
+                    if (error) setError("");
+                  }}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  error={confirmPassword && newPassword !== confirmPassword ? "Las contraseñas no coinciden" : ""}
+                />
+                <Text style={[styles.cardDescription, { color: theme.textSecondary }]}>
+                  La contraseña debe tener mínimo 8 caracteres, incluir mayúscula,
+                  minúscula y número.
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -144,18 +214,18 @@ export const AdminResetPasswordModal: React.FC<
                 opacity: loading ? 0.7 : 1,
               },
             ]}
-            onPress={onConfirm}
+            onPress={handleConfirm}
             disabled={loading}
             activeOpacity={0.8}
           >
             <Text style={styles.confirmButtonText}>
-              {loading ? "Resetting..." : confirmText}
+              {loading ? "Procesando..." : confirmText}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.cancelButton, { backgroundColor: theme.card }]}
-            onPress={onClose}
+            onPress={handleClose}
             disabled={loading}
             activeOpacity={0.8}
           >
@@ -193,6 +263,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xl,
+  },
+  form: {
+    width: "100%",
+    gap: spacing.md,
   },
   avatarContainer: {
     position: "relative",

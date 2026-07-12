@@ -13,6 +13,8 @@ export const useTransactionsQuery = (params?: {
     queryKey: ["transactions", "list", params],
     queryFn: () => transactionsRepository.getTransactions(params),
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useCurrenciesQuery = () =>
@@ -20,6 +22,8 @@ export const useCurrenciesQuery = () =>
     queryKey: queryKeys.transactions.currencies(),
     queryFn: transactionsRepository.getCurrencies,
     staleTime: 1000 * 60 * 30,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useExchangeRatesQuery = () =>
@@ -27,6 +31,8 @@ export const useExchangeRatesQuery = () =>
     queryKey: queryKeys.transactions.exchangeRates(),
     queryFn: transactionsRepository.getExchangeRates,
     staleTime: 1000 * 60 * 5,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useCreateTransactionMutation = () => {

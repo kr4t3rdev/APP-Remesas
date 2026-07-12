@@ -47,7 +47,8 @@ export const AdminResetPasswordSuccessModal: React.FC<
           </Text>
 
           <Text style={[styles.message, { color: theme.textSecondary }]}>
-            An email with temporary credentials has been sent to:
+            Su contraseña ha sido cambiada por motivos de seguridad. Se envió
+            un aviso a:
           </Text>
 
           <View style={[styles.emailBox, { backgroundColor: theme.primary }]}>
@@ -55,8 +56,7 @@ export const AdminResetPasswordSuccessModal: React.FC<
           </View>
 
           <Text style={[styles.message, { color: theme.textSecondary }]}>
-            The user will receive their temporary credentials shortly and must
-            change their password on next login.
+            El usuario deberá iniciar sesión con esta nueva contraseña.
           </Text>
         </View>
 

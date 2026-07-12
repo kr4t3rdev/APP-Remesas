@@ -38,14 +38,14 @@ export const CashAuditCard = ({ audit }: Props) => {
     <View style={[styles.card, { backgroundColor: colors.card }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.text.secondary }]}>
-          LAST CASH AUDIT
+          ÚLTIMO ARQUEO
         </Text>
         <View style={[styles.dot, { backgroundColor: dotColor }]} />
       </View>
 
       <View style={styles.dateContainer}>
         <Text style={[styles.label, { color: colors.text.secondary }]}>
-          Audit Date
+          Fecha del arqueo
         </Text>
         <Text style={[styles.dateText, { color: colors.text.primary }]}>
           {audit.dateFormatted}
@@ -55,7 +55,7 @@ export const CashAuditCard = ({ audit }: Props) => {
       <View style={styles.amountsRow}>
         <View style={styles.amountColumn}>
           <Text style={[styles.label, { color: colors.text.secondary }]}>
-            Expected
+            Esperado
           </Text>
           <Text style={[styles.amountText, { color: colors.text.primary }]}>
             $
@@ -66,7 +66,7 @@ export const CashAuditCard = ({ audit }: Props) => {
         </View>
         <View style={styles.amountColumn}>
           <Text style={[styles.label, { color: colors.text.secondary }]}>
-            Actual
+            Real
           </Text>
           <Text style={[styles.amountText, { color: dotColor }]}>
             $
@@ -79,7 +79,7 @@ export const CashAuditCard = ({ audit }: Props) => {
         <Text
           style={[styles.differenceLabel, { color: colors.text.secondary }]}
         >
-          Difference
+          Diferencia
         </Text>
         <View style={[styles.badge, { backgroundColor: badgeBgColor }]}>
           <Text style={[styles.badgeText, { color: badgeColor }]}>
@@ -89,7 +89,7 @@ export const CashAuditCard = ({ audit }: Props) => {
       </View>
 
       <Text style={[styles.auditorText, { color: colors.text.secondary }]}>
-        Audited by: {audit.auditorName}
+        Auditado por: {audit.auditorName}
       </Text>
     </View>
   );

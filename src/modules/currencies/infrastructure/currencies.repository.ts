@@ -8,19 +8,19 @@ import type {
 export const currenciesRepository = {
   async getAll(): Promise<Currency[]> {
     const response = await api.get<Currency[]>("/currencies");
-    return response.data;
+    return response.data!;
   },
 
   async getWithPrimary(): Promise<CurrenciesWithPrimary> {
     const response = await api.get<CurrenciesWithPrimary>(
       "/currencies/with-primary",
     );
-    return response.data;
+    return response.data!;
   },
 
   async getById(id: number): Promise<CurrencyDetail> {
     const response = await api.get<CurrencyDetail>(`/currencies/${id}`);
-    return response.data;
+    return response.data!;
   },
 
   async create(data: {
@@ -30,7 +30,7 @@ export const currenciesRepository = {
     isActive?: boolean;
   }): Promise<Currency> {
     const response = await api.post<Currency>("/currencies", data);
-    return response.data;
+    return response.data!;
   },
 
   async update(
@@ -43,7 +43,7 @@ export const currenciesRepository = {
     }>,
   ): Promise<Currency> {
     const response = await api.patch<Currency>(`/currencies/${id}`, data);
-    return response.data;
+    return response.data!;
   },
 
   async delete(id: number): Promise<void> {
@@ -59,6 +59,6 @@ export const currenciesRepository = {
         primaryCurrencyId,
       },
     );
-    return response.data;
+    return response.data!;
   },
 };

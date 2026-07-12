@@ -52,9 +52,8 @@ export const BankAccountsScreen: React.FC = () => {
 
   const accounts = bankAccountsQuery.data ?? [];
   const currencies = currenciesQuery.data?.currencies ?? [];
-  const primaryCurrencyId = currenciesQuery.data?.primaryCurrencyId ?? null;
   const availableCurrencies = currencies.filter(
-    (c) => c.id !== primaryCurrencyId && c.isActive !== false,
+    (c) => c.isActive !== false,
   );
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -419,7 +418,7 @@ export const BankAccountsScreen: React.FC = () => {
                                 styles.currencyButtonTextActive,
                             ]}
                           >
-                            {currencyInfo.flag} {currency.code}
+                            {currencyInfo.flag} {currency.symbol} {currency.code}
                           </Text>
                         </TouchableOpacity>
                       );

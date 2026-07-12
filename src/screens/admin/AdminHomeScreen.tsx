@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import type { CompositeNavigationProp } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { FadeIn, FadeInDown, StaggerList } from "../../components/animations";
 import { BarChart } from "../../components/charts/Charts";
@@ -21,7 +22,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useColors, useShadows } from "../../store/themeStore";
 import { borderRadius, spacing } from "../../theme";
 import type { AdminAuditLog } from "../../types";
-import type { AdminTabParamList } from "../../navigation/types";
+import type { AdminTabParamList, RootStackParamList } from "../../navigation/types";
 
 /**
  * AdminHomeScreen - Pantalla de inicio del panel de administración
@@ -75,7 +76,7 @@ function getInitials(name: string | null | undefined, email?: string): string {
 
 type AdminHomeNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<AdminTabParamList, "AdminHome">,
-  undefined
+  NativeStackNavigationProp<RootStackParamList>
 >;
 
 export const AdminHomeScreen: React.FC = () => {

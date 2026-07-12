@@ -8,6 +8,8 @@ export const usePlansCatalogQuery = () =>
     queryKey: queryKeys.plans.catalog(),
     queryFn: plansRepository.getAll,
     staleTime: 1000 * 60,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useCreatePlanMutation = () => {

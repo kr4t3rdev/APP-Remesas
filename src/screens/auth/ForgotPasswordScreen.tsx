@@ -63,10 +63,7 @@ export const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
       style={{ flex: 1 }}
     >
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          isDesktop && styles.contentDesktop,
-        ]}
+        contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
         {!isDesktop && (
@@ -190,7 +187,7 @@ const createStyles = (themeColors: any) =>
     container: {
       flex: 1,
       backgroundColor: themeColors.background,
-      minHeight: "100vh",
+      minHeight: "100%",
       width: "100%",
     },
     content: { flexGrow: 1, padding: spacing.lg, justifyContent: "center" },

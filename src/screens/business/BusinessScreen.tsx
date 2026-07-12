@@ -5,48 +5,47 @@ import { BanksTab } from "./tabs/BanksTab";
 import { CurrenciesTab } from "./tabs/CurrenciesTab";
 import { CashRegisterTab } from "./tabs/CashRegisterTab";
 import {
-  SafeAreaView,
   StatusBar,
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useColors } from "../../store/themeStore";
-import { Ionicons } from "@expo/vector-icons";
-import { PortfolioLiquidityCard } from "./components/PortfolioLiquidityCard";
 import { TabSelector, TabItem } from "./components/TabSelector";
-import { ExchangeRatesScreen } from "../exchange-rates/ExchangeRatesScreen";
 import { ExchangeTab } from "./tabs/ExchangesTab";
 
 const BUSINESS_TABS: TabItem[] = [
-  { key: "transactions", label: "Transacciones" },
-  { key: "workers", label: "Trabajadores" },
-  { key: "banks", label: "Cuentas Bancarias" },
-  { key: "currencies", label: "Monedas" },
-  { key: "cash", label: "Cash" },
-  { key: "tasa_cambio", label: "Tasa de Cambio" },
+  {
+    key: "transactions",
+    label: "Transacciones",
+    icon: "swap-horizontal-outline",
+  },
+  { key: "workers", label: "Trabajadores", icon: "people-outline" },
+  {
+    key: "banks",
+    label: "Cuentas bancarias",
+    icon: "business-outline",
+  },
+  { key: "currencies", label: "Monedas", icon: "cash-outline" },
+  { key: "cash", label: "Caja", icon: "wallet-outline" },
+  {
+    key: "tasa_cambio",
+    label: "Tasas de cambio",
+    icon: "trending-up-outline",
+  },
 ];
 
 const Header = () => {
   const colors = useColors();
   return (
     <View style={styles.headerContainer}>
-      <View style={styles.topBar}>
-        <TouchableOpacity>
-          {/* <Ionicons name="menu-outline" size={28} color={colors.primary[500]} /> */}
-        </TouchableOpacity>
-        <TouchableOpacity>
-          {/* <Ionicons name="search-outline" size={24} color={colors.primary[500]} /> */}
-        </TouchableOpacity>
-      </View>
-
       <View style={styles.titleSection}>
         <Text style={[styles.topBarTitle, { color: colors.text.primary }]}>
-          Business
+          Negocios
         </Text>
         <Text style={[styles.superTitle, { color: colors.text.secondary }]}>
-          Todo lo realcionado con tu negocio
+          Administra los módulos de tu negocio
         </Text>
       </View>
     </View>
@@ -58,12 +57,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 40,
     paddingBottom: 5,
-  },
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
   },
   topBarTitle: {
     fontSize: 28,

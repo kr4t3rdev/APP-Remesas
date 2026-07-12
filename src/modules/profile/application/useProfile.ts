@@ -7,6 +7,8 @@ export const useProfileBankAccountsQuery = () =>
     queryKey: queryKeys.profile.bankAccounts(),
     queryFn: profileRepository.getBankAccounts,
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useProfileActiveObjectivesQuery = () =>
@@ -14,6 +16,8 @@ export const useProfileActiveObjectivesQuery = () =>
     queryKey: queryKeys.profile.activeObjectives(),
     queryFn: profileRepository.getActiveObjectives,
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useProfileCashBalancesQuery = () =>
@@ -21,6 +25,8 @@ export const useProfileCashBalancesQuery = () =>
     queryKey: queryKeys.profile.cashBalances(),
     queryFn: profileRepository.getCashBalances,
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useProfileDailyReportQuery = () =>
@@ -28,4 +34,5 @@ export const useProfileDailyReportQuery = () =>
     queryKey: queryKeys.profile.dailyReport(),
     queryFn: profileRepository.getDailyReport,
     staleTime: 1000 * 60 * 2,
+    throwOnError: false,
   });

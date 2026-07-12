@@ -10,6 +10,7 @@ interface CashMovement {
   amount: number;
   type: "INCOME" | "EXPENSE" | "TRANSFER";
   badgeLabel: string;
+  currencySymbol?: string;
 }
 
 interface Props {
@@ -62,7 +63,7 @@ export const CashMovementCard = ({ movement }: Props) => {
 
       <View style={styles.rightContainer}>
         <Text style={[styles.amount, { color: amountColor }]}>
-          {amountPrefix}$
+          {amountPrefix}{movement.currencySymbol ?? "$"}
           {Math.abs(movement.amount).toLocaleString("en-US", {
             minimumFractionDigits: 2,
           })}

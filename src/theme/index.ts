@@ -251,6 +251,23 @@ export const shadows = {
   },
 };
 
+export const header = {
+  height: 64,
+  searchMaxWidth: 480,
+};
+
+export const gridColumns = {
+  mobile: 1,
+  tablet: 2,
+  desktop: 3,
+};
+
+export const sidebar = {
+  expandedWidth: 260,
+  collapsedWidth: 72,
+  itemHeight: 48,
+};
+
 export const darkShadows = {
   sm: {
     shadowColor: "#000",

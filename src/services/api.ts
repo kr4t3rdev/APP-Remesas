@@ -97,12 +97,26 @@ class ApiClient {
     throw error;
   }
 
+  private buildQueryString(
+    params: Record<string, string | number | boolean | undefined | null>,
+  ): string {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null && value !== '') {
+        searchParams.append(key, String(value));
+      }
+    }
+    const qs = searchParams.toString();
+    return qs ? `?${qs}` : '';
+  }
+
   private async request<T = any>(
     method: string,
     url: string,
-    options?: { data?: any; headers?: Record<string, string> }
+    options?: { data?: any; headers?: Record<string, string>; params?: Record<string, string | number | boolean | undefined | null> }
   ): Promise<ApiResponse<T>> {
-    const fullUrl = `${this.baseURL}${url}`;
+    const queryString = options?.params ? this.buildQueryString(options.params) : '';
+    const fullUrl = `${this.baseURL}${url}${queryString}`;
 
     let config: RequestConfig = {
       method,
@@ -149,6 +163,25 @@ class ApiClient {
         headers: response.headers,
       };
 
+      if (!response.ok) {
+        const apiError: ApiError & {
+          status: number;
+          statusText: string;
+          response: ApiResponse<T>;
+        } = {
+          message:
+            (data as ApiError | undefined)?.message ||
+            response.statusText ||
+            "Request failed",
+          statusCode: response.status,
+          status: response.status,
+          statusText: response.statusText,
+          response: apiResponse,
+        };
+
+        throw apiError;
+      }
+
       // Ejecutar interceptores de response
       return await this.executeResponseInterceptors(apiResponse);
     } catch (error) {
@@ -163,14 +196,14 @@ class ApiClient {
     }
   }
 
-  get<T = any>(url: string, options?: { headers?: Record<string, string> }): Promise<ApiResponse<T>> {
+  get<T = any>(url: string, options?: { headers?: Record<string, string>; params?: Record<string, string | number | boolean | undefined | null> }): Promise<ApiResponse<T>> {
     return this.request<T>("GET", url, options);
   }
 
   post<T = any>(
     url: string,
     data?: any,
-    options?: { headers?: Record<string, string> }
+    options?: { headers?: Record<string, string>; params?: Record<string, string | number | boolean | undefined | null> }
   ): Promise<ApiResponse<T>> {
     return this.request<T>("POST", url, { data, ...options });
   }
@@ -178,7 +211,7 @@ class ApiClient {
   put<T = any>(
     url: string,
     data?: any,
-    options?: { headers?: Record<string, string> }
+    options?: { headers?: Record<string, string>; params?: Record<string, string | number | boolean | undefined | null> }
   ): Promise<ApiResponse<T>> {
     return this.request<T>("PUT", url, { data, ...options });
   }
@@ -186,12 +219,12 @@ class ApiClient {
   patch<T = any>(
     url: string,
     data?: any,
-    options?: { headers?: Record<string, string> }
+    options?: { headers?: Record<string, string>; params?: Record<string, string | number | boolean | undefined | null> }
   ): Promise<ApiResponse<T>> {
     return this.request<T>("PATCH", url, { data, ...options });
   }
 
-  delete<T = any>(url: string, options?: { headers?: Record<string, string> }): Promise<ApiResponse<T>> {
+  delete<T = any>(url: string, options?: { headers?: Record<string, string>; params?: Record<string, string | number | boolean | undefined | null> }): Promise<ApiResponse<T>> {
     return this.request<T>("DELETE", url, options);
   }
 }

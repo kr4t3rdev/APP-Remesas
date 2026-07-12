@@ -19,6 +19,7 @@ export const useAdminKpisQuery = (params?: {
     ),
     queryFn: () => adminRepository.getKpis(params),
     staleTime: 1000 * 60,
+    throwOnError: false,
   });
 
 export const useAdminUsersQuery = () =>
@@ -26,6 +27,8 @@ export const useAdminUsersQuery = () =>
     queryKey: queryKeys.admin.users(),
     queryFn: adminRepository.getUsers,
     staleTime: 1000 * 60,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useAdminUserDetailQuery = (userId?: number) =>
@@ -34,6 +37,7 @@ export const useAdminUserDetailQuery = (userId?: number) =>
     queryFn: () => adminRepository.getUserDetail(userId as number),
     enabled: !!userId,
     staleTime: 1000 * 30,
+    throwOnError: false,
   });
 
 export const useCreateAdminUserMutation = () => {
@@ -132,6 +136,8 @@ export const useAdminBlockedUsersQuery = () =>
     queryKey: queryKeys.admin.blockedUsers(),
     queryFn: adminRepository.getBlockedUsers,
     staleTime: 1000 * 30,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useAdminExpiringLicensesQuery = (windowDays: 7 | 30) =>
@@ -139,6 +145,8 @@ export const useAdminExpiringLicensesQuery = (windowDays: 7 | 30) =>
     queryKey: queryKeys.admin.expiringLicenses(windowDays),
     queryFn: () => adminRepository.getExpiringLicenses(windowDays),
     staleTime: 1000 * 60,
+    throwOnError: false,
+    initialData: [],
   });
 
 export const useAdminAuditLogsQuery = () =>
@@ -146,4 +154,6 @@ export const useAdminAuditLogsQuery = () =>
     queryKey: queryKeys.admin.auditLogs(),
     queryFn: adminRepository.getAuditLogs,
     staleTime: 1000 * 30,
+    throwOnError: false,
+    initialData: [],
   });

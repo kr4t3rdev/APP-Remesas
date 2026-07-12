@@ -20,6 +20,7 @@ import type {
   Objective,
   ObjectiveStatus,
   CreateObjectiveInput,
+  UpdateObjectiveInput,
 } from "../../types";
 import {
   useObjectivesQuery,
@@ -66,7 +67,7 @@ export const ObjectivesScreen: React.FC = () => {
     ).length;
     const pausados = objectives.filter((o) => o.status === "PAUSADO").length;
     const totalProgress =
-      objetivos.length > 0
+      objectives.length > 0
         ? objectives.reduce((acc, o) => acc + (o.percentage || 0), 0) /
           objectives.length
         : 0;
@@ -81,16 +82,20 @@ export const ObjectivesScreen: React.FC = () => {
     }
   };
 
-  const handleCreateObjective = async (data: CreateObjectiveInput) => {
-    await createMutation.mutateAsync(data as any);
+  const handleCreateObjective = async (
+    data: CreateObjectiveInput | UpdateObjectiveInput,
+  ) => {
+    await createMutation.mutateAsync(data as CreateObjectiveInput);
     Alert.alert("Éxito", "Objetivo creado correctamente");
   };
 
-  const handleUpdateObjective = async (data: CreateObjectiveInput) => {
+  const handleUpdateObjective = async (
+    data: CreateObjectiveInput | UpdateObjectiveInput,
+  ) => {
     if (!editingObjective) return;
     await updateMutation.mutateAsync({
       id: editingObjective.id,
-      data: data as any,
+      data: data as UpdateObjectiveInput,
     });
     Alert.alert("Éxito", "Objetivo actualizado correctamente");
   };

@@ -361,10 +361,10 @@ export const AdminPlanCreateScreen: React.FC = () => {
             title="Cancelar"
             onPress={() => navigation.goBack()}
             variant="secondary"
-            style={[
-              styles.cancelButton,
-              { backgroundColor: isDark ? "#334155" : "#f3f4f6" },
-            ]}
+            style={{
+              ...styles.cancelButton,
+              backgroundColor: isDark ? "#334155" : "#f3f4f6",
+            }}
             textStyle={{ color: isDark ? "#e2e8f0" : "#4b5563" }}
           />
         </View>
