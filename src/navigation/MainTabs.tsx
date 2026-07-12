@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
@@ -6,28 +7,29 @@ import { TransactionsScreen } from "../screens/transactions/TransactionsScreen";
 import { ExpenseItemsScreen } from "../screens/expense-items/ExpenseItemsScreen";
 import { ReportsScreen } from "../screens/reports/ReportsScreen";
 import { BusinessScreen } from "../screens/business/BusinessScreen";
-import { useColors } from "../store/themeStore";
 import type { MainTabParamList } from "./types";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  fintechTabBarColors,
+  getFintechTabBarStyle,
+} from "./fintechTabBar";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabs: React.FC = () => {
-  const themeColors = useColors();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: themeColors.card,
-          borderTopColor: themeColors.border,
-          borderTopWidth: 0.5,
-          paddingTop: 8,
-          paddingBottom: 8,
-          height: 80,
+        tabBarStyle: getFintechTabBarStyle(insets.bottom),
+        tabBarActiveTintColor: fintechTabBarColors.active,
+        tabBarInactiveTintColor: fintechTabBarColors.inactive,
+        tabBarHideOnKeyboard: true,
+        tabBarItemStyle: {
+          paddingVertical: 0,
         },
-        tabBarActiveTintColor: themeColors.primary[500],
-        tabBarInactiveTintColor: themeColors.text.secondary,
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: "500",
@@ -39,7 +41,9 @@ export const MainTabs: React.FC = () => {
         component={HomeScreen}
         options={{
           tabBarLabel: "Inicio",
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="home" color={color} focused={focused} />
+          ),
         }}
       />
       <Tab.Screen
@@ -47,8 +51,8 @@ export const MainTabs: React.FC = () => {
         component={BusinessScreen}
         options={{
           tabBarLabel: "Negocios",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="briefcase" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="briefcase" color={color} focused={focused} />
           ),
         }}
       />
@@ -67,8 +71,8 @@ export const MainTabs: React.FC = () => {
         component={ExpenseItemsScreen}
         options={{
           tabBarLabel: "Gastos",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="receipt" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="receipt" color={color} focused={focused} />
           ),
         }}
       />
@@ -77,8 +81,8 @@ export const MainTabs: React.FC = () => {
         component={ReportsScreen}
         options={{
           tabBarLabel: "Reportes",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="bar-chart" color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="bar-chart" color={color} focused={focused} />
           ),
         }}
       />
@@ -87,7 +91,9 @@ export const MainTabs: React.FC = () => {
         component={ProfileScreen}
         options={{
           tabBarLabel: "Perfil",
-          tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="person" color={color} focused={focused} />
+          ),
         }}
       />
     </Tab.Navigator>
@@ -99,8 +105,31 @@ import { Ionicons } from "@expo/vector-icons";
 type TabBarIconProps = {
   name: keyof typeof Ionicons.glyphMap;
   color: string;
+  focused: boolean;
 };
 
-const TabBarIcon: React.FC<TabBarIconProps> = ({ name, color }) => {
-  return <Ionicons name={name} size={24} color={color} />;
+const TabBarIcon: React.FC<TabBarIconProps> = ({ name, color, focused }) => {
+  return (
+    <View
+      style={[
+        styles.iconContainer,
+        focused && styles.focusedIconContainer,
+      ]}
+    >
+      <Ionicons name={name} size={22} color={color} />
+    </View>
+  );
 };
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: 34,
+    height: 28,
+    borderRadius: 14,
+  },
+  focusedIconContainer: {
+    backgroundColor: fintechTabBarColors.activeBackground,
+  },
+});
