@@ -9,11 +9,11 @@ export type FintechTabBarColors = {
 };
 
 export const floatingTabBarMetrics = {
-  bottom: 24,
+  bottom: 18,
   height: 64,
   actionBottom: 108,
   standaloneActionBottom: 152,
-  contentBottomPadding: 108,
+  contentBottomPadding: 180,
 } as const;
 
 export const fintechTabBarColors: Record<"light" | "dark", FintechTabBarColors> = {
@@ -40,10 +40,10 @@ export const getFintechTabBarStyle = (
   const theme = fintechTabBarColors[isDark ? "dark" : "light"];
 
   return {
-    position: "absolute",
-    left: 44,
-    right: 44,
-    bottom: bottomInset + floatingTabBarMetrics.bottom,
+    position: "relative",
+    marginHorizontal: 44,
+    marginTop: floatingTabBarMetrics.bottom,
+    marginBottom: bottomInset + floatingTabBarMetrics.bottom,
     backgroundColor: theme.background,
     borderColor: theme.border,
     borderWidth: 1,
