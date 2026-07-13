@@ -1,65 +1,54 @@
 import React from "react";
-import { render, fireEvent } from "@testing-library/react-native";
+import { fireEvent, render } from "@testing-library/react-native";
 import { TransactionModal } from "../TransactionModal";
-import * as businessQueries from "../../../../hooks/queries/useBusinessQueries";
+import * as transactions from "../../../../modules/transactions/application/useTransactions";
 
-describe("TransactionModal", () => {
-  const mockOnClose = jest.fn();
-  const mockMutate = jest.fn();
+jest.mock("../../../../modules/transactions/application/useTransactions");
 
+describe("TransactionModal FX intent", () => {
+  const mutate = jest.fn();
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(businessQueries, "useCreateTransaction").mockReturnValue({
-      mutate: mockMutate,
-      isPending: false,
-    } as any);
+    jest.mocked(transactions.useCreateTransactionMutation).mockReturnValue({ mutate, isPending: false } as any);
+    jest.mocked(transactions.usePositionsQuery).mockReturnValue({ data: [
+      { currencyId: 1, currency: { code: "USD" }, saldo: 100, costoPromedio: 250, availableForSale: true },
+      { currencyId: 2, currency: { code: "EUR" }, saldo: 40, costoPromedio: 300, availableForSale: true },
+    ] } as any);
+    jest.mocked(transactions.useExchangeRatesQuery).mockReturnValue({ data: [
+      { currencyId: 1, buyRate: 240, sellRate: 260 },
+      { currencyId: 2, buyRate: 280, sellRate: 320 },
+    ] } as any);
   });
 
-  it("renders correctly when visible", () => {
-    const { getByText, getByPlaceholderText } = render(
-      <TransactionModal visible={true} onClose={mockOnClose} />,
-    );
-
-    expect(getByText("Nueva Transacción")).toBeTruthy();
-    expect(getByPlaceholderText("Monto")).toBeTruthy();
-  });
-
-  it("calls onClose when Cancelar is pressed", () => {
-    const { getByText } = render(
-      <TransactionModal visible={true} onClose={mockOnClose} />,
-    );
-
-    fireEvent.press(getByText("Cancelar"));
-    expect(mockOnClose).toHaveBeenCalled();
-  });
-
-  it("calls mutate with correct data when Guardar is pressed", () => {
-    const { getByText, getByPlaceholderText } = render(
-      <TransactionModal visible={true} onClose={mockOnClose} />,
-    );
-
-    const input = getByPlaceholderText("Monto");
-    fireEvent.changeText(input, "150");
-
+  it("selects the chosen position and buy rate for COMPRA", () => {
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.press(getByText("EUR"));
+    fireEvent.changeText(getByLabelText("Monto de la transferencia"), "10");
     fireEvent.press(getByText("Guardar"));
-
-    expect(mockMutate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        amount: 150,
-        type: "BUY",
-        sourceCurrency: "USD",
-        targetCurrency: "EUR",
-      }),
-      expect.any(Object),
-    );
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ currencyId: 2, rate: 280, type: "COMPRA", idempotencyKey: expect.any(String) }), expect.any(Object));
   });
 
-  it("does not call mutate if amount is empty", () => {
-    const { getByText } = render(
-      <TransactionModal visible={true} onClose={mockOnClose} />,
-    );
-
+  it("uses sell rate for VENTA and blocks insufficient sales", () => {
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.press(getByText("Venta"));
+    fireEvent.changeText(getByLabelText("Monto de la transferencia"), "101");
+    expect(getByText(/saldo disponible/)).toBeTruthy();
+    expect(getByText("Guardar")).toBeDisabled();
+    fireEvent.changeText(getByLabelText("Monto de la transferencia"), "10");
     fireEvent.press(getByText("Guardar"));
-    expect(mockMutate).not.toHaveBeenCalled();
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ currencyId: 1, rate: 260, type: "VENTA" }), expect.any(Object));
+  });
+
+  it("selects the first loaded position when positions arrive after the initial render", () => {
+    jest.mocked(transactions.usePositionsQuery).mockReturnValue({ data: [] } as any);
+    const { rerender, getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+
+    jest.mocked(transactions.usePositionsQuery).mockReturnValue({ data: [
+      { currencyId: 1, currency: { code: "USD" }, saldo: 100, costoPromedio: 250, availableForSale: true },
+    ] } as any);
+    rerender(<TransactionModal visible onClose={jest.fn()} />);
+
+    fireEvent.changeText(getByLabelText("Monto de la transferencia"), "10");
+    expect(getByText(/Saldo proyectado: 110\.00/)).toBeTruthy();
   });
 });
