@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import { TransactionModal } from "../TransactionModal";
 import * as transactions from "../../../../modules/transactions/application/useTransactions";
 
@@ -23,7 +23,7 @@ describe("TransactionModal FX intent", () => {
   it("selects the chosen position and buy rate for COMPRA", () => {
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
     fireEvent.press(getByText("EUR"));
-    fireEvent.changeText(getByLabelText("Monto de la transferencia"), "10");
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     fireEvent.press(getByText("Guardar"));
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ currencyId: 2, rate: 280, type: "COMPRA", idempotencyKey: expect.any(String) }), expect.any(Object));
   });
@@ -31,10 +31,10 @@ describe("TransactionModal FX intent", () => {
   it("uses sell rate for VENTA and blocks insufficient sales", () => {
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
     fireEvent.press(getByText("Venta"));
-    fireEvent.changeText(getByLabelText("Monto de la transferencia"), "101");
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "101");
     expect(getByText(/saldo disponible/)).toBeTruthy();
     expect(getByText("Guardar")).toBeDisabled();
-    fireEvent.changeText(getByLabelText("Monto de la transferencia"), "10");
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     fireEvent.press(getByText("Guardar"));
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ currencyId: 1, rate: 260, type: "VENTA" }), expect.any(Object));
   });
@@ -48,7 +48,29 @@ describe("TransactionModal FX intent", () => {
     ] } as any);
     rerender(<TransactionModal visible onClose={jest.fn()} />);
 
-    fireEvent.changeText(getByLabelText("Monto de la transferencia"), "10");
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     expect(getByText(/Saldo proyectado: 110\.00/)).toBeTruthy();
+  });
+
+  it("shows success feedback after saving the operation", () => {
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+
+    const options = mutate.mock.calls[0][1];
+    act(() => options.onSuccess());
+
+    expect(getByText("Operación guardada correctamente.")).toBeTruthy();
+  });
+
+  it("shows error feedback when saving the operation fails", () => {
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+
+    const options = mutate.mock.calls[0][1];
+    act(() => options.onError(new Error("offline")));
+
+    expect(getByText("No se pudo guardar la operación. Intentá nuevamente.")).toBeTruthy();
   });
 });
