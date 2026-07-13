@@ -29,8 +29,8 @@ describe("AdminServicesScreen", () => {
     const { getByText, getAllByText } = render(<AdminServicesScreen />);
 
     // expect(getByText('Admin Hub')).toBeTruthy();
-    expect(getByText("Servicios de Finanzas")).toBeTruthy();
-    expect(getByText("Panel de control y gestión administrativa")).toBeTruthy();
+    expect(getByText("Servicios")).toBeTruthy();
+    expect(getByText("Gestión Principal")).toBeTruthy();
     expect(getByText("Gestión Principal")).toBeTruthy();
     expect(getByText("Acciones Rápidas")).toBeTruthy();
   });

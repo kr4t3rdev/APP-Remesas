@@ -94,7 +94,7 @@ describe("AdminReportsScreen", () => {
       <AdminReportsScreen />,
     );
 
-    expect(getByText("Reportes Administrativos")).toBeTruthy();
+    expect(getByText("Reportes")).toBeTruthy();
     expect(getByText("Semanal")).toBeTruthy();
     expect(getByText("Mensual")).toBeTruthy();
     expect(getByText("Anual")).toBeTruthy();

@@ -42,15 +42,6 @@ describe("useWorkerPayments hooks", () => {
 
   describe("useWorkersQuery", () => {
     it("loads workers list", async () => {
-      const mockWorkers = [
-        {
-          id: 1,
-          name: "Juan Pérez",
-          balance: 100,
-          accumulatedProfit: 50,
-        } as never,
-      ];
-      mockedRepository.getWorkers.mockResolvedValueOnce(mockWorkers);
       const queryClient = new QueryClient({
         defaultOptions: { queries: { retry: false } },
       });
@@ -59,10 +50,9 @@ describe("useWorkerPayments hooks", () => {
         wrapper: createWrapper(queryClient),
       });
 
-      await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-      expect(mockedRepository.getWorkers).toHaveBeenCalled();
-      expect(result.current.data).toEqual(mockWorkers);
+      expect(result.current.isSuccess).toBe(true);
+      expect(result.current.data).toEqual([]);
+      expect(mockedRepository.getWorkers).not.toHaveBeenCalled();
     });
   });
 

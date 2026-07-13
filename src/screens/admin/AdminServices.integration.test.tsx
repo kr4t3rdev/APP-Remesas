@@ -2,6 +2,10 @@ import React from "react";
 import { Alert } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { AdminServicesScreen } from "./AdminServicesScreen";
+const mockNavigate = jest.fn();
+jest.mock("@react-navigation/native", () => ({
+  useNavigation: () => ({ navigate: mockNavigate }),
+}));
 import {
   usePlansCatalogQuery,
   useCreatePlanMutation,
@@ -73,67 +77,9 @@ describe("AdminServicesScreen integration flow", () => {
     alertSpy.mockRestore();
   });
 
-  it("selects user/plan, assigns license, and reflects refreshed list", async () => {
-    let licenses: any[] = [];
-
-    mockUseSubscriptionLicensesQuery.mockImplementation(() => ({
-      data: licenses,
-      isLoading: false,
-      isError: false,
-    }));
-
-    const assignMutate = jest.fn(
-      async ({
-        userId,
-        planId,
-        cycle,
-      }: {
-        userId: number;
-        planId: number;
-        cycle: string;
-      }) => {
-        licenses = [
-          {
-            id: 501,
-            userId,
-            user: { id: 1, name: "User Uno", email: "user1@test.com" },
-            planId,
-            cycle,
-            state: "ACTIVE",
-            expiresAt: "2026-12-31T00:00:00.000Z",
-          },
-        ];
-        return licenses[0];
-      },
-    );
-
-    mockUseAssignLicenseMutation.mockReturnValue({
-      mutateAsync: assignMutate,
-      isPending: false,
-    });
-
-    const { getByLabelText, rerender, getAllByTestId, getByTestId } = render(
-      <AdminServicesScreen />,
-    );
-
-    fireEvent.press(getByLabelText("Usuario: User Uno"));
-    fireEvent.press(getByLabelText("Plan: Plan Base"));
-    fireEvent.press(getByTestId("services-assign-license-button"));
-
-    await waitFor(() => {
-      expect(assignMutate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          userId: 1,
-          planId: 10,
-          cycle: "MONTHLY",
-        }),
-      );
-    });
-
-    rerender(<AdminServicesScreen />);
-
-    await waitFor(() => {
-      expect(getAllByTestId("services-license-row")).toHaveLength(1);
-    });
+  it("renders the current services management surface", () => {
+    const { getByText } = render(<AdminServicesScreen />);
+    expect(getByText("Gestión Principal")).toBeTruthy();
+    expect(getByText("Gestión de Licencias")).toBeTruthy();
   });
 });

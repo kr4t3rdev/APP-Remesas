@@ -4,8 +4,13 @@ import React from "react";
 // Mock useWindowDimensions before importing the hook
 const mockUseWindowDimensions = jest.fn();
 
+jest.mock("react-native/Libraries/TurboModule/TurboModuleRegistry", () => ({
+  getEnforcing: () => ({}),
+  get: () => null,
+}));
+
 jest.mock("react-native", () => {
-  const actualReactNative = jest.requireActual("react-native");
+  const actualReactNative = jest.requireActual("react-native/jest/mock");
   return {
     ...actualReactNative,
     useWindowDimensions: () => mockUseWindowDimensions(),
@@ -159,13 +164,12 @@ describe("useResponsive", () => {
 
       // Simulate resize to tablet
       mockUseWindowDimensions.mockReturnValue({ width: 640, height: 812 });
+      rerender({});
 
       // Wait for debounce
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 150));
       });
-
-      rerender();
 
       expect(result.current.breakpoint).toBe("tablet");
     });
@@ -179,13 +183,12 @@ describe("useResponsive", () => {
 
       // Simulate resize to desktop
       mockUseWindowDimensions.mockReturnValue({ width: 1024, height: 800 });
+      rerender({});
 
       // Wait for debounce
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 150));
       });
-
-      rerender();
 
       expect(result.current.breakpoint).toBe("desktop");
     });

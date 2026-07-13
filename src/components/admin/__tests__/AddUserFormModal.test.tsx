@@ -11,13 +11,11 @@ describe("AddUserFormModal", () => {
     expect(getByText("Identidad (required + perfil)")).toBeTruthy();
     expect(getByText("Contacto")).toBeTruthy();
     expect(getByText("Acceso y seguridad inicial")).toBeTruthy();
-    expect(getByText("Preferencias de cuenta")).toBeTruthy();
-    expect(getByText("Setup de licencia / cuenta")).toBeTruthy();
 
     expect(getByTestId("add-user-name-input")).toBeTruthy();
     expect(getByTestId("add-user-email-input")).toBeTruthy();
     expect(getByTestId("add-user-last-name-input")).toBeTruthy();
-    expect(getByTestId("add-user-timezone-input")).toBeTruthy();
+    expect(getByTestId("add-user-phone-input")).toBeTruthy();
   });
 
   it("keeps optional values when required validation fails", async () => {

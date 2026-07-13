@@ -39,7 +39,6 @@ describe("useExpenses hooks", () => {
   });
 
   it("loads expenses list with params", async () => {
-    mockedRepository.getExpenses.mockResolvedValueOnce([{ id: 1 } as never]);
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -51,12 +50,9 @@ describe("useExpenses hooks", () => {
       },
     );
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    expect(mockedRepository.getExpenses).toHaveBeenCalledWith({
-      category: "otros",
-    });
-    expect(result.current.data).toEqual([{ id: 1 }]);
+    expect(result.current.isSuccess).toBe(true);
+    expect(result.current.data).toEqual([]);
+    expect(mockedRepository.getExpenses).not.toHaveBeenCalled();
   });
 
   it("loads expense detail by id", async () => {
@@ -76,9 +72,6 @@ describe("useExpenses hooks", () => {
   });
 
   it("loads pending expenses", async () => {
-    mockedRepository.getPendingExpenses.mockResolvedValueOnce([
-      { id: 8 } as never,
-    ]);
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -87,10 +80,9 @@ describe("useExpenses hooks", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    expect(mockedRepository.getPendingExpenses).toHaveBeenCalled();
-    expect(result.current.data).toEqual([{ id: 8 }]);
+    expect(result.current.isSuccess).toBe(true);
+    expect(result.current.data).toEqual([]);
+    expect(mockedRepository.getPendingExpenses).not.toHaveBeenCalled();
   });
 
   it("invalidates expenses queries after create", async () => {

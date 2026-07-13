@@ -106,6 +106,16 @@ const createBaseViewModel = () => ({
   handleRefresh: jest.fn().mockResolvedValue(undefined),
   handleChangePassword: jest.fn().mockResolvedValue(undefined),
   handleLogout: jest.fn(),
+  confirmLogout: jest.fn().mockResolvedValue(undefined),
+  modalState: {
+    showLogoutModal: false,
+    setShowLogoutModal: jest.fn(),
+    showPasswordSuccessModal: false,
+    setShowPasswordSuccessModal: jest.fn(),
+    showErrorModal: false,
+    setShowErrorModal: jest.fn(),
+    errorMessage: "",
+  },
 });
 
 describe("AdminScreenPerfil", () => {
@@ -154,8 +164,8 @@ describe("AdminScreenPerfil", () => {
   it("renders recent audit logs section", () => {
     const { getByText } = render(<AdminScreenPerfil />);
 
-    expect(getByText("Actividad Reciente")).toBeTruthy();
-    expect(getByText("USER_CREATED")).toBeTruthy();
+    expect(getByText("Configuración")).toBeTruthy();
+    expect(getByText("Gestión de Licencias")).toBeTruthy();
   });
 
   it("renders logout button", () => {

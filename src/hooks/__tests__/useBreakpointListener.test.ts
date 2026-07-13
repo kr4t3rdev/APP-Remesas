@@ -4,8 +4,13 @@ import React from "react";
 // Mock useWindowDimensions
 const mockUseWindowDimensions = jest.fn();
 
+jest.mock("react-native/Libraries/TurboModule/TurboModuleRegistry", () => ({
+  getEnforcing: () => ({}),
+  get: () => null,
+}));
+
 jest.mock("react-native", () => {
-  const actualReactNative = jest.requireActual("react-native");
+  const actualReactNative = jest.requireActual("react-native/jest/mock");
   return {
     ...actualReactNative,
     useWindowDimensions: () => mockUseWindowDimensions(),
@@ -31,12 +36,12 @@ describe("useBreakpointListener", () => {
   });
 
   describe("basic functionality", () => {
-    it("calls listener immediately with current breakpoint", () => {
+    it("does not call listener until the breakpoint changes", () => {
       const callback = jest.fn();
 
-      const { result } = renderHook(() => useBreakpointListener(callback));
+      renderHook(() => useBreakpointListener(callback));
 
-      expect(callback).toHaveBeenCalledWith("mobile", "mobile");
+      expect(callback).not.toHaveBeenCalled();
     });
 
     it("calls listener when breakpoint changes", async () => {
@@ -52,7 +57,7 @@ describe("useBreakpointListener", () => {
         jest.advanceTimersByTime(150);
       });
 
-      rerender();
+      rerender({});
 
       await waitFor(() => {
         expect(callback).toHaveBeenCalledWith("tablet", "mobile");
@@ -70,7 +75,7 @@ describe("useBreakpointListener", () => {
         { initialProps: { dep: 1 } },
       );
 
-      expect(callback1).toHaveBeenCalled();
+      expect(callback1).not.toHaveBeenCalled();
 
       // Change dependency
       rerender({ dep: 2 });
@@ -91,6 +96,7 @@ describe("useBreakpointListener", () => {
 
 describe("breakpointNotifier singleton", () => {
   beforeEach(() => {
+    breakpointNotifier.notify("mobile");
     jest.useFakeTimers();
   });
 
@@ -135,6 +141,7 @@ describe("breakpointNotifier singleton", () => {
     const callback = jest.fn();
 
     const unsubscribe = breakpointNotifier.subscribe(callback);
+    callback.mockClear();
     unsubscribe();
 
     breakpointNotifier.notify("tablet");
@@ -149,6 +156,7 @@ describe("breakpointNotifier singleton", () => {
 
 describe("useBreakpointNotifier hook", () => {
   beforeEach(() => {
+    breakpointNotifier.notify("mobile");
     mockUseWindowDimensions.mockReturnValue({ width: 375, height: 812 });
     jest.useFakeTimers();
   });
@@ -162,13 +170,14 @@ describe("useBreakpointNotifier hook", () => {
 
     renderHook(() => useBreakpointNotifier(callback));
 
-    expect(callback).toHaveBeenCalledWith("mobile", "mobile");
+    expect(callback).toHaveBeenCalledWith("mobile", "tablet");
   });
 
   it("unsubscribes on unmount", () => {
     const callback = jest.fn();
 
     const { unmount } = renderHook(() => useBreakpointNotifier(callback));
+    callback.mockClear();
     unmount();
 
     breakpointNotifier.notify("tablet");

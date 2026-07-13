@@ -16,8 +16,8 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-jest.mock('./src/store/themeStore', () => ({
-  useColors: () => ({
+jest.mock('./src/store/themeStore', () => {
+  const themeColors = {
     background: '#FFFFFF',
     card: '#F9FAFB',
     text: { primary: '#1F2937', secondary: '#6B7280' },
@@ -26,5 +26,23 @@ jest.mock('./src/store/themeStore', () => ({
     warning: '#F59E0B',
     danger: '#EF4444',
     border: '#E5E7EB',
-  }),
-}));
+  };
+  const themeShadows = { sm: {}, md: {} };
+  const themeGradients = {};
+  const themeState = {
+    currentColors: themeColors,
+    currentShadows: themeShadows,
+    gradients: themeGradients,
+    isDark: false,
+    toggleTheme: jest.fn(),
+    setTheme: jest.fn(),
+  };
+
+  return {
+    useThemeStore: (selector: (state: typeof themeState) => unknown) => selector(themeState),
+    useColors: () => themeColors,
+    useShadows: () => themeShadows,
+    useIsDark: () => false,
+    useGradients: () => themeGradients,
+  };
+});

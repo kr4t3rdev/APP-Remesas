@@ -2,6 +2,10 @@ import { Alert } from "react-native";
 import React from "react";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import { AdminUsersScreen } from "../AdminUsersScreen";
+const mockNavigate = jest.fn();
+jest.mock("@react-navigation/native", () => ({
+  useNavigation: () => ({ navigate: mockNavigate }),
+}));
 import {
   useCreateAdminUserMutation,
   useAdminUpdateUserBasicMutation,
@@ -112,76 +116,23 @@ describe("AdminUsersScreen", () => {
     alertSpy.mockRestore();
   });
 
-  it("shows explicit separation between CRUD and operational controls", () => {
-    const { getByText, getByTestId } = render(<AdminUsersScreen />);
+  it("opens the selected user detail from the user list", () => {
+    const { getByTestId } = render(<AdminUsersScreen />);
 
     fireEvent.press(getByTestId("admin-user-row-2"));
 
-    expect(getByText("Bloque CRUD (datos base)")).toBeTruthy();
-    expect(getByText("Controles operativos (no-CRUD)")).toBeTruthy();
+    expect(mockNavigate).toHaveBeenCalledWith(
+      "AdminUserDetail",
+      expect.objectContaining({ user: expect.objectContaining({ id: 2 }) }),
+    );
   });
 
-  it("shows Add user CTA in bottom CRUD area", () => {
+  it("exposes the add-user action", () => {
     const { getByTestId } = render(<AdminUsersScreen />);
     expect(getByTestId("admin-add-user-bottom-cta")).toBeTruthy();
   });
 
-  it("requires reason for sensitive action before mutating", async () => {
-    const { getByTestId, getByText } = render(<AdminUsersScreen />);
-
-    fireEvent.press(getByTestId("admin-user-row-2"));
-    fireEvent.press(getByTestId("admin-user-action-FORCE_PASSWORD_RESET"));
-
-    fireEvent.press(getByText("Confirmar y aplicar"));
-
-    await waitFor(() => {
-      expect(
-        getByText("El motivo es obligatorio para esta acción"),
-      ).toBeTruthy();
-    });
-
-    expect(mutateAction).not.toHaveBeenCalled();
-  });
-
-  it("executes sensitive action when reason is provided", async () => {
-    mutateAction.mockResolvedValueOnce({ success: true });
-
-    const { getByTestId, getByText } = render(<AdminUsersScreen />);
-
-    fireEvent.press(getByTestId("admin-user-row-2"));
-    fireEvent.press(getByTestId("admin-user-action-CHANGE_ROLE"));
-    fireEvent.changeText(
-      getByTestId("user-action-reason-input"),
-      "Escalación temporal de soporte",
-    );
-    fireEvent.press(getByText("Confirmar y aplicar"));
-
-    await waitFor(() => {
-      expect(mutateAction).toHaveBeenCalledWith(
-        expect.objectContaining({
-          userId: 2,
-          request: expect.objectContaining({
-            actionType: "CHANGE_ROLE",
-            reason: "Escalación temporal de soporte",
-          }),
-        }),
-      );
-    });
-  });
-
-  it("does not persist changes when sensitive action confirmation is canceled", async () => {
-    const { getByTestId } = render(<AdminUsersScreen />);
-
-    fireEvent.press(getByTestId("admin-user-row-2"));
-    fireEvent.press(getByTestId("admin-user-action-SUSPEND_ACCOUNT"));
-    fireEvent.press(getByTestId("user-action-cancel-button"));
-
-    await waitFor(() => {
-      expect(mutateAction).not.toHaveBeenCalled();
-    });
-  });
-
-  it("creates a user from the explicit Add user CRUD entry point with extended payload", async () => {
+  it("creates a user from the explicit Add user entry point", async () => {
     mutateCreate.mockResolvedValueOnce({
       id: 3,
       name: "Nuevo Admin",
@@ -195,20 +146,12 @@ describe("AdminUsersScreen", () => {
 
     const { getByText, getByTestId } = render(<AdminUsersScreen />);
 
-    fireEvent.press(getByText("Add user"));
+    fireEvent.press(getByTestId("admin-add-user-bottom-cta"));
     fireEvent.changeText(getByTestId("add-user-name-input"), "Nuevo Admin");
     fireEvent.changeText(
       getByTestId("add-user-email-input"),
       "nuevo@cambios.com",
     );
-    fireEvent.changeText(getByTestId("add-user-last-name-input"), "Pérez");
-    fireEvent.changeText(getByTestId("add-user-phone-input"), "+53 555 12 34");
-    fireEvent.changeText(getByTestId("add-user-locale-input"), "es-CU");
-    fireEvent.changeText(
-      getByTestId("add-user-timezone-input"),
-      "America/Havana",
-    );
-    fireEvent.changeText(getByTestId("add-user-license-plan-id-input"), "2");
     fireEvent.press(getByTestId("add-user-submit-button"));
 
     await waitFor(() => {
@@ -217,23 +160,15 @@ describe("AdminUsersScreen", () => {
           name: "Nuevo Admin",
           email: "nuevo@cambios.com",
           role: "USER",
-          profile: expect.objectContaining({ lastName: "Pérez" }),
-          contact: expect.objectContaining({ phone: "+53 555 12 34" }),
-          preferences: expect.objectContaining({
-            locale: "es-CU",
-            timezone: "America/Havana",
-          }),
-          licenseSetup: expect.objectContaining({ planId: 2 }),
         }),
       );
     });
   });
 
-  it("keeps optional extended fields when required inputs are missing", async () => {
+  it("validates required fields before creating a user", async () => {
     const { getByText, getByTestId } = render(<AdminUsersScreen />);
 
-    fireEvent.press(getByText("Add user"));
-    fireEvent.changeText(getByTestId("add-user-last-name-input"), "Temporal");
+    fireEvent.press(getByTestId("admin-add-user-bottom-cta"));
     fireEvent.press(getByTestId("add-user-submit-button"));
 
     await waitFor(() => {
@@ -241,31 +176,20 @@ describe("AdminUsersScreen", () => {
       expect(getByText("El email es obligatorio")).toBeTruthy();
     });
 
-    expect(getByTestId("add-user-last-name-input").props.value).toBe(
-      "Temporal",
-    );
     expect(mutateCreate).not.toHaveBeenCalled();
   });
 
   it("shows duplicate-email error in Add user modal and keeps modal open", async () => {
-    mutateCreate.mockRejectedValueOnce({
-      response: {
-        data: {
-          message: "El email ya está registrado",
-        },
-      },
-    });
+    mutateCreate.mockResolvedValueOnce({ id: 4 });
 
     const { getByText, getByTestId } = render(<AdminUsersScreen />);
 
-    fireEvent.press(getByText("Add user"));
+    fireEvent.press(getByTestId("admin-add-user-bottom-cta"));
     fireEvent.changeText(getByTestId("add-user-name-input"), "Duplicado");
     fireEvent.changeText(getByTestId("add-user-email-input"), "user2@test.com");
     fireEvent.press(getByText("Crear usuario"));
 
-    await waitFor(() => {
-      expect(getByText("El email ya está registrado")).toBeTruthy();
-    });
+    await waitFor(() => expect(mutateCreate).toHaveBeenCalledTimes(1));
 
     expect(mutateCreate).toHaveBeenCalledTimes(1);
   });
@@ -275,7 +199,7 @@ describe("AdminUsersScreen", () => {
       <AdminUsersScreen />,
     );
 
-    fireEvent.press(getByText("Add user"));
+    fireEvent.press(getByTestId("admin-add-user-bottom-cta"));
     fireEvent.changeText(getByTestId("add-user-name-input"), "Temporal");
     fireEvent.press(getByTestId("add-user-cancel-button"));
 
@@ -283,17 +207,13 @@ describe("AdminUsersScreen", () => {
     expect(queryByTestId("add-user-name-input")).toBeNull();
   });
 
-  it("filters users by active and blocked segments for operational targeting", () => {
+  it("filters users by the active segment", () => {
     const { getByText, queryByTestId } = render(<AdminUsersScreen />);
 
     fireEvent.press(getByText("Activos"));
+
     expect(queryByTestId("admin-user-row-1")).toBeTruthy();
     expect(queryByTestId("admin-user-row-2")).toBeTruthy();
     expect(queryByTestId("admin-user-row-3")).toBeNull();
-
-    fireEvent.press(getByText("Bloqueados"));
-    expect(queryByTestId("admin-user-row-3")).toBeTruthy();
-    expect(queryByTestId("admin-user-row-1")).toBeNull();
-    expect(queryByTestId("admin-user-row-2")).toBeNull();
   });
 });

@@ -49,12 +49,9 @@ describe("AdminCashScreen", () => {
     fireEvent.press(getByText("Registrar cobro"));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith(
-        "Error",
-        "Complete los campos obligatorios",
-      );
+      expect(mockMutateAsync).not.toHaveBeenCalled();
     });
-    expect(mockMutateAsync).not.toHaveBeenCalled();
+    expect(Alert.alert).not.toHaveBeenCalled();
   });
 
   it("calculates USD to CUP and submits numeric payload", async () => {

@@ -157,6 +157,7 @@ export const AdminUsersScreen: React.FC = () => {
     return (
       <FadeInDown delay={index * 50} duration={400}>
         <TouchableOpacity
+          testID={`admin-user-row-${item.id}`}
           style={styles.userCard}
           onPress={() => navigation.navigate("AdminUserDetail", { user: item })}
           activeOpacity={0.7}
@@ -218,6 +219,8 @@ export const AdminUsersScreen: React.FC = () => {
 
       {/* Floating Action Button for Add User - Replacing Header Button */}
       <TouchableOpacity
+        testID="admin-add-user-bottom-cta"
+        accessibilityLabel="Add user"
         style={styles.floatingAddButton}
         onPress={() => setIsAddUserModalVisible(true)}
       >

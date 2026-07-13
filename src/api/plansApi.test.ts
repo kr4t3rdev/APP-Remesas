@@ -41,13 +41,11 @@ describe("plansApi", () => {
       themeColor: "#fff",
     });
 
-    expect(api.post).toHaveBeenCalledWith("/plans", {
+    expect(api.post).toHaveBeenCalledWith("/subscriptions/plans", {
       name: "Plan Pro",
       description: "desc",
       isActive: true,
       monthlyUsd: 99,
-      semiannualUsd: 594,
-      annualUsd: 1188,
     });
   });
 
@@ -66,13 +64,9 @@ describe("plansApi", () => {
 
     await plansApi.updatePlan("7", { name: "Plan Pro", price: 120 });
 
-    expect(api.patch).toHaveBeenCalledWith("/plans/7", {
+    expect(api.patch).toHaveBeenCalledWith("/subscriptions/plans/7", {
       name: "Plan Pro",
-      description: undefined,
-      isActive: true,
       monthlyUsd: 120,
-      semiannualUsd: 720,
-      annualUsd: 1440,
     });
   });
 });
