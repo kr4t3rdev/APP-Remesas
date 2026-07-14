@@ -249,6 +249,19 @@ export const CurrenciesScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <ProfileFeatureBackButton />
+      {currenciesQuery.isLoading ? (
+        <View style={styles.loadingContainer}>
+          <View style={styles.skeletonPrimary} />
+          <View style={styles.skeletonSection}>
+            <View style={styles.skeletonBadge} />
+            <View style={styles.skeletonRow}>
+              <View style={styles.skeletonCard} />
+              <View style={styles.skeletonCard} />
+            </View>
+          </View>
+        </View>
+      ) : (
+      <>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -389,6 +402,8 @@ export const CurrenciesScreen: React.FC = () => {
           </View>
         </FadeIn>
       </ScrollView>
+      </>
+      )}
 
       <ScaleIn delay={200}>
         <TouchableOpacity
@@ -812,4 +827,33 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 20, fontWeight: "700", color: colors.text.primary },
   submitButton: { marginTop: spacing.md },
+  loadingContainer: {
+    flex: 1,
+    padding: spacing.md,
+    gap: spacing.md,
+  },
+  skeletonPrimary: {
+    height: 180,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 24,
+  },
+  skeletonSection: {
+    gap: spacing.sm,
+  },
+  skeletonBadge: {
+    width: 80,
+    height: 20,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 12,
+  },
+  skeletonRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  skeletonCard: {
+    width: 180,
+    height: 200,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 24,
+  },
 });
