@@ -9,6 +9,7 @@ import {
 } from "./Charts";
 
 const mockUseColors = jest.fn();
+const mockUseReducedMotion = jest.fn<boolean | null, []>(() => false);
 
 jest.mock("../../store/themeStore", () => ({
   useColors: () => mockUseColors(),
@@ -17,6 +18,7 @@ jest.mock("../../store/themeStore", () => ({
 
 jest.mock("../animations", () => ({
   FadeIn: ({ children }: { children: React.ReactNode }) => children,
+  useReducedMotion: () => mockUseReducedMotion(),
 }));
 
 jest.mock("react-native-svg", () => {
@@ -36,6 +38,8 @@ const data = [{ label: "Compras", value: 3 }];
 
 const getAnimatedNumber = (value: number | { __getValue: () => number }) =>
   typeof value === "number" ? value : value.__getValue();
+
+beforeEach(() => mockUseReducedMotion.mockReturnValue(false));
 
 describe("BarChart theme colors", () => {
   it.each([
@@ -127,6 +131,20 @@ describe("BarChart theme colors", () => {
       expect.objectContaining({ toValue: 90 }),
     );
     timingSpy.mockRestore();
+  });
+
+  it("renders the final bar immediately when reduced motion is enabled", () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    mockUseColors.mockReturnValue({
+      primary: { 500: "#0E7490" },
+      text: { primary: "#102A30", secondary: "#526C72" },
+    });
+    const timingSpy = jest.spyOn(Animated, "timing");
+
+    const { getByTestId } = render(<BarChart data={data} height={90} animated />);
+
+    expect(getByTestId("bar-chart-bar-0")).toHaveStyle({ height: 90 });
+    expect(timingSpy).not.toHaveBeenCalled();
   });
 });
 
@@ -328,6 +346,32 @@ describe("HorizontalBarChart theme colors", () => {
 });
 
 describe("StatsCard compact layout", () => {
+  it("does not flicker when reduced motion resolves from null to false", () => {
+    mockUseColors.mockReturnValue({
+      card: "#FCFEFE",
+      text: { primary: "#102A30", secondary: "#526C72", tertiary: "#526C72" },
+      success: "#166534",
+      danger: "#B91C1C",
+    });
+    mockUseReducedMotion.mockReturnValue(null);
+    const timingSpy = jest.spyOn(Animated, "timing");
+
+    const { getByTestId, rerender } = render(
+      <StatsCard testID="stats-card" title="Ganancia" value="$ 100.00" />,
+    );
+
+    mockUseReducedMotion.mockReturnValue(false);
+    rerender(
+      <StatsCard testID="stats-card" title="Ganancia" value="$ 100.00" />,
+    );
+
+    const cardStyle = getByTestId("stats-card").props.style;
+    expect(getAnimatedNumber(cardStyle.transform[0].scale)).toBe(1);
+    expect(getAnimatedNumber(cardStyle.opacity)).toBe(1);
+    expect(timingSpy).not.toHaveBeenCalled();
+    timingSpy.mockRestore();
+  });
+
   it("allows callers to remove the default minimum width", () => {
     mockUseColors.mockReturnValue({
       card: "#FCFEFE",

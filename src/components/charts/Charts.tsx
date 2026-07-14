@@ -9,7 +9,7 @@ import {
   StyleProp,
 } from "react-native";
 import Svg, { Circle } from "react-native-svg";
-import { FadeIn } from "../animations";
+import { FadeIn, useReducedMotion } from "../animations";
 import { colors, spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
 
@@ -91,29 +91,30 @@ const BarItem: React.FC<BarItemProps> = ({
   valueColor,
   labelColor,
 }) => {
+  const reducedMotion = useReducedMotion();
   const displayValue = value.toLocaleString();
   const visualValue = Number.isFinite(value) ? Math.max(0, value) : 0;
   const barHeight = clamp((visualValue / maxValue) * height, 0, height);
   const animatedHeight = useRef(
-    new Animated.Value(animated ? 0 : barHeight),
+    new Animated.Value(animated && reducedMotion === false ? 0 : barHeight),
   ).current;
 
   useEffect(() => {
     animatedHeight.stopAnimation();
 
-    if (animated) {
+    if (animated && reducedMotion === false) {
       Animated.timing(animatedHeight, {
         toValue: barHeight,
-        duration: 500,
+        duration: 220,
         delay: index * 60,
         easing: Easing.out(Easing.quad),
         useNativeDriver: false,
       }).start();
-      return;
+      return () => animatedHeight.stopAnimation();
     }
 
     animatedHeight.setValue(barHeight);
-  }, [animated, animatedHeight, barHeight, index]);
+  }, [animated, animatedHeight, barHeight, index, reducedMotion]);
 
   return (
     <View
@@ -227,29 +228,32 @@ const HorizontalBarItem: React.FC<HorizontalBarItemProps> = ({
   valueColor,
   trackColor,
 }) => {
+  const reducedMotion = useReducedMotion();
   const displayPercentage = (value / maxValue) * 100;
   const formattedPercentage = `${displayPercentage.toFixed(1)}%`;
   const visualPercentage = clamp(displayPercentage, 0, 100);
   const animatedWidth = useRef(
-    new Animated.Value(animated ? 0 : visualPercentage),
+    new Animated.Value(
+      animated && reducedMotion === false ? 0 : visualPercentage,
+    ),
   ).current;
 
   useEffect(() => {
     animatedWidth.stopAnimation();
 
-    if (animated) {
+    if (animated && reducedMotion === false) {
       Animated.timing(animatedWidth, {
         toValue: visualPercentage,
-        duration: 500,
+        duration: 220,
         delay: index * 60,
         easing: Easing.out(Easing.quad),
         useNativeDriver: false,
       }).start();
-      return;
+      return () => animatedWidth.stopAnimation();
     }
 
     animatedWidth.setValue(visualPercentage);
-  }, [animated, animatedWidth, index, visualPercentage]);
+  }, [animated, animatedWidth, index, reducedMotion, visualPercentage]);
 
   return (
     <View
@@ -356,6 +360,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
   children,
   style,
 }) => {
+  const reducedMotion = useReducedMotion();
   const themeColors = useColors();
   const progressBackgroundColor = backgroundColor ?? themeColors.border;
   const progressColor = color ?? themeColors.primary[500];
@@ -368,24 +373,26 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
   const isComplete = clampedPercentage === 100;
   const displayedPercentage = formatProgressPercentage(clampedPercentage);
   const animatedStrokeDashoffset = useRef(
-    new Animated.Value(animated ? circumference : strokeDashoffset),
+    new Animated.Value(
+      animated && reducedMotion === false ? circumference : strokeDashoffset,
+    ),
   ).current;
 
   useEffect(() => {
     animatedStrokeDashoffset.stopAnimation();
 
-    if (animated) {
+    if (animated && reducedMotion === false) {
       Animated.timing(animatedStrokeDashoffset, {
         toValue: strokeDashoffset,
-        duration: 700,
+        duration: 250,
         easing: Easing.out(Easing.quad),
         useNativeDriver: false,
       }).start();
-      return;
+      return () => animatedStrokeDashoffset.stopAnimation();
     }
 
     animatedStrokeDashoffset.setValue(strokeDashoffset);
-  }, [animated, animatedStrokeDashoffset, strokeDashoffset]);
+  }, [animated, animatedStrokeDashoffset, reducedMotion, strokeDashoffset]);
 
   return (
     <FadeIn style={[{ width: size, height: size }, style]}>
@@ -473,17 +480,39 @@ export const StatsCard: React.FC<StatsCardProps> = ({
 }) => {
   const themeColors = useColors();
   const themeShadows = useShadows();
+  const reducedMotion = useReducedMotion();
 
-  const scale = useRef(new Animated.Value(0.9)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+  const initialReducedMotion = useRef(reducedMotion);
+  const hasInitializedMotion = useRef(false);
+  const previousAnimated = useRef(animated);
 
   useEffect(() => {
-    if (animated) {
-      Animated.parallel([
-        Animated.spring(scale, {
+    if (reducedMotion === null) return;
+
+    const isInitialPreferenceResolution = !hasInitializedMotion.current;
+    const animatedChanged = animated !== previousAnimated.current;
+    hasInitializedMotion.current = true;
+    previousAnimated.current = animated;
+
+    if (
+      (isInitialPreferenceResolution && initialReducedMotion.current === null) ||
+      !animatedChanged && !isInitialPreferenceResolution
+    ) {
+      scale.setValue(1);
+      opacity.setValue(1);
+      return;
+    }
+
+    if (animated && reducedMotion === false) {
+      scale.setValue(0.96);
+      opacity.setValue(0);
+      const animation = Animated.parallel([
+        Animated.timing(scale, {
           toValue: 1,
-          friction: 5,
-          tension: 100,
+          duration: 220,
+          easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.timing(opacity, {
@@ -491,12 +520,14 @@ export const StatsCard: React.FC<StatsCardProps> = ({
           duration: 300,
           useNativeDriver: true,
         }),
-      ]).start();
-    } else {
-      scale.setValue(1);
-      opacity.setValue(1);
+      ]);
+      animation.start();
+      return () => animation.stop();
     }
-  }, [animated, scale, opacity]);
+
+    scale.setValue(1);
+    opacity.setValue(1);
+  }, [animated, scale, opacity, reducedMotion]);
 
   const getTrendColor = () => {
     switch (trend) {

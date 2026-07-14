@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -7,7 +7,53 @@ import {
   TouchableOpacity,
   Easing,
   StyleProp,
+  AccessibilityInfo,
 } from "react-native";
+
+const DEFAULT_DURATION = 220;
+const REDUCED_MOTION_EVENT = "reduceMotionChanged";
+
+const safeDuration = (duration: number) =>
+  Math.min(300, Math.max(150, duration));
+
+export const useReducedMotion = (): boolean | null => {
+  const [isReducedMotionEnabled, setIsReducedMotionEnabled] = useState<
+    boolean | null
+  >(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const accessibilityInfo = AccessibilityInfo as typeof AccessibilityInfo & {
+      isReduceMotionEnabled?: () => Promise<boolean>;
+      addEventListener?: (
+        eventName: typeof REDUCED_MOTION_EVENT,
+        listener: (enabled: boolean) => void,
+      ) => { remove?: () => void } | undefined;
+    };
+    const updatePreference = (enabled: boolean) => {
+      if (mounted) setIsReducedMotionEnabled(enabled);
+    };
+
+    const preference = accessibilityInfo.isReduceMotionEnabled?.();
+    if (preference) {
+      preference.then(updatePreference).catch(() => updatePreference(false));
+    } else {
+      updatePreference(false);
+    }
+
+    const subscription = accessibilityInfo.addEventListener?.(
+      REDUCED_MOTION_EVENT,
+      updatePreference,
+    );
+
+    return () => {
+      mounted = false;
+      subscription?.remove?.();
+    };
+  }, []);
+
+  return isReducedMotionEnabled;
+};
 
 type AnimatedWrapperProps = {
   children: React.ReactNode;
@@ -19,19 +65,31 @@ type AnimatedWrapperProps = {
 export const FadeIn: React.FC<AnimatedWrapperProps> = ({
   children,
   delay = 0,
-  duration = 400,
+  duration = DEFAULT_DURATION,
   style,
 }) => {
-  const opacity = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+  const reducedMotion = useReducedMotion();
+  const previousReducedMotion = useRef<boolean | null>(null);
 
   useEffect(() => {
-    Animated.timing(opacity, {
+    const wasResolved = previousReducedMotion.current !== null;
+    previousReducedMotion.current = reducedMotion;
+    if (reducedMotion !== false || !wasResolved) {
+      opacity.setValue(1);
+      return;
+    }
+    opacity.setValue(0);
+    const animation = Animated.timing(opacity, {
       toValue: 1,
-      duration,
+      duration: safeDuration(duration),
       delay,
+      easing: Easing.out(Easing.quad),
       useNativeDriver: true,
-    }).start();
-  }, [opacity, duration, delay]);
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [opacity, duration, delay, reducedMotion]);
 
   return <Animated.View style={[style, { opacity }]}>{children}</Animated.View>;
 };
@@ -39,29 +97,43 @@ export const FadeIn: React.FC<AnimatedWrapperProps> = ({
 export const FadeInDown: React.FC<AnimatedWrapperProps> = ({
   children,
   delay = 0,
-  duration = 400,
+  duration = DEFAULT_DURATION,
   style,
 }) => {
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(20)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+  const translateY = useRef(new Animated.Value(0)).current;
+  const reducedMotion = useReducedMotion();
+  const previousReducedMotion = useRef<boolean | null>(null);
 
   useEffect(() => {
-    Animated.parallel([
+    const wasResolved = previousReducedMotion.current !== null;
+    previousReducedMotion.current = reducedMotion;
+    if (reducedMotion !== false || !wasResolved) {
+      opacity.setValue(1);
+      translateY.setValue(0);
+      return;
+    }
+    opacity.setValue(0);
+    translateY.setValue(16);
+    const animation = Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
-        duration,
+        duration: safeDuration(duration),
         delay,
+        easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
-      Animated.spring(translateY, {
+      Animated.timing(translateY, {
         toValue: 0,
-        tension: 100,
-        friction: 10,
+        duration: safeDuration(duration),
         delay,
+        easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
-    ]).start();
-  }, [opacity, translateY, duration, delay]);
+    ]);
+    animation.start();
+    return () => animation.stop();
+  }, [opacity, translateY, duration, delay, reducedMotion]);
 
   return (
     <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>
@@ -73,7 +145,7 @@ export const FadeInDown: React.FC<AnimatedWrapperProps> = ({
 export const FadeInUp: React.FC<AnimatedWrapperProps> = ({
   children,
   delay = 0,
-  duration = 400,
+  duration = DEFAULT_DURATION,
   style,
 }) => {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -106,29 +178,43 @@ export const FadeInUp: React.FC<AnimatedWrapperProps> = ({
 export const ScaleIn: React.FC<AnimatedWrapperProps> = ({
   children,
   delay = 0,
-  duration = 400,
+  duration = DEFAULT_DURATION,
   style,
 }) => {
-  const scale = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+  const reducedMotion = useReducedMotion();
+  const previousReducedMotion = useRef<boolean | null>(null);
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scale, {
+    const wasResolved = previousReducedMotion.current !== null;
+    previousReducedMotion.current = reducedMotion;
+    if (reducedMotion !== false || !wasResolved) {
+      scale.setValue(1);
+      opacity.setValue(1);
+      return;
+    }
+    scale.setValue(0.96);
+    opacity.setValue(0);
+    const animation = Animated.parallel([
+      Animated.timing(scale, {
         toValue: 1,
-        tension: 100,
-        friction: 10,
+        duration: safeDuration(duration),
         delay,
+        easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
       Animated.timing(opacity, {
         toValue: 1,
-        duration: duration / 2,
+        duration: safeDuration(duration),
         delay,
+        easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
-    ]).start();
-  }, [scale, opacity, duration, delay]);
+    ]);
+    animation.start();
+    return () => animation.stop();
+  }, [scale, opacity, duration, delay, reducedMotion]);
 
   return (
     <Animated.View style={[style, { opacity, transform: [{ scale }] }]}>
@@ -512,21 +598,28 @@ export const PressableScale: React.FC<PressableScaleProps> = ({
   style,
 }) => {
   const scaleValue = useRef(new Animated.Value(1)).current;
+  const reducedMotion = useReducedMotion();
+
+  useEffect(() => () => scaleValue.stopAnimation(), [scaleValue]);
 
   const handlePressIn = () => {
-    Animated.spring(scaleValue, {
+    if (reducedMotion !== false) return;
+    scaleValue.stopAnimation();
+    Animated.timing(scaleValue, {
       toValue: scale,
-      friction: 5,
-      tension: 100,
+      duration: 150,
+      easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleValue, {
+    if (reducedMotion !== false) return;
+    scaleValue.stopAnimation();
+    Animated.timing(scaleValue, {
       toValue: 1,
-      friction: 5,
-      tension: 100,
+      duration: 150,
+      easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
   };
