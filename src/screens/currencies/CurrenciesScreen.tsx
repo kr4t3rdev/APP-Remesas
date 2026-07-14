@@ -11,9 +11,9 @@ import {
   ScrollView,
 } from "react-native";
 import { Alert } from "../../utils/alert";
-import { useNavigation } from "@react-navigation/native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
 import { Ionicons } from "@expo/vector-icons";
 import { FadeIn, FadeInDown, ScaleIn } from "../../components/animations";
 import CountryFlag from "react-native-country-flag";
@@ -36,8 +36,6 @@ import { getCountryCode, getCurrencySymbol } from "../../utils/currencyUtils";
 import { CURRENCY_CONFIG } from "../../config/constants";
 
 export const CurrenciesScreen: React.FC = () => {
-  const navigation = useNavigation();
-
   const [confirmModal, setConfirmModal] = useState<{
     visible: boolean;
     title: string;
@@ -250,15 +248,7 @@ export const CurrenciesScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      {/* Custom Header */}
-      {/* <View style={styles.customHeader}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.canGoBack() && navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={colors.primary[600]} />
-        </TouchableOpacity>
-         <Text style={styles.headerTitle}>Viajero Global</Text>
-        <View style={{ width: 40 }} />
-      </View> */}
-
+      <ProfileFeatureBackButton />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -294,7 +284,7 @@ export const CurrenciesScreen: React.FC = () => {
                       style={styles.flagStyle}
                     />
                   ) : (
-                    <View style={styles.primaryFlagRedTriangle} />
+                    <View style={[styles.primaryFlagPlaceholder, { backgroundColor: "#666" }]} />
                   )}
                 </View>
                 <Text style={styles.primaryCode}>{primaryCurrency.code}</Text>
@@ -517,30 +507,6 @@ export const CurrenciesScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8f9fc" },
-  customHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: "#fff",
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colors.primary[700],
-  },
-  addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary[50],
-    alignItems: "center",
-    justifyContent: "center",
-  },
   fab: {
     position: "absolute",
     bottom: spacing.lg,
@@ -637,20 +603,6 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
     overflow: "hidden",
     position: "relative",
-  },
-  primaryFlagRedTriangle: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 12,
-    backgroundColor: "#d32f2f",
-    borderRightWidth: 10,
-    borderTopWidth: 10,
-    borderBottomWidth: 10,
-    borderRightColor: "transparent",
-    borderTopColor: "transparent",
-    borderBottomColor: "transparent",
   },
   primaryCode: {
     color: "#fff",
