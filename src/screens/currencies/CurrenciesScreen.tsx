@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  FlatList,
   RefreshControl,
   TouchableOpacity,
   Modal,
@@ -184,17 +183,10 @@ export const CurrenciesScreen: React.FC = () => {
     });
   };
 
-  const renderSecondaryCurrency = ({
-    item,
-    index,
-  }: {
-    item: Currency;
-    index: number;
-  }) => {
+  const renderSecondaryCurrencyItem = (item: Currency) => {
     const countryCode = getCountryCode(item.code);
     return (
-      <FadeInDown delay={index * 50}>
-        <View style={styles.secondaryCard}>
+      <View style={styles.secondaryCard}>
           <View style={styles.secondaryCardFlagContainer}>
             {countryCode ? (
               <CountryFlag
@@ -250,9 +242,8 @@ export const CurrenciesScreen: React.FC = () => {
               />
               <Text style={styles.secondaryCardBtnDeleteText}>QUITAR</Text>
             </TouchableOpacity>
-          </View>
         </View>
-      </FadeInDown>
+      </View>
     );
   };
 
@@ -370,21 +361,25 @@ export const CurrenciesScreen: React.FC = () => {
             </View>
           </View>
 
-          <FlatList
+          <ScrollView
             horizontal
-            data={secondaryCurrencies}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={renderSecondaryCurrency}
             contentContainerStyle={styles.secondaryListContent}
             showsHorizontalScrollIndicator={false}
-            ListEmptyComponent={
+          >
+            {secondaryCurrencies.length === 0 ? (
               <View style={styles.secondaryEmpty}>
                 <Text style={styles.secondaryEmptyText}>
                   No hay monedas en tránsito
                 </Text>
               </View>
-            }
-          />
+            ) : (
+              secondaryCurrencies.map((item, index) => (
+                <FadeInDown key={item.id} delay={index * 50}>
+                  {renderSecondaryCurrencyItem(item)}
+                </FadeInDown>
+              ))
+            )}
+          </ScrollView>
         </FadeIn>
 
         {/* Market Status Section */}
