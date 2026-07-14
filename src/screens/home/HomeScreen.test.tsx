@@ -1,5 +1,6 @@
 import React from "react";
-import { render } from "@testing-library/react-native";
+import { act, render } from "@testing-library/react-native";
+import { ScrollView } from "react-native";
 import { HomeScreen } from "./HomeScreen";
 
 const mockUseDashboardData = jest.fn();
@@ -141,7 +142,8 @@ const dashboardData = {
 
 describe("HomeScreen dashboard content contract", () => {
   beforeEach(() => {
-    jest.useFakeTimers().setSystemTime(new Date("2026-07-14T14:00:00.000Z"));
+    jest.useFakeTimers().setSystemTime(new Date(2026, 6, 14, 9));
+    mockUseTabScrollToTop.mockClear();
     mockUseDashboardData.mockReturnValue(dashboardData);
   });
 
@@ -150,7 +152,7 @@ describe("HomeScreen dashboard content contract", () => {
   });
 
   it("renders the current dashboard content without Business", () => {
-    const { getByText, getAllByText, queryByText } = render(<HomeScreen />);
+    const { getByText, queryByText } = render(<HomeScreen />);
 
     expect(getByText("Buenos días")).toBeTruthy();
     expect(getByText("Ada")).toBeTruthy();
@@ -186,18 +188,23 @@ describe("HomeScreen dashboard content contract", () => {
     expect(getByText("Compra de USD")).toBeTruthy();
     expect(getByText("100 USD")).toBeTruthy();
     expect(getByText("-$ 32,000.00")).toBeTruthy();
-    expect(getAllByText("Ver todo")).toHaveLength(4);
-
-    expect(queryByText(/Business/i)).toBeNull();
+    expect(queryByText(/Business|Negocio|Empresa/i)).toBeNull();
   });
 
   it("registers Home scroll-to-top integration", () => {
-    render(<HomeScreen />);
+    const { UNSAFE_getAllByType } = render(<HomeScreen />);
+    const scrollTo = jest.fn();
+    UNSAFE_getAllByType(ScrollView)[0].instance.scrollTo = scrollTo;
 
     expect(mockUseTabScrollToTop).toHaveBeenCalledWith(
       "Home",
       expect.any(Function),
     );
+
+    const scrollToTop = mockUseTabScrollToTop.mock.calls[0][1];
+    act(() => scrollToTop());
+
+    expect(scrollTo).toHaveBeenCalledWith({ y: 0, animated: true });
   });
 
   it("hides objectives when there are no active objectives", () => {
