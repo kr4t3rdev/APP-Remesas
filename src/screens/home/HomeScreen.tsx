@@ -3,10 +3,8 @@ import {
   View,
   ScrollView,
   Text,
-  TouchableOpacity,
   StyleSheet,
   RefreshControl,
-  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -27,8 +25,6 @@ import { useAuthStore } from "../../store/authStore";
 import {
   useColors,
   useShadows,
-  useIsDark,
-  useGradients,
 } from "../../store/themeStore";
 import { spacing, borderRadius } from "../../theme";
 import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
@@ -39,14 +35,10 @@ import {
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
 export const HomeScreen: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const themeColors = useColors();
   const themeShadows = useShadows();
-  const isDark = useIsDark();
-  const gradients = useGradients();
   const tabBarScrollBehavior = useTabBarScrollBehavior();
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollToTop = useCallback(() => {
@@ -177,12 +169,9 @@ export const HomeScreen: React.FC = () => {
                 {user?.name || "Usuario"}
               </Text>
             </View>
-            <TouchableOpacity
-              style={[
-                styles.notificationButton,
-                { backgroundColor: themeColors.card },
-                themeShadows.sm,
-              ]}
+            <View
+              testID="home-notification-indicator"
+              style={styles.notificationIndicator}
             >
               <Ionicons
                 name="notifications-outline"
@@ -195,7 +184,7 @@ export const HomeScreen: React.FC = () => {
                   { backgroundColor: themeColors.danger },
                 ]}
               />
-            </TouchableOpacity>
+            </View>
           </View>
         </FadeIn>
 
@@ -237,15 +226,9 @@ export const HomeScreen: React.FC = () => {
           </View>
         </FadeIn>
 
-        <View style={styles.statsGrid}>
-          <ScaleIn delay={150}>
-            <View
-              style={[
-                styles.statCardWrapper,
-                { backgroundColor: themeColors.card },
-                themeShadows.md,
-              ]}
-            >
+        <View testID="home-kpi-grid" style={styles.statsGrid}>
+          <ScaleIn delay={150} style={styles.statGridItem}>
+            <View style={styles.statCardWrapper}>
               <StatsCard
                 title="Ganancia Hoy"
                 value={formatCurrency(summary.todayProfit)}
@@ -268,14 +251,8 @@ export const HomeScreen: React.FC = () => {
               />
             </View>
           </ScaleIn>
-          <ScaleIn delay={200}>
-            <View
-              style={[
-                styles.statCardWrapper,
-                { backgroundColor: themeColors.card },
-                themeShadows.md,
-              ]}
-            >
+          <ScaleIn delay={200} style={styles.statGridItem}>
+            <View style={styles.statCardWrapper}>
               <StatsCard
                 title="Transacciones"
                 value={summary.todayTransactions.toString()}
@@ -286,23 +263,14 @@ export const HomeScreen: React.FC = () => {
                     color={themeColors.secondary[500]}
                   />
                 }
-                color={themeColors.secondary[500]}
+                color={themeColors.financial.ventaForeground}
                 subtitle={`${summary.transactionSummary.comprasCount} compras, ${summary.transactionSummary.ventasCount} ventas`}
                 style={styles.statCard}
               />
             </View>
           </ScaleIn>
-        </View>
-
-        <View style={styles.statsGrid}>
-          <ScaleIn delay={250}>
-            <View
-              style={[
-                styles.statCardWrapper,
-                { backgroundColor: themeColors.card },
-                themeShadows.md,
-              ]}
-            >
+          <ScaleIn delay={250} style={styles.statGridItem}>
+            <View style={styles.statCardWrapper}>
               <StatsCard
                 title="Gastos Hoy"
                 value={formatCurrency(summary.todayExpenses)}
@@ -318,14 +286,8 @@ export const HomeScreen: React.FC = () => {
               />
             </View>
           </ScaleIn>
-          <ScaleIn delay={300}>
-            <View
-              style={[
-                styles.statCardWrapper,
-                { backgroundColor: themeColors.card },
-                themeShadows.md,
-              ]}
-            >
+          <ScaleIn delay={300} style={styles.statGridItem}>
+            <View style={styles.statCardWrapper}>
               <StatsCard
                 title="Balance Caja"
                 value={formatCurrency(summary.totalCashBalance)}
@@ -336,7 +298,7 @@ export const HomeScreen: React.FC = () => {
                     color={themeColors.accent[500]}
                   />
                 }
-                color={themeColors.accent[500]}
+                color={themeColors.accent[800]}
                 style={styles.statCard}
               />
             </View>
@@ -354,13 +316,6 @@ export const HomeScreen: React.FC = () => {
               >
                 Balances por Moneda
               </Text>
-              <TouchableOpacity>
-                <Text
-                  style={[styles.seeAll, { color: themeColors.primary[500] }]}
-                >
-                  Ver todo
-                </Text>
-              </TouchableOpacity>
             </View>
             <ScrollView
               horizontal
@@ -371,16 +326,14 @@ export const HomeScreen: React.FC = () => {
                 const currencyColor = getCurrencyColor(balance.currency.code);
                 return (
                   <ScaleIn key={balance.id} delay={400 + index * 50}>
-                    <TouchableOpacity
+                    <View
                       style={[
                         styles.currencyCard,
                         {
-                          borderLeftColor: currencyColor.primary,
                           backgroundColor: themeColors.card,
                         },
                         themeShadows.sm,
                       ]}
-                      activeOpacity={0.8}
                     >
                       <View
                         style={[
@@ -388,7 +341,12 @@ export const HomeScreen: React.FC = () => {
                           { backgroundColor: currencyColor.bg },
                         ]}
                       >
-                        <Text style={styles.currencySymbol}>
+                        <Text
+                          style={[
+                            styles.currencySymbol,
+                            { color: themeColors.text.primary },
+                          ]}
+                        >
                           {balance.currency.symbol}
                         </Text>
                       </View>
@@ -410,7 +368,7 @@ export const HomeScreen: React.FC = () => {
                           minimumFractionDigits: 2,
                         })}
                       </Text>
-                    </TouchableOpacity>
+                    </View>
                   </ScaleIn>
                 );
               })}
@@ -452,7 +410,12 @@ export const HomeScreen: React.FC = () => {
                           { backgroundColor: currencyColor.bg },
                         ]}
                       >
-                        <Text style={styles.rateCurrencySymbol}>
+                        <Text
+                          style={[
+                            styles.rateCurrencySymbol,
+                            { color: themeColors.text.primary },
+                          ]}
+                        >
                           {rate.currency.symbol}
                         </Text>
                       </View>
@@ -478,7 +441,7 @@ export const HomeScreen: React.FC = () => {
                         <Text
                           style={[
                             styles.rateValue,
-                            { color: themeColors.financial.compra },
+                            { color: themeColors.financial.compraForeground },
                           ]}
                         >
                           {rate.buyRate.toFixed(2)}
@@ -502,7 +465,7 @@ export const HomeScreen: React.FC = () => {
                         <Text
                           style={[
                             styles.rateValue,
-                            { color: themeColors.financial.venta },
+                            { color: themeColors.financial.ventaForeground },
                           ]}
                         >
                           {rate.sellRate.toFixed(2)}
@@ -527,13 +490,6 @@ export const HomeScreen: React.FC = () => {
               >
                 Resumen de Actividad
               </Text>
-              <TouchableOpacity>
-                <Text
-                  style={[styles.seeAll, { color: themeColors.primary[500] }]}
-                >
-                  Ver todo
-                </Text>
-              </TouchableOpacity>
             </View>
             <View
               style={[
@@ -587,13 +543,6 @@ export const HomeScreen: React.FC = () => {
                 >
                   Objetivos
                 </Text>
-                <TouchableOpacity>
-                  <Text
-                    style={[styles.seeAll, { color: themeColors.primary[500] }]}
-                  >
-                    Ver todo
-                  </Text>
-                </TouchableOpacity>
               </View>
               <ScrollView
                 horizontal
@@ -674,13 +623,6 @@ export const HomeScreen: React.FC = () => {
               >
                 Actividad Reciente
               </Text>
-              <TouchableOpacity>
-                <Text
-                  style={[styles.seeAll, { color: themeColors.primary[500] }]}
-                >
-                  Ver todo
-                </Text>
-              </TouchableOpacity>
             </View>
             <View
               style={[
@@ -692,9 +634,8 @@ export const HomeScreen: React.FC = () => {
               {recentTransactions && recentTransactions.length > 0 ? (
                 recentTransactions.map((tx, index) => (
                   <FadeInDown key={tx.id} delay={750 + index * 50}>
-                    <TouchableOpacity
+                    <View
                       style={styles.transactionItem}
-                      activeOpacity={0.8}
                     >
                       <View
                         style={[
@@ -761,8 +702,8 @@ export const HomeScreen: React.FC = () => {
                             {
                               color:
                                 tx.type === "COMPRA"
-                                  ? themeColors.financial.compra
-                                  : themeColors.financial.venta,
+                                  ? themeColors.financial.compraForeground
+                                  : themeColors.financial.ventaForeground,
                             },
                           ]}
                         >
@@ -778,7 +719,7 @@ export const HomeScreen: React.FC = () => {
                           {formatTime(tx.createdAt)}
                         </Text>
                       </View>
-                    </TouchableOpacity>
+                    </View>
                   </FadeInDown>
                 ))
               ) : (
@@ -829,28 +770,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   greeting: {
-    fontSize: 14,
-    marginBottom: 2,
+    fontSize: 15,
+    fontWeight: "500",
+    marginBottom: spacing.xs,
   },
   userName: {
-    fontSize: 22,
-    fontWeight: "700",
+    fontSize: 26,
+    fontWeight: "800",
+    letterSpacing: -0.4,
   },
-  notificationButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  notificationIndicator: {
+    width: 32,
+    height: 32,
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
   },
   notificationBadge: {
     position: "absolute",
-    top: 10,
-    right: 10,
+    top: 2,
+    right: 1,
     width: 10,
     height: 10,
     borderRadius: 5,
@@ -861,7 +803,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: borderRadius.lg,
-    padding: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     marginBottom: spacing.lg,
     gap: spacing.md,
   },
@@ -873,25 +816,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dateLabel: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: "500",
     marginBottom: 2,
   },
   dateText: {
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "700",
   },
   statsGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  statGridItem: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    minHeight: 136,
   },
   statCardWrapper: {
     flex: 1,
-    borderRadius: borderRadius.lg,
-    padding: spacing.sm,
   },
   statCard: {
     flex: 1,
+    minWidth: 0,
   },
   section: {
     marginBottom: spacing.lg,
@@ -906,10 +855,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
-  seeAll: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
   horizontalScroll: {
     paddingRight: spacing.md,
     gap: spacing.md,
@@ -918,7 +863,6 @@ const styles = StyleSheet.create({
     width: 130,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    borderLeftWidth: 4,
   },
   currencyIcon: {
     width: 36,
@@ -931,7 +875,6 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#0F172A",
   },
   currencyCode: {
     fontSize: 13,
@@ -967,7 +910,6 @@ const styles = StyleSheet.create({
   rateCurrencySymbol: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#0F172A",
   },
   rateCurrencyName: {
     fontSize: 14,

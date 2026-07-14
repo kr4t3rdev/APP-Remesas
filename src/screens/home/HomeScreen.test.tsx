@@ -1,7 +1,8 @@
 import React from "react";
 import { act, render } from "@testing-library/react-native";
-import { ScrollView } from "react-native";
+import { ScrollView, TouchableOpacity } from "react-native";
 import { HomeScreen } from "./HomeScreen";
+import { colors, darkColors } from "../../theme";
 
 const mockUseDashboardData = jest.fn();
 const mockUseTabScrollToTop = jest.fn();
@@ -24,7 +25,7 @@ jest.mock("../../store/themeStore", () => ({
     border: "#ddd",
     primary: { 500: "#00f" },
     secondary: { 500: "#70f" },
-    accent: { 500: "#f70" },
+    accent: { 500: "#f70", 800: "#730" },
     text: { primary: "#111", secondary: "#555", tertiary: "#888" },
     currencies: {
       usd: { primary: "#080", bg: "#efe" },
@@ -34,8 +35,10 @@ jest.mock("../../store/themeStore", () => ({
     },
     financial: {
       compra: "#d00",
+      compraForeground: "#730",
       compraLight: "#fee",
       venta: "#080",
+      ventaForeground: "#053",
       ventaLight: "#efe",
     },
     danger: "#d00",
@@ -57,7 +60,14 @@ jest.mock("../../navigation/TabBarMotionProvider", () => ({
 jest.mock("../../components/animations", () => ({
   FadeIn: ({ children }: { children: React.ReactNode }) => children,
   FadeInDown: ({ children }: { children: React.ReactNode }) => children,
-  ScaleIn: ({ children }: { children: React.ReactNode }) => children,
+  ScaleIn: ({ children, style }: { children: React.ReactNode; style?: object }) => {
+    const { View } = require("react-native");
+    return (
+      <View testID={style ? "scale-in-grid-item" : undefined} style={style}>
+        {children}
+      </View>
+    );
+  },
   PressableScale: ({ children }: { children: React.ReactNode }) => children,
   LoadingDots: () => null,
 }));
@@ -66,10 +76,10 @@ jest.mock("../../components/charts/Charts", () => {
   const { Text, View } = require("react-native");
 
   return {
-    StatsCard: ({ title, value, subtitle }: Record<string, string>) => (
-      <View>
+    StatsCard: ({ title, value, subtitle, color, style }: Record<string, any>) => (
+      <View testID="home-real-kpi-card" style={style}>
         <Text>{title}</Text>
-        <Text>{value}</Text>
+        <Text style={{ color }}>{value}</Text>
         {subtitle ? <Text>{subtitle}</Text> : null}
       </View>
     ),
@@ -140,6 +150,29 @@ const dashboardData = {
   },
 };
 
+const relativeLuminance = (hex: string) => {
+  const channels = hex
+    .slice(1)
+    .match(/.{2}/g)!
+    .map((channel) => parseInt(channel, 16) / 255)
+    .map((channel) =>
+      channel <= 0.04045
+        ? channel / 12.92
+        : ((channel + 0.055) / 1.055) ** 2.4,
+    );
+
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+};
+
+const contrastRatio = (foreground: string, background: string) => {
+  const foregroundLuminance = relativeLuminance(foreground);
+  const backgroundLuminance = relativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
 describe("HomeScreen dashboard content contract", () => {
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(new Date(2026, 6, 14, 9));
@@ -188,7 +221,86 @@ describe("HomeScreen dashboard content contract", () => {
     expect(getByText("Compra de USD")).toBeTruthy();
     expect(getByText("100 USD")).toBeTruthy();
     expect(getByText("-$ 32,000.00")).toBeTruthy();
+    expect(queryByText("Ver todo")).toBeNull();
     expect(queryByText(/Business|Negocio|Empresa/i)).toBeNull();
+  });
+
+  it("uses the petroleum palette in light and dark themes", () => {
+    expect(colors.primary[500]).toBe("#0E7490");
+    expect(colors.primary[600]).toBe("#155E75");
+    expect(darkColors.primary[500]).toBe("#22D3EE");
+    expect(darkColors.primary[600]).toBe("#67E8F9");
+    expect(colors.text.tertiary).toBe("#526C72");
+  });
+
+  it("keeps semantic financial text foregrounds readable on cards", () => {
+    expect(
+      contrastRatio(colors.financial.compraForeground, colors.card),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(colors.financial.ventaForeground, colors.card),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(darkColors.financial.compraForeground, darkColors.card),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(darkColors.financial.ventaForeground, darkColors.card),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(colors.accent[800], colors.card)).toBeGreaterThanOrEqual(
+      3,
+    );
+    expect(
+      contrastRatio(darkColors.accent[800], darkColors.card),
+    ).toBeGreaterThanOrEqual(3);
+  });
+
+  it("renders the four KPIs in one wrapping two-column grid", () => {
+    const { getByTestId, getAllByTestId } = render(<HomeScreen />);
+
+    expect(getByTestId("home-kpi-grid")).toHaveStyle({
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 16,
+    });
+    expect(getAllByTestId("scale-in-grid-item")).toHaveLength(4);
+    getAllByTestId("scale-in-grid-item").forEach((item) => {
+      expect(item).toHaveStyle({ flexBasis: "47%", minHeight: 136 });
+    });
+    getAllByTestId("home-real-kpi-card").forEach((card) => {
+      expect(card).toHaveStyle({ minWidth: 0 });
+    });
+  });
+
+  it("uses theme-aware foregrounds for currency symbols", () => {
+    const { getAllByText } = render(<HomeScreen />);
+
+    getAllByText("$").forEach((symbol) => {
+      expect(symbol).toHaveStyle({ color: "#111" });
+    });
+  });
+
+  it("uses semantic foreground tokens for financial text", () => {
+    const { getByText } = render(<HomeScreen />);
+
+    expect(getByText("320.00")).toHaveStyle({ color: "#730" });
+    expect(getByText("325.00")).toHaveStyle({ color: "#053" });
+    expect(getByText("-$ 32,000.00")).toHaveStyle({ color: "#730" });
+    expect(getByText("7")).toHaveStyle({ color: "#053" });
+    expect(getByText("$ 406,250.00")).toHaveStyle({ color: "#730" });
+  });
+
+  it("renders known inert Home surfaces without touchable semantics", () => {
+    const { getByTestId, getByText, queryByLabelText, UNSAFE_queryAllByType } = render(
+      <HomeScreen />,
+    );
+
+    expect(getByTestId("home-notification-indicator")).not.toHaveStyle({
+      backgroundColor: "#fff",
+    });
+    expect(queryByLabelText("Notificaciones")).toBeNull();
+    expect(getByText("1,250.00")).toBeTruthy();
+    expect(getByText("Compra de USD")).toBeTruthy();
+    expect(UNSAFE_queryAllByType(TouchableOpacity)).toHaveLength(0);
   });
 
   it("registers Home scroll-to-top integration", () => {

@@ -32,6 +32,8 @@ type BarItemProps = {
   showValue: boolean;
   showLabel: boolean;
   label: string;
+  valueColor: string;
+  labelColor: string;
 };
 
 const BarItem: React.FC<BarItemProps> = ({
@@ -44,6 +46,8 @@ const BarItem: React.FC<BarItemProps> = ({
   showValue,
   showLabel,
   label,
+  valueColor,
+  labelColor,
 }) => {
   const barHeight = (value / maxValue) * height;
   const animatedHeight = useRef(new Animated.Value(0)).current;
@@ -67,7 +71,9 @@ const BarItem: React.FC<BarItemProps> = ({
   return (
     <View style={styles.barWrapper}>
       {showValue && (
-        <Text style={styles.barValue}>{value.toLocaleString()}</Text>
+        <Text style={[styles.barValue, { color: valueColor }]}>
+          {value.toLocaleString()}
+        </Text>
       )}
       <Animated.View
         style={[
@@ -79,7 +85,10 @@ const BarItem: React.FC<BarItemProps> = ({
         ]}
       />
       {showLabel && (
-        <Text style={styles.barLabel} numberOfLines={1}>
+        <Text
+          style={[styles.barLabel, { color: labelColor }]}
+          numberOfLines={1}
+        >
           {label}
         </Text>
       )}
@@ -96,6 +105,7 @@ export const BarChart: React.FC<BarChartProps> = ({
   animated = true,
   style,
 }) => {
+  const themeColors = useColors();
   const max = maxValue || Math.max(...data.map((d) => d.value), 1);
 
   return (
@@ -107,12 +117,14 @@ export const BarChart: React.FC<BarChartProps> = ({
             value={item.value}
             maxValue={max}
             height={height}
-            color={item.color || colors.primary[500]}
+            color={item.color || themeColors.primary[500]}
             index={index}
             animated={animated}
             showValue={showValues}
             showLabel={showLabels}
             label={item.label}
+            valueColor={themeColors.text.primary}
+            labelColor={themeColors.text.secondary}
           />
         ))}
       </View>
@@ -127,6 +139,9 @@ type HorizontalBarItemProps = {
   color: string;
   index: number;
   animated: boolean;
+  labelColor: string;
+  valueColor: string;
+  trackColor: string;
 };
 
 const HorizontalBarItem: React.FC<HorizontalBarItemProps> = ({
@@ -136,6 +151,9 @@ const HorizontalBarItem: React.FC<HorizontalBarItemProps> = ({
   color,
   index,
   animated,
+  labelColor,
+  valueColor,
+  trackColor,
 }) => {
   const percentage = (value / maxValue) * 100;
   const animatedWidth = useRef(new Animated.Value(0)).current;
@@ -159,11 +177,19 @@ const HorizontalBarItem: React.FC<HorizontalBarItemProps> = ({
   return (
     <View style={styles.horizontalBarWrapper}>
       <View style={styles.horizontalBarHeader}>
-        <Text style={styles.horizontalBarLabel}>{label}</Text>
-        <Text style={styles.horizontalBarValue}>{percentage.toFixed(1)}%</Text>
+        <Text style={[styles.horizontalBarLabel, { color: labelColor }]}>
+          {label}
+        </Text>
+        <Text style={[styles.horizontalBarValue, { color: valueColor }]}>
+          {percentage.toFixed(1)}%
+        </Text>
       </View>
-      <View style={styles.horizontalBarBackground}>
+      <View
+        testID={`horizontal-bar-track-${index}`}
+        style={[styles.horizontalBarBackground, { backgroundColor: trackColor }]}
+      >
         <Animated.View
+          testID={`horizontal-bar-fill-${index}`}
           style={[
             styles.horizontalBar,
             {
@@ -193,6 +219,7 @@ export const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
   animated = true,
   style,
 }) => {
+  const themeColors = useColors();
   const max = maxValue || Math.max(...data.map((d) => d.value), 1);
 
   return (
@@ -203,9 +230,12 @@ export const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
           label={item.label}
           value={item.value}
           maxValue={max}
-          color={item.color || colors.primary[500]}
+          color={item.color || themeColors.primary[500]}
           index={index}
           animated={animated}
+          labelColor={themeColors.text.primary}
+          valueColor={themeColors.text.secondary}
+          trackColor={themeColors.border}
         />
       ))}
     </FadeIn>
@@ -298,6 +328,7 @@ type StatsCardProps = {
   color?: string;
   animated?: boolean;
   style?: StyleProp<ViewStyle>;
+  testID?: string;
 };
 
 export const StatsCard: React.FC<StatsCardProps> = ({
@@ -310,6 +341,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   color = colors.primary[500],
   animated = true,
   style,
+  testID,
 }) => {
   const themeColors = useColors();
   const themeShadows = useShadows();
@@ -351,6 +383,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
 
   return (
     <Animated.View
+      testID={testID}
       style={[
         styles.statsCard,
         {
@@ -458,12 +491,10 @@ const styles = StyleSheet.create({
   barValue: {
     fontSize: 11,
     fontWeight: "600",
-    color: colors.text.primary,
     marginBottom: 4,
   },
   barLabel: {
     fontSize: 11,
-    color: colors.text.secondary,
     marginTop: 4,
     textAlign: "center",
   },
@@ -480,17 +511,14 @@ const styles = StyleSheet.create({
   },
   horizontalBarLabel: {
     fontSize: 13,
-    color: colors.text.primary,
     fontWeight: "500",
   },
   horizontalBarValue: {
     fontSize: 13,
-    color: colors.text.secondary,
     fontWeight: "600",
   },
   horizontalBarBackground: {
     height: 8,
-    backgroundColor: colors.border,
     borderRadius: borderRadius.full,
     overflow: "hidden",
   },
