@@ -319,15 +319,65 @@ describe("HomeScreen dashboard content contract", () => {
     expect(scrollTo).toHaveBeenCalledWith({ y: 0, animated: true });
   });
 
-  it("hides objectives when there are no active objectives", () => {
+  it("shows an instructive empty state when there are no active objectives", () => {
     mockUseDashboardData.mockReturnValue({
       ...dashboardData,
       activeObjectives: [],
+      summary: {
+        ...dashboardData.summary,
+        transactionSummary: {
+          ...dashboardData.summary.transactionSummary,
+          comprasCount: 0,
+          ventasCount: 0,
+        },
+      },
     });
 
     const { queryByText } = render(<HomeScreen />);
 
-    expect(queryByText("Objetivos")).toBeNull();
-    expect(queryByText("Fondo de emergencia")).toBeNull();
+    expect(queryByText("Objetivos")).toBeTruthy();
+    expect(queryByText("Todavía no tenés objetivos activos")).toBeTruthy();
+    expect(queryByText("Creá un objetivo para seguir tu progreso")).toBeTruthy();
+  });
+
+  it("keeps balances horizontal only when balances exist", () => {
+    const populated = render(<HomeScreen />);
+    expect(populated.getByTestId("home-balances-content")).toHaveProp("horizontal", true);
+
+    mockUseDashboardData.mockReturnValue({ ...dashboardData, cashBalances: [] });
+    const empty = render(<HomeScreen />);
+    expect(empty.getByTestId("home-balances-content")).not.toHaveProp("horizontal");
+    expect(empty.getByTestId("home-balances-content")).toHaveStyle({ width: "100%" });
+    expect(empty.getByText("No hay balances para mostrar")).toBeTruthy();
+  });
+
+  it("uses instructive empty states and accessible non-interactive status", () => {
+    mockUseDashboardData.mockReturnValue({
+      ...dashboardData,
+      cashBalances: [],
+      exchangeRates: [],
+      recentTransactions: [],
+      activeObjectives: [],
+      summary: {
+        ...dashboardData.summary,
+        transactionSummary: {
+          ...dashboardData.summary.transactionSummary,
+          comprasCount: 0,
+          ventasCount: 0,
+        },
+      },
+    });
+
+    const { getByLabelText, getByText, getAllByTestId } = render(<HomeScreen />);
+
+    expect(getByLabelText("Notificaciones pendientes")).toBeTruthy();
+    expect(getByText("No hay balances para mostrar")).toBeTruthy();
+    expect(getByText("Agregá una caja o cuenta para ver sus saldos")).toBeTruthy();
+    expect(getByText("No hay tasas configuradas")).toBeTruthy();
+    expect(getByText("Configurá una tasa para comparar compra y venta")).toBeTruthy();
+    expect(getByText("No hay actividad para resumir")).toBeTruthy();
+    expect(getByText("Registrá transacciones para ver el movimiento del día")).toBeTruthy();
+    expect(getByText("No hay transacciones recientes. Registrá una para verla acá.")).toBeTruthy();
+    expect(getAllByTestId("home-section-surface").length).toBeGreaterThanOrEqual(4);
   });
 });

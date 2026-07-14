@@ -35,6 +35,27 @@ import {
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
+type EmptyStateProps = {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  description: string;
+  colors: ReturnType<typeof useColors>;
+};
+
+const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description, colors }) => (
+  <View style={styles.emptyState} accessibilityRole="text">
+    <Ionicons
+      name={icon}
+      size={34}
+      color={colors.primary[500]}
+      accessible={false}
+      importantForAccessibility="no-hide-descendants"
+    />
+    <Text style={[styles.emptyStateTitle, { color: colors.text.primary }]}>{title}</Text>
+    <Text style={[styles.emptyStateText, { color: colors.text.secondary }]}>{description}</Text>
+  </View>
+);
+
 export const HomeScreen: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const themeColors = useColors();
@@ -171,6 +192,9 @@ export const HomeScreen: React.FC = () => {
             </View>
             <View
               testID="home-notification-indicator"
+              accessible
+              accessibilityRole="image"
+              accessibilityLabel="Notificaciones pendientes"
               style={styles.notificationIndicator}
             >
               <Ionicons
@@ -317,12 +341,13 @@ export const HomeScreen: React.FC = () => {
                 Balances por Moneda
               </Text>
             </View>
-            <ScrollView
+            {cashBalances && cashBalances.length > 0 ? <ScrollView
+              testID="home-balances-content"
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.horizontalScroll}
             >
-              {cashBalances?.map((balance, index) => {
+              {cashBalances.map((balance, index) => {
                 const currencyColor = getCurrencyColor(balance.currency.code);
                 return (
                   <ScaleIn key={balance.id} delay={400 + index * 50}>
@@ -372,25 +397,36 @@ export const HomeScreen: React.FC = () => {
                   </ScaleIn>
                 );
               })}
-            </ScrollView>
+            </ScrollView> : (
+              <View
+                testID="home-balances-content"
+                style={[styles.balanceEmptySurface, { backgroundColor: `${themeColors.primary[500]}08` }]}
+              >
+                <EmptyState
+                  icon="wallet-outline"
+                  title="No hay balances para mostrar"
+                  description="Agregá una caja o cuenta para ver sus saldos"
+                  colors={themeColors}
+                />
+              </View>
+            )}
           </View>
         </FadeInDown>
 
         <FadeInDown delay={450}>
           <View style={styles.section}>
-            <Text
-              style={[styles.sectionTitle, { color: themeColors.text.primary }]}
-            >
-              Tasas de Cambio
-            </Text>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: themeColors.text.primary }]}>Tasas de Cambio</Text>
+            </View>
             <View
+              testID="home-section-surface"
               style={[
                 styles.ratesContainer,
-                { backgroundColor: themeColors.card },
+                { backgroundColor: `${themeColors.primary[500]}08` },
                 themeShadows.sm,
               ]}
             >
-              {exchangeRates?.map((rate, index) => {
+              {exchangeRates && exchangeRates.length > 0 ? exchangeRates.map((rate, index) => {
                 const currencyColor = getCurrencyColor(rate.currency.code);
                 return (
                   <View
@@ -474,7 +510,14 @@ export const HomeScreen: React.FC = () => {
                     </View>
                   </View>
                 );
-              })}
+              }) : (
+                <EmptyState
+                  icon="swap-horizontal-outline"
+                  title="No hay tasas configuradas"
+                  description="Configurá una tasa para comparar compra y venta"
+                  colors={themeColors}
+                />
+              )}
             </View>
           </View>
         </FadeInDown>
@@ -492,46 +535,40 @@ export const HomeScreen: React.FC = () => {
               </Text>
             </View>
             <View
+              testID="home-section-surface"
               style={[
                 styles.chartCard,
-                { backgroundColor: themeColors.card },
+                { backgroundColor: `${themeColors.primary[500]}08` },
                 themeShadows.sm,
               ]}
             >
-              <View style={styles.chartHeader}>
-                <Text
-                  style={[
-                    styles.chartTitle,
-                    { color: themeColors.text.primary },
-                  ]}
-                >
-                  Compras vs Ventas
-                </Text>
-                <Text
-                  style={[
-                    styles.chartSubtitle,
-                    { color: themeColors.text.secondary },
-                  ]}
-                >
-                  Transacciones del día
-                </Text>
-              </View>
-              <BarChart
-                data={transactionChartData}
-                height={100}
-                showLabels
-                showValues
-                maxValue={Math.max(
-                  summary.transactionSummary.comprasCount,
-                  summary.transactionSummary.ventasCount,
-                  5,
-                )}
-              />
+              {summary.transactionSummary.comprasCount + summary.transactionSummary.ventasCount > 0 ? <>
+                <View style={styles.chartHeader}>
+                  <Text style={[styles.chartTitle, { color: themeColors.text.primary }]}>Compras vs Ventas</Text>
+                  <Text style={[styles.chartSubtitle, { color: themeColors.text.secondary }]}>Transacciones del día</Text>
+                </View>
+                <BarChart
+                  data={transactionChartData}
+                  height={100}
+                  showLabels
+                  showValues
+                  maxValue={Math.max(
+                    summary.transactionSummary.comprasCount,
+                    summary.transactionSummary.ventasCount,
+                    5,
+                  )}
+                />
+              </> : <EmptyState
+                icon="bar-chart-outline"
+                title="No hay actividad para resumir"
+                description="Registrá transacciones para ver el movimiento del día"
+                colors={themeColors}
+              />}
             </View>
           </View>
         </FadeInDown>
 
-        {activeObjectives && activeObjectives.length > 0 && (
+        {(
           <FadeInDown delay={600}>
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
@@ -544,7 +581,7 @@ export const HomeScreen: React.FC = () => {
                   Objetivos
                 </Text>
               </View>
-              <ScrollView
+              {activeObjectives && activeObjectives.length > 0 ? <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.horizontalScroll}
@@ -607,7 +644,14 @@ export const HomeScreen: React.FC = () => {
                     </View>
                   </ScaleIn>
                 ))}
-              </ScrollView>
+              </ScrollView> : <View testID="home-section-surface" style={[styles.objectiveEmptySurface, { backgroundColor: `${themeColors.primary[500]}08` }]}>
+                <EmptyState
+                  icon="flag-outline"
+                  title="Todavía no tenés objetivos activos"
+                  description="Creá un objetivo para seguir tu progreso"
+                  colors={themeColors}
+                />
+              </View>}
             </View>
           </FadeInDown>
         )}
@@ -625,9 +669,10 @@ export const HomeScreen: React.FC = () => {
               </Text>
             </View>
             <View
+              testID="home-section-surface"
               style={[
                 styles.transactionsContainer,
-                { backgroundColor: themeColors.card },
+                { backgroundColor: `${themeColors.primary[500]}08` },
                 themeShadows.sm,
               ]}
             >
@@ -735,7 +780,7 @@ export const HomeScreen: React.FC = () => {
                       { color: themeColors.text.secondary },
                     ]}
                   >
-                    No hay transacciones recientes
+                    No hay transacciones recientes. Registrá una para verla acá.
                   </Text>
                 </View>
               )}
@@ -864,6 +909,10 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     padding: spacing.md,
   },
+  balanceEmptySurface: {
+    width: "100%",
+    borderRadius: borderRadius.lg,
+  },
   currencyIcon: {
     width: 36,
     height: 36,
@@ -956,6 +1005,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     alignItems: "center",
   },
+  objectiveEmptySurface: {
+    borderRadius: borderRadius.lg,
+  },
   objectiveHeader: {
     marginBottom: spacing.sm,
   },
@@ -1030,5 +1082,11 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 14,
+    textAlign: "center",
+  },
+  emptyStateTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
