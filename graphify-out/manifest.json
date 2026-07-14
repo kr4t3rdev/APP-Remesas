@@ -1888,5 +1888,15 @@
     "mtime": 1783969413.9549088,
     "ast_hash": "f196824657d8858bc7fa44eecbba38b1",
     "semantic_hash": ""
+  },
+  "output/tab-bar-emphasis.png": {
+    "mtime": 1783976306.2575154,
+    "ast_hash": "592447da55913bcc28cb38fbc6168c78",
+    "semantic_hash": ""
+  },
+  "output/tab-bar-ready-to-test.png": {
+    "mtime": 1783977836.2842467,
+    "ast_hash": "65062e9193055ec6f114e87579cabbb7",
+    "semantic_hash": ""
   }
 }
