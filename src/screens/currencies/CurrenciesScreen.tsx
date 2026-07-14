@@ -515,7 +515,7 @@ export const CurrenciesScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8f9fc", paddingTop: -60 },
+  container: { flex: 1, backgroundColor: "#f8f9fc" },
   customHeader: {
     flexDirection: "row",
     alignItems: "center",
