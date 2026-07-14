@@ -11,6 +11,7 @@ export function getApiErrorMessage(
   const err = error as {
     response?: { data?: { message?: string | string[] }; status?: number };
     message?: string;
+    name?: string;
   };
   const status = err?.response?.status;
   const data = err?.response?.data;
@@ -34,6 +35,9 @@ export function getApiErrorMessage(
   // Sin response: error de red, timeout o API no alcanzable
   if (!err?.response) {
     const networkMsg = err?.message;
+    if (err?.name === "AbortError") {
+      return "La solicitud tardó demasiado. Comprueba tu conexión e inténtalo de nuevo.";
+    }
     if (
       networkMsg &&
       (networkMsg === "Network Error" || networkMsg.includes("timeout"))

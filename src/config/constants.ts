@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import * as Device from "expo-device";
 
 // Variables de entorno para configurar URLs de API
 // Ver .env.example para documentación
@@ -18,6 +19,10 @@ const ENV = {
 const getBaseURL = () => {
   // Detectar entorno y plataforma
   if (__DEV__) {
+    // Expo distingue un dispositivo real de un simulador/emulador.
+    if (Device.isDevice && Platform.OS !== "web") {
+      return ENV.PHYSICAL_API_URL;
+    }
     // iOS Simulator: usa localhost
     if (Platform.OS === "ios") {
       return "http://localhost:3000/api";
