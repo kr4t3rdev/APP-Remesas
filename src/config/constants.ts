@@ -47,6 +47,10 @@ export const API_CONFIG = {
   timeout: 30000,
 };
 
+export const CURRENCY_CONFIG = {
+  BASE_CODE: "CUP",
+};
+
 export const STORAGE_KEYS = {
   AUTH_TOKEN: "auth_token",
   USER: "user_data",

@@ -33,6 +33,7 @@ import { useCurrentExchangeRatesQuery } from "../../modules/exchange-rates/appli
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { getCountryCode, getCurrencySymbol } from "../../utils/currencyUtils";
+import { CURRENCY_CONFIG } from "../../config/constants";
 
 export const CurrenciesScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -158,10 +159,10 @@ export const CurrenciesScreen: React.FC = () => {
   };
 
   const handleDelete = (currency: Currency) => {
-    if (currency.code === "CUP") {
+    if (currency.code === CURRENCY_CONFIG.BASE_CODE) {
       Alert.alert(
         "Acción no permitida",
-        "La moneda base (CUP) no puede ser eliminada.",
+        `La moneda base (${CURRENCY_CONFIG.BASE_CODE}) no puede ser eliminada.`,
       );
       return;
     }
@@ -311,7 +312,7 @@ export const CurrenciesScreen: React.FC = () => {
                   <Text style={styles.primaryInfoLabel}>SÍMBOLO</Text>
                   <Text style={styles.primaryInfoValue}>
                     {primaryCurrency.symbol}{" "}
-                    {primaryCurrency.code === "CUP" ? "MN" : ""}
+                    {primaryCurrency.code === CURRENCY_CONFIG.BASE_CODE ? "MN" : ""}
                   </Text>
                 </View>
                 <View style={styles.primaryDivider} />
