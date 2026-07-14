@@ -262,7 +262,7 @@ export const CurrenciesScreen: React.FC = () => {
         {/* Primary Currency Section */}
         <FadeIn>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>MONEDA BASE DE VIAJE</Text>
+            <Text style={styles.sectionTitle}>MONEDA PRINCIPAL</Text>
             <View style={styles.primaryBadgeSmall}>
               <View style={styles.primaryDot} />
               <Text style={styles.primaryBadgeSmallText}>PRINCIPAL</Text>
@@ -344,7 +344,7 @@ export const CurrenciesScreen: React.FC = () => {
         {/* Secondary Currencies Section */}
         <FadeIn delay={100}>
           <View style={[styles.sectionHeader, { marginTop: spacing.xl }]}>
-            <Text style={styles.sectionTitleDark}>Monedas en Tránsito</Text>
+            <Text style={styles.sectionTitleDark}>Otras Monedas</Text>
             <View style={styles.activeBadge}>
               <Text style={styles.activeBadgeText}>
                 {secondaryCurrencies.length} ACTIVAS
@@ -360,7 +360,7 @@ export const CurrenciesScreen: React.FC = () => {
             {secondaryCurrencies.length === 0 ? (
               <View style={styles.secondaryEmpty}>
                 <Text style={styles.secondaryEmptyText}>
-                  No hay monedas en tránsito
+                  No hay otras monedas
                 </Text>
               </View>
             ) : (
