@@ -8,9 +8,51 @@ import {
   Easing,
   StyleProp,
 } from "react-native";
+import Svg, { Circle } from "react-native-svg";
 import { FadeIn } from "../animations";
 import { colors, spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
+const getSafePositiveMax = (values: number[], requestedMax?: number) => {
+  const highestPositiveValue = values.reduce(
+    (highest, value) =>
+      Number.isFinite(value) ? Math.max(highest, value) : highest,
+    0,
+  );
+  const safeRequestedMax =
+    requestedMax !== undefined && Number.isFinite(requestedMax)
+      ? requestedMax
+      : 0;
+
+  return Math.max(highestPositiveValue, safeRequestedMax, 1);
+};
+
+const getSafeHorizontalMax = (values: number[], requestedMax?: number) => {
+  if (
+    requestedMax !== undefined &&
+    Number.isFinite(requestedMax) &&
+    requestedMax > 0
+  ) {
+    return requestedMax;
+  }
+
+  return getSafePositiveMax(values);
+};
+
+const formatProgressPercentage = (percentage: number) => {
+  if (percentage >= 100) return "100";
+  if (percentage <= 0) return "0";
+
+  const conservativeTenth = Math.floor((percentage + Number.EPSILON) * 10) / 10;
+  return Number.isInteger(conservativeTenth)
+    ? conservativeTenth.toFixed(0)
+    : conservativeTenth.toFixed(1);
+};
 
 type BarChartProps = {
   data: { label: string; value: number; color?: string }[];
@@ -49,33 +91,43 @@ const BarItem: React.FC<BarItemProps> = ({
   valueColor,
   labelColor,
 }) => {
-  const barHeight = (value / maxValue) * height;
-  const animatedHeight = useRef(new Animated.Value(0)).current;
+  const displayValue = value.toLocaleString();
+  const visualValue = Number.isFinite(value) ? Math.max(0, value) : 0;
+  const barHeight = clamp((visualValue / maxValue) * height, 0, height);
+  const animatedHeight = useRef(
+    new Animated.Value(animated ? 0 : barHeight),
+  ).current;
 
   useEffect(() => {
+    animatedHeight.stopAnimation();
+
     if (animated) {
-      Animated.sequence([
-        Animated.delay(index * 100),
-        Animated.spring(animatedHeight, {
-          toValue: barHeight,
-          friction: 7,
-          tension: 40,
-          useNativeDriver: false,
-        }),
-      ]).start();
-    } else {
-      animatedHeight.setValue(barHeight);
+      Animated.timing(animatedHeight, {
+        toValue: barHeight,
+        duration: 500,
+        delay: index * 60,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: false,
+      }).start();
+      return;
     }
-  }, [barHeight, animated, animatedHeight, index]);
+
+    animatedHeight.setValue(barHeight);
+  }, [animated, animatedHeight, barHeight, index]);
 
   return (
-    <View style={styles.barWrapper}>
+    <View
+      accessible
+      accessibilityLabel={`${label}: ${displayValue}`}
+      style={styles.barWrapper}
+    >
       {showValue && (
         <Text style={[styles.barValue, { color: valueColor }]}>
-          {value.toLocaleString()}
+          {displayValue}
         </Text>
       )}
       <Animated.View
+        testID={`bar-chart-bar-${index}`}
         style={[
           styles.bar,
           {
@@ -106,7 +158,27 @@ export const BarChart: React.FC<BarChartProps> = ({
   style,
 }) => {
   const themeColors = useColors();
-  const max = maxValue || Math.max(...data.map((d) => d.value), 1);
+  const max = getSafePositiveMax(
+    data.map((item) => item.value),
+    maxValue,
+  );
+
+  if (data.length === 0) {
+    return (
+      <FadeIn style={[styles.chartContainer, style]}>
+        <View style={[styles.emptyChart, { height }]}>
+          <Text
+            style={[
+              styles.emptyChartText,
+              { color: themeColors.text.secondary },
+            ]}
+          >
+            Sin datos para mostrar
+          </Text>
+        </View>
+      </FadeIn>
+    );
+  }
 
   return (
     <FadeIn style={[styles.chartContainer, style]}>
@@ -155,38 +227,56 @@ const HorizontalBarItem: React.FC<HorizontalBarItemProps> = ({
   valueColor,
   trackColor,
 }) => {
-  const percentage = (value / maxValue) * 100;
-  const animatedWidth = useRef(new Animated.Value(0)).current;
+  const displayPercentage = (value / maxValue) * 100;
+  const formattedPercentage = `${displayPercentage.toFixed(1)}%`;
+  const visualPercentage = clamp(displayPercentage, 0, 100);
+  const animatedWidth = useRef(
+    new Animated.Value(animated ? 0 : visualPercentage),
+  ).current;
 
   useEffect(() => {
+    animatedWidth.stopAnimation();
+
     if (animated) {
-      Animated.sequence([
-        Animated.delay(index * 100),
-        Animated.timing(animatedWidth, {
-          toValue: percentage,
-          duration: 800,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: false,
-        }),
-      ]).start();
-    } else {
-      animatedWidth.setValue(percentage);
+      Animated.timing(animatedWidth, {
+        toValue: visualPercentage,
+        duration: 500,
+        delay: index * 60,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: false,
+      }).start();
+      return;
     }
-  }, [percentage, animated, animatedWidth, index]);
+
+    animatedWidth.setValue(visualPercentage);
+  }, [animated, animatedWidth, index, visualPercentage]);
 
   return (
-    <View style={styles.horizontalBarWrapper}>
+    <View
+      accessible
+      accessibilityLabel={`${label}: ${formattedPercentage}`}
+      accessibilityValue={{
+        min: 0,
+        max: 100,
+        now: visualPercentage,
+        text: formattedPercentage,
+      }}
+      style={styles.horizontalBarWrapper}
+    >
       <View style={styles.horizontalBarHeader}>
         <Text style={[styles.horizontalBarLabel, { color: labelColor }]}>
           {label}
         </Text>
         <Text style={[styles.horizontalBarValue, { color: valueColor }]}>
-          {percentage.toFixed(1)}%
+          {formattedPercentage}
         </Text>
       </View>
       <View
         testID={`horizontal-bar-track-${index}`}
-        style={[styles.horizontalBarBackground, { backgroundColor: trackColor }]}
+        style={[
+          styles.horizontalBarBackground,
+          { backgroundColor: trackColor },
+        ]}
       >
         <Animated.View
           testID={`horizontal-bar-fill-${index}`}
@@ -220,7 +310,10 @@ export const HorizontalBarChart: React.FC<HorizontalBarChartProps> = ({
   style,
 }) => {
   const themeColors = useColors();
-  const max = maxValue || Math.max(...data.map((d) => d.value), 1);
+  const max = getSafeHorizontalMax(
+    data.map((item) => item.value),
+    maxValue,
+  );
 
   return (
     <FadeIn style={[styles.horizontalChartContainer, style]}>
@@ -265,42 +358,77 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
 }) => {
   const themeColors = useColors();
   const progressBackgroundColor = backgroundColor ?? themeColors.border;
-
-  const rotation = useRef(new Animated.Value(0)).current;
+  const progressColor = color ?? themeColors.primary[500];
+  const clampedPercentage = Number.isFinite(percentage)
+    ? Math.min(100, Math.max(0, percentage))
+    : 0;
+  const radius = Math.max(0, (size - strokeWidth) / 2);
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - clampedPercentage / 100);
+  const isComplete = clampedPercentage === 100;
+  const displayedPercentage = formatProgressPercentage(clampedPercentage);
+  const animatedStrokeDashoffset = useRef(
+    new Animated.Value(animated ? circumference : strokeDashoffset),
+  ).current;
 
   useEffect(() => {
-    if (animated) {
-      Animated.timing(rotation, {
-        toValue: percentage,
-        duration: 1000,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }).start();
-    } else {
-      rotation.setValue(percentage);
-    }
-  }, [percentage, animated, rotation]);
+    animatedStrokeDashoffset.stopAnimation();
 
-  const rotateDeg = rotation.interpolate({
-    inputRange: [0, 100],
-    outputRange: ["0deg", "360deg"],
-  });
+    if (animated) {
+      Animated.timing(animatedStrokeDashoffset, {
+        toValue: strokeDashoffset,
+        duration: 700,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: false,
+      }).start();
+      return;
+    }
+
+    animatedStrokeDashoffset.setValue(strokeDashoffset);
+  }, [animated, animatedStrokeDashoffset, strokeDashoffset]);
 
   return (
     <FadeIn style={[{ width: size, height: size }, style]}>
       <View style={[styles.circularContainer, { width: size, height: size }]}>
-        <View
-          style={[
-            styles.circularBackground,
-            {
-              width: size,
-              height: size,
-              borderRadius: size / 2,
-              borderWidth: strokeWidth,
-              borderColor: progressBackgroundColor,
-            },
-          ]}
-        />
+        <Svg
+          accessibilityRole="progressbar"
+          accessibilityLabel={`Progreso: ${displayedPercentage}%${
+            isComplete ? ", completado" : ""
+          }`}
+          accessibilityValue={{
+            min: 0,
+            max: 100,
+            now: clampedPercentage,
+            text: isComplete ? "Completado" : `${displayedPercentage}%`,
+          }}
+          width={size}
+          height={size}
+          style={styles.circularGraphic}
+        >
+          <Circle
+            testID="circular-progress-track"
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={progressBackgroundColor}
+            strokeWidth={strokeWidth}
+          />
+          <AnimatedCircle
+            testID="circular-progress-arc"
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={progressColor}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={animatedStrokeDashoffset}
+            rotation={-90}
+            origin={`${size / 2}, ${size / 2}`}
+          />
+        </Svg>
         <View style={styles.circularContent}>
           {children || (
             <Text
@@ -309,7 +437,7 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
                 { color: themeColors.text.primary },
               ]}
             >
-              {percentage.toFixed(0)}%
+              {displayedPercentage}%
             </Text>
           )}
         </View>
@@ -477,6 +605,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     paddingHorizontal: spacing.sm,
   },
+  emptyChart: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyChartText: {
+    fontSize: 13,
+  },
   barWrapper: {
     alignItems: "center",
     flex: 1,
@@ -486,7 +621,6 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 40,
     borderRadius: borderRadius.sm,
-    minHeight: 4,
   },
   barValue: {
     fontSize: 11,
@@ -530,10 +664,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  circularBackground: {
+  circularGraphic: {
     position: "absolute",
   },
   circularContent: {
+    position: "absolute",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 999,
