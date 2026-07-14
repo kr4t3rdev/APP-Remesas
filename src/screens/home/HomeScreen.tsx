@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import {
   View,
   ScrollView,
@@ -32,6 +32,10 @@ import {
 } from "../../store/themeStore";
 import { spacing, borderRadius } from "../../theme";
 import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
+import {
+  useTabBarScrollBehavior,
+  useTabScrollToTop,
+} from "../../navigation/TabBarMotionProvider";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -43,6 +47,12 @@ export const HomeScreen: React.FC = () => {
   const themeShadows = useShadows();
   const isDark = useIsDark();
   const gradients = useGradients();
+  const tabBarScrollBehavior = useTabBarScrollBehavior();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollToTop = useCallback(() => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  }, []);
+  useTabScrollToTop("Home", scrollToTop);
 
   const {
     dailyReport,
@@ -140,6 +150,8 @@ export const HomeScreen: React.FC = () => {
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
       <ScrollView
+        ref={scrollViewRef}
+        {...tabBarScrollBehavior}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={

@@ -14,6 +14,8 @@ export const queryKeys = {
   transactions: {
     list: (type?: "COMPRA" | "VENTA") =>
       ["transactions", "list", type ?? "all"] as const,
+    positions: () => ["transactions", "positions"] as const,
+    remittances: () => ["transactions", "remittances"] as const,
     currencies: () => ["transactions", "currencies"] as const,
     exchangeRates: () => ["transactions", "exchangeRates"] as const,
   },
@@ -110,6 +112,8 @@ export const queryKeys = {
     dailyReport: () => ["profile", "dailyReport"] as const,
   },
   reports: {
+    fxPerformance: (startDate: string, endDate: string, currency?: string) =>
+      ["reports", "fxPerformance", startDate, endDate, currency ?? "all"] as const,
     dailyReport: (date: string) => ["reports", "dailyReport", date] as const,
     cashBalances: () => ["reports", "cashBalances"] as const,
     periodReport: (startDate: string, endDate: string) =>

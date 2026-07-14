@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -31,10 +31,17 @@ import {
 } from "../../modules/expense-items/application/useExpenseItems";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
 import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
+import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 
 export const ExpenseItemsScreen: React.FC = () => {
   const themeColors = useColors();
   const themeShadows = useShadows();
+  const tabBarScrollBehavior = useTabBarScrollBehavior();
+  const expenseItemsListRef = useRef<FlatList<ExpenseItem>>(null);
+  const scrollToTop = useCallback(() => {
+    expenseItemsListRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
+  useTabScrollToTop("ExpenseItems", scrollToTop);
 
   const [confirmModal, setConfirmModal] = useState<{
     visible: boolean;
@@ -193,6 +200,8 @@ export const ExpenseItemsScreen: React.FC = () => {
       </View>
 
       <FlatList
+        ref={expenseItemsListRef}
+        {...tabBarScrollBehavior}
         data={expenseItems}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item, index }) => (

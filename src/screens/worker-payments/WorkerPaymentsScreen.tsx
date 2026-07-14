@@ -399,7 +399,6 @@ export const WorkerPaymentsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: -80,
   },
   header: {
     padding: spacing.md,

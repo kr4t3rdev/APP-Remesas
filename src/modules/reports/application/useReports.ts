@@ -13,6 +13,15 @@ export const useReportsDailyReportQuery = (date: Date) => {
   });
 };
 
+export const useFxPerformanceReportQuery = (startDate: string, endDate: string, currency?: string) =>
+  useQuery({
+    queryKey: queryKeys.reports.fxPerformance(startDate, endDate, currency),
+    queryFn: () => reportsRepository.getFxPerformanceReport(startDate, endDate, currency),
+    enabled: Boolean(startDate && endDate),
+    staleTime: 1000 * 60 * 5,
+    throwOnError: false,
+  });
+
 export const useReportsCashBalancesQuery = () =>
   useQuery({
     queryKey: queryKeys.reports.cashBalances(),

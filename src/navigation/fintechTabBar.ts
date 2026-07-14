@@ -2,7 +2,9 @@ import type { ViewStyle } from "react-native";
 
 export type FintechTabBarColors = {
   background: string;
+  opaqueBackground: string;
   border: string;
+  opaqueBorder: string;
   active: string;
   activeBackground: string;
   inactive: string;
@@ -18,24 +20,29 @@ export const floatingTabBarMetrics = {
 
 export const fintechTabBarColors: Record<"light" | "dark", FintechTabBarColors> = {
   light: {
-    background: "rgba(255, 255, 255, 0.82)",
-    border: "rgba(226, 232, 240, 0.6)",
-    active: "#4F46E5",
-    activeBackground: "rgba(79, 70, 229, 0.1)",
-    inactive: "#64748B",
+    background: "rgba(255, 255, 255, 0.94)",
+    opaqueBackground: "#FFFFFF",
+    border: "rgba(148, 163, 184, 0.42)",
+    opaqueBorder: "#94A3B8",
+    active: "#4338CA",
+    activeBackground: "rgba(67, 56, 202, 0.12)",
+    inactive: "#475569",
   },
   dark: {
-    background: "rgba(17, 24, 39, 0.82)",
-    border: "rgba(51, 65, 85, 0.6)",
-    active: "#A5B4FC",
-    activeBackground: "rgba(165, 180, 252, 0.12)",
-    inactive: "#94A3B8",
+    background: "rgba(15, 23, 42, 0.94)",
+    opaqueBackground: "#0F172A",
+    border: "rgba(148, 163, 184, 0.3)",
+    opaqueBorder: "#64748B",
+    active: "#C7D2FE",
+    activeBackground: "rgba(199, 210, 254, 0.15)",
+    inactive: "#CBD5E1",
   },
 };
 
 export const getFintechTabBarStyle = (
   bottomInset: number,
   isDark: boolean,
+  reduceTransparency = false,
 ): ViewStyle => {
   const theme = fintechTabBarColors[isDark ? "dark" : "light"];
 
@@ -44,8 +51,10 @@ export const getFintechTabBarStyle = (
     left: 44,
     right: 44,
     bottom: bottomInset + floatingTabBarMetrics.bottom,
-    backgroundColor: theme.background,
-    borderColor: theme.border,
+    backgroundColor: reduceTransparency
+      ? theme.opaqueBackground
+      : theme.background,
+    borderColor: reduceTransparency ? theme.opaqueBorder : theme.border,
     borderWidth: 1,
     borderRadius: 28,
     height: floatingTabBarMetrics.height,
@@ -53,9 +62,9 @@ export const getFintechTabBarStyle = (
     paddingBottom: 8,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: isDark ? 0.32 : 0.14,
-    shadowRadius: 10,
-    elevation: 8,
+    shadowOpacity: isDark ? 0.38 : 0.16,
+    shadowRadius: 12,
+    elevation: 9,
     overflow: "visible",
   };
 };

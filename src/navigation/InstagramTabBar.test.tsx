@@ -1,5 +1,5 @@
 import React from "react";
-import { AccessibilityInfo, Animated } from "react-native";
+import { AccessibilityInfo, Animated, Keyboard } from "react-native";
 import { act, render, fireEvent, waitFor } from "@testing-library/react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
@@ -17,6 +17,7 @@ jest.mock("@expo/vector-icons", () => {
 });
 
 import { InstagramTabBar } from "./InstagramTabBar";
+import { TAB_BAR_EMPHASIS_MOTION } from "./InstagramTabBar";
 import {
   TabBarMotionProvider,
   useTabScrollToTop,
@@ -115,6 +116,45 @@ describe("InstagramTabBar", () => {
     });
   });
 
+  it("keeps labels visible and subtly enlarges the bar, icons, and labels on scroll-down", () => {
+    expect(TAB_BAR_EMPHASIS_MOTION.barScaleX).toBeGreaterThan(1);
+    expect(TAB_BAR_EMPHASIS_MOTION.barScaleY).toBeGreaterThan(1);
+    expect(TAB_BAR_EMPHASIS_MOTION.iconScale).toBeGreaterThan(1);
+    expect(TAB_BAR_EMPHASIS_MOTION.labelScale).toBeGreaterThan(1);
+    expect(TAB_BAR_EMPHASIS_MOTION.labelOpacity).toBe(1);
+  });
+
+  it("hides while the keyboard is visible and returns when it closes", () => {
+    const listeners: Record<string, () => void> = {};
+    const remove = jest.fn();
+    jest.spyOn(Keyboard, "addListener").mockImplementation(((event: string, listener: () => void) => {
+      listeners[event] = listener;
+      return { remove };
+    }) as never);
+
+    const view = renderTabBar(createProps());
+    act(() => listeners.keyboardDidShow());
+    expect(view.queryByTestId("floating-tab-bar")).toBeNull();
+
+    act(() => listeners.keyboardDidHide());
+    expect(view.getByTestId("floating-tab-bar")).toBeTruthy();
+
+    view.unmount();
+    expect(remove).toHaveBeenCalledTimes(2);
+  });
+
+  it("handles failed accessibility reads without an unhandled rejection", async () => {
+    jest
+      .spyOn(AccessibilityInfo, "isReduceMotionEnabled")
+      .mockRejectedValue(new Error("Unavailable"));
+    jest
+      .spyOn(AccessibilityInfo, "isReduceTransparencyEnabled")
+      .mockRejectedValue(new Error("Unavailable"));
+
+    expect(() => renderTabBar(createProps())).not.toThrow();
+    await act(async () => undefined);
+  });
+
   it("emits tabPress and navigates when an inactive tab is pressed", () => {
     const props = createProps(0);
     const { getByTestId } = renderTabBar(props);
@@ -127,6 +167,18 @@ describe("InstagramTabBar", () => {
       canPreventDefault: true,
     });
     expect(props.navigation.navigate).toHaveBeenCalledWith("Profile", undefined);
+  });
+
+  it("uses jumpTo for inactive tabs when bottom-tab navigation provides it", () => {
+    const props = createProps(0);
+    const jumpTo = jest.fn();
+    (props.navigation as unknown as { jumpTo: jest.Mock }).jumpTo = jumpTo;
+    const { getByTestId } = renderTabBar(props);
+
+    fireEvent.press(getByTestId("tab-Profile"));
+
+    expect(jumpTo).toHaveBeenCalledWith("Profile");
+    expect(props.navigation.navigate).not.toHaveBeenCalled();
   });
 
   it("does not navigate when tabPress is prevented", () => {
@@ -227,6 +279,16 @@ describe("InstagramTabBar", () => {
         backgroundColor: "#FFFFFF",
       });
     });
+  });
+
+  it("renders when Reduce Transparency is unavailable on web", () => {
+    const reduceTransparency = AccessibilityInfo.isReduceTransparencyEnabled;
+    try {
+      delete (AccessibilityInfo as { isReduceTransparencyEnabled?: unknown }).isReduceTransparencyEnabled;
+      expect(() => renderTabBar(createProps(0))).not.toThrow();
+    } finally {
+      (AccessibilityInfo as { isReduceTransparencyEnabled?: unknown }).isReduceTransparencyEnabled = reduceTransparency;
+    }
   });
 
   it("responds to Reduce Transparency changes and removes the listener", async () => {

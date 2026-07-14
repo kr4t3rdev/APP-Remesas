@@ -13,6 +13,7 @@ import { BankAccountsScreen } from "../screens/bank-accounts/BankAccountsScreen"
 import { CurrenciesScreen } from "../screens/currencies/CurrenciesScreen";
 import { ReconciliationsHistoryScreen } from "../screens/reconciliations/ReconciliationsHistoryScreen";
 import { BulkReconciliationScreen } from "../screens/reconciliations/BulkReconciliationScreen";
+import { ReportsScreen } from "../screens/reports/ReportsScreen";
 import { MainTabs } from "./MainTabs";
 import { AdminTabs } from "./AdminTabs";
 import { useAuthStore } from "../store/authStore";
@@ -120,6 +121,14 @@ const MainStackNavigator: React.FC = () => {
         options={{
           headerShown: false,
           presentation: "modal",
+        }}
+      />
+      <MainStack.Screen
+        name="Reports"
+        component={ReportsScreen}
+        options={{
+          headerShown: false,
+          presentation: "card",
         }}
       />
       <MainStack.Screen

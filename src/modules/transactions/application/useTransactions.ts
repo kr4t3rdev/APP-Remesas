@@ -10,11 +10,12 @@ export const useTransactionsQuery = (params?: {
   endDate?: string;
 }) =>
   useQuery({
-    queryKey: ["transactions", "list", params],
+    queryKey: queryKeys.transactions.list(params?.type),
     queryFn: () => transactionsRepository.getTransactions(params),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
     initialData: [],
+    initialDataUpdatedAt: 0,
   });
 
 export const useCurrenciesQuery = () =>
@@ -24,6 +25,7 @@ export const useCurrenciesQuery = () =>
     staleTime: 1000 * 60 * 30,
     throwOnError: false,
     initialData: [],
+    initialDataUpdatedAt: 0,
   });
 
 export const useExchangeRatesQuery = () =>
@@ -31,6 +33,25 @@ export const useExchangeRatesQuery = () =>
     queryKey: queryKeys.transactions.exchangeRates(),
     queryFn: transactionsRepository.getExchangeRates,
     staleTime: 1000 * 60 * 5,
+    throwOnError: false,
+    initialData: [],
+    initialDataUpdatedAt: 0,
+  });
+
+export const usePositionsQuery = () =>
+  useQuery({
+    queryKey: queryKeys.transactions.positions(),
+    queryFn: transactionsRepository.getPositions,
+    staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+    initialData: [],
+  });
+
+export const useRemittancesQuery = () =>
+  useQuery({
+    queryKey: queryKeys.transactions.remittances(),
+    queryFn: transactionsRepository.getRemittances,
+    staleTime: 1000 * 60 * 2,
     throwOnError: false,
     initialData: [],
   });
@@ -44,6 +65,8 @@ export const useCreateTransactionMutation = () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["transactions"] }),
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["reports"] }),
+        queryClient.invalidateQueries({ queryKey: ["cash"] }),
       ]);
     },
   });

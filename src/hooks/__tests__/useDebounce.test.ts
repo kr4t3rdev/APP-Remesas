@@ -17,7 +17,7 @@ describe('useDebounce', () => {
 
   it('should not update immediately on value change', () => {
     const { result, rerender } = renderHook(
-      ({ value }) => useDebounce(value, 500),
+      (props: { value: string }) => useDebounce(props.value, 500),
       { initialProps: { value: 'initial' } }
     );
 
@@ -29,7 +29,7 @@ describe('useDebounce', () => {
 
   it('should update after delay expires', () => {
     const { result, rerender } = renderHook(
-      ({ value }) => useDebounce(value, 500),
+      (props: { value: string }) => useDebounce(props.value, 500),
       { initialProps: { value: 'initial' } }
     );
 
@@ -63,7 +63,7 @@ describe('useDebounce', () => {
   });
 
   it('should cleanup on unmount', () => {
-    const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+    const clearTimeoutSpy = jest.spyOn(globalThis, 'clearTimeout');
     const { unmount } = renderHook(() => useDebounce('test', 500));
     
     unmount();

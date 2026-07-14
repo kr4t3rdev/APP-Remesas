@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   initials: {
-    color: colors.text.inverse,
+    color: "#FFFFFF",
     fontWeight: "600",
   },
 });

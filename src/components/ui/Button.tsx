@@ -87,6 +87,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <TouchableOpacity
       testID={testID}
+      accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       disabled={disabled || loading}

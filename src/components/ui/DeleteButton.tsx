@@ -144,7 +144,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
   });
 
   // Animated Components
-  const AnimatedG = Animated.createAnimatedComponent(G);
+  const AnimatedG: React.ComponentType<any> = Animated.createAnimatedComponent(G);
 
   return (
     <TouchableOpacity
@@ -184,10 +184,7 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
           >
             {/* Trash Particles (Behind Body, Under Lid) */}
             <AnimatedG
-              style={{
-                opacity: trashOpacity,
-                transform: [{ translateY: trashY }],
-              }}
+              style={{ opacity: trashOpacity, transform: [{ translateY: trashY }] } as any}
             >
               <Circle cx="10" cy="8" r="1.5" fill="white" />
               <Circle cx="14" cy="6" r="1.5" fill="white" />
@@ -218,13 +215,13 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({
             <AnimatedG
               style={{
                 transform: [
-                  { translateX: 12 }, // Pivot X
-                  { translateY: 5 }, // Pivot Y
+                  { translateX: 12 },
+                  { translateY: 5 },
                   { rotate: lidRotateStr },
                   { translateX: -12 },
                   { translateY: -5 },
                 ],
-              }}
+              } as any}
             >
               <Path d="M10 3 H14 V5 H10 V3 Z" fill="white" />
               <Path d="M4 5 H20 V7 H4 V5 Z" fill="white" />

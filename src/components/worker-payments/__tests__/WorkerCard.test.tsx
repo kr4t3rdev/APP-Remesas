@@ -10,6 +10,8 @@ describe("WorkerCard", () => {
     balance: 1000,
     accumulatedProfit: 250,
     totalDelivered: 500,
+    createdAt: "2026-03-18T10:00:00Z",
+    updatedAt: "2026-03-18T10:00:00Z",
     transactions: [
       {
         id: 1,
@@ -129,6 +131,8 @@ describe("WorkerCard", () => {
       balance: -500,
       accumulatedProfit: 250,
       totalDelivered: 500,
+      createdAt: "2026-03-18T10:00:00Z",
+      updatedAt: "2026-03-18T10:00:00Z",
       transactions: [],
     };
     const { getByText } = render(

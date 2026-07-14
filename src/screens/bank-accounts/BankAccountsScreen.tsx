@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 import { getCurrencyInfo } from "../../utils/currencyFlags";
@@ -20,7 +21,8 @@ import { FadeIn, FadeInDown, ScaleIn } from "../../components/animations";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
-import { colors, spacing, borderRadius, shadows } from "../../theme";
+import { spacing, borderRadius } from "../../theme";
+import { useColors, useShadows } from "../../store/themeStore";
 import type { BankAccount, Currency } from "../../types";
 import {
   useBankAccountsQuery,
@@ -30,19 +32,17 @@ import {
 } from "../../modules/bank-accounts/application/useBankAccounts";
 import { useCurrenciesWithPrimaryQuery } from "../../modules/currencies/application/useCurrencies";
 
+type ConfirmAction = () => Promise<void>;
+
 export const BankAccountsScreen: React.FC = () => {
-  const [confirmModal, setConfirmModal] = useState<{
-    visible: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
-    variant?: "danger" | "primary" | "warning";
-  }>({
-    visible: false,
-    title: "",
-    message: "",
-    onConfirm: () => {},
-  });
+  const colors = useColors();
+  const shadows = useShadows();
+  const confirmAction = useRef<ConfirmAction>(async () => {});
+
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [confirmTitle, setConfirmTitle] = useState("");
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [confirmVariant, setConfirmVariant] = useState<"danger" | "primary" | "warning">("danger");
 
   const bankAccountsQuery = useBankAccountsQuery();
   const currenciesQuery = useCurrenciesWithPrimaryQuery();
@@ -57,31 +57,23 @@ export const BankAccountsScreen: React.FC = () => {
   );
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(
-    null,
-  );
-  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
+
+  const isEditing = selectedAccount !== null;
 
   const [formData, setFormData] = useState({
     name: "",
     bankName: "",
-    currencyId: 0,
+    currencyId: null as number | null,
     accountNumber: "",
     initialBalance: "",
   });
-
-  useEffect(() => {
-    if (!formData.currencyId && availableCurrencies.length > 0) {
-      setFormData((prev) => ({ ...prev, currencyId: availableCurrencies[0].id }));
-    }
-  }, [availableCurrencies, formData.currencyId]);
 
   const handleRefresh = async () => {
     await Promise.all([bankAccountsQuery.refetch(), currenciesQuery.refetch()]);
   };
 
   const openCreateModal = () => {
-    // Validación: NO permitir abrir el modal si no hay monedas configuradas
     if (availableCurrencies.length === 0) {
       Alert.alert(
         "Error",
@@ -91,11 +83,10 @@ export const BankAccountsScreen: React.FC = () => {
     }
 
     setSelectedAccount(null);
-    setIsEditing(false);
     setFormData({
       name: "",
       bankName: "",
-      currencyId: availableCurrencies[0]?.id || 0,
+      currencyId: availableCurrencies[0]?.id ?? null,
       accountNumber: "",
       initialBalance: "",
     });
@@ -104,13 +95,12 @@ export const BankAccountsScreen: React.FC = () => {
 
   const openEditModal = (account: BankAccount) => {
     setSelectedAccount(account);
-    setIsEditing(true);
     setFormData({
       name: account.name,
       bankName: account.bankName,
       currencyId: account.currencyId,
       accountNumber: account.accountNumber,
-      initialBalance: "", // No se edita el saldo inicial
+      initialBalance: "",
     });
     setModalVisible(true);
   };
@@ -126,16 +116,14 @@ export const BankAccountsScreen: React.FC = () => {
       return;
     }
 
-    // Segunda validación por seguridad (ya se valida en openCreateModal)
-
     try {
-      if (isEditing && selectedAccount) {
+      if (isEditing) {
         await updateBankAccountMutation.mutateAsync({
-          id: selectedAccount.id,
+          id: selectedAccount!.id,
           data: {
             name: formData.name,
             bankName: formData.bankName,
-            currencyId: formData.currencyId,
+            currencyId: formData.currencyId!,
             accountNumber: formData.accountNumber,
           },
         });
@@ -144,7 +132,7 @@ export const BankAccountsScreen: React.FC = () => {
         await createBankAccountMutation.mutateAsync({
           name: formData.name,
           bankName: formData.bankName,
-          currencyId: formData.currencyId,
+          currencyId: formData.currencyId!,
           accountNumber: formData.accountNumber,
           initialBalance: formData.initialBalance
             ? parseFloat(formData.initialBalance)
@@ -153,10 +141,11 @@ export const BankAccountsScreen: React.FC = () => {
         Alert.alert("Éxito", "Cuenta creada correctamente");
       }
       setModalVisible(false);
+      setSelectedAccount(null);
       setFormData({
         name: "",
         bankName: "",
-        currencyId: 0,
+        currencyId: null,
         accountNumber: "",
         initialBalance: "",
       });
@@ -167,21 +156,19 @@ export const BankAccountsScreen: React.FC = () => {
   };
 
   const handleDelete = (account: BankAccount) => {
-    setConfirmModal({
-      visible: true,
-      title: "Eliminar Cuenta",
-      message: `¿Está seguro de que desea eliminar la cuenta "${account.name}"?`,
-      variant: "danger",
-      onConfirm: async () => {
-        setConfirmModal((prev) => ({ ...prev, visible: false }));
-        try {
-          await deleteBankAccountMutation.mutateAsync(account.id);
-          Alert.alert("Éxito", "Cuenta eliminada correctamente");
-        } catch (error) {
-          Alert.alert("Error", "No se pudo eliminar la cuenta");
-        }
-      },
-    });
+    confirmAction.current = async () => {
+      try {
+        await deleteBankAccountMutation.mutateAsync(account.id);
+        Alert.alert("Éxito", "Cuenta eliminada correctamente");
+      } catch (error: any) {
+        const errorMessage = error?.response?.data?.message || "No se pudo eliminar la cuenta";
+        Alert.alert("Error", Array.isArray(errorMessage) ? errorMessage[0] : errorMessage);
+      }
+    };
+    setConfirmTitle("Eliminar Cuenta");
+    setConfirmMessage(`¿Está seguro de que desea eliminar la cuenta "${account.name}"?`);
+    setConfirmVariant("danger");
+    setConfirmVisible(true);
   };
 
   const renderAccount = ({
@@ -196,13 +183,13 @@ export const BankAccountsScreen: React.FC = () => {
     return (
       <FadeInDown delay={index * 50}>
         <TouchableOpacity
-          style={styles.accountCard}
+          style={[styles.accountCard, { backgroundColor: colors.card }, shadows.sm]}
           onPress={() => openEditModal(item)}
           activeOpacity={0.7}
         >
           <View style={styles.cardTopRow}>
             <View style={styles.cardHeaderLeft}>
-              <View style={styles.accountIcon}>
+              <View style={[styles.accountIcon, { backgroundColor: colors.primary[50] }]}>
                 <Ionicons
                   name="business"
                   size={24}
@@ -210,8 +197,8 @@ export const BankAccountsScreen: React.FC = () => {
                 />
               </View>
               <View style={styles.accountInfo}>
-                <Text style={styles.accountName}>{item.name}</Text>
-                <Text style={styles.accountBank}>{item.bankName}</Text>
+                <Text style={[styles.accountName, { color: colors.text.primary }]}>{item.name}</Text>
+                <Text style={[styles.accountBank, { color: colors.text.secondary }]}>{item.bankName}</Text>
               </View>
             </View>
             <View
@@ -233,22 +220,18 @@ export const BankAccountsScreen: React.FC = () => {
 
           <View style={styles.cardBottomRow}>
             <View style={styles.balanceContainer}>
-              <Text style={styles.balanceLabel}>AVAILABLE BALANCE</Text>
-              <Text style={styles.balanceValue}>
+              <Text style={[styles.balanceLabel, { color: colors.text.tertiary }]}>AVAILABLE BALANCE</Text>
+              <Text style={[styles.balanceValue, { color: colors.text.primary }]}>
                 {item.currency.symbol}
                 {item.balance.toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                 })}
               </Text>
             </View>
-            {/* Sparkline placeholder */}
-            <View style={styles.sparklineContainer}>
-              <View style={styles.sparklineLine} />
-            </View>
           </View>
 
-          <View style={styles.accountFooter}>
-            <Text style={styles.accountNumber}>
+          <View style={[styles.accountFooter, { borderTopColor: colors.border }]}>
+            <Text style={[styles.accountNumber, { color: colors.text.tertiary }]}>
               •••• {item.accountNumber.slice(-4)}
             </Text>
             <TouchableOpacity
@@ -263,52 +246,83 @@ export const BankAccountsScreen: React.FC = () => {
     );
   };
 
+  const totalsByCurrency = accounts.reduce<Record<string, { symbol: string; code: string; balance: number }>>(
+    (acc, account) => {
+      const code = account.currency.code;
+      if (!acc[code]) {
+        acc[code] = { symbol: account.currency.symbol, code, balance: 0 };
+      }
+      acc[code].balance += account.balance;
+      return acc;
+    },
+    {},
+  );
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <FadeIn>
         <View style={styles.header}>
-          <Text style={styles.headerLabel}>TOTAL NET CASH</Text>
+          <Text style={[styles.headerLabel, { color: colors.text.tertiary }]}>TOTAL NET CASH</Text>
           <View style={styles.headerAmountRow}>
-            <Text style={styles.headerAmount}>
-              ${" "}
-              {accounts
-                .reduce((acc, curr) => acc + curr.balance, 0)
-                .toLocaleString("en-US", { minimumFractionDigits: 2 })}
-            </Text>
+            {Object.values(totalsByCurrency).length > 0 ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {Object.values(totalsByCurrency).map(({ symbol, code, balance }) => (
+                  <View key={code} style={styles.headerCurrencyGroup}>
+                    <Text style={[styles.headerAmount, { color: colors.text.primary }]}>
+                      {symbol}
+                      {balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    </Text>
+                    <Text style={[styles.headerCurrencyLabel, { color: colors.text.secondary }]}>
+                      {code}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+            ) : (
+              <Text style={[styles.headerAmount, { color: colors.text.primary }]}>$ 0.00</Text>
+            )}
           </View>
         </View>
       </FadeIn>
 
-      <FlatList
-        data={accounts}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderAccount}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={bankAccountsQuery.isRefetching}
-            onRefresh={handleRefresh}
-            tintColor={colors.primary[500]}
-          />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Ionicons
-              name="wallet-outline"
-              size={64}
-              color={colors.text.tertiary}
+      {bankAccountsQuery.isPending ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary[500]} />
+        </View>
+      ) : (
+        <FlatList
+          data={accounts}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderAccount}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={bankAccountsQuery.isRefetching}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary[500]}
             />
-            <Text style={styles.emptyStateText}>No hay cuentas bancarias</Text>
-            <Text style={styles.emptyStateSubtext}>
-              Toca + para agregar una nueva cuenta
-            </Text>
-          </View>
-        }
-      />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Ionicons
+                name="wallet-outline"
+                size={64}
+                color={colors.text.tertiary}
+              />
+              <Text style={[styles.emptyStateText, { color: colors.text.secondary }]}>
+                No hay cuentas bancarias
+              </Text>
+              <Text style={[styles.emptyStateSubtext, { color: colors.text.tertiary }]}>
+                Toca + para agregar una nueva cuenta
+              </Text>
+            </View>
+          }
+        />
+      )}
 
       <ScaleIn delay={200}>
         <TouchableOpacity
-          style={styles.fab}
+          style={[styles.fab, shadows.lg, { backgroundColor: colors.primary[500] }]}
           onPress={openCreateModal}
           activeOpacity={0.8}
         >
@@ -320,7 +334,10 @@ export const BankAccountsScreen: React.FC = () => {
         visible={modalVisible}
         animationType="slide"
         transparent
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={() => {
+          setModalVisible(false);
+          setSelectedAccount(null);
+        }}
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -329,14 +346,20 @@ export const BankAccountsScreen: React.FC = () => {
           <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
-            onPress={() => setModalVisible(false)}
+            onPress={() => {
+              setModalVisible(false);
+              setSelectedAccount(null);
+            }}
           />
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+              <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
                 {isEditing ? "Editar Cuenta" : "Nueva Cuenta"}
               </Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <TouchableOpacity onPress={() => {
+                setModalVisible(false);
+                setSelectedAccount(null);
+              }}>
                 <Ionicons
                   name="close"
                   size={24}
@@ -381,14 +404,14 @@ export const BankAccountsScreen: React.FC = () => {
                   onChangeText={(text) =>
                     setFormData((prev) => ({ ...prev, initialBalance: text }))
                   }
-                  placeholder="ej. 1000"
-                  keyboardType="numeric"
+                  placeholder="ej. 1000.00"
+                  keyboardType="decimal-pad"
                 />
               )}
 
               {availableCurrencies.length > 0 && (
                 <>
-                  <Text style={styles.sectionLabel}>Moneda</Text>
+                  <Text style={[styles.sectionLabel, { color: colors.text.primary }]}>Moneda</Text>
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -401,8 +424,9 @@ export const BankAccountsScreen: React.FC = () => {
                           key={currency.id}
                           style={[
                             styles.currencyButton,
+                            { backgroundColor: colors.surface },
                             formData.currencyId === currency.id &&
-                              styles.currencyButtonActive,
+                              { backgroundColor: colors.primary[500] },
                           ]}
                           onPress={() =>
                             setFormData((prev) => ({
@@ -414,6 +438,7 @@ export const BankAccountsScreen: React.FC = () => {
                           <Text
                             style={[
                               styles.currencyButtonText,
+                              { color: colors.text.primary },
                               formData.currencyId === currency.id &&
                                 styles.currencyButtonTextActive,
                             ]}
@@ -447,26 +472,23 @@ export const BankAccountsScreen: React.FC = () => {
       </Modal>
 
       <ConfirmModal
-        visible={confirmModal.visible}
-        title={confirmModal.title}
-        message={confirmModal.message}
-        variant={confirmModal.variant}
-        onConfirm={confirmModal.onConfirm}
-        onCancel={() =>
-          setConfirmModal((prev) => ({ ...prev, visible: false }))
-        }
+        visible={confirmVisible}
+        title={confirmTitle}
+        message={confirmMessage}
+        variant={confirmVariant}
+        onConfirm={confirmAction.current}
+        onCancel={() => setConfirmVisible(false)}
       />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, paddingTop: -80 },
+  container: { flex: 1 },
   header: { padding: spacing.xl, paddingBottom: spacing.md },
   headerLabel: {
     fontSize: 12,
     fontWeight: "600",
-    color: colors.text.tertiary,
     letterSpacing: 1,
     textTransform: "uppercase",
   },
@@ -475,19 +497,31 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
     marginTop: spacing.xs,
   },
+  headerCurrencyGroup: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginRight: spacing.lg,
+  },
   headerAmount: {
     fontSize: 40,
     fontWeight: "800",
-    color: colors.text.primary,
     letterSpacing: -1,
+  },
+  headerCurrencyLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: spacing.xs,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   listContent: { paddingHorizontal: spacing.md, paddingBottom: 120 },
   accountCard: {
-    backgroundColor: colors.card,
     borderRadius: borderRadius.xl,
     padding: spacing.lg,
     marginBottom: spacing.md,
-    ...shadows.sm,
   },
   cardTopRow: {
     flexDirection: "row",
@@ -500,13 +534,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: colors.primary[50],
     alignItems: "center",
     justifyContent: "center",
   },
   accountInfo: { flex: 1, marginLeft: spacing.sm },
-  accountName: { fontSize: 16, fontWeight: "700", color: colors.text.primary },
-  accountBank: { fontSize: 13, color: colors.text.secondary, marginTop: 2 },
+  accountName: { fontSize: 16, fontWeight: "700" },
+  accountBank: { fontSize: 13, marginTop: 2 },
   currencyBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -526,21 +559,12 @@ const styles = StyleSheet.create({
   balanceLabel: {
     fontSize: 11,
     fontWeight: "600",
-    color: colors.text.tertiary,
     letterSpacing: 0.5,
   },
   balanceValue: {
     fontSize: 24,
     fontWeight: "700",
-    color: colors.text.primary,
     marginTop: 4,
-  },
-  sparklineContainer: { width: 60, height: 30, justifyContent: "center" },
-  sparklineLine: {
-    height: 2,
-    backgroundColor: colors.primary[500],
-    width: "100%",
-    borderRadius: 1,
   },
   accountFooter: {
     flexDirection: "row",
@@ -549,24 +573,20 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   accountNumber: {
     fontSize: 13,
-    color: colors.text.tertiary,
     fontWeight: "500",
   },
   deleteButton: { padding: spacing.xs },
   emptyState: { alignItems: "center", paddingVertical: spacing.xxl * 2 },
   emptyStateText: {
     fontSize: 16,
-    color: colors.text.secondary,
     marginTop: spacing.md,
     fontWeight: "500",
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: colors.text.tertiary,
     marginTop: spacing.xs,
   },
   fab: {
@@ -576,15 +596,12 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.primary[500],
     alignItems: "center",
     justifyContent: "center",
-    ...shadows.lg,
   },
   modalOverlay: { flex: 1, justifyContent: "flex-end" },
-  modalBackdrop: { flex: 1, backgroundColor: "transparent" },
+  modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.01)" },
   modalContent: {
-    backgroundColor: colors.card,
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
     padding: spacing.lg,
@@ -597,11 +614,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: spacing.lg,
   },
-  modalTitle: { fontSize: 20, fontWeight: "700", color: colors.text.primary },
+  modalTitle: { fontSize: 20, fontWeight: "700" },
   sectionLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: colors.text.primary,
     marginBottom: spacing.sm,
     marginTop: spacing.sm,
   },
@@ -610,14 +626,11 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.lg,
-    backgroundColor: colors.surface,
     marginRight: spacing.sm,
   },
-  currencyButtonActive: { backgroundColor: colors.primary[500] },
   currencyButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: colors.text.primary,
   },
   currencyButtonTextActive: { color: "#fff" },
   submitButton: { marginTop: spacing.md },

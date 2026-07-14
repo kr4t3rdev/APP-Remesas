@@ -6,13 +6,12 @@ import api from "../services/api";
 
 const getStorageItem = async (key: string): Promise<string | null> => {
   try {
-    return await SecureStore.getItemAsync(key);
+    const value = await SecureStore.getItemAsync(key);
+    if (value !== null) return value;
   } catch {
-    if (typeof localStorage !== "undefined") {
-      return localStorage.getItem(key);
-    }
-    return null;
   }
+  if (typeof localStorage !== "undefined") return localStorage.getItem(key);
+  return null;
 };
 
 const setStorageItem = async (key: string, value: string): Promise<void> => {

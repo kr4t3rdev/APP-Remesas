@@ -9,7 +9,6 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
 import { useColors } from "../../store/themeStore";
 import { borderRadius, spacing } from "../../theme";
 import { AdminUserControlActionType } from "../../types";
@@ -51,7 +50,6 @@ export const AdminActionConfirmModal: React.FC<
           icon: "warning",
           color: theme.warning,
         };
-      case "temp_block": // Mapping legacy/lowercase if needed, though types say UPPER
       case "TEMP_BLOCK":
         return {
           title: "¿Bloquear Temporalmente?",

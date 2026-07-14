@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -33,6 +33,8 @@ import {
   useProfileCashBalancesQuery,
   useProfileDailyReportQuery,
 } from "../../modules/profile/application/useProfile";
+import { profileNavigationItems } from "./profileNavigationItems";
+import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 
 type MenuItem = {
   id: string;
@@ -44,6 +46,12 @@ type MenuItem = {
 };
 
 export const ProfileScreen: React.FC = () => {
+  const tabBarScrollBehavior = useTabBarScrollBehavior();
+  const profileScrollRef = useRef<ScrollView>(null);
+  const scrollToTop = useCallback(() => {
+    profileScrollRef.current?.scrollTo({ y: 0, animated: true });
+  }, []);
+  useTabScrollToTop("Profile", scrollToTop);
   const [confirmModal, setConfirmModal] = useState<{
     visible: boolean;
     title: string;
@@ -156,6 +164,11 @@ export const ProfileScreen: React.FC = () => {
   };
 
   const menuItems: MenuItem[] = [
+    ...profileNavigationItems.map((item) => ({
+      ...item,
+      color: themeColors.primary[500],
+      onPress: () => navigation.navigate(item.route),
+    })),
     {
       id: "theme",
       title: isDarkMode ? "Modo Claro" : "Modo Oscuro",
@@ -223,6 +236,8 @@ export const ProfileScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
+        ref={profileScrollRef}
+        {...tabBarScrollBehavior}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl

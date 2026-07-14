@@ -1224,7 +1224,6 @@ const styles = StyleSheet.create({
   header: {
     padding: spacing.md,
     paddingBottom: spacing.sm,
-    paddingTop: -80,
   },
   title: {
     fontSize: 28,

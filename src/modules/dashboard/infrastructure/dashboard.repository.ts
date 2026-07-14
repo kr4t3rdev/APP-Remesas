@@ -8,12 +8,17 @@ import type {
   Expense,
   Transaction,
 } from "../../../types";
+import type { FxPerformanceReport } from "../../../types/business";
 
 type ExchangeRatesResponse = {
   rates: ExchangeRate[];
 };
 
 export const dashboardRepository = {
+  async getFxPerformance(): Promise<FxPerformanceReport> {
+    const response = await api.get<FxPerformanceReport>("/reports/fx-performance", { params: { startDate: "2000-01-01", endDate: "2100-01-01" } });
+    return response.data!;
+  },
   async getDailyReport(date?: string): Promise<DailyReport> {
     try {
       const response = await api.get<DailyReport>("/reports/daily", {

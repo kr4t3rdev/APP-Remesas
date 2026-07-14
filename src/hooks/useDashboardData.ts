@@ -7,6 +7,7 @@ import type {
   Expense,
   Objective,
 } from "../types";
+import type { FxPerformanceReport } from "../types/business";
 import { queryKeys } from "../shared/query/queryKeys";
 import { dashboardRepository } from "../modules/dashboard/infrastructure/dashboard.repository";
 import { safeArray, safePath } from "../services/api-response";
@@ -100,6 +101,12 @@ export const useDashboardData = () => {
   const recentTransactions = useRecentTransactions(5);
   const pendingTransactions = usePendingTransactions();
   const activeObjectives = useActiveObjectives();
+  const fxPerformance = useQuery<FxPerformanceReport, Error>({
+    queryKey: ["dashboard", "fxPerformance"],
+    queryFn: dashboardRepository.getFxPerformance,
+    staleTime: 1000 * 60 * 2,
+    throwOnError: false,
+  });
 
   const isLoading =
     dailyReport.isLoading ||
@@ -117,6 +124,7 @@ export const useDashboardData = () => {
       recentTransactions.refetch(),
       pendingTransactions.refetch(),
       activeObjectives.refetch(),
+      fxPerformance.refetch(),
     ]);
   };
 
@@ -153,6 +161,7 @@ export const useDashboardData = () => {
     recentTransactions: recentTransactions.data,
     pendingTransactions: pendingTransactions.data,
     activeObjectives: activeObjectives.data,
+    fxPerformance: fxPerformance.data,
     isLoading,
     isRefreshing,
     refetchAll,

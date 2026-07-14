@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   View,
@@ -30,6 +30,7 @@ import {
   useCreateTransactionMutation,
   useCurrenciesQuery,
   useExchangeRatesQuery,
+  usePositionsQuery,
   useTransactionsQuery,
 } from "../../modules/transactions/application/useTransactions";
 import {
@@ -40,15 +41,23 @@ import {
 import CountryFlag from "react-native-country-flag";
 import { getCountryCode } from "../../utils/currencyUtils";
 import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
+import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 
 export const TransactionsScreen: React.FC = () => {
   const navigation = useNavigation();
   const themeColors = useColors();
   const themeShadows = useShadows();
+  const tabBarScrollBehavior = useTabBarScrollBehavior();
+  const transactionsListRef = useRef<FlatList<Transaction>>(null);
+  const scrollToTop = useCallback(() => {
+    transactionsListRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
+  useTabScrollToTop("Transactions", scrollToTop);
 
   const [filter, setFilter] = useState<TransactionFilterValue>("all");
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const createTransactionMutation = useCreateTransactionMutation();
 
   const [formData, setFormData] = useState({
@@ -65,10 +74,12 @@ export const TransactionsScreen: React.FC = () => {
   );
   const currenciesQuery = useCurrenciesQuery();
   const exchangeRatesQuery = useExchangeRatesQuery();
+  const positionsQuery = usePositionsQuery();
 
   const transactions = transactionsQuery.data ?? [];
   const currencies = currenciesQuery.data ?? [];
   const exchangeRates = exchangeRatesQuery.data ?? [];
+  const positions = positionsQuery.data ?? [];
   const selectableCurrencies = useMemo(
     () => currencies.filter((c) => c.code !== "CUP" && c.isActive),
     [currencies],
@@ -108,6 +119,7 @@ export const TransactionsScreen: React.FC = () => {
   };
 
   const handleTypeChange = (type: "COMPRA" | "VENTA") => {
+    setValidationError(null);
     const rate = exchangeRates.find(
       (r) => r.currencyId === formData.currencyId,
     );
@@ -121,6 +133,7 @@ export const TransactionsScreen: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    setValidationError(null);
     if (!formData.currencyId) {
       Alert.alert("Error", "Selecciona una moneda");
       return;
@@ -133,6 +146,13 @@ export const TransactionsScreen: React.FC = () => {
       Alert.alert("Error", "Ingresa una tasa válida");
       return;
     }
+    if (formData.type === "VENTA") {
+      const position = positions.find((item) => item.currencyId === formData.currencyId);
+      if (parseFloat(formData.amount) > (position?.saldo ?? 0)) {
+        setValidationError("Saldo insuficiente");
+        return;
+      }
+    }
 
     try {
       await createTransactionMutation.mutateAsync({
@@ -141,6 +161,7 @@ export const TransactionsScreen: React.FC = () => {
         amount: parseFloat(formData.amount),
         rate: parseFloat(formData.rate),
         notes: formData.notes || undefined,
+        idempotencyKey: `e2e-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       });
 
       setModalVisible(false);
@@ -403,6 +424,8 @@ export const TransactionsScreen: React.FC = () => {
       />
 
       <FlatList
+        ref={transactionsListRef}
+        {...tabBarScrollBehavior}
         data={transactions}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderTransaction}
@@ -483,6 +506,8 @@ export const TransactionsScreen: React.FC = () => {
             themeShadows.glow,
           ]}
           onPress={() => setModalVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Nueva transacción"
         >
           <Ionicons name="add" size={28} color="#fff" />
         </TouchableOpacity>
@@ -774,6 +799,11 @@ export const TransactionsScreen: React.FC = () => {
                 loading={createTransactionMutation.isPending}
                 style={styles.submitButton}
               />
+              {validationError ? (
+                <Text accessibilityRole="alert" style={styles.validationError}>
+                  {validationError}
+                </Text>
+              ) : null}
             </ScrollView>
           </View>
         </KeyboardAvoidingView>
@@ -785,7 +815,6 @@ export const TransactionsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: -80,
   },
   header: {
     padding: spacing.md,
@@ -1043,5 +1072,10 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: spacing.md,
+  },
+  validationError: {
+    color: "#B91C1C",
+    marginTop: spacing.sm,
+    textAlign: "center",
   },
 });

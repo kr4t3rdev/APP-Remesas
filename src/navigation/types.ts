@@ -23,14 +23,14 @@ export type RootStackParamList = {
   AdminProfile: undefined;
   BusinessWorkers: undefined;
   UIWorkersRedirect: undefined;
+  Reports: undefined;
 };
 
 export type MainTabParamList = {
   Home: undefined;
   Transactions: undefined;
-  Business: undefined;
+  Cash: undefined;
   ExpenseItems: undefined;
-  Reports: undefined;
   Profile: undefined;
 };
 
@@ -40,7 +40,6 @@ export type AdminTabParamList = {
   AdminUsers: undefined;
   AdminReports: undefined;
   AdminProfile: undefined;
-  AdminReports: undefined;
 };
 
 export type AdminStackParamList = {

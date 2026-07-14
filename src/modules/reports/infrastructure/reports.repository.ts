@@ -11,8 +11,13 @@ import type {
   CashFlowReport,
   AuditSummaryReport,
 } from "../../../types";
+import type { FxPerformanceReport } from "../../../types/business";
 
 export const reportsRepository = {
+  async getFxPerformanceReport(startDate: string, endDate: string, currency?: string): Promise<FxPerformanceReport> {
+    const response = await api.get<FxPerformanceReport>("/reports/fx-performance", { params: { startDate, endDate, currency } });
+    return response.data!;
+  },
   async getDailyReport(date: string): Promise<DailyReport> {
     const response = await api.get<DailyReport>("/reports/daily", {
       params: { date },

@@ -103,7 +103,7 @@ export const BusinessScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView accessibilityLabel="Gestión del negocio" style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <Header />
       <TabSelector

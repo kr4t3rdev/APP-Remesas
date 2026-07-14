@@ -22,7 +22,7 @@ describe("useRegisterAnimations", () => {
   });
 
   it("should trigger animations on mount", () => {
-    const timeoutSpy = jest.spyOn(global, "setTimeout");
+    const timeoutSpy = jest.spyOn(globalThis, "setTimeout");
     renderHook(() => useRegisterAnimations(false));
 
     expect(timeoutSpy).toHaveBeenCalled();

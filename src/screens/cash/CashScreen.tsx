@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -39,6 +39,8 @@ import {
   useCreateCashAdjustmentMutation,
   useCreateCashAuditMutation,
 } from "../../modules/cash/application/useCash";
+import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
+import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -48,6 +50,12 @@ export const CashScreen: React.FC = () => {
   const isDark = useIsDark();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const tabBarScrollBehavior = useTabBarScrollBehavior();
+  const cashScrollRef = useRef<ScrollView>(null);
+  const scrollToTop = useCallback(() => {
+    cashScrollRef.current?.scrollTo({ y: 0, animated: true });
+  }, []);
+  useTabScrollToTop("Cash", scrollToTop);
 
   const cashBalancesQuery = useCashBalancesQuery();
   const cashTransactionsQuery = useCashTransactionsQuery();
@@ -230,6 +238,8 @@ export const CashScreen: React.FC = () => {
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
       <ScrollView
+        ref={cashScrollRef}
+        {...tabBarScrollBehavior}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
@@ -779,6 +789,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: spacing.md,
+    paddingBottom: floatingTabBarMetrics.contentBottomPadding,
   },
   header: {
     marginBottom: spacing.lg,

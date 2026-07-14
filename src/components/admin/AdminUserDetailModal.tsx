@@ -11,7 +11,6 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
 import { useColors, useShadows } from "../../store/themeStore";
 import { borderRadius, spacing } from "../../theme";
 import type { User, AdminUserControlActionType } from "../../types";

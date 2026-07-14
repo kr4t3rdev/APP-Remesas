@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { FadeIn } from "../animations";
 import { spacing, borderRadius } from "../../theme";
 import { useColors } from "../../store/themeStore";
+import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 
 const CATEGORY_TOOLTIP_TEXT =
   "Usar categorías te permite organizar mejor tus gastos y obtener reportes más detallados. Ejemplos: Inmuebles, Servicios, Operaciones.";
@@ -62,7 +63,7 @@ export const CategoryTooltip: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    bottom: 100,
+    bottom: floatingTabBarMetrics.standaloneActionBottom + 48,
     right: spacing.md,
     alignItems: "flex-end",
     zIndex: 100,
