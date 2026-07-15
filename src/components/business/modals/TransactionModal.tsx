@@ -26,13 +26,16 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
   const intentKey = useRef(createIntentKey());
 
   useEffect(() => { if (currencyId === 0 && positions.data?.[0]) setCurrencyId(positions.data[0].currencyId); }, [currencyId, positions.data]);
-  const position = positions.data?.find((item) => item.currencyId === currencyId);
-  const rateItem = rates.data?.find((item) => item.currencyId === currencyId);
+  // Queries start with empty initial data. Derive a usable currency during the
+  // first render after positions arrive instead of waiting for a state effect.
+  const selectedCurrencyId = currencyId || positions.data?.[0]?.currencyId || 0;
+  const position = positions.data?.find((item) => item.currencyId === selectedCurrencyId);
+  const rateItem = rates.data?.find((item) => item.currencyId === selectedCurrencyId);
   const rate = type === "COMPRA" ? rateItem?.buyRate ?? 0 : rateItem?.sellRate ?? 0;
   const preview = calculateTransferPreview({ type, amount: Number(amount), rate, position });
   const baseCurrencyId = currencies.data?.find((item) => item.code.toUpperCase() === "CUP")?.id;
-  const sourceCurrencyId = type === "COMPRA" ? baseCurrencyId : currencyId;
-  const destinationCurrencyId = type === "COMPRA" ? currencyId : baseCurrencyId;
+  const sourceCurrencyId = type === "COMPRA" ? baseCurrencyId : selectedCurrencyId;
+  const destinationCurrencyId = type === "COMPRA" ? selectedCurrencyId : baseCurrencyId;
   const accounts = useMemo<AccountOption[]>(() => {
     const cashAccounts = (cash.data ?? []).map((item) => ({ key: `CASH:${item.currencyId}`, type: "CASH" as const, label: `Caja · ${item.currency?.code ?? item.currencyId}`, currencyId: item.currencyId, balance: item.balance, active: true }));
     return [...cashAccounts, ...(banks.data ?? []).map((item) => ({ key: `BANK_ACCOUNT:${item.id}`, type: "BANK_ACCOUNT" as const, id: item.id, label: `${item.bankName} · ${item.name}`, currencyId: item.currencyId, balance: item.balance, active: item.isActive }))];
@@ -47,9 +50,9 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
   useEffect(() => { if (!destinationOptions.some((item) => item.key === destinationKey)) setDestinationKey(destinationOptions[0]?.key); }, [destinationKey, destinationOptions]);
 
   const handleSave = () => {
-    if (!preview.isValid || !currencyId || !baseCurrencyId || !source || !destination) return;
+    if (!preview.isValid || !selectedCurrencyId || !baseCurrencyId || !source || !destination) return;
     setSaveStatus("idle");
-    createTx({ type, currencyId, amount: Number(amount), rate, idempotencyKey: intentKey.current, sourceType: source.type, sourceBankAccountId: source.id, destinationType: destination.type, destinationBankAccountId: destination.id }, {
+    createTx({ type, currencyId: selectedCurrencyId, amount: Number(amount), rate, idempotencyKey: intentKey.current, sourceType: source.type, sourceBankAccountId: source.id, destinationType: destination.type, destinationBankAccountId: destination.id }, {
       onSuccess: () => { setAmount(""); setSaveStatus("success"); intentKey.current = createIntentKey(); }, onError: () => setSaveStatus("error"),
     });
   };

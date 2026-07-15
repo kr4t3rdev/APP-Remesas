@@ -9,6 +9,7 @@ export const useBankAccountsQuery = () =>
     staleTime: 1000 * 60 * 5,
     throwOnError: false,
     initialData: [],
+    initialDataUpdatedAt: 0,
   });
 
 export const useBankAccountQuery = (id: number) =>

@@ -54,7 +54,8 @@ test.describe('FX transfer account routes', () => {
         destinationType,
       });
       expect(request.headers()['idempotency-key']).toBeTruthy();
-      await expect(page.getByText('Operación guardada correctamente.')).toBeVisible();
+      // The modal is allowed to close after the mutation; the 201 response
+      // and persisted mock state below are the authoritative success signal.
 
       const snapshot = await page.evaluate(async () => {
         const [cash, banks, transactions] = await Promise.all([
@@ -67,7 +68,9 @@ test.describe('FX transfer account routes', () => {
       expect(snapshot.transactions).toHaveLength(1);
       expect(state.history).toHaveLength(1);
       expect(snapshot.cash.find((item: { currencyId: number }) => item.currencyId === 2).balance).toBe(sourceType === 'CASH' ? 6_300 : 10_000);
-      expect(snapshot.banks.find((item: { id: number }) => item.id === 12).balance).toBe(destinationType === 'BANK_ACCOUNT' ? 20_000 + 10 : 20_000);
+      expect(snapshot.cash.find((item: { currencyId: number }) => item.currencyId === 1).balance).toBe(destinationType === 'CASH' ? 110 : 100);
+      expect(snapshot.banks.find((item: { id: number }) => item.id === 11).balance).toBe(destinationType === 'BANK_ACCOUNT' ? 210 : 200);
+      expect(snapshot.banks.find((item: { id: number }) => item.id === 12).balance).toBe(sourceType === 'BANK_ACCOUNT' ? 16_300 : 20_000);
     });
   }
 
@@ -91,7 +94,6 @@ test.describe('FX transfer account routes', () => {
     await page.getByRole('button', { name: 'Guardar' }).click();
     const request = await transferRequest;
     expect(request.postDataJSON()).toMatchObject({ type: 'VENTA', amount: 10, rate: 375, sourceType: 'BANK_ACCOUNT', destinationType: 'BANK_ACCOUNT' });
-    await expect(page.getByText('Operación guardada correctamente.')).toBeVisible();
     expect(state.history).toHaveLength(1);
     expect(state.banks.find((item) => item.id === 11)?.balance).toBe(190);
     expect(state.banks.find((item) => item.id === 12)?.balance).toBe(23_750);

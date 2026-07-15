@@ -10,6 +10,7 @@ export const useCashBalancesQuery = () =>
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
     initialData: [],
+    initialDataUpdatedAt: 0,
   });
 
 export const useCashOverviewQuery = () =>
