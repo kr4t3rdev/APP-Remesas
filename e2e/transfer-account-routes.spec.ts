@@ -39,23 +39,35 @@ test.describe('FX transfer account routes', () => {
       const destinationType = route.endsWith('CASH') ? 'CASH' : 'BANK_ACCOUNT';
       const sourceLabel = sourceType === 'CASH' ? 'Caja · CUP' : 'Banco Uno · Cuenta CUP';
       const destinationLabel = destinationType === 'CASH' ? 'Caja · USD' : 'Banco Uno · Cuenta USD';
+      const expectedSourceId = sourceType === 'CASH' ? 22 : 12;
+      const expectedDestinationId = destinationType === 'CASH' ? 21 : 11;
       await page.getByLabel(sourceLabel, { exact: true }).click();
       await page.getByLabel(destinationLabel, { exact: true }).click();
 
       const transferRequest = page.waitForRequest((request) => request.url().includes('/fx-operations/transfers'));
+      const transferResponse = page.waitForResponse((response) => response.url().includes('/fx-operations/transfers') && response.status() === 201);
       await page.getByRole('button', { name: 'Guardar' }).click();
-      const request = await transferRequest;
+      const [request, response] = await Promise.all([transferRequest, transferResponse]);
       const payload = request.postDataJSON();
-      expect(payload).toMatchObject({
+      const expectedPayload = {
         type: 'COMPRA',
         amount: 10,
         rate: 370,
         sourceType,
         destinationType,
-      });
+        ...(sourceType === 'BANK_ACCOUNT' ? { sourceBankAccountId: expectedSourceId } : {}),
+        ...(destinationType === 'BANK_ACCOUNT' ? { destinationBankAccountId: expectedDestinationId } : {}),
+      };
+      expect(payload).toMatchObject(expectedPayload);
       expect(request.headers()['idempotency-key']).toBeTruthy();
-      // The modal is allowed to close after the mutation; the 201 response
-      // and persisted mock state below are the authoritative success signal.
+      expect(response.status()).toBe(201);
+      expect(response.headers()['content-type']).toMatch(/application\/json/);
+      await expect(response.json()).resolves.toMatchObject({
+        sourceType,
+        destinationType,
+        sourceId: expectedSourceId,
+        destinationId: expectedDestinationId,
+      });
 
       const snapshot = await page.evaluate(async () => {
         const [cash, banks, transactions] = await Promise.all([
@@ -67,6 +79,12 @@ test.describe('FX transfer account routes', () => {
       });
       expect(snapshot.transactions).toHaveLength(1);
       expect(state.history).toHaveLength(1);
+      expect(state.history[0]).toMatchObject({
+        sourceType,
+        destinationType,
+        sourceId: expectedSourceId,
+        destinationId: expectedDestinationId,
+      });
       expect(snapshot.cash.find((item: { currencyId: number }) => item.currencyId === 2).balance).toBe(sourceType === 'CASH' ? 6_300 : 10_000);
       expect(snapshot.cash.find((item: { currencyId: number }) => item.currencyId === 1).balance).toBe(destinationType === 'CASH' ? 110 : 100);
       expect(snapshot.banks.find((item: { id: number }) => item.id === 11).balance).toBe(destinationType === 'BANK_ACCOUNT' ? 210 : 200);
@@ -91,10 +109,14 @@ test.describe('FX transfer account routes', () => {
     await page.getByLabel('Banco Uno · Cuenta USD', { exact: true }).click();
     await page.getByLabel('Banco Uno · Cuenta CUP', { exact: true }).click();
     const transferRequest = page.waitForRequest((request) => request.url().includes('/fx-operations/transfers'));
+    const transferResponse = page.waitForResponse((response) => response.url().includes('/fx-operations/transfers') && response.status() === 201);
     await page.getByRole('button', { name: 'Guardar' }).click();
-    const request = await transferRequest;
-    expect(request.postDataJSON()).toMatchObject({ type: 'VENTA', amount: 10, rate: 375, sourceType: 'BANK_ACCOUNT', destinationType: 'BANK_ACCOUNT' });
+    const [request, response] = await Promise.all([transferRequest, transferResponse]);
+    expect(request.postDataJSON()).toMatchObject({ type: 'VENTA', amount: 10, rate: 375, sourceType: 'BANK_ACCOUNT', destinationType: 'BANK_ACCOUNT', sourceBankAccountId: 11, destinationBankAccountId: 12 });
+    expect(response.status()).toBe(201);
+    await expect(response.json()).resolves.toMatchObject({ sourceType: 'BANK_ACCOUNT', destinationType: 'BANK_ACCOUNT', sourceId: 11, destinationId: 12 });
     expect(state.history).toHaveLength(1);
+    expect(state.history[0]).toMatchObject({ sourceType: 'BANK_ACCOUNT', destinationType: 'BANK_ACCOUNT', sourceId: 11, destinationId: 12 });
     expect(state.banks.find((item) => item.id === 11)?.balance).toBe(190);
     expect(state.banks.find((item) => item.id === 12)?.balance).toBe(23_750);
   });
@@ -146,9 +168,11 @@ async function mockTransferApi(page: Page) {
       const destination = payload.destinationType === 'CASH' ? state.cash.find((item) => item.currencyId === destinationCurrencyId)! : state.banks.find((item) => item.id === payload.destinationBankAccountId)!;
       source.balance -= debit;
       destination.balance += credit;
-      state.history.push({ sourceType: payload.sourceType, destinationType: payload.destinationType, sourceId: source.id, destinationId: destination.id });
-      state.transactions.push({ id: 1, type: payload.type, amount: payload.amount, rate: payload.rate, status: 'RECONCILIADO', createdAt: '2026-07-15T12:00:00.000Z', currency: currencies[0], marginProfit: 0 });
-      return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(state.transactions[0]) });
+      const transferId = state.history.length + 1;
+      state.history.push({ id: transferId, sourceType: payload.sourceType, destinationType: payload.destinationType, sourceId: source.id, destinationId: destination.id });
+      const transaction = { id: transferId, type: payload.type, amount: payload.amount, rate: payload.rate, status: 'RECONCILIADO', createdAt: '2026-07-15T12:00:00.000Z', currency: currencies[0], marginProfit: 0, sourceType: payload.sourceType, destinationType: payload.destinationType, sourceId: source.id, destinationId: destination.id };
+      state.transactions.push(transaction);
+      return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(transaction) });
     }
     return route.continue();
   });
