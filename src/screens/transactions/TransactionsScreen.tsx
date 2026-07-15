@@ -1,15 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 
 import {
   View,
   Text,
-  ScrollView,
   RefreshControl,
   TouchableOpacity,
   FlatList,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
 } from "react-native";
 import { Alert } from "../../utils/alert";
@@ -19,18 +15,12 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { FadeIn, FadeInDown, ScaleIn } from "../../components/animations";
 import { Badge } from "../../components/ui/Badge";
-import { Input } from "../../components/ui/Input";
-import { Button } from "../../components/ui/Button";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
 import type { Transaction } from "../../types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
-  useCreateTransactionMutation,
-  useCurrenciesQuery,
-  useExchangeRatesQuery,
-  usePositionsQuery,
   useTransactionsQuery,
 } from "../../modules/transactions/application/useTransactions";
 import {
@@ -58,127 +48,19 @@ export const TransactionsScreen: React.FC = () => {
   const [filter, setFilter] = useState<TransactionFilterValue>("all");
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const createTransactionMutation = useCreateTransactionMutation();
-
-  const [formData, setFormData] = useState({
-    type: "COMPRA" as "COMPRA" | "VENTA",
-    currencyId: 0,
-    amount: "",
-    rate: "",
-    notes: "",
-  });
 
   const selectedType = filter === "all" ? undefined : filter;
   const transactionsQuery = useTransactionsQuery(
     selectedType ? { type: selectedType } : undefined,
   );
-  const currenciesQuery = useCurrenciesQuery();
-  const exchangeRatesQuery = useExchangeRatesQuery();
-  const positionsQuery = usePositionsQuery();
 
   const transactions = transactionsQuery.data ?? [];
-  const currencies = currenciesQuery.data ?? [];
-  const exchangeRates = exchangeRatesQuery.data ?? [];
-  const positions = positionsQuery.data ?? [];
-  const selectableCurrencies = useMemo(
-    () => currencies.filter((c) => c.code !== "CUP" && c.isActive),
-    [currencies],
-  );
-
-  useEffect(() => {
-    if (formData.currencyId !== 0 || selectableCurrencies.length === 0) return;
-
-    const usd =
-      selectableCurrencies.find((c) => c.code === "USD") ??
-      selectableCurrencies[0];
-    const rate = exchangeRates.find((r) => r.currencyId === usd.id);
-    setFormData((prev) => ({
-      ...prev,
-      currencyId: usd.id,
-      rate: rate ? rate.sellRate.toString() : "",
-    }));
-  }, [exchangeRates, formData.currencyId, selectableCurrencies]);
 
   const handleRefresh = async () => {
     try {
       await transactionsQuery.refetch();
     } catch {
       Alert.alert("Error", "No se pudieron cargar las transacciones");
-    }
-  };
-
-  const handleCurrencyChange = (currencyId: number) => {
-    const rate = exchangeRates.find((r) => r.currencyId === currencyId);
-    setFormData((prev) => ({
-      ...prev,
-      currencyId,
-      rate: rate
-        ? (prev.type === "COMPRA" ? rate.buyRate : rate.sellRate).toString()
-        : "",
-    }));
-  };
-
-  const handleTypeChange = (type: "COMPRA" | "VENTA") => {
-    setValidationError(null);
-    const rate = exchangeRates.find(
-      (r) => r.currencyId === formData.currencyId,
-    );
-    setFormData((prev) => ({
-      ...prev,
-      type,
-      rate: rate
-        ? (type === "COMPRA" ? rate.buyRate : rate.sellRate).toString()
-        : prev.rate,
-    }));
-  };
-
-  const handleSubmit = async () => {
-    setValidationError(null);
-    if (!formData.currencyId) {
-      Alert.alert("Error", "Selecciona una moneda");
-      return;
-    }
-    if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      Alert.alert("Error", "Ingresa un monto válido");
-      return;
-    }
-    if (!formData.rate || parseFloat(formData.rate) <= 0) {
-      Alert.alert("Error", "Ingresa una tasa válida");
-      return;
-    }
-    if (formData.type === "VENTA") {
-      const position = positions.find((item) => item.currencyId === formData.currencyId);
-      if (parseFloat(formData.amount) > (position?.saldo ?? 0)) {
-        setValidationError("Saldo insuficiente");
-        return;
-      }
-    }
-
-    try {
-      await createTransactionMutation.mutateAsync({
-        type: formData.type,
-        currencyId: formData.currencyId,
-        amount: parseFloat(formData.amount),
-        rate: parseFloat(formData.rate),
-        notes: formData.notes || undefined,
-        idempotencyKey: `e2e-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      });
-
-      setModalVisible(false);
-      const usd =
-        selectableCurrencies.find((c) => c.code === "USD") ??
-        selectableCurrencies[0];
-      setFormData({
-        type: "COMPRA",
-        currencyId: usd?.id || 0,
-        amount: "",
-        rate: "",
-        notes: "",
-      });
-      Alert.alert("Éxito", "Transacción registrada correctamente");
-    } catch (error) {
-      Alert.alert("Error", "No se pudo registrar la transacción");
     }
   };
 
@@ -350,23 +232,6 @@ export const TransactionsScreen: React.FC = () => {
   };
 
   const filterLabel = getTransactionFilterLabel(filter);
-
-  const selectedCurrency = currencies.find((c) => c.id === formData.currencyId);
-  const previewTotal =
-    formData.amount && formData.rate
-      ? (
-          parseFloat(formData.amount) * parseFloat(formData.rate)
-        ).toLocaleString("es-CU", { minimumFractionDigits: 2 })
-      : "0.00";
-
-  const getCurrencyColor = (code: string) => {
-    const colorMap: Record<string, string> = {
-      USD: themeColors.currencies.usd.primary,
-      EUR: themeColors.currencies.eur.primary,
-      MLC: themeColors.currencies.mlc.primary,
-    };
-    return colorMap[code] || themeColors.primary[500];
-  };
 
   return (
     <SafeAreaView
