@@ -16,6 +16,10 @@ export type TransferRequest = {
   rate: number;
   notes?: string;
   idempotencyKey?: string;
+  sourceType?: "CASH" | "BANK_ACCOUNT";
+  sourceBankAccountId?: number;
+  destinationType?: "CASH" | "BANK_ACCOUNT";
+  destinationBankAccountId?: number;
 };
 
 export type TransferResponse = Transaction & {

@@ -67,6 +67,7 @@ export const useCreateTransactionMutation = () => {
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
         queryClient.invalidateQueries({ queryKey: ["reports"] }),
         queryClient.invalidateQueries({ queryKey: ["cash"] }),
+        queryClient.invalidateQueries({ queryKey: ["bankAccounts"] }),
       ]);
     },
   });

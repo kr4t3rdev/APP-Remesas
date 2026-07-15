@@ -2,6 +2,10 @@ import React from "react";
 import { act, fireEvent, render } from "@testing-library/react-native";
 import { TransactionModal } from "../TransactionModal";
 import * as transactions from "../../../../modules/transactions/application/useTransactions";
+import * as banks from "../../../../modules/bank-accounts/application/useBankAccounts";
+import * as cash from "../../../../modules/cash/application/useCash";
+jest.mock("../../../../modules/bank-accounts/application/useBankAccounts");
+jest.mock("../../../../modules/cash/application/useCash");
 
 jest.mock("../../../../modules/transactions/application/useTransactions");
 
@@ -14,6 +18,9 @@ describe("TransactionModal FX intent", () => {
       { currencyId: 1, currency: { code: "USD" }, saldo: 100, costoPromedio: 250, availableForSale: true },
       { currencyId: 2, currency: { code: "EUR" }, saldo: 40, costoPromedio: 300, availableForSale: true },
     ] } as any);
+    jest.mocked(transactions.useCurrenciesQuery).mockReturnValue({ data: [{ id: 1, code: "CUP" }, { id: 2, code: "USD" }] } as any);
+    jest.mocked(banks.useBankAccountsQuery).mockReturnValue({ data: [] } as any);
+    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [] } as any);
     jest.mocked(transactions.useExchangeRatesQuery).mockReturnValue({ data: [
       { currencyId: 1, buyRate: 240, sellRate: 260 },
       { currencyId: 2, buyRate: 280, sellRate: 320 },
