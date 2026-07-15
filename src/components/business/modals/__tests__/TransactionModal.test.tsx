@@ -20,7 +20,7 @@ describe("TransactionModal FX intent", () => {
     ] } as any);
     jest.mocked(transactions.useCurrenciesQuery).mockReturnValue({ data: [{ id: 1, code: "CUP" }, { id: 2, code: "USD" }] } as any);
     jest.mocked(banks.useBankAccountsQuery).mockReturnValue({ data: [] } as any);
-    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [] } as any);
+    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [{ currencyId: 1, currency: { code: "CUP" }, balance: 10000 }, { currencyId: 2, currency: { code: "USD" }, balance: 100 }] } as any);
     jest.mocked(transactions.useExchangeRatesQuery).mockReturnValue({ data: [
       { currencyId: 1, buyRate: 240, sellRate: 260 },
       { currencyId: 2, buyRate: 280, sellRate: 320 },
@@ -68,6 +68,19 @@ describe("TransactionModal FX intent", () => {
     act(() => options.onSuccess());
 
     expect(getByText("Operación guardada correctamente.")).toBeTruthy();
+  });
+
+  it("requires the full base debit for a purchase and rotates idempotency after success", () => {
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "50");
+    expect(getByText("Guardar")).toBeDisabled();
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+    const firstKey = mutate.mock.calls[0][0].idempotencyKey;
+    act(() => mutate.mock.calls[0][1].onSuccess());
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+    expect(mutate.mock.calls[1][0].idempotencyKey).not.toBe(firstKey);
   });
 
   it("shows error feedback when saving the operation fails", () => {

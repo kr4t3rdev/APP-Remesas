@@ -22,24 +22,23 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
   const [sourceKey, setSourceKey] = useState<string>();
   const [destinationKey, setDestinationKey] = useState<string>();
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
-  const intentKey = useRef(`transfer-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const createIntentKey = () => `transfer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const intentKey = useRef(createIntentKey());
 
   useEffect(() => { if (currencyId === 0 && positions.data?.[0]) setCurrencyId(positions.data[0].currencyId); }, [currencyId, positions.data]);
   const position = positions.data?.find((item) => item.currencyId === currencyId);
   const rateItem = rates.data?.find((item) => item.currencyId === currencyId);
   const rate = type === "COMPRA" ? rateItem?.buyRate ?? 0 : rateItem?.sellRate ?? 0;
   const preview = calculateTransferPreview({ type, amount: Number(amount), rate, position });
-  const baseCurrencyId = currencies.data?.find((item) => item.id !== currencyId)?.id ?? currencies.data?.[0]?.id ?? 0;
+  const baseCurrencyId = currencies.data?.find((item) => item.code.toUpperCase() === "CUP")?.id ?? currencies.data?.find((item) => item.id !== currencyId)?.id ?? currencies.data?.[0]?.id ?? 0;
   const sourceCurrencyId = type === "COMPRA" ? baseCurrencyId : currencyId;
   const destinationCurrencyId = type === "COMPRA" ? currencyId : baseCurrencyId;
   const accounts = useMemo<AccountOption[]>(() => {
     const cashAccounts = (cash.data ?? []).map((item) => ({ key: `CASH:${item.currencyId}`, type: "CASH" as const, label: `Caja · ${item.currency?.code ?? item.currencyId}`, currencyId: item.currencyId, balance: item.balance, active: true }));
-    const knownCurrencyIds = new Set(cashAccounts.map((item) => item.currencyId));
-    const fallbackCash = (positions.data ?? []).filter((item) => !knownCurrencyIds.has(item.currencyId)).map((item) => ({ key: `CASH:${item.currencyId}`, type: "CASH" as const, label: `Caja · ${typeof item.currency === "string" ? item.currency : item.currency?.code ?? item.currencyId}`, currencyId: item.currencyId, balance: item.saldo, active: true }));
-    if (baseCurrencyId && !knownCurrencyIds.has(baseCurrencyId) && !fallbackCash.some((item) => item.currencyId === baseCurrencyId)) fallbackCash.push({ key: `CASH:${baseCurrencyId}`, type: "CASH" as const, label: `Caja · ${baseCurrencyId}`, currencyId: baseCurrencyId, balance: Number.MAX_SAFE_INTEGER, active: true });
-    return [...cashAccounts, ...fallbackCash, ...(banks.data ?? []).map((item) => ({ key: `BANK_ACCOUNT:${item.id}`, type: "BANK_ACCOUNT" as const, id: item.id, label: `${item.bankName} · ${item.name}`, currencyId: item.currencyId, balance: item.balance, active: item.isActive }))];
+    return [...cashAccounts, ...(banks.data ?? []).map((item) => ({ key: `BANK_ACCOUNT:${item.id}`, type: "BANK_ACCOUNT" as const, id: item.id, label: `${item.bankName} · ${item.name}`, currencyId: item.currencyId, balance: item.balance, active: item.isActive }))];
   }, [banks.data, cash.data, positions.data, baseCurrencyId]);
-  const sourceOptions = accounts.filter((item) => item.active && item.currencyId === sourceCurrencyId && item.balance >= (Number(amount) || 0));
+  const sourceDebit = type === "COMPRA" ? Number(amount || 0) * rate : Number(amount || 0);
+  const sourceOptions = accounts.filter((item) => item.active && item.currencyId === sourceCurrencyId && item.balance >= sourceDebit);
   const destinationOptions = accounts.filter((item) => item.active && item.currencyId === destinationCurrencyId);
   const source = accounts.find((item) => item.key === sourceKey);
   const destination = accounts.find((item) => item.key === destinationKey);
@@ -50,7 +49,7 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
     if (!preview.isValid || !currencyId || !source || !destination) return;
     setSaveStatus("idle");
     createTx({ type, currencyId, amount: Number(amount), rate, idempotencyKey: intentKey.current, sourceType: source.type, sourceBankAccountId: source.id, destinationType: destination.type, destinationBankAccountId: destination.id }, {
-      onSuccess: () => { setAmount(""); setSaveStatus("success"); }, onError: () => setSaveStatus("error"),
+      onSuccess: () => { setAmount(""); setSaveStatus("success"); intentKey.current = createIntentKey(); }, onError: () => setSaveStatus("error"),
     });
   };
   const renderAccountPicker = (title: string, options: AccountOption[], selected: string | undefined, onSelect: (key: string) => void) => <View><Text style={{ color: colors.text.primary, marginTop: 10 }}>{title}</Text>{options.length === 0 ? <Text style={{ color: colors.danger }}>No hay cuentas activas con moneda/saldo compatible.</Text> : options.map((item) => <TouchableOpacity key={item.key} accessibilityRole="radio" accessibilityLabel={item.label} accessibilityState={{ selected: item.key === selected }} onPress={() => onSelect(item.key)} style={[styles.accountOption, { borderColor: colors.border }]}><Text style={{ color: colors.text.primary }}>{item.label}</Text><Text style={{ color: colors.text.secondary }}>{item.balance.toFixed(2)}</Text></TouchableOpacity>)}</View>;
