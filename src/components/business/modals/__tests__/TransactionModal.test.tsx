@@ -18,9 +18,9 @@ describe("TransactionModal FX intent", () => {
       { currencyId: 1, currency: { code: "USD" }, saldo: 100, costoPromedio: 250, availableForSale: true },
       { currencyId: 2, currency: { code: "EUR" }, saldo: 40, costoPromedio: 300, availableForSale: true },
     ] } as any);
-    jest.mocked(transactions.useCurrenciesQuery).mockReturnValue({ data: [{ id: 1, code: "CUP" }, { id: 2, code: "USD" }] } as any);
+    jest.mocked(transactions.useCurrenciesQuery).mockReturnValue({ data: [{ id: 10, code: "CUP", isActive: true }, { id: 1, code: "USD", isActive: true }, { id: 2, code: "EUR", isActive: true }] } as any);
     jest.mocked(banks.useBankAccountsQuery).mockReturnValue({ data: [] } as any);
-    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [{ currencyId: 1, currency: { code: "CUP" }, balance: 10000 }, { currencyId: 2, currency: { code: "USD" }, balance: 100 }] } as any);
+    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [{ currencyId: 10, currency: { code: "CUP" }, balance: 10000 }, { currencyId: 1, currency: { code: "USD" }, balance: 100 }] } as any);
     jest.mocked(transactions.useExchangeRatesQuery).mockReturnValue({ data: [
       { currencyId: 1, buyRate: 240, sellRate: 260 },
       { currencyId: 2, buyRate: 280, sellRate: 320 },
@@ -99,5 +99,39 @@ describe("TransactionModal FX intent", () => {
     act(() => options.onError(new Error("offline")));
 
     expect(getByText("No se pudo guardar la operación. Intentá nuevamente.")).toBeTruthy();
+  });
+
+  it("allows buying a rated currency without a previous position or cash balance", () => {
+    jest.mocked(transactions.usePositionsQuery).mockReturnValue({ data: [] } as any);
+    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [
+      { currencyId: 10, currency: { code: "CUP" }, balance: 15000 },
+    ] } as any);
+
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+
+    expect(getByLabelText("USD")).toBeTruthy();
+    expect(getByLabelText("Caja · USD")).toBeTruthy();
+    fireEvent.press(getByText("Guardar"));
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "COMPRA", currencyId: 1, sourceType: "CASH", destinationType: "CASH" }),
+      expect.any(Object),
+    );
+  });
+
+  it("does not offer a zero-balance synthetic cash account as origin for a sale", () => {
+    jest.mocked(transactions.usePositionsQuery).mockReturnValue({ data: [] } as any);
+    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [
+      { currencyId: 10, currency: { code: "CUP" }, balance: 15000 },
+    ] } as any);
+
+    const { getByLabelText, getByText, queryByLabelText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.press(getByLabelText("Venta"));
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+
+    expect(queryByLabelText("Caja · USD")).toBeNull();
+    expect(getByText("No hay fondos suficientes en Caja o cuentas bancarias para esta operación.")).toBeTruthy();
+    expect(getByText("Guardar")).toBeDisabled();
   });
 });

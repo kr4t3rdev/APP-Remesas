@@ -25,23 +25,45 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
   const createIntentKey = () => `transfer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const intentKey = useRef(createIntentKey());
 
-  useEffect(() => { if (currencyId === 0 && positions.data?.[0]) setCurrencyId(positions.data[0].currencyId); }, [currencyId, positions.data]);
-  // Queries start with empty initial data. Derive a usable currency during the
-  // first render after positions arrive instead of waiting for a state effect.
-  const selectedCurrencyId = currencyId || positions.data?.[0]?.currencyId || 0;
-  const position = positions.data?.find((item) => item.currencyId === selectedCurrencyId);
+  const baseCurrencyId = currencies.data?.find((item) => item.code.toUpperCase() === "CUP")?.id;
+  const ratedCurrencies = useMemo(() => {
+    const currencyById = new Map((currencies.data ?? []).map((item) => [item.id, item]));
+    return (rates.data ?? [])
+      .filter((item) => item.currencyId !== baseCurrencyId && item.buyRate > 0 && item.sellRate > 0)
+      .map((item) => currencyById.get(item.currencyId) ?? item.currency)
+      .filter((item): item is NonNullable<typeof item> => Boolean(item && item.isActive !== false));
+  }, [baseCurrencyId, currencies.data, rates.data]);
+  useEffect(() => {
+    if (!ratedCurrencies.some((item) => item.id === currencyId)) {
+      setCurrencyId(ratedCurrencies[0]?.id ?? 0);
+    }
+  }, [currencyId, ratedCurrencies]);
+  // A purchase creates its FX position, so it must not require a previous
+  // position. Sales still use the real position to enforce available stock.
+  const selectedCurrencyId = ratedCurrencies.some((item) => item.id === currencyId)
+    ? currencyId
+    : ratedCurrencies[0]?.id ?? 0;
+  const existingPosition = positions.data?.find((item) => item.currencyId === selectedCurrencyId);
+  const position = type === "COMPRA" && selectedCurrencyId
+    ? existingPosition ?? { currencyId: selectedCurrencyId, saldo: 0, costoPromedio: null, availableForSale: false }
+    : existingPosition;
   const rateItem = rates.data?.find((item) => item.currencyId === selectedCurrencyId);
   const rate = type === "COMPRA" ? rateItem?.buyRate ?? 0 : rateItem?.sellRate ?? 0;
   const preview = calculateTransferPreview({ type, amount: Number(amount), rate, position });
-  const baseCurrencyId = currencies.data?.find((item) => item.code.toUpperCase() === "CUP")?.id;
   const sourceCurrencyId = type === "COMPRA" ? baseCurrencyId : selectedCurrencyId;
   const destinationCurrencyId = type === "COMPRA" ? selectedCurrencyId : baseCurrencyId;
   const accounts = useMemo<AccountOption[]>(() => {
-    const cashAccounts = (cash.data ?? []).map((item) => ({ key: `CASH:${item.currencyId}`, type: "CASH" as const, label: `Caja · ${item.currency?.code ?? item.currencyId}`, currencyId: item.currencyId, balance: item.balance, active: true }));
+    const cashByCurrencyId = new Map((cash.data ?? []).map((item) => [item.currencyId, item]));
+    const cashAccounts = (currencies.data ?? [])
+      .filter((item) => item.isActive !== false)
+      .map((currency) => {
+        const cashBalance = cashByCurrencyId.get(currency.id);
+        return { key: `CASH:${currency.id}`, type: "CASH" as const, label: `Caja · ${currency.code}`, currencyId: currency.id, balance: cashBalance?.balance ?? 0, active: true };
+      });
     return [...cashAccounts, ...(banks.data ?? []).map((item) => ({ key: `BANK_ACCOUNT:${item.id}`, type: "BANK_ACCOUNT" as const, id: item.id, label: `${item.bankName} · ${item.name}`, currencyId: item.currencyId, balance: item.balance, active: item.isActive }))];
-  }, [banks.data, cash.data, positions.data, baseCurrencyId]);
+  }, [banks.data, cash.data, currencies.data]);
   const sourceDebit = type === "COMPRA" ? Number(amount || 0) * rate : Number(amount || 0);
-  const sourceOptions = sourceCurrencyId ? accounts.filter((item) => item.active && item.currencyId === sourceCurrencyId && item.balance >= sourceDebit) : [];
+  const sourceOptions = sourceCurrencyId ? accounts.filter((item) => item.active && item.currencyId === sourceCurrencyId && item.balance > 0 && item.balance >= sourceDebit) : [];
   const currencyConfigurationError = !baseCurrencyId ? "Configuración incompleta: no se encontró la moneda base CUP." : undefined;
   const destinationOptions = accounts.filter((item) => item.active && item.currencyId === destinationCurrencyId);
   const source = accounts.find((item) => item.key === sourceKey);
@@ -56,13 +78,13 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
       onSuccess: () => { setAmount(""); setSaveStatus("success"); intentKey.current = createIntentKey(); }, onError: () => setSaveStatus("error"),
     });
   };
-  const renderAccountPicker = (title: string, options: AccountOption[], selected: string | undefined, onSelect: (key: string) => void) => <View><Text style={{ color: colors.text.primary, marginTop: 10 }}>{title}</Text>{options.length === 0 ? <Text style={{ color: colors.danger }}>No hay cuentas activas con moneda/saldo compatible.</Text> : options.map((item) => <TouchableOpacity key={item.key} accessibilityRole="radio" accessibilityLabel={item.label} accessibilityState={{ selected: item.key === selected }} onPress={() => onSelect(item.key)} style={[styles.accountOption, { borderColor: colors.border }]}><Text style={{ color: colors.text.primary }}>{item.label}</Text><Text style={{ color: colors.text.secondary }}>{item.balance.toFixed(2)}</Text></TouchableOpacity>)}</View>;
+  const renderAccountPicker = (title: "Origen" | "Destino", options: AccountOption[], selected: string | undefined, onSelect: (key: string) => void) => <View><Text style={{ color: colors.text.primary, marginTop: 10 }}>{title}</Text>{options.length === 0 ? <Text style={{ color: colors.danger }}>{title === "Origen" ? "No hay fondos suficientes en Caja o cuentas bancarias para esta operación." : "No hay destinos activos para la moneda seleccionada."}</Text> : options.map((item) => <TouchableOpacity key={item.key} accessibilityRole="radio" accessibilityLabel={item.label} accessibilityState={{ selected: item.key === selected }} onPress={() => onSelect(item.key)} style={[styles.accountOption, { borderColor: colors.border }]}><Text style={{ color: colors.text.primary }}>{item.label}</Text><Text style={{ color: colors.text.secondary }}>{item.balance.toFixed(2)}</Text></TouchableOpacity>)}</View>;
 
   return <Modal visible={visible} transparent animationType="slide" accessibilityViewIsModal><View style={styles.overlay}><View accessibilityLabel="Nueva operación" style={[styles.container, { backgroundColor: colors.card }]}>
     <Text accessibilityRole="header" style={[styles.title, { color: colors.text.primary }]}>Nueva operación</Text>
     <View accessibilityRole="radiogroup" style={styles.typeRow}>{(["COMPRA", "VENTA"] as const).map((option) => <TouchableOpacity key={option} accessibilityRole="radio" accessibilityLabel={option === "COMPRA" ? "Compra" : "Venta"} accessibilityState={{ selected: type === option }} onPress={() => setType(option)} style={styles.radioOption}><Text style={{ color: colors.text.primary }}>{option === "COMPRA" ? "Compra" : "Venta"}</Text></TouchableOpacity>)}</View>
     <Text style={{ color: colors.text.primary, marginBottom: 6 }}>Monto de la operación</Text><TextInput accessibilityLabel="Monto de la operación" style={[styles.input, { borderColor: colors.border, color: colors.text.primary }]} placeholder="Monto" placeholderTextColor={colors.text.secondary} keyboardType="numeric" value={amount} onChangeText={setAmount} />
-    {positions.data && positions.data.length > 1 ? positions.data.map((item) => <TouchableOpacity key={item.currencyId} accessibilityRole="radio" accessibilityLabel={typeof item.currency === "string" ? item.currency : item.currency?.code ?? `Moneda ${item.currencyId}`} accessibilityState={{ selected: item.currencyId === currencyId }} onPress={() => setCurrencyId(item.currencyId)} style={styles.radioOption}><Text style={{ color: colors.text.primary }}>{typeof item.currency === "string" ? item.currency : item.currency?.code ?? item.currencyId}</Text></TouchableOpacity>) : null}
+    {ratedCurrencies.map((item) => <TouchableOpacity key={item.id} accessibilityRole="radio" accessibilityLabel={item.code} accessibilityState={{ selected: item.id === selectedCurrencyId }} onPress={() => setCurrencyId(item.id)} style={styles.radioOption}><Text style={{ color: colors.text.primary }}>{item.code}</Text></TouchableOpacity>)}
     {currencyConfigurationError ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8 }}>{currencyConfigurationError}</Text> : null}
     {renderAccountPicker("Origen", sourceOptions, sourceKey, setSourceKey)}{renderAccountPicker("Destino", destinationOptions, destinationKey, setDestinationKey)}
     <Text style={{ color: colors.text.secondary }}>Total: {preview.totalBase.toFixed(2)} · Saldo proyectado: {preview.projectedSaldo?.toFixed(2) ?? "—"}</Text>
