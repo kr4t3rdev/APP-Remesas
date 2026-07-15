@@ -134,4 +134,40 @@ describe("TransactionModal FX intent", () => {
     expect(getByText("No hay fondos suficientes en Caja o cuentas bancarias para esta operación.")).toBeTruthy();
     expect(getByText("Guardar")).toBeDisabled();
   });
+
+  it("summarizes a purchase with base currency leaving and FX entering", () => {
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+
+    expect(getByText("Resumen: salen 2400.00 de Caja · CUP y entran 10 en Caja · USD")).toBeTruthy();
+  });
+
+  it("uses only the latest rate per currency", () => {
+    jest.mocked(transactions.useExchangeRatesQuery).mockReturnValue({ data: [
+      { id: 1, currencyId: 1, buyRate: 200, sellRate: 210, effectiveDate: "2026-07-14T12:00:00.000Z" },
+      { id: 2, currencyId: 1, buyRate: 240, sellRate: 260, effectiveDate: "2026-07-15T12:00:00.000Z" },
+      { id: 3, currencyId: 2, buyRate: 280, sellRate: 320, effectiveDate: "2026-07-15T12:00:00.000Z" },
+    ] } as any);
+    const { getAllByLabelText, getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+
+    expect(getAllByLabelText("USD")).toHaveLength(1);
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ currencyId: 1, rate: 240 }), expect.any(Object));
+  });
+
+  it("submits accounts that belong to the newly selected currency", () => {
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.press(getByLabelText("EUR"));
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+
+    expect(mutate).toHaveBeenCalledWith(
+      expect.objectContaining({ currencyId: 2, destinationType: "CASH" }),
+      expect.any(Object),
+    );
+    expect(getByText(/entran 10 en Caja · EUR/)).toBeTruthy();
+  });
 });
