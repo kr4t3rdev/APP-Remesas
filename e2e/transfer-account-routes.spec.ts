@@ -31,7 +31,7 @@ test.describe('FX transfer account routes', () => {
       await expect(page.getByTestId('tab-Home')).toBeVisible();
       await openTransactions(page);
 
-      await page.getByRole('button', { name: 'Nueva operación' }).click();
+      await page.getByRole('button', { name: 'Nueva transacción' }).click();
       await expect(page.getByText('Nueva operación')).toBeVisible();
       await page.getByLabel('Monto de la operación').fill('10');
 
@@ -82,7 +82,7 @@ test.describe('FX transfer account routes', () => {
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('tab-Home')).toBeVisible();
     await openTransactions(page);
-    await page.getByRole('button', { name: 'Nueva operación' }).click();
+    await page.getByRole('button', { name: 'Nueva transacción' }).click();
     await page.getByLabel('Venta', { exact: true }).click();
     await page.getByLabel('Monto de la operación').fill('10');
     await page.getByLabel('Banco Uno · Cuenta USD', { exact: true }).click();
@@ -100,7 +100,11 @@ test.describe('FX transfer account routes', () => {
 
 async function openTransactions(page: Page): Promise<void> {
   await page.getByText('Transacciones', { exact: true }).last().click();
-  await expect(page.getByText('USD').first()).toBeVisible();
+  // TransactionsScreen exposes the FAB as "Nueva transacción".  The
+  // account-aware TransactionModal is opened from this real production entry
+  // point; waiting for a currency label here was coupled to the retired
+  // BusinessScreen and made the E2E fail before exercising the flow.
+  await expect(page.getByRole('button', { name: 'Nueva transacción' })).toBeVisible();
 }
 
 async function seedAuthenticatedSession(page: Page): Promise<void> {
