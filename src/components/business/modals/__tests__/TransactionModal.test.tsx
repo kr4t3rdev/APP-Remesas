@@ -83,6 +83,13 @@ describe("TransactionModal FX intent", () => {
     expect(mutate.mock.calls[1][0].idempotencyKey).not.toBe(firstKey);
   });
 
+  it("blocks transfers when the base CUP currency is not configured", () => {
+    jest.mocked(transactions.useCurrenciesQuery).mockReturnValue({ data: [{ id: 2, code: "USD" }] } as any);
+    const { getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    expect(getByText(/no se encontró la moneda base CUP/i)).toBeTruthy();
+    expect(getByText("Guardar")).toBeDisabled();
+  });
+
   it("shows error feedback when saving the operation fails", () => {
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
