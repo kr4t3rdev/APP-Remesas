@@ -21,8 +21,8 @@ describe("fintech tab bar styling", () => {
       borderColor: "rgba(148, 163, 184, 0.42)",
     });
     expect(getFintechTabBarStyle(0, true)).toMatchObject({
-      backgroundColor: "rgba(15, 23, 42, 0.94)",
-      borderColor: "rgba(148, 163, 184, 0.3)",
+      backgroundColor: "rgba(8, 26, 30, 0.94)",
+      borderColor: "rgba(79, 143, 154, 0.7)",
     });
   });
 
@@ -32,8 +32,8 @@ describe("fintech tab bar styling", () => {
       borderColor: "#94A3B8",
     });
     expect(getFintechTabBarStyle(0, true, true)).toMatchObject({
-      backgroundColor: "#0F172A",
-      borderColor: "#64748B",
+      backgroundColor: "#10272C",
+      borderColor: "#4F8F9A",
     });
   });
 
@@ -50,8 +50,36 @@ describe("fintech tab bar styling", () => {
       inactive: "#475569",
     });
     expect(fintechTabBarColors.dark).toMatchObject({
-      active: "#C7D2FE",
-      inactive: "#CBD5E1",
+      background: "rgba(8, 26, 30, 0.94)",
+      opaqueBackground: "#10272C",
+      border: "rgba(79, 143, 154, 0.7)",
+      opaqueBorder: "#4F8F9A",
+      active: "#67E8F9",
+      activeBackground: "rgba(36, 71, 78, 0.7)",
+      inactive: "#A3C0C5",
     });
+  });
+
+  it("keeps dark borders at or above 3:1 contrast against the opaque surface", () => {
+    const relativeLuminance = (hex: string) => {
+      const channels = [1, 3, 5].map((offset) =>
+        Number.parseInt(hex.slice(offset, offset + 2), 16) / 255,
+      );
+      const linear = channels.map((channel) =>
+        channel <= 0.03928
+          ? channel / 12.92
+          : ((channel + 0.055) / 1.055) ** 2.4,
+      );
+      return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+    };
+    const contrast = (foreground: string, background: string) => {
+      const foregroundLuminance = relativeLuminance(foreground);
+      const backgroundLuminance = relativeLuminance(background);
+      const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+      const darker = Math.min(foregroundLuminance, backgroundLuminance);
+      return (lighter + 0.05) / (darker + 0.05);
+    };
+
+    expect(contrast(fintechTabBarColors.dark.opaqueBorder, fintechTabBarColors.dark.opaqueBackground)).toBeGreaterThanOrEqual(3);
   });
 });

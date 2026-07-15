@@ -29,13 +29,13 @@ export const fintechTabBarColors: Record<"light" | "dark", FintechTabBarColors> 
     inactive: "#475569",
   },
   dark: {
-    background: "rgba(15, 23, 42, 0.94)",
-    opaqueBackground: "#0F172A",
-    border: "rgba(148, 163, 184, 0.3)",
-    opaqueBorder: "#64748B",
-    active: "#C7D2FE",
-    activeBackground: "rgba(199, 210, 254, 0.15)",
-    inactive: "#CBD5E1",
+    background: "rgba(8, 26, 30, 0.94)",
+    opaqueBackground: "#10272C",
+    border: "rgba(79, 143, 154, 0.7)",
+    opaqueBorder: "#4F8F9A",
+    active: "#67E8F9",
+    activeBackground: "rgba(36, 71, 78, 0.7)",
+    inactive: "#A3C0C5",
   },
 };
 
