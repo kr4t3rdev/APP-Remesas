@@ -11,8 +11,6 @@ import { CashHistoryScreen } from "../screens/cash/CashHistoryScreen";
 import { ExchangeRatesScreen } from "../screens/exchange-rates/ExchangeRatesScreen";
 import { BankAccountsScreen } from "../screens/bank-accounts/BankAccountsScreen";
 import { CurrenciesScreen } from "../screens/currencies/CurrenciesScreen";
-import { ReconciliationsHistoryScreen } from "../screens/reconciliations/ReconciliationsHistoryScreen";
-import { BulkReconciliationScreen } from "../screens/reconciliations/BulkReconciliationScreen";
 import { ReportsScreen } from "../screens/reports/ReportsScreen";
 import { MainTabs } from "./MainTabs";
 import { AdminTabs } from "./AdminTabs";
@@ -105,22 +103,6 @@ const MainStackNavigator: React.FC = () => {
         options={{
           headerShown: false,
           presentation: "card",
-        }}
-      />
-      <MainStack.Screen
-        name="ReconciliationsHistory"
-        component={ReconciliationsHistoryScreen}
-        options={{
-          headerShown: false,
-          presentation: "card",
-        }}
-      />
-      <MainStack.Screen
-        name="BulkReconciliation"
-        component={BulkReconciliationScreen}
-        options={{
-          headerShown: false,
-          presentation: "modal",
         }}
       />
       <MainStack.Screen

@@ -4,7 +4,6 @@ import { Alert } from "../../utils/alert";
 
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale, FadeInDown } from "../animations";
-import { Badge } from "../ui/Badge";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
 import type { Expense } from "../../types";
@@ -15,7 +14,6 @@ type ExpenseCardProps = {
   onPress?: (expense: Expense) => void;
   onEdit?: (expense: Expense) => void;
   onDelete?: (expense: Expense) => void;
-  onReconcile?: (expense: Expense) => void;
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -40,7 +38,6 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
   onPress,
   onEdit,
   onDelete,
-  onReconcile,
 }) => {
   const themeColors = useColors();
   const themeShadows = useShadows();
@@ -68,9 +65,6 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
     );
   };
 
-  const handleReconcile = () => {
-    onReconcile?.(expense);
-  };
 
   return (
     <FadeInDown delay={index * 50}>
@@ -140,10 +134,9 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
           </View>
 
           <View style={[styles.footer, { borderTopColor: themeColors.border }]}>
-            <Badge
-              text={expense.status === "PENDIENTE" ? "Pendiente" : "Pagado"}
-              variant={expense.status === "PENDIENTE" ? "warning" : "success"}
-            />
+            <Text style={{ color: themeColors.text.secondary, fontSize: 12 }}>
+              {expense.sourceType === "CASH" ? "Caja" : expense.sourceBankAccount?.name || "Cuenta bancaria"}
+            </Text>
 
             <View style={styles.actions}>
               <TouchableOpacity
@@ -161,16 +154,6 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
                 />
               </TouchableOpacity>
 
-              <TouchableOpacity
-                testID="expense-reconcile-button"
-                onPress={handleReconcile}
-                style={[
-                  styles.actionButton,
-                  { backgroundColor: `${themeColors.success}15` },
-                ]}
-              >
-                <Ionicons name="link" size={16} color={themeColors.success} />
-              </TouchableOpacity>
 
               <TouchableOpacity
                 testID="expense-delete-button"

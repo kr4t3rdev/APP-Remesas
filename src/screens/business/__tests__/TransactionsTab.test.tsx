@@ -38,7 +38,7 @@ describe("TransactionsTab", () => {
       data: [{ currencyId: 1, currency: { code: "USD" }, saldo: 100, costoPromedio: 250, availableForSale: true }],
     }) as any);
     jest.mocked(transactionQueries.useTransactionsQuery).mockReturnValue(query({
-      data: [{ id: 1, type: "VENTA", currency: { code: "USD" }, amount: 10, rate: 260, marginProfit: 100, status: "RECONCILIADO" }],
+      data: [{ id: 1, type: "VENTA", currency: { code: "USD" }, amount: 10, rate: 260, marginProfit: 100 }],
     }) as any);
     jest.mocked(transactionQueries.useRemittancesQuery).mockReturnValue(query({
       data: [{ id: 4, provider: "Acme", sourceId: "source-4", status: "PENDING", duplicate: true }],

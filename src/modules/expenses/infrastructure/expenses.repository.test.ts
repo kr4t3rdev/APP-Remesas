@@ -42,6 +42,7 @@ describe("expensesRepository", () => {
       description: "Internet",
       amount: 50,
       currencyId: 1,
+      sourceType: "CASH" as const,
       category: "servicios" as const,
       date: "2026-03-06",
     };
@@ -71,12 +72,4 @@ describe("expensesRepository", () => {
     expect(mockedApi.delete).toHaveBeenCalledWith("/expenses/4");
   });
 
-  it("requests pending expenses", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: [{ id: 5 }] as never[], status: 200, statusText: 'OK', headers: new Headers() });
-
-    const result = await expensesRepository.getPendingExpenses();
-
-    expect(mockedApi.get).toHaveBeenCalledWith("/expenses/pending");
-    expect(result).toEqual([{ id: 5 }]);
-  });
 });

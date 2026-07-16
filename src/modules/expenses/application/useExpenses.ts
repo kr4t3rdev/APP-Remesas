@@ -25,14 +25,6 @@ export const useExpenseDetailQuery = (id: number) =>
     enabled: !!id,
   });
 
-export const usePendingExpensesQuery = () =>
-  useQuery({
-    queryKey: queryKeys.expenses.pending(),
-    queryFn: () => expensesRepository.getPendingExpenses(),
-    staleTime: 1000 * 60 * 2,
-    throwOnError: false,
-    initialData: [],
-  });
 
 export const useCreateExpenseMutation = () => {
   const queryClient = useQueryClient();
@@ -43,9 +35,6 @@ export const useCreateExpenseMutation = () => {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.expenses.pending(),
-        }),
       ]);
     },
   });
@@ -60,9 +49,6 @@ export const useUpdateExpenseMutation = () => {
     onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.expenses.pending(),
-        }),
         queryClient.invalidateQueries({
           queryKey: queryKeys.expenses.detail(variables.id),
         }),
@@ -79,9 +65,6 @@ export const useDeleteExpenseMutation = () => {
     onSuccess: async (_data, id) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.expenses.pending(),
-        }),
         queryClient.invalidateQueries({
           queryKey: queryKeys.expenses.detail(id),
         }),

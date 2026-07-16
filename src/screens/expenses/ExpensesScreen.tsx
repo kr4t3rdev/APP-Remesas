@@ -53,7 +53,6 @@ export const ExpensesScreen: React.FC = () => {
   >("all");
   const [showModal, setShowModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [showPending, setShowPending] = useState(false);
 
   const [confirmModal, setConfirmModal] = useState<{
     visible: boolean;
@@ -76,18 +75,8 @@ export const ExpensesScreen: React.FC = () => {
   const deleteMutation = useDeleteExpenseMutation();
 
   const expenses = expensesQuery.data ?? [];
-  const filteredExpenses = useMemo(() => {
-    if (showPending) {
-      return expenses.filter((e) => e.status === "PENDIENTE");
-    }
-    return expenses;
-  }, [expenses, showPending]);
-
-  const totalExpenses = filteredExpenses.reduce(
-    (acc, e) => acc + Number(e.amount),
-    0,
-  );
-  const pendingCount = expenses.filter((e) => e.status === "PENDIENTE").length;
+  const filteredExpenses = expenses;
+  const totalExpenses = filteredExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
 
   const handleRefresh = async () => {
     try {
@@ -135,30 +124,6 @@ export const ExpensesScreen: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleReconcileExpense = (expense: Expense) => {
-    Alert.alert(
-      "Reconciliar Gasto",
-      `¿Marcar "${expense.description}" como pagado?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Confirmar",
-          onPress: async () => {
-            try {
-              await updateMutation.mutateAsync({
-                id: expense.id,
-                data: { notes: expense.notes || "Reconciliado" },
-              });
-              Alert.alert("Éxito", "Gasto marcado como pagado");
-            } catch {
-              Alert.alert("Error", "No se pudo reconciliar el gasto");
-            }
-          },
-        },
-      ],
-    );
-  };
-
   const handleOpenModal = () => {
     setEditingExpense(null);
     setShowModal(true);
@@ -175,12 +140,6 @@ export const ExpensesScreen: React.FC = () => {
       value: `$ ${totalExpenses.toLocaleString()}`,
       color: themeColors.danger,
       icon: "wallet-outline" as const,
-    },
-    {
-      label: "Pendientes",
-      value: pendingCount.toString(),
-      color: themeColors.warning,
-      icon: "time-outline" as const,
     },
   ];
 
@@ -282,28 +241,6 @@ export const ExpensesScreen: React.FC = () => {
             })}
           </ScrollView>
 
-          <TouchableOpacity
-            testID="filter-pending-button"
-            onPress={() => setShowPending(!showPending)}
-            style={[
-              styles.pendingFilter,
-              showPending && { backgroundColor: themeColors.warning },
-            ]}
-          >
-            <Ionicons
-              name="alert-circle"
-              size={16}
-              color={showPending ? "#fff" : themeColors.warning}
-            />
-            <Text
-              style={[
-                styles.pendingFilterText,
-                { color: showPending ? "#fff" : themeColors.warning },
-              ]}
-            >
-              Pendientes
-            </Text>
-          </TouchableOpacity>
         </View>
       </FadeInDown>
 
@@ -316,7 +253,6 @@ export const ExpensesScreen: React.FC = () => {
             index={index}
             onEdit={handleEditExpense}
             onDelete={handleDeleteExpense}
-            onReconcile={handleReconcileExpense}
           />
         )}
         contentContainerStyle={styles.listContent}

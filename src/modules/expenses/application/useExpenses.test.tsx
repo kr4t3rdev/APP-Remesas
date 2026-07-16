@@ -6,7 +6,6 @@ import {
   useDeleteExpenseMutation,
   useExpenseDetailQuery,
   useExpensesQuery,
-  usePendingExpensesQuery,
   useUpdateExpenseMutation,
 } from "./useExpenses";
 import { expensesRepository } from "../infrastructure/expenses.repository";
@@ -19,7 +18,6 @@ jest.mock("../infrastructure/expenses.repository", () => ({
     createExpense: jest.fn(),
     updateExpense: jest.fn(),
     deleteExpense: jest.fn(),
-    getPendingExpenses: jest.fn(),
   },
 }));
 
@@ -71,19 +69,6 @@ describe("useExpenses hooks", () => {
     expect(result.current.data).toEqual({ id: 4 });
   });
 
-  it("loads pending expenses", async () => {
-    const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
-    });
-
-    const { result } = renderHook(() => usePendingExpensesQuery(), {
-      wrapper: createWrapper(queryClient),
-    });
-
-    expect(result.current.isSuccess).toBe(true);
-    expect(result.current.data).toEqual([]);
-    expect(mockedRepository.getPendingExpenses).not.toHaveBeenCalled();
-  });
 
   it("invalidates expenses queries after create", async () => {
     mockedRepository.createExpense.mockResolvedValueOnce({ id: 3 } as never);
@@ -100,6 +85,7 @@ describe("useExpenses hooks", () => {
       description: "Telefono",
       amount: 100,
       currencyId: 1,
+      sourceType: "CASH",
       category: "servicios",
       date: "2026-03-06",
     });
@@ -107,9 +93,6 @@ describe("useExpenses hooks", () => {
     await waitFor(() => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: queryKeys.expenses.list(),
-      });
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: queryKeys.expenses.pending(),
       });
     });
   });
@@ -130,9 +113,6 @@ describe("useExpenses hooks", () => {
     await waitFor(() => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: queryKeys.expenses.list(),
-      });
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: queryKeys.expenses.pending(),
       });
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: queryKeys.expenses.detail(10),
@@ -156,9 +136,6 @@ describe("useExpenses hooks", () => {
     await waitFor(() => {
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: queryKeys.expenses.list(),
-      });
-      expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: queryKeys.expenses.pending(),
       });
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: queryKeys.expenses.detail(12),

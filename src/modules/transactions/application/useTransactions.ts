@@ -5,7 +5,6 @@ import { transactionsRepository } from "../infrastructure/transactions.repositor
 
 export const useTransactionsQuery = (params?: {
   type?: TransactionType;
-  status?: "PENDIENTE" | "RECONCILIADO";
   startDate?: string;
   endDate?: string;
 }) =>

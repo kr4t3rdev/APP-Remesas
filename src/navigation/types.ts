@@ -13,8 +13,6 @@ export type RootStackParamList = {
   ExchangeRates: undefined;
   BankAccounts: undefined;
   Currencies: undefined;
-  ReconciliationsHistory: undefined;
-  BulkReconciliation: undefined;
   AdminUserDetail: { user: User };
   AdminLicensesList: undefined;
   AdminLicenseDetail: { licenseId: string | number };

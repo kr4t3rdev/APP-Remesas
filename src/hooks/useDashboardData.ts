@@ -58,16 +58,6 @@ export const useRecentTransactions = (limit?: number) => {
   });
 };
 
-export const usePendingTransactions = () => {
-  return useQuery<Transaction[], Error>({
-    queryKey: queryKeys.dashboard.pendingTransactions(),
-    queryFn: dashboardRepository.getPendingTransactions,
-    staleTime: 1000 * 60 * 2,
-    throwOnError: false,
-    initialData: [],
-  });
-};
-
 export const useRecentExpenses = (limit?: number) => {
   return useQuery<Expense[], Error>({
     queryKey: queryKeys.dashboard.recentExpenses(limit),
@@ -99,7 +89,6 @@ export const useDashboardData = () => {
   const cashBalances = useCashBalances();
   const exchangeRates = useExchangeRates();
   const recentTransactions = useRecentTransactions(5);
-  const pendingTransactions = usePendingTransactions();
   const activeObjectives = useActiveObjectives();
   const fxPerformance = useQuery<FxPerformanceReport, Error>({
     queryKey: ["dashboard", "fxPerformance"],
@@ -122,7 +111,6 @@ export const useDashboardData = () => {
       cashBalances.refetch(),
       exchangeRates.refetch(),
       recentTransactions.refetch(),
-      pendingTransactions.refetch(),
       activeObjectives.refetch(),
       fxPerformance.refetch(),
     ]);
@@ -159,7 +147,6 @@ export const useDashboardData = () => {
     cashBalances: cashBalances.data,
     exchangeRates: exchangeRates.data,
     recentTransactions: recentTransactions.data,
-    pendingTransactions: pendingTransactions.data,
     activeObjectives: activeObjectives.data,
     fxPerformance: fxPerformance.data,
     isLoading,

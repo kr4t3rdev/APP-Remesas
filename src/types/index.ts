@@ -41,7 +41,7 @@ export type RateHistory = {
 };
 
 export type TransactionType = "COMPRA" | "VENTA";
-export type ReconciliationStatus = "PENDIENTE" | "RECONCILIADO";
+export type ExpenseSourceType = "CASH" | "BANK_ACCOUNT";
 
 export type Transaction = {
   id: number;
@@ -52,7 +52,6 @@ export type Transaction = {
   rate: number;
   totalCup: number;
   marginProfit: number;
-  status: ReconciliationStatus;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -90,7 +89,7 @@ export type CashAdjustment = {
 
 export type CashOverviewMovement = {
   id: string;
-  kind: "TRANSACTION" | "ADJUSTMENT";
+  kind: "TRANSACTION" | "ADJUSTMENT" | "EXPENSE";
   type: TransactionType | CashAdjustmentType;
   direction: "IN" | "OUT";
   title: string;
@@ -136,7 +135,9 @@ export type Expense = {
   currency: Currency;
   category: ExpenseCategory;
   date: string;
-  status: ReconciliationStatus;
+  sourceType: ExpenseSourceType;
+  sourceBankAccountId?: number;
+  sourceBankAccount?: BankAccount;
   notes?: string;
 };
 
@@ -144,6 +145,8 @@ export type CreateExpenseInput = {
   description: string;
   amount: number;
   currencyId: number;
+  sourceType: ExpenseSourceType;
+  sourceBankAccountId?: number;
   category: ExpenseCategory;
   date: string;
   notes?: string;
@@ -611,21 +614,6 @@ export type CurrencyDetail = {
   updatedAt: string;
 };
 
-export type ReconcileExpenseRequest = {
-  expenseId: number;
-  transactionId: number;
-};
-
-export type ReconcileIncomeRequest = {
-  transactionId: number;
-  bankAccountId: number;
-};
-
-export type ReconcileIncomeBulkRequest = {
-  transactionIds: number[];
-  bankAccountId: number;
-};
-
 // Expense Items Types
 export type ExpenseItem = {
   id: number;
@@ -668,16 +656,4 @@ export type ExpenseReport = {
   };
 };
 
-export type Reconciliation = {
-  id: number;
-  type: "EXPENSE" | "INCOME";
-  transactionId: number;
-  expenseId?: number;
-  bankAccountId?: number;
-  reconciledAt: string;
-  reconciledBy: number;
-  transaction?: Transaction;
-  expense?: Expense;
-  bankAccount?: BankAccount;
-};
 export * from "./worker";

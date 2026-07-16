@@ -35,8 +35,4 @@ export const expensesRepository = {
     await api.delete(`/expenses/${id}`);
   },
 
-  async getPendingExpenses(): Promise<Expense[]> {
-    const response = await api.get<Expense[]>("/expenses/pending");
-    return response.data!;
-  },
 };

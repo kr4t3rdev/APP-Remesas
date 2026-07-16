@@ -89,7 +89,7 @@ export const AdminCashScreen: React.FC = () => {
           <View>
             <Text style={styles.title}>Caja Admin</Text>
             <Text style={styles.subtitle}>
-              Servicio → Reconciliación de ingreso → Cuenta bancaria
+              Servicio → Pago de licencia → Cuenta bancaria
             </Text>
           </View>
         </FadeIn>

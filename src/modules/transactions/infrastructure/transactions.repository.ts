@@ -23,7 +23,6 @@ export const transactionsRepository = {
   },
   async getTransactions(params?: {
     type?: TransactionType;
-    status?: "PENDIENTE" | "RECONCILIADO";
     startDate?: string;
     endDate?: string;
   }): Promise<Transaction[]> {

@@ -22,6 +22,5 @@ export { useDailyReport } from "./useDashboardData";
 export { useCashBalances } from "./useDashboardData";
 export { useExchangeRates } from "./useDashboardData";
 export { useRecentTransactions } from "./useDashboardData";
-export { usePendingTransactions } from "./useDashboardData";
 export { useRecentExpenses } from "./useDashboardData";
 export { useActiveObjectives } from "./useDashboardData";

@@ -22,8 +22,8 @@ const RemittancesSection = ({ colors, remittances }: { colors: TransactionsTabCo
   </>
 );
 
-const OperationRow = ({ colors, item }: { colors: TransactionsTabColors; item: { type: string; currency?: { code: string }; amount: number; rate: number; status: string; marginProfit: number } }) => (
-  <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1, borderTopColor: colors.border }}><Text style={{ color: colors.text.primary, fontWeight: "700" }}>{item.type === "COMPRA" ? "Compra" : "Venta"} · {item.currency?.code}</Text><Text style={{ color: colors.text.secondary }}>{item.amount.toFixed(2)} · Tasa {item.rate.toFixed(2)} · {item.status}</Text><Text style={{ color: colors.text.secondary }}>Rendimiento: {item.marginProfit.toFixed(2)}</Text></View>
+const OperationRow = ({ colors, item }: { colors: TransactionsTabColors; item: { type: string; currency?: { code: string }; amount: number; rate: number; marginProfit: number } }) => (
+  <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1, borderTopColor: colors.border }}><Text style={{ color: colors.text.primary, fontWeight: "700" }}>{item.type === "COMPRA" ? "Compra" : "Venta"} · {item.currency?.code}</Text><Text style={{ color: colors.text.secondary }}>{item.amount.toFixed(2)} · Tasa {item.rate.toFixed(2)}</Text><Text style={{ color: colors.text.secondary }}>Rendimiento: {item.marginProfit.toFixed(2)}</Text></View>
 );
 
 export const TransactionsTab = () => {

@@ -67,15 +67,6 @@ export const dashboardRepository = {
     }
   },
 
-  async getPendingTransactions(): Promise<Transaction[]> {
-    try {
-      const response = await api.get<Transaction[]>("/transactions/pending");
-      return safeArray(response.data);
-    } catch (error) {
-      console.error("[dashboardRepository] Error fetching pending transactions:", error);
-      return [];
-    }
-  },
 
   async getObjectives(status?: string): Promise<Objective[]> {
     try {

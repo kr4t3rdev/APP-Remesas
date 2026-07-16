@@ -14,7 +14,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { FadeIn, FadeInDown, ScaleIn } from "../../components/animations";
-import { Badge } from "../../components/ui/Badge";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
 import type { Transaction } from "../../types";
@@ -104,7 +103,6 @@ export const TransactionsScreen: React.FC = () => {
     index: number;
   }) => {
     const isCompra = item.type === "COMPRA";
-    const isPending = item.status === "PENDIENTE";
 
     return (
       <FadeInDown delay={index * 30}>
@@ -221,10 +219,6 @@ export const TransactionsScreen: React.FC = () => {
                 {isCompra ? "-" : "+"}$ {formatTotalCup(item.totalCup)} CUP
               </Text>
             </View>
-            <Badge
-              text={isPending ? "Pendiente" : "Reconciliado"}
-              variant={isPending ? "warning" : "success"}
-            />
           </View>
         </TouchableOpacity>
       </FadeInDown>
@@ -340,29 +334,6 @@ export const TransactionsScreen: React.FC = () => {
           </View>
         }
       />
-
-      <FadeIn delay={120} duration={450} style={styles.historyFabWrap}>
-        <TouchableOpacity
-          style={[
-            styles.historyFab,
-            {
-              backgroundColor: themeColors.card,
-              borderColor: themeColors.border,
-            },
-            themeShadows.md,
-          ]}
-          onPress={() => navigation.navigate("ReconciliationsHistory" as never)}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          accessibilityRole="button"
-          accessibilityLabel="Historial de reconciliaciones"
-        >
-          <Ionicons
-            name="time-outline"
-            size={22}
-            color={themeColors.primary[500]}
-          />
-        </TouchableOpacity>
-      </FadeIn>
 
       <ScaleIn delay={200}>
         <TouchableOpacity

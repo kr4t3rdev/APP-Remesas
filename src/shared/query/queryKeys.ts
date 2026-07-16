@@ -6,7 +6,6 @@ export const queryKeys = {
     exchangeRates: () => ["dashboard", "exchangeRates"] as const,
     recentTransactions: (limit?: number) =>
       ["dashboard", "recentTransactions", limit ?? "all"] as const,
-    pendingTransactions: () => ["dashboard", "pendingTransactions"] as const,
     activeObjectives: () => ["dashboard", "activeObjectives"] as const,
     recentExpenses: (limit?: number) =>
       ["dashboard", "recentExpenses", limit ?? "all"] as const,
@@ -99,7 +98,6 @@ export const queryKeys = {
   expenses: {
     list: () => ["expenses", "list"] as const,
     detail: (id: number) => ["expenses", "detail", id] as const,
-    pending: () => ["expenses", "pending"] as const,
   },
   workerPayments: {
     list: () => ["workerPayments", "list"] as const,
@@ -151,11 +149,6 @@ export const queryKeys = {
         startDate ?? "none",
         endDate ?? "none",
       ] as const,
-  },
-  reconciliations: {
-    list: () => ["reconciliations", "list"] as const,
-    detail: (id: number, type: "expense" | "income") =>
-      ["reconciliations", "detail", id, type] as const,
   },
   objectives: {
     list: (status?: "ACTIVO" | "COMPLETADO" | "PAUSADO") =>
