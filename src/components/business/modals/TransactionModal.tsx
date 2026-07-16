@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Modal, View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
+import { Modal, View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { useColors } from "../../../store/themeStore";
 import { useCreateTransactionMutation, useCurrenciesQuery, useExchangeRatesQuery, usePositionsQuery } from "../../../modules/transactions/application/useTransactions";
 import { useBankAccountsQuery } from "../../../modules/bank-accounts/application/useBankAccounts";
@@ -111,7 +111,14 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
       <Text style={{ color: colors.text.primary }}>{selectedCurrency?.code ?? "Seleccionar moneda"}</Text>
       <Text accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ color: colors.text.secondary }}>{isCurrencyPickerOpen ? "▲" : "▼"}</Text>
     </TouchableOpacity>
-    {isCurrencyPickerOpen ? <View accessibilityRole="radiogroup" style={[styles.currencyMenu, { borderColor: colors.border, backgroundColor: colors.card }]}>
+    {isCurrencyPickerOpen ? <ScrollView
+      testID="currency-options-scroll"
+      accessibilityRole="radiogroup"
+      nestedScrollEnabled
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator
+      style={[styles.currencyMenu, { borderColor: colors.border, backgroundColor: colors.card }]}
+    >
       {ratedCurrencies.map((item) => <TouchableOpacity
         key={item.id}
         accessibilityRole="radio"
@@ -120,7 +127,7 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
         onPress={() => { setCurrencyId(item.id); setIsCurrencyPickerOpen(false); }}
         style={[styles.currencyOption, item.id === selectedCurrencyId && { backgroundColor: colors.primary[100] }]}
       ><Text style={{ color: colors.text.primary }}>{item.code}</Text></TouchableOpacity>)}
-    </View> : null}
+    </ScrollView> : null}
     {currencyConfigurationError ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8 }}>{currencyConfigurationError}</Text> : null}
     {renderAccountPicker("Origen", sourceOptions, sourceKey, setSourceKey)}{renderAccountPicker("Destino", destinationOptions, destinationKey, setDestinationKey)}
     <Text style={{ color: colors.text.secondary }}>Total: {preview.totalBase.toFixed(2)} · Saldo proyectado: {preview.projectedSaldo?.toFixed(2) ?? "—"}</Text>
@@ -129,4 +136,4 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
     <View style={styles.actions}><TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancelar" onPress={onClose} style={[styles.button, { backgroundColor: colors.border }]}><Text style={{ color: colors.text.primary }}>Cancelar</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={isPending ? "Guardando" : "Guardar"} onPress={handleSave} disabled={isPending || !canSubmit} style={[styles.button, { backgroundColor: colors.primary[500], opacity: isPending || !canSubmit ? 0.5 : 1 }]}><Text style={{ color: "#fff" }}>{isPending ? "Guardando..." : "Guardar"}</Text></TouchableOpacity></View>
   </View></View></Modal>;
 };
-const styles = StyleSheet.create({ overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)", justifyContent: "center", alignItems: "center" }, container: { width: "80%", maxHeight: "95%", padding: 20, borderRadius: 12, elevation: 5 }, title: { fontSize: 18, fontWeight: "bold", marginBottom: 16 }, input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 8, minHeight: 44 }, typeRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 16 }, radioOption: { minHeight: 44, minWidth: 80, justifyContent: "center", alignItems: "center" }, currencyTrigger: { minHeight: 44, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, currencyMenu: { borderWidth: 1, borderRadius: 8, marginTop: 4, overflow: "hidden" }, currencyOption: { minHeight: 44, paddingHorizontal: 12, justifyContent: "center" }, accountOption: { minHeight: 44, borderWidth: 1, borderRadius: 8, padding: 8, marginTop: 6, flexDirection: "row", justifyContent: "space-between" }, actions: { flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 16 }, button: { paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: 8 } });
+const styles = StyleSheet.create({ overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)", justifyContent: "center", alignItems: "center" }, container: { width: "80%", maxHeight: "95%", padding: 20, borderRadius: 12, elevation: 5 }, title: { fontSize: 18, fontWeight: "bold", marginBottom: 16 }, input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 8, minHeight: 44 }, typeRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 16 }, radioOption: { minHeight: 44, minWidth: 80, justifyContent: "center", alignItems: "center" }, currencyTrigger: { minHeight: 44, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, currencyMenu: { maxHeight: 220, borderWidth: 1, borderRadius: 8, marginTop: 4 }, currencyOption: { minHeight: 44, paddingHorizontal: 12, justifyContent: "center" }, accountOption: { minHeight: 44, borderWidth: 1, borderRadius: 8, padding: 8, marginTop: 6, flexDirection: "row", justifyContent: "space-between" }, actions: { flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 16 }, button: { paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: 8 } });

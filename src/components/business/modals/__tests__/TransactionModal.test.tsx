@@ -50,6 +50,32 @@ describe("TransactionModal FX intent", () => {
     expect(queryByLabelText("USD")).toBeNull();
   });
 
+  it("keeps a long currency list scrollable inside the modal", () => {
+    const extraCurrencies = Array.from({ length: 12 }, (_, index) => ({
+      id: index + 20,
+      code: `FX${index + 1}`,
+      isActive: true,
+    }));
+    jest.mocked(transactions.useCurrenciesQuery).mockReturnValue({ data: [
+      { id: 10, code: "CUP", isActive: true },
+      ...extraCurrencies,
+    ] } as any);
+    jest.mocked(transactions.useExchangeRatesQuery).mockReturnValue({ data: extraCurrencies.map((currency, index) => ({
+      id: index + 20,
+      currencyId: currency.id,
+      buyRate: 200 + index,
+      sellRate: 210 + index,
+    })) } as any);
+
+    const { getByLabelText, getByTestId } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.press(getByLabelText("Moneda, FX1"));
+
+    expect(getByTestId("currency-options-scroll").props.style).toEqual(expect.arrayContaining([
+      expect.objectContaining({ maxHeight: 220 }),
+    ]));
+    expect(getByLabelText("FX12")).toBeTruthy();
+  });
+
   it("selects the chosen position and buy rate for COMPRA", () => {
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
     fireEvent.press(getByLabelText("Moneda, USD"));
