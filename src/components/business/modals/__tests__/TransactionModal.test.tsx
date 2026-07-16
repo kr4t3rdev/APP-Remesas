@@ -27,9 +27,33 @@ describe("TransactionModal FX intent", () => {
     ] } as any);
   });
 
+  it("loads available rated currencies into an accessible dropdown", () => {
+    const { getByLabelText, queryByLabelText } = render(<TransactionModal visible onClose={jest.fn()} />);
+
+    expect(getByLabelText("Moneda, USD").props.accessibilityState).toEqual({ expanded: false });
+    expect(queryByLabelText("EUR")).toBeNull();
+
+    fireEvent.press(getByLabelText("Moneda, USD"));
+
+    expect(getByLabelText("Moneda, USD").props.accessibilityState).toEqual({ expanded: true });
+    expect(getByLabelText("USD").props.accessibilityState).toEqual({ selected: true });
+    expect(getByLabelText("EUR").props.accessibilityState).toEqual({ selected: false });
+  });
+
+  it("selects a currency from the dropdown and closes it", () => {
+    const { getByLabelText, queryByLabelText } = render(<TransactionModal visible onClose={jest.fn()} />);
+
+    fireEvent.press(getByLabelText("Moneda, USD"));
+    fireEvent.press(getByLabelText("EUR"));
+
+    expect(getByLabelText("Moneda, EUR").props.accessibilityState).toEqual({ expanded: false });
+    expect(queryByLabelText("USD")).toBeNull();
+  });
+
   it("selects the chosen position and buy rate for COMPRA", () => {
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
-    fireEvent.press(getByText("EUR"));
+    fireEvent.press(getByLabelText("Moneda, USD"));
+    fireEvent.press(getByLabelText("EUR"));
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     fireEvent.press(getByText("Guardar"));
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ currencyId: 2, rate: 280, type: "COMPRA", idempotencyKey: expect.any(String) }), expect.any(Object));
@@ -111,7 +135,7 @@ describe("TransactionModal FX intent", () => {
 
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
 
-    expect(getByLabelText("USD")).toBeTruthy();
+    expect(getByLabelText("Moneda, USD")).toBeTruthy();
     expect(getByLabelText("Caja · USD")).toBeTruthy();
     fireEvent.press(getByText("Guardar"));
     expect(mutate).toHaveBeenCalledWith(
@@ -151,6 +175,7 @@ describe("TransactionModal FX intent", () => {
     ] } as any);
     const { getAllByLabelText, getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
 
+    fireEvent.press(getByLabelText("Moneda, USD"));
     expect(getAllByLabelText("USD")).toHaveLength(1);
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     fireEvent.press(getByText("Guardar"));
@@ -160,6 +185,7 @@ describe("TransactionModal FX intent", () => {
 
   it("submits accounts that belong to the newly selected currency", () => {
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.press(getByLabelText("Moneda, USD"));
     fireEvent.press(getByLabelText("EUR"));
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     fireEvent.press(getByText("Guardar"));

@@ -5,6 +5,7 @@ type Route = 'CASH_TO_CASH' | 'CASH_TO_BANK' | 'BANK_TO_CASH' | 'BANK_TO_BANK';
 const currencies = [
   { id: 1, code: 'USD', symbol: '$', name: 'Dólar', isActive: true },
   { id: 2, code: 'CUP', symbol: '$', name: 'Peso cubano', isActive: true },
+  { id: 3, code: 'EUR', symbol: '€', name: 'Euro', isActive: true },
 ];
 
 const bankAccounts = [
@@ -15,9 +16,27 @@ const bankAccounts = [
 const cashBalances = [
   { id: 21, currencyId: 1, currency: currencies[0], balance: 100 },
   { id: 22, currencyId: 2, currency: currencies[1], balance: 10_000 },
+  { id: 23, currencyId: 3, currency: currencies[2], balance: 0 },
 ];
 
 test.describe('FX transfer account routes', () => {
+  test('currency selector lists rated currencies and updates compatible accounts', async ({ page }) => {
+    await mockTransferApi(page);
+    await seedAuthenticatedSession(page);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('tab-Home')).toBeVisible();
+    await openTransactions(page);
+
+    await page.getByRole('button', { name: 'Nueva transacción' }).click();
+    await page.getByRole('button', { name: 'Moneda, USD' }).click();
+    await expect(page.getByRole('radio', { name: 'USD', exact: true })).toBeVisible();
+    await expect(page.getByRole('radio', { name: 'EUR', exact: true })).toBeVisible();
+    await page.getByRole('radio', { name: 'EUR', exact: true }).click();
+
+    await expect(page.getByRole('button', { name: 'Moneda, EUR' })).toBeVisible();
+    await expect(page.getByLabel('Caja · EUR', { exact: true })).toBeVisible();
+  });
+
   for (const route of ['CASH_TO_CASH', 'CASH_TO_BANK', 'BANK_TO_CASH', 'BANK_TO_BANK'] as Route[]) {
     test(`${route} records origin, destination, balances and history`, async ({ page }) => {
       const state = await mockTransferApi(page);
@@ -151,7 +170,10 @@ async function mockTransferApi(page: Page) {
     const url = request.url();
     if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type, authorization, idempotency-key', 'access-control-allow-methods': 'GET,POST,OPTIONS' } });
     if (url.includes('/currencies')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(currencies) });
-    if (url.includes('/exchange-rates')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ rates: [{ id: 1, currencyId: 1, buyRate: 370, sellRate: 375, currency: currencies[0] }] }) });
+    if (url.includes('/exchange-rates')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ rates: [
+      { id: 1, currencyId: 1, buyRate: 370, sellRate: 375, currency: currencies[0] },
+      { id: 2, currencyId: 3, buyRate: 410, sellRate: 420, currency: currencies[2] },
+    ] }) });
     if (url.includes('/reports/fx-performance')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ positions: [{ currencyId: 1, currency: currencies[0], saldo: 100, costoPromedio: 360, availableForSale: true }], realizedProfit: 0 }) });
     if (url.includes('/transactions')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(state.transactions) });
     if (url.includes('/bank-accounts')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(state.banks) });

@@ -19,6 +19,7 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"COMPRA" | "VENTA">("COMPRA");
   const [currencyId, setCurrencyId] = useState(positions.data?.[0]?.currencyId ?? 0);
+  const [isCurrencyPickerOpen, setIsCurrencyPickerOpen] = useState(false);
   const [sourceKey, setSourceKey] = useState<string>();
   const [destinationKey, setDestinationKey] = useState<string>();
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
@@ -55,6 +56,7 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
   const selectedCurrencyId = ratedCurrencies.some((item) => item.id === currencyId)
     ? currencyId
     : ratedCurrencies[0]?.id ?? 0;
+  const selectedCurrency = ratedCurrencies.find((item) => item.id === selectedCurrencyId);
   const existingPosition = positions.data?.find((item) => item.currencyId === selectedCurrencyId);
   const position = type === "COMPRA" && selectedCurrencyId
     ? existingPosition ?? { currencyId: selectedCurrencyId, saldo: 0, costoPromedio: null, availableForSale: false }
@@ -97,7 +99,28 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
     <Text accessibilityRole="header" style={[styles.title, { color: colors.text.primary }]}>Nueva operación</Text>
     <View accessibilityRole="radiogroup" style={styles.typeRow}>{(["COMPRA", "VENTA"] as const).map((option) => <TouchableOpacity key={option} accessibilityRole="radio" accessibilityLabel={option === "COMPRA" ? "Compra" : "Venta"} accessibilityState={{ selected: type === option }} onPress={() => setType(option)} style={styles.radioOption}><Text style={{ color: colors.text.primary }}>{option === "COMPRA" ? "Compra" : "Venta"}</Text></TouchableOpacity>)}</View>
     <Text style={{ color: colors.text.primary, marginBottom: 6 }}>Monto de la operación</Text><TextInput accessibilityLabel="Monto de la operación" style={[styles.input, { borderColor: colors.border, color: colors.text.primary }]} placeholder="Monto" placeholderTextColor={colors.text.secondary} keyboardType="numeric" value={amount} onChangeText={setAmount} />
-    {ratedCurrencies.map((item) => <TouchableOpacity key={item.id} accessibilityRole="radio" accessibilityLabel={item.code} accessibilityState={{ selected: item.id === selectedCurrencyId }} onPress={() => setCurrencyId(item.id)} style={styles.radioOption}><Text style={{ color: colors.text.primary }}>{item.code}</Text></TouchableOpacity>)}
+    <Text style={{ color: colors.text.primary, marginBottom: 6 }}>Moneda</Text>
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={`Moneda, ${selectedCurrency?.code ?? "Seleccionar"}`}
+      accessibilityHint="Abre la lista de monedas disponibles"
+      accessibilityState={{ expanded: isCurrencyPickerOpen }}
+      onPress={() => setIsCurrencyPickerOpen((current) => !current)}
+      style={[styles.currencyTrigger, { borderColor: colors.border }]}
+    >
+      <Text style={{ color: colors.text.primary }}>{selectedCurrency?.code ?? "Seleccionar moneda"}</Text>
+      <Text accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ color: colors.text.secondary }}>{isCurrencyPickerOpen ? "▲" : "▼"}</Text>
+    </TouchableOpacity>
+    {isCurrencyPickerOpen ? <View accessibilityRole="radiogroup" style={[styles.currencyMenu, { borderColor: colors.border, backgroundColor: colors.card }]}>
+      {ratedCurrencies.map((item) => <TouchableOpacity
+        key={item.id}
+        accessibilityRole="radio"
+        accessibilityLabel={item.code}
+        accessibilityState={{ selected: item.id === selectedCurrencyId }}
+        onPress={() => { setCurrencyId(item.id); setIsCurrencyPickerOpen(false); }}
+        style={[styles.currencyOption, item.id === selectedCurrencyId && { backgroundColor: colors.primary[100] }]}
+      ><Text style={{ color: colors.text.primary }}>{item.code}</Text></TouchableOpacity>)}
+    </View> : null}
     {currencyConfigurationError ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8 }}>{currencyConfigurationError}</Text> : null}
     {renderAccountPicker("Origen", sourceOptions, sourceKey, setSourceKey)}{renderAccountPicker("Destino", destinationOptions, destinationKey, setDestinationKey)}
     <Text style={{ color: colors.text.secondary }}>Total: {preview.totalBase.toFixed(2)} · Saldo proyectado: {preview.projectedSaldo?.toFixed(2) ?? "—"}</Text>
@@ -106,4 +129,4 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
     <View style={styles.actions}><TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancelar" onPress={onClose} style={[styles.button, { backgroundColor: colors.border }]}><Text style={{ color: colors.text.primary }}>Cancelar</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={isPending ? "Guardando" : "Guardar"} onPress={handleSave} disabled={isPending || !canSubmit} style={[styles.button, { backgroundColor: colors.primary[500], opacity: isPending || !canSubmit ? 0.5 : 1 }]}><Text style={{ color: "#fff" }}>{isPending ? "Guardando..." : "Guardar"}</Text></TouchableOpacity></View>
   </View></View></Modal>;
 };
-const styles = StyleSheet.create({ overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)", justifyContent: "center", alignItems: "center" }, container: { width: "80%", maxHeight: "95%", padding: 20, borderRadius: 12, elevation: 5 }, title: { fontSize: 18, fontWeight: "bold", marginBottom: 16 }, input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 8, minHeight: 44 }, typeRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 16 }, radioOption: { minHeight: 44, minWidth: 80, justifyContent: "center", alignItems: "center" }, accountOption: { minHeight: 44, borderWidth: 1, borderRadius: 8, padding: 8, marginTop: 6, flexDirection: "row", justifyContent: "space-between" }, actions: { flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 16 }, button: { paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: 8 } });
+const styles = StyleSheet.create({ overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)", justifyContent: "center", alignItems: "center" }, container: { width: "80%", maxHeight: "95%", padding: 20, borderRadius: 12, elevation: 5 }, title: { fontSize: 18, fontWeight: "bold", marginBottom: 16 }, input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 8, minHeight: 44 }, typeRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 16 }, radioOption: { minHeight: 44, minWidth: 80, justifyContent: "center", alignItems: "center" }, currencyTrigger: { minHeight: 44, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, currencyMenu: { borderWidth: 1, borderRadius: 8, marginTop: 4, overflow: "hidden" }, currencyOption: { minHeight: 44, paddingHorizontal: 12, justifyContent: "center" }, accountOption: { minHeight: 44, borderWidth: 1, borderRadius: 8, padding: 8, marginTop: 6, flexDirection: "row", justifyContent: "space-between" }, actions: { flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 16 }, button: { paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: 8 } });
