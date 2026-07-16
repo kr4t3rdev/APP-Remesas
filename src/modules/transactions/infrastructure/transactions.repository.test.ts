@@ -4,7 +4,7 @@ import { transactionsRepository } from "./transactions.repository";
 jest.mock("../../../services/api", () => ({ post: jest.fn() }));
 
 it("reuses the caller-provided idempotency key for retries", async () => {
-  jest.mocked(api.post).mockResolvedValue({ data: { id: 1 } } as any);
+  jest.mocked(api.post).mockResolvedValue({ data: { transaction: { id: 1 } } } as any);
   const request = { type: "COMPRA" as const, currencyId: 1, amount: 10, rate: 240, idempotencyKey: "intent-1" };
   await transactionsRepository.createTransaction(request);
   await transactionsRepository.createTransaction(request);
@@ -13,7 +13,7 @@ it("reuses the caller-provided idempotency key for retries", async () => {
 });
 
 it("forwards remittance classification and active-rate persistence in the body", async () => {
-  jest.mocked(api.post).mockResolvedValue({ data: { id: 1, requestedRate: 245, rate: 245.01 } } as any);
+  jest.mocked(api.post).mockResolvedValue({ data: { transaction: { id: 1, requestedRate: 245, rate: 245.01 } } } as any);
 
   await transactionsRepository.createTransaction({
     type: "COMPRA",

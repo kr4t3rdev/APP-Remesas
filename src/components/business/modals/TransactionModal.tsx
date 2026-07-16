@@ -70,7 +70,22 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
   useEffect(() => {
     setRateInput(activeRate > 0 ? String(activeRate) : "");
   }, [activeRate, selectedCurrencyId, type]);
-  const rate = Number(rateInput);
+  useEffect(() => {
+    if (visible) return;
+    setAmount("");
+    setOperationKind("TRANSFER");
+    setPersistRate(false);
+    setSavedRateMessage(undefined);
+    setSaveStatus("idle");
+    setRateInput(activeRate > 0 ? String(activeRate) : "");
+  }, [activeRate, visible]);
+  const normalizedRateInput = rateInput.trim().replace(",", ".");
+  const parsedRate = Number(normalizedRateInput);
+  const isRateValid = Number.isFinite(parsedRate) && parsedRate > 0;
+  const rate = isRateValid ? parsedRate : 0;
+  const rateValidationError = rateInput.length > 0 && !isRateValid
+    ? "Ingresá una tasa de cambio válida mayor que cero."
+    : undefined;
   const preview = calculateTransferPreview({ type, amount: Number(amount), rate, position });
   const sourceCurrencyId = type === "COMPRA" ? baseCurrencyId : selectedCurrencyId;
   const destinationCurrencyId = type === "COMPRA" ? selectedCurrencyId : baseCurrencyId;
@@ -104,10 +119,12 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
         setSaveStatus("success");
         intentKey.current = createIntentKey();
         if (persistRate) {
-          const effectiveRate = Number(response.rate ?? response.appliedRate ?? rate);
+          const effectiveRate = Number(response?.transaction?.rate ?? response?.transaction?.appliedRate ?? rate);
           setSavedRateMessage(`Tasa actual guardada: ${effectiveRate}`);
           setRateInput(String(effectiveRate));
         }
+        setPersistRate(false);
+        setOperationKind("TRANSFER");
       }, onError: () => setSaveStatus("error"),
     });
   };
@@ -149,7 +166,8 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
     </ScrollView> : null}
     <Text style={{ color: colors.text.primary, marginTop: 10, marginBottom: 6 }}>Tasa de cambio</Text>
     <TextInput accessibilityLabel="Tasa de cambio" style={[styles.input, { borderColor: colors.border, color: colors.text.primary }]} placeholder="Tasa" placeholderTextColor={colors.text.secondary} keyboardType="decimal-pad" value={rateInput} onChangeText={setRateInput} />
-    <Text style={{ color: colors.text.secondary }}>Tasa activa para {type === "COMPRA" ? "compra" : "venta"}: {activeRate || "—"} · Tasa ingresada: {rate || "—"}</Text>
+    <Text style={{ color: colors.text.secondary }}>Tasa activa para {type === "COMPRA" ? "compra" : "venta"}: {activeRate || "—"} · Tasa ingresada: {isRateValid ? rate : "—"}</Text>
+    {rateValidationError ? <Text accessibilityRole="alert" style={{ color: colors.danger }}>{rateValidationError}</Text> : null}
     <TouchableOpacity accessibilityRole="checkbox" accessibilityLabel="Guardar como tasa actual" accessibilityState={{ checked: persistRate }} onPress={() => setPersistRate((current) => !current)} style={styles.checkboxRow}>
       <View style={[styles.checkbox, { borderColor: colors.primary[500], backgroundColor: persistRate ? colors.primary[500] : "transparent" }]}><Text style={{ color: "#fff", fontWeight: "bold" }}>{persistRate ? "✓" : ""}</Text></View>
       <Text style={{ color: colors.text.primary }}>Guardar como tasa actual</Text>
@@ -159,7 +177,7 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
     <Text style={{ color: colors.text.secondary }}>Total: {preview.totalBase.toFixed(2)} · Saldo proyectado: {preview.projectedSaldo?.toFixed(2) ?? "—"}</Text>
     <Text accessibilityRole="summary" style={{ color: colors.text.secondary, marginTop: 10 }}>Resumen: salen {type === "COMPRA" ? preview.totalBase.toFixed(2) : amount || "0"} de {source?.label ?? "—"} y entran {type === "COMPRA" ? amount || "0" : preview.totalBase.toFixed(2)} en {destination?.label ?? "—"}</Text>
     {saveStatus === "success" ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 8 }}>Operación guardada correctamente.</Text> : null}{savedRateMessage ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 4 }}>{savedRateMessage}</Text> : null}{saveStatus === "error" ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8 }}>No se pudo guardar la operación. Intentá nuevamente.</Text> : null}{amount && (!preview.isValid || !source || !destination) ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8 }}>{!preview.isValid ? preview.validationMessage : "Seleccioná origen y destino compatibles"}</Text> : null}
-    <View style={styles.actions}><TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancelar" onPress={onClose} style={[styles.button, { backgroundColor: colors.border }]}><Text style={{ color: colors.text.primary }}>Cancelar</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={isPending ? "Guardando" : "Guardar"} onPress={handleSave} disabled={isPending || !canSubmit} style={[styles.button, { backgroundColor: colors.primary[500], opacity: isPending || !canSubmit ? 0.5 : 1 }]}><Text style={{ color: "#fff" }}>{isPending ? "Guardando..." : "Guardar"}</Text></TouchableOpacity></View>
+    <View style={styles.actions}><TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancelar" onPress={() => { setPersistRate(false); setOperationKind("TRANSFER"); setSavedRateMessage(undefined); setSaveStatus("idle"); setAmount(""); setRateInput(activeRate > 0 ? String(activeRate) : ""); onClose(); }} style={[styles.button, { backgroundColor: colors.border }]}><Text style={{ color: colors.text.primary }}>Cancelar</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={isPending ? "Guardando" : "Guardar"} onPress={handleSave} disabled={isPending || !canSubmit} style={[styles.button, { backgroundColor: colors.primary[500], opacity: isPending || !canSubmit ? 0.5 : 1 }]}><Text style={{ color: "#fff" }}>{isPending ? "Guardando..." : "Guardar"}</Text></TouchableOpacity></View>
   </ScrollView></View></Modal>;
 };
 const styles = StyleSheet.create({ overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)", justifyContent: "center", alignItems: "center" }, container: { width: "80%", maxHeight: "95%", borderRadius: 12, elevation: 5 }, containerContent: { padding: 20 }, title: { fontSize: 18, fontWeight: "bold", marginBottom: 16 }, input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 8, minHeight: 44 }, typeRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 16 }, tabOption: { minHeight: 44, flex: 1, justifyContent: "center", alignItems: "center", borderBottomWidth: 2, borderBottomColor: "transparent" }, radioOption: { minHeight: 44, minWidth: 80, justifyContent: "center", alignItems: "center" }, checkboxRow: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: 10 }, checkbox: { width: 24, height: 24, borderWidth: 2, borderRadius: 4, alignItems: "center", justifyContent: "center" }, currencyTrigger: { minHeight: 44, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, currencyMenu: { maxHeight: 220, borderWidth: 1, borderRadius: 8, marginTop: 4 }, currencyOption: { minHeight: 44, paddingHorizontal: 12, justifyContent: "center" }, accountOption: { minHeight: 44, borderWidth: 1, borderRadius: 8, padding: 8, marginTop: 6, flexDirection: "row", justifyContent: "space-between" }, actions: { flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 16 }, button: { paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: 8 } });

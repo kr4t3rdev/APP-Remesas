@@ -265,7 +265,42 @@ describe("TransactionModal FX intent", () => {
     fireEvent.press(getByText("Guardar"));
 
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ persistRate: true, rate: 260 }), expect.any(Object));
-    act(() => mutate.mock.calls[0][1].onSuccess({ requestedRate: 260, rate: 260.01, persistRate: true }));
+    act(() => mutate.mock.calls[0][1].onSuccess({ transaction: { requestedRate: 260, rate: 260.01, persistRate: true } }));
     expect(getByText(/Tasa actual guardada: 260\.01/)).toBeTruthy();
+  });
+
+  it("normalizes comma decimals and rejects non-finite rates explicitly", () => {
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.changeText(getByLabelText("Tasa de cambio"), "245,5");
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+    expect(mutate).toHaveBeenLastCalledWith(expect.objectContaining({ rate: 245.5 }), expect.any(Object));
+
+    fireEvent.changeText(getByLabelText("Tasa de cambio"), "Infinity");
+    expect(getByText("Ingresá una tasa de cambio válida mayor que cero.")).toBeTruthy();
+    expect(getByText("Guardar")).toBeDisabled();
+  });
+
+  it("resets remittance persistence after success and when the modal reopens", () => {
+    const onClose = jest.fn();
+    const { getByLabelText, getByText, rerender } = render(<TransactionModal visible onClose={onClose} />);
+    fireEvent.press(getByLabelText("Remesas"));
+    fireEvent.press(getByLabelText("Guardar como tasa actual"));
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+    act(() => mutate.mock.calls[0][1].onSuccess({ transaction: { rate: 240.01 } }));
+
+    expect(getByLabelText("Transferencia").props.accessibilityState).toEqual({ selected: true });
+    expect(getByLabelText("Guardar como tasa actual").props.accessibilityState).toEqual({ checked: false });
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+    expect(mutate).toHaveBeenNthCalledWith(2, expect.objectContaining({ operationKind: "TRANSFER", persistRate: false }), expect.any(Object));
+
+    fireEvent.press(getByLabelText("Remesas"));
+    fireEvent.press(getByLabelText("Guardar como tasa actual"));
+    rerender(<TransactionModal visible={false} onClose={onClose} />);
+    rerender(<TransactionModal visible onClose={onClose} />);
+    expect(getByLabelText("Transferencia").props.accessibilityState).toEqual({ selected: true });
+    expect(getByLabelText("Guardar como tasa actual").props.accessibilityState).toEqual({ checked: false });
   });
 });

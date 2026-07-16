@@ -24,7 +24,7 @@ export type TransferRequest = {
   destinationBankAccountId?: number;
 };
 
-export type TransferResponse = Transaction & {
+export type TransferTransaction = Transaction & {
   movementId?: number;
   lifecycleState?: string;
   appliedRate?: number;
@@ -33,6 +33,11 @@ export type TransferResponse = Transaction & {
   persistRate?: boolean;
   rendimiento?: number | null;
   position?: Position;
+};
+
+export type TransferResponse = {
+  transaction: TransferTransaction;
+  movement?: { id: number };
 };
 
 export type RemittanceStatus = "PENDING" | "FAILED" | "COMPLETED";

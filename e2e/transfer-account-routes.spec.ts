@@ -82,10 +82,12 @@ test.describe('FX transfer account routes', () => {
       expect(response.status()).toBe(201);
       expect(response.headers()['content-type']).toMatch(/application\/json/);
       await expect(response.json()).resolves.toMatchObject({
-        sourceType,
-        destinationType,
-        sourceId: expectedSourceId,
-        destinationId: expectedDestinationId,
+        transaction: {
+          sourceType,
+          destinationType,
+          sourceId: expectedSourceId,
+          destinationId: expectedDestinationId,
+        },
       });
 
       const snapshot = await page.evaluate(async () => {
@@ -133,7 +135,7 @@ test.describe('FX transfer account routes', () => {
     const [request, response] = await Promise.all([transferRequest, transferResponse]);
     expect(request.postDataJSON()).toMatchObject({ type: 'VENTA', amount: 10, rate: 375, sourceType: 'BANK_ACCOUNT', destinationType: 'BANK_ACCOUNT', sourceBankAccountId: 11, destinationBankAccountId: 12 });
     expect(response.status()).toBe(201);
-    await expect(response.json()).resolves.toMatchObject({ sourceType: 'BANK_ACCOUNT', destinationType: 'BANK_ACCOUNT', sourceId: 11, destinationId: 12 });
+    await expect(response.json()).resolves.toMatchObject({ transaction: { sourceType: 'BANK_ACCOUNT', destinationType: 'BANK_ACCOUNT', sourceId: 11, destinationId: 12 } });
     expect(state.history).toHaveLength(1);
     expect(state.history[0]).toMatchObject({ sourceType: 'BANK_ACCOUNT', destinationType: 'BANK_ACCOUNT', sourceId: 11, destinationId: 12 });
     expect(state.banks.find((item) => item.id === 11)?.balance).toBe(190);
@@ -219,7 +221,7 @@ async function mockTransferApi(page: Page) {
       const effectiveRate = payload.persistRate ? payload.rate + 0.01 : payload.rate;
       const transaction = { id: transferId, type: payload.type, operationKind: payload.operationKind, persistRate: payload.persistRate, requestedRate: payload.rate, amount: payload.amount, rate: effectiveRate, status: 'RECONCILIADO', createdAt: '2026-07-15T12:00:00.000Z', currency: currencies[0], marginProfit: 0, sourceType: payload.sourceType, destinationType: payload.destinationType, sourceId: source.id, destinationId: destination.id };
       state.transactions.push(transaction);
-      return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(transaction) });
+      return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ transaction, movement: { id: transferId } }) });
     }
     return route.continue();
   });
