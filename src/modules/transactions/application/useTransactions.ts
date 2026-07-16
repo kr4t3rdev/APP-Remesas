@@ -10,7 +10,7 @@ export const useTransactionsQuery = (params?: {
   endDate?: string;
 }) =>
   useQuery({
-    queryKey: queryKeys.transactions.list(params?.type, params?.operationKind),
+    queryKey: queryKeys.transactions.list(params),
     queryFn: () => transactionsRepository.getTransactions(params),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,

@@ -56,7 +56,7 @@ export const TransactionsScreen: React.FC = () => {
     filter === "REMITTANCE"
       ? { operationKind: "REMITTANCE" }
       : filter === "COMPRA" || filter === "VENTA"
-        ? { type: filter }
+        ? { type: filter, operationKind: "TRANSFER" }
         : undefined,
   );
 

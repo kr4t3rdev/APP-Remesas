@@ -11,11 +11,20 @@ export const queryKeys = {
       ["dashboard", "recentExpenses", limit ?? "all"] as const,
   },
   transactions: {
-    list: (
-      type?: "COMPRA" | "VENTA",
-      operationKind?: "TRANSFER" | "REMITTANCE",
-    ) =>
-      ["transactions", "list", type ?? "all", operationKind ?? "all"] as const,
+    list: (params?: {
+      type?: "COMPRA" | "VENTA";
+      operationKind?: "TRANSFER" | "REMITTANCE";
+      startDate?: string;
+      endDate?: string;
+    }) =>
+      [
+        "transactions",
+        "list",
+        params?.type ?? "all",
+        params?.operationKind ?? "all",
+        params?.startDate ?? "none",
+        params?.endDate ?? "none",
+      ] as const,
     positions: () => ["transactions", "positions"] as const,
     remittances: () => ["transactions", "remittances"] as const,
     currencies: () => ["transactions", "currencies"] as const,

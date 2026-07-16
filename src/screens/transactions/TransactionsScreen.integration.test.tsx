@@ -71,3 +71,20 @@ test("filters remittances independently from purchase and sale types", () => {
     operationKind: "REMITTANCE",
   });
 });
+
+test.each([
+  ["Compras", "COMPRA"],
+  ["Ventas", "VENTA"],
+] as const)("filters %s as transfers rather than mixing in remittances", (label, type) => {
+  const { getByRole } = render(<TransactionsScreen />);
+
+  fireEvent.press(
+    getByRole("button", { name: "Filtrar transacciones. Filtro actual: Todas" }),
+  );
+  fireEvent.press(getByRole("radio", { name: label }));
+
+  expect(mockUseTransactionsQuery).toHaveBeenLastCalledWith({
+    type,
+    operationKind: "TRANSFER",
+  });
+});
