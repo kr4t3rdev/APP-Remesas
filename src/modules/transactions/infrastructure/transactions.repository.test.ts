@@ -11,3 +11,23 @@ it("reuses the caller-provided idempotency key for retries", async () => {
   expect(api.post).toHaveBeenNthCalledWith(1, "/fx-operations/transfers", expect.not.objectContaining({ idempotencyKey: expect.anything() }), { headers: { "Idempotency-Key": "intent-1" } });
   expect(api.post).toHaveBeenNthCalledWith(2, "/fx-operations/transfers", expect.anything(), { headers: { "Idempotency-Key": "intent-1" } });
 });
+
+it("forwards remittance classification and active-rate persistence in the body", async () => {
+  jest.mocked(api.post).mockResolvedValue({ data: { id: 1, requestedRate: 245, rate: 245.01 } } as any);
+
+  await transactionsRepository.createTransaction({
+    type: "COMPRA",
+    currencyId: 1,
+    amount: 10,
+    rate: 245,
+    operationKind: "REMITTANCE",
+    persistRate: true,
+    idempotencyKey: "remittance-1",
+  });
+
+  expect(api.post).toHaveBeenCalledWith(
+    "/fx-operations/transfers",
+    expect.objectContaining({ operationKind: "REMITTANCE", persistRate: true, rate: 245 }),
+    { headers: { "Idempotency-Key": "remittance-1" } },
+  );
+});

@@ -222,4 +222,50 @@ describe("TransactionModal FX intent", () => {
     );
     expect(getByText(/entran 10 en Caja · EUR/)).toBeTruthy();
   });
+
+  it("switches between accessible Transferencia and Remesas tabs", () => {
+    const { getByLabelText } = render(<TransactionModal visible onClose={jest.fn()} />);
+
+    expect(getByLabelText("Transferencia").props.accessibilityState).toEqual({ selected: true });
+    fireEvent.press(getByLabelText("Remesas"));
+    expect(getByLabelText("Remesas").props.accessibilityState).toEqual({ selected: true });
+  });
+
+  it("initializes and synchronizes the editable rate from the active operation side", () => {
+    const { getByLabelText } = render(<TransactionModal visible onClose={jest.fn()} />);
+
+    expect(getByLabelText("Tasa de cambio").props.value).toBe("240");
+    fireEvent.press(getByLabelText("Venta"));
+    expect(getByLabelText("Tasa de cambio").props.value).toBe("260");
+    fireEvent.press(getByLabelText("Moneda, USD"));
+    fireEvent.press(getByLabelText("EUR"));
+    expect(getByLabelText("Tasa de cambio").props.value).toBe("320");
+  });
+
+  it("submits a remittance with a momentary custom rate", () => {
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.press(getByLabelText("Remesas"));
+    fireEvent.changeText(getByLabelText("Tasa de cambio"), "245.5");
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
+      operationKind: "REMITTANCE",
+      persistRate: false,
+      rate: 245.5,
+    }), expect.any(Object));
+    expect(getByText(/245\.5/)).toBeTruthy();
+  });
+
+  it("allows persisting the entered rate and reports an effective rounded rate", () => {
+    const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.changeText(getByLabelText("Tasa de cambio"), "260");
+    fireEvent.press(getByLabelText("Guardar como tasa actual"));
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ persistRate: true, rate: 260 }), expect.any(Object));
+    act(() => mutate.mock.calls[0][1].onSuccess({ requestedRate: 260, rate: 260.01, persistRate: true }));
+    expect(getByText(/Tasa actual guardada: 260\.01/)).toBeTruthy();
+  });
 });

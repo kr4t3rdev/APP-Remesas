@@ -14,6 +14,8 @@ export type TransferRequest = {
   currencyId: number;
   amount: number;
   rate: number;
+  operationKind?: "TRANSFER" | "REMITTANCE";
+  persistRate?: boolean;
   notes?: string;
   idempotencyKey?: string;
   sourceType?: "CASH" | "BANK_ACCOUNT";
@@ -26,6 +28,9 @@ export type TransferResponse = Transaction & {
   movementId?: number;
   lifecycleState?: string;
   appliedRate?: number;
+  requestedRate?: number;
+  operationKind?: "TRANSFER" | "REMITTANCE";
+  persistRate?: boolean;
   rendimiento?: number | null;
   position?: Position;
 };

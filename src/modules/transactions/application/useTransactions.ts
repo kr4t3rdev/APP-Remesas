@@ -62,14 +62,21 @@ export const useCreateTransactionMutation = () => {
 
   return useMutation({
     mutationFn: transactionsRepository.createTransaction,
-    onSuccess: async () => {
-      await Promise.all([
+    onSuccess: async (_response, variables) => {
+      const invalidations = [
         queryClient.invalidateQueries({ queryKey: ["transactions"] }),
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
         queryClient.invalidateQueries({ queryKey: ["reports"] }),
         queryClient.invalidateQueries({ queryKey: ["cash"] }),
         queryClient.invalidateQueries({ queryKey: ["bankAccounts"] }),
-      ]);
+      ];
+      if (variables.persistRate) {
+        invalidations.push(
+          queryClient.invalidateQueries({ queryKey: ["exchangeRates"] }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.transactions.exchangeRates() }),
+        );
+      }
+      await Promise.all(invalidations);
     },
   });
 };

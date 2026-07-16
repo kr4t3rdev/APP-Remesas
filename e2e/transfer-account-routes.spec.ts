@@ -139,6 +139,30 @@ test.describe('FX transfer account routes', () => {
     expect(state.banks.find((item) => item.id === 11)?.balance).toBe(190);
     expect(state.banks.find((item) => item.id === 12)?.balance).toBe(23_750);
   });
+
+  test('saves a manual remittance and optionally promotes its custom rate', async ({ page }) => {
+    await mockTransferApi(page);
+    await seedAuthenticatedSession(page);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('tab-Home')).toBeVisible();
+    await openTransactions(page);
+    await page.getByRole('button', { name: 'Nueva transacción' }).click();
+
+    await page.getByRole('tab', { name: 'Remesas' }).click();
+    await page.getByLabel('Tasa de cambio').fill('365');
+    await page.getByRole('checkbox', { name: 'Guardar como tasa actual' }).click();
+    await page.getByLabel('Monto de la operación').fill('10');
+    const transferRequest = page.waitForRequest((request) => request.url().includes('/fx-operations/transfers'));
+    const transferResponse = page.waitForResponse((response) => response.url().includes('/fx-operations/transfers') && response.status() === 201);
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    const [request] = await Promise.all([transferRequest, transferResponse]);
+
+    expect(request.postDataJSON()).toMatchObject({
+      operationKind: 'REMITTANCE',
+      persistRate: true,
+      rate: 365,
+    });
+  });
 });
 
 async function openTransactions(page: Page): Promise<void> {
@@ -192,7 +216,8 @@ async function mockTransferApi(page: Page) {
       destination.balance += credit;
       const transferId = state.history.length + 1;
       state.history.push({ id: transferId, sourceType: payload.sourceType, destinationType: payload.destinationType, sourceId: source.id, destinationId: destination.id });
-      const transaction = { id: transferId, type: payload.type, amount: payload.amount, rate: payload.rate, status: 'RECONCILIADO', createdAt: '2026-07-15T12:00:00.000Z', currency: currencies[0], marginProfit: 0, sourceType: payload.sourceType, destinationType: payload.destinationType, sourceId: source.id, destinationId: destination.id };
+      const effectiveRate = payload.persistRate ? payload.rate + 0.01 : payload.rate;
+      const transaction = { id: transferId, type: payload.type, operationKind: payload.operationKind, persistRate: payload.persistRate, requestedRate: payload.rate, amount: payload.amount, rate: effectiveRate, status: 'RECONCILIADO', createdAt: '2026-07-15T12:00:00.000Z', currency: currencies[0], marginProfit: 0, sourceType: payload.sourceType, destinationType: payload.destinationType, sourceId: source.id, destinationId: destination.id };
       state.transactions.push(transaction);
       return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(transaction) });
     }
