@@ -236,11 +236,16 @@ export const TransactionsScreen: React.FC = () => {
           <View style={styles.headerTopRow}>
             <View style={styles.headerTitles}>
               <Text
+                accessibilityRole="header"
                 style={[styles.title, { color: themeColors.text.primary }]}
-              ></Text>
+              >
+                Transacciones
+              </Text>
               <Text
                 style={[styles.subtitle, { color: themeColors.text.secondary }]}
-              ></Text>
+              >
+                Compras, ventas y remesas
+              </Text>
             </View>
             <TouchableOpacity
               onPress={() => setFilterModalVisible(true)}
@@ -253,7 +258,7 @@ export const TransactionsScreen: React.FC = () => {
                 themeShadows.md,
               ]}
               accessibilityRole="button"
-              accessibilityLabel={`Filtrar listado: ${filterLabel}`}
+              accessibilityLabel={`Filtrar transacciones. Filtro actual: ${filterLabel}`}
             >
               <Text
                 style={[
@@ -370,7 +375,7 @@ const styles = StyleSheet.create({
   },
   headerTopRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
     gap: spacing.sm,
   },
@@ -394,6 +399,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     gap: spacing.xs,
     borderWidth: 1,
+    minHeight: 44,
   },
   filterTriggerText: {
     fontSize: 14,

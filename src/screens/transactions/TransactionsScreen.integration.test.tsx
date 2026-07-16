@@ -25,3 +25,27 @@ test("opens the account-aware transfer modal from the real TransactionsScreen fl
   fireEvent.press(getByLabelText("Nueva transacción"));
   expect(getByText("Account-aware transaction modal")).toBeTruthy();
 });
+
+test("renders the transactions header and exposes the current filter", () => {
+  const { getByRole, getByText } = render(<TransactionsScreen />);
+
+  expect(getByRole("header", { name: "Transacciones" })).toBeTruthy();
+  expect(getByText("Compras, ventas y remesas")).toBeTruthy();
+  expect(getByRole("button", { name: "Filtrar transacciones. Filtro actual: Todas" })).toBeTruthy();
+});
+
+test("opens an accessible filter sheet and applies a selection", () => {
+  const { getByLabelText, getByRole, queryByLabelText } = render(<TransactionsScreen />);
+
+  fireEvent.press(
+    getByRole("button", { name: "Filtrar transacciones. Filtro actual: Todas" }),
+  );
+
+  expect(getByLabelText("Filtros de transacciones")).toBeTruthy();
+  fireEvent.press(getByRole("radio", { name: "Compras" }));
+
+  expect(queryByLabelText("Filtros de transacciones")).toBeNull();
+  expect(
+    getByRole("button", { name: "Filtrar transacciones. Filtro actual: Compras" }),
+  ).toBeTruthy();
+});

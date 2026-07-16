@@ -45,6 +45,7 @@ export const TransactionFilterModal: React.FC<Props> = ({
       transparent
       animationType="fade"
       onRequestClose={onClose}
+      accessibilityViewIsModal
     >
       <View style={styles.root}>
         <TouchableOpacity
@@ -53,6 +54,8 @@ export const TransactionFilterModal: React.FC<Props> = ({
           onPress={onClose}
         />
         <View
+          accessibilityRole="summary"
+          accessibilityLabel="Filtros de transacciones"
           style={[
             styles.sheet,
             {
@@ -62,8 +65,8 @@ export const TransactionFilterModal: React.FC<Props> = ({
             themeShadows.lg,
           ]}
         >
-          <Text style={[styles.title, { color: themeColors.text.secondary }]}>
-            Mostrar
+          <Text style={[styles.title, { color: themeColors.text.primary }]}>
+            Filtrar transacciones
           </Text>
           {TRANSACTION_FILTER_OPTIONS.map((f) => (
             <TouchableOpacity
@@ -77,7 +80,8 @@ export const TransactionFilterModal: React.FC<Props> = ({
                   borderColor: themeColors.primary[300],
                 },
               ]}
-              accessibilityRole="button"
+              accessibilityRole="radio"
+              accessibilityLabel={f.label}
               accessibilityState={{ selected: value === f.key }}
             >
               <Text
@@ -118,11 +122,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   title: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginBottom: spacing.sm,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: spacing.md,
   },
   option: {
     flexDirection: "row",
@@ -132,6 +134,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.md,
     borderWidth: 1,
+    minHeight: 48,
+    marginBottom: spacing.xs,
   },
   optionText: {
     fontSize: 16,
