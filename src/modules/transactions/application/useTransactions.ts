@@ -5,11 +5,12 @@ import { transactionsRepository } from "../infrastructure/transactions.repositor
 
 export const useTransactionsQuery = (params?: {
   type?: TransactionType;
+  operationKind?: "TRANSFER" | "REMITTANCE";
   startDate?: string;
   endDate?: string;
 }) =>
   useQuery({
-    queryKey: queryKeys.transactions.list(params?.type),
+    queryKey: queryKeys.transactions.list(params?.type, params?.operationKind),
     queryFn: () => transactionsRepository.getTransactions(params),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,

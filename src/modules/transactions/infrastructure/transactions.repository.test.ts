@@ -1,7 +1,17 @@
 import api from "../../../services/api";
 import { transactionsRepository } from "./transactions.repository";
 
-jest.mock("../../../services/api", () => ({ post: jest.fn() }));
+jest.mock("../../../services/api", () => ({ get: jest.fn(), post: jest.fn() }));
+
+it("forwards operationKind when listing remittances", async () => {
+  jest.mocked(api.get).mockResolvedValue({ data: [] } as any);
+
+  await transactionsRepository.getTransactions({ operationKind: "REMITTANCE" });
+
+  expect(api.get).toHaveBeenCalledWith("/transactions", {
+    params: { operationKind: "REMITTANCE" },
+  });
+});
 
 it("reuses the caller-provided idempotency key for retries", async () => {
   jest.mocked(api.post).mockResolvedValue({ data: { transaction: { id: 1 } } } as any);

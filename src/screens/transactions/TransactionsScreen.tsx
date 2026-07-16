@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  useWindowDimensions,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 
@@ -32,12 +33,15 @@ import { getCountryCode } from "../../utils/currencyUtils";
 import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 import { TransactionModal } from "../../components/business/modals/TransactionModal";
+import { getTransactionsHeaderLayout } from "./transactionsHeaderLayout";
 
 export const TransactionsScreen: React.FC = () => {
   const navigation = useNavigation();
   const themeColors = useColors();
   const themeShadows = useShadows();
   const tabBarScrollBehavior = useTabBarScrollBehavior();
+  const { width, fontScale } = useWindowDimensions();
+  const headerLayout = getTransactionsHeaderLayout(width, fontScale);
   const transactionsListRef = useRef<FlatList<Transaction>>(null);
   const scrollToTop = useCallback(() => {
     transactionsListRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -48,9 +52,12 @@ export const TransactionsScreen: React.FC = () => {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const selectedType = filter === "all" ? undefined : filter;
   const transactionsQuery = useTransactionsQuery(
-    selectedType ? { type: selectedType } : undefined,
+    filter === "REMITTANCE"
+      ? { operationKind: "REMITTANCE" }
+      : filter === "COMPRA" || filter === "VENTA"
+        ? { type: filter }
+        : undefined,
   );
 
   const transactions = transactionsQuery.data ?? [];
@@ -233,7 +240,12 @@ export const TransactionsScreen: React.FC = () => {
     >
       <FadeIn>
         <View style={styles.header}>
-          <View style={styles.headerTopRow}>
+          <View
+            style={[
+              styles.headerTopRow,
+              headerLayout === "stacked" && styles.headerTopRowStacked,
+            ]}
+          >
             <View style={styles.headerTitles}>
               <Text
                 accessibilityRole="header"
@@ -251,6 +263,7 @@ export const TransactionsScreen: React.FC = () => {
               onPress={() => setFilterModalVisible(true)}
               style={[
                 styles.filterTrigger,
+                headerLayout === "stacked" && styles.filterTriggerStacked,
                 {
                   backgroundColor: themeColors.card,
                   borderColor: themeColors.border,
@@ -379,6 +392,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: spacing.sm,
   },
+  headerTopRowStacked: {
+    alignItems: "stretch",
+    flexDirection: "column",
+  },
   headerTitles: {
     flex: 1,
     minWidth: 0,
@@ -404,6 +421,9 @@ const styles = StyleSheet.create({
   filterTriggerText: {
     fontSize: 14,
     fontWeight: "600",
+  },
+  filterTriggerStacked: {
+    alignSelf: "flex-start",
   },
   listContent: {
     paddingHorizontal: spacing.md,

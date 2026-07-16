@@ -46,6 +46,7 @@ export type ExpenseSourceType = "CASH" | "BANK_ACCOUNT";
 export type Transaction = {
   id: number;
   type: TransactionType;
+  operationKind?: "TRANSFER" | "REMITTANCE";
   currencyId: number;
   currency: Currency;
   amount: number;

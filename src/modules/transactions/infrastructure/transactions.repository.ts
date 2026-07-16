@@ -23,6 +23,7 @@ export const transactionsRepository = {
   },
   async getTransactions(params?: {
     type?: TransactionType;
+    operationKind?: "TRANSFER" | "REMITTANCE";
     startDate?: string;
     endDate?: string;
   }): Promise<Transaction[]> {

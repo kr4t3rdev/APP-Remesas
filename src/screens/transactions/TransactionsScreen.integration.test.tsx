@@ -2,12 +2,18 @@ import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 import { TransactionsScreen } from "./TransactionsScreen";
 
+const mockUseTransactionsQuery = jest.fn(() => ({
+  data: [],
+  isRefetching: false,
+  refetch: jest.fn(),
+}));
+
 jest.mock("../../components/business/modals/TransactionModal", () => ({
   TransactionModal: ({ visible }: { visible: boolean }) =>
     visible ? (() => { const NativeText = require("react-native").Text; return <NativeText>Account-aware transaction modal</NativeText>; })() : null,
 }));
 jest.mock("../../modules/transactions/application/useTransactions", () => ({
-  useTransactionsQuery: () => ({ data: [], isRefetching: false, refetch: jest.fn() }),
+  useTransactionsQuery: (params?: unknown) => mockUseTransactionsQuery(params),
   useCurrenciesQuery: () => ({ data: [] }),
   useExchangeRatesQuery: () => ({ data: [] }),
   usePositionsQuery: () => ({ data: [] }),
@@ -48,4 +54,20 @@ test("opens an accessible filter sheet and applies a selection", () => {
   expect(
     getByRole("button", { name: "Filtrar transacciones. Filtro actual: Compras" }),
   ).toBeTruthy();
+});
+
+test("filters remittances independently from purchase and sale types", () => {
+  const { getByLabelText, getByRole } = render(<TransactionsScreen />);
+
+  fireEvent.press(
+    getByRole("button", { name: "Filtrar transacciones. Filtro actual: Todas" }),
+  );
+  expect(getByLabelText("Tipo de transacción").props.accessibilityRole).toBe(
+    "radiogroup",
+  );
+  fireEvent.press(getByRole("radio", { name: "Remesas" }));
+
+  expect(mockUseTransactionsQuery).toHaveBeenLastCalledWith({
+    operationKind: "REMITTANCE",
+  });
 });

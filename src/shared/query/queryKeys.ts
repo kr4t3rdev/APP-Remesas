@@ -11,8 +11,11 @@ export const queryKeys = {
       ["dashboard", "recentExpenses", limit ?? "all"] as const,
   },
   transactions: {
-    list: (type?: "COMPRA" | "VENTA") =>
-      ["transactions", "list", type ?? "all"] as const,
+    list: (
+      type?: "COMPRA" | "VENTA",
+      operationKind?: "TRANSFER" | "REMITTANCE",
+    ) =>
+      ["transactions", "list", type ?? "all", operationKind ?? "all"] as const,
     positions: () => ["transactions", "positions"] as const,
     remittances: () => ["transactions", "remittances"] as const,
     currencies: () => ["transactions", "currencies"] as const,

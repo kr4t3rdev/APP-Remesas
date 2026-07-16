@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
 
-export type TransactionFilterValue = "all" | "COMPRA" | "VENTA";
+export type TransactionFilterValue = "all" | "COMPRA" | "VENTA" | "REMITTANCE";
 
 export const TRANSACTION_FILTER_OPTIONS: {
   key: TransactionFilterValue;
@@ -13,6 +13,7 @@ export const TRANSACTION_FILTER_OPTIONS: {
   { key: "all", label: "Todas" },
   { key: "COMPRA", label: "Compras" },
   { key: "VENTA", label: "Ventas" },
+  { key: "REMITTANCE", label: "Remesas" },
 ];
 
 export function getTransactionFilterLabel(
@@ -52,9 +53,10 @@ export const TransactionFilterModal: React.FC<Props> = ({
           style={styles.backdropFlex}
           activeOpacity={1}
           onPress={onClose}
+          accessible={false}
+          importantForAccessibility="no-hide-descendants"
         />
         <View
-          accessibilityRole="summary"
           accessibilityLabel="Filtros de transacciones"
           style={[
             styles.sheet,
@@ -68,36 +70,38 @@ export const TransactionFilterModal: React.FC<Props> = ({
           <Text style={[styles.title, { color: themeColors.text.primary }]}>
             Filtrar transacciones
           </Text>
-          {TRANSACTION_FILTER_OPTIONS.map((f) => (
-            <TouchableOpacity
-              key={f.key}
-              onPress={() => onSelect(f.key)}
-              style={[
-                styles.option,
-                { borderColor: themeColors.border },
-                value === f.key && {
-                  backgroundColor: themeColors.surface,
-                  borderColor: themeColors.primary[300],
-                },
-              ]}
-              accessibilityRole="radio"
-              accessibilityLabel={f.label}
-              accessibilityState={{ selected: value === f.key }}
-            >
-              <Text
-                style={[styles.optionText, { color: themeColors.text.primary }]}
+          <View accessibilityRole="radiogroup" accessibilityLabel="Tipo de transacción">
+            {TRANSACTION_FILTER_OPTIONS.map((f) => (
+              <TouchableOpacity
+                key={f.key}
+                onPress={() => onSelect(f.key)}
+                style={[
+                  styles.option,
+                  { borderColor: themeColors.border },
+                  value === f.key && {
+                    backgroundColor: themeColors.surface,
+                    borderColor: themeColors.primary[300],
+                  },
+                ]}
+                accessibilityRole="radio"
+                accessibilityLabel={f.label}
+                accessibilityState={{ selected: value === f.key }}
               >
-                {f.label}
-              </Text>
-              {value === f.key ? (
-                <Ionicons
-                  name="checkmark"
-                  size={20}
-                  color={themeColors.primary[500]}
-                />
-              ) : null}
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[styles.optionText, { color: themeColors.text.primary }]}
+                >
+                  {f.label}
+                </Text>
+                {value === f.key ? (
+                  <Ionicons
+                    name="checkmark"
+                    size={20}
+                    color={themeColors.primary[500]}
+                  />
+                ) : null}
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
     </Modal>
