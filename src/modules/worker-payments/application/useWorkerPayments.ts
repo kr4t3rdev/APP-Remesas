@@ -15,7 +15,7 @@ export const useWorkersQuery = () =>
     queryFn: () => workerPaymentsRepository.getWorkers(),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useWorkerDetailQuery = (id: number) =>

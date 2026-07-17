@@ -27,7 +27,7 @@ export const useCashBalances = () => {
     queryFn: dashboardRepository.getCashBalances,
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 };
 
@@ -37,7 +37,7 @@ export const useExchangeRates = () => {
     queryFn: dashboardRepository.getExchangeRates,
     staleTime: 1000 * 60 * 5,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 };
 
@@ -45,7 +45,7 @@ export const useRecentTransactions = (limit?: number) => {
   return useQuery<Transaction[], Error>({
     queryKey: queryKeys.dashboard.recentTransactions(limit),
     queryFn: () => dashboardRepository.getTransactions(),
-    initialData: [],
+    placeholderData: [],
     select: (data) => {
       const sorted = [...data].sort(
         (a, b) =>
@@ -62,7 +62,7 @@ export const useRecentExpenses = (limit?: number) => {
   return useQuery<Expense[], Error>({
     queryKey: queryKeys.dashboard.recentExpenses(limit),
     queryFn: () => dashboardRepository.getExpenses(),
-    initialData: [],
+    placeholderData: [],
     select: (data) => {
       const sorted = [...data].sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
@@ -80,7 +80,7 @@ export const useActiveObjectives = () => {
     queryFn: () => dashboardRepository.getObjectives("ACTIVO"),
     staleTime: 1000 * 60 * 5,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 };
 

@@ -41,7 +41,8 @@ describe("useWorkerPayments hooks", () => {
   });
 
   describe("useWorkersQuery", () => {
-    it("loads workers list", async () => {
+    it("fetches workers on the first mount while showing an empty placeholder", async () => {
+      mockedRepository.getWorkers.mockResolvedValueOnce([]);
       const queryClient = new QueryClient({
         defaultOptions: { queries: { retry: false } },
       });
@@ -50,9 +51,10 @@ describe("useWorkerPayments hooks", () => {
         wrapper: createWrapper(queryClient),
       });
 
-      expect(result.current.isSuccess).toBe(true);
       expect(result.current.data).toEqual([]);
-      expect(mockedRepository.getWorkers).not.toHaveBeenCalled();
+      await waitFor(() =>
+        expect(mockedRepository.getWorkers).toHaveBeenCalledTimes(1),
+      );
     });
   });
 
