@@ -6,7 +6,7 @@ describe("mainTabDefinitions", () => {
       { route: "Home", label: "Inicio", icon: "home" },
       { route: "Transactions", label: "Transacciones", icon: "swap-horizontal" },
       { route: "Cash", label: "Caja", icon: "wallet" },
-      { route: "ExpenseItems", label: "Gastos", icon: "receipt" },
+      { route: "Expenses", label: "Gastos", icon: "receipt" },
       { route: "Profile", label: "Perfil", icon: "person" },
     ]);
   });

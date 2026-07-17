@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,8 @@ import { ExpenseCard } from "../../components/expenses/ExpenseCard";
 import { ExpenseFormModal } from "../../components/expenses/ExpenseFormModal";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
+import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
+import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 import type {
   Expense,
   ExpenseCategory,
@@ -47,6 +49,12 @@ const CATEGORIES: {
 export const ExpensesScreen: React.FC = () => {
   const themeColors = useColors();
   const themeShadows = useShadows();
+  const tabBarScrollBehavior = useTabBarScrollBehavior();
+  const expensesListRef = useRef<FlatList<Expense>>(null);
+  const scrollToTop = useCallback(() => {
+    expensesListRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
+  useTabScrollToTop("Expenses", scrollToTop);
 
   const [selectedCategory, setSelectedCategory] = useState<
     ExpenseCategory | "all"
@@ -245,6 +253,8 @@ export const ExpensesScreen: React.FC = () => {
       </FadeInDown>
 
       <FlatList
+        ref={expensesListRef}
+        {...tabBarScrollBehavior}
         data={filteredExpenses}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item, index }) => (
@@ -425,7 +435,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: "absolute",
-    bottom: spacing.lg,
+    bottom: floatingTabBarMetrics.standaloneActionBottom,
     right: spacing.lg,
     width: 56,
     height: 56,

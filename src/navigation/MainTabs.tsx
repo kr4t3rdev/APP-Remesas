@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { TransactionsScreen } from "../screens/transactions/TransactionsScreen";
-import { ExpenseItemsScreen } from "../screens/expense-items/ExpenseItemsScreen";
+import { ExpensesScreen } from "../screens/expenses/ExpensesScreen";
 import { CashScreen } from "../screens/cash/CashScreen";
 import type { MainTabParamList } from "./types";
 import { mainTabDefinitions } from "./mainTabsConfig";
@@ -16,7 +16,7 @@ const tabComponents: Record<keyof MainTabParamList, React.ComponentType> = {
   Home: HomeScreen,
   Transactions: TransactionsScreen,
   Cash: CashScreen,
-  ExpenseItems: ExpenseItemsScreen,
+  Expenses: ExpensesScreen,
   Profile: ProfileScreen,
 };
 

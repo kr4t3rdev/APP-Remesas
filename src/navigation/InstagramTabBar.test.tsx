@@ -27,7 +27,7 @@ const routeNames = [
   "Home",
   "Transactions",
   "Cash",
-  "ExpenseItems",
+  "Expenses",
   "Profile",
 ] as const;
 
@@ -117,10 +117,10 @@ describe("InstagramTabBar", () => {
   });
 
   it("keeps labels visible and subtly enlarges the bar, icons, and labels on scroll-down", () => {
-    expect(TAB_BAR_EMPHASIS_MOTION.barScaleX).toBeGreaterThan(1);
-    expect(TAB_BAR_EMPHASIS_MOTION.barScaleY).toBeGreaterThan(1);
-    expect(TAB_BAR_EMPHASIS_MOTION.iconScale).toBeGreaterThan(1);
-    expect(TAB_BAR_EMPHASIS_MOTION.labelScale).toBeGreaterThan(1);
+    expect(TAB_BAR_EMPHASIS_MOTION.barScaleX).toBe(1.07);
+    expect(TAB_BAR_EMPHASIS_MOTION.barScaleY).toBe(1.09);
+    expect(TAB_BAR_EMPHASIS_MOTION.iconScale).toBe(1.08);
+    expect(TAB_BAR_EMPHASIS_MOTION.labelScale).toBe(1.06);
     expect(TAB_BAR_EMPHASIS_MOTION.labelOpacity).toBe(1);
   });
 

@@ -615,46 +615,4 @@ export type CurrencyDetail = {
   updatedAt: string;
 };
 
-// Expense Items Types
-export type ExpenseItem = {
-  id: number;
-  userId: number;
-  name: string;
-  amount: string; // Decimal as string from Prisma
-  category: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type CreateExpenseItemInput = {
-  name: string;
-  amount: number;
-  category?: string;
-};
-
-export type UpdateExpenseItemInput = {
-  name?: string;
-  amount?: number;
-  category?: string | null;
-};
-
-export type ReportPeriod =
-  | "month"
-  | "quarter"
-  | "semester"
-  | "year"
-  | "all"
-  | "single";
-
-export type ExpenseReport = {
-  items: ExpenseItem[];
-  total: number;
-  count: number;
-  average: number;
-  period?: {
-    start: string;
-    end: string;
-  };
-};
-
 export * from "./worker";

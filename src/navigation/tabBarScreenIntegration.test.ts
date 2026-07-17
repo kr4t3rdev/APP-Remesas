@@ -6,7 +6,7 @@ const screens = [
   ["Home", "home/HomeScreen.tsx", "ScrollView"],
   ["Transactions", "transactions/TransactionsScreen.tsx", "FlatList"],
   ["Cash", "cash/CashScreen.tsx", "ScrollView"],
-  ["ExpenseItems", "expense-items/ExpenseItemsScreen.tsx", "FlatList"],
+  ["Expenses", "expenses/ExpensesScreen.tsx", "FlatList"],
   ["Profile", "profile/ProfileScreen.tsx", "ScrollView"],
 ] as const;
 

@@ -200,7 +200,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 ))}
               </View>
 
-              <Text style={[styles.fieldLabel, { color: themeColors.text.primary }]}>Origen del pago</Text>
+              <Text style={[styles.fieldLabel, { color: themeColors.text.primary }]}>Destino</Text>
               <View style={styles.optionsRow}>
                 {(["CASH", "BANK_ACCOUNT"] as const).map((source) => (
                   <TouchableOpacity key={source} onPress={() => { setSourceType(source); setSourceBankAccountId(undefined); }}
