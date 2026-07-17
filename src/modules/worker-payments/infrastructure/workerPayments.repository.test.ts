@@ -103,7 +103,7 @@ describe("workerPaymentsRepository", () => {
         headers: new Headers(),
       });
 
-      const result = await workerPaymentsRepository.addBalance(1, 300);
+      const result = await workerPaymentsRepository.addBalance(1, { amount: 300 });
 
       expect(mockedApi.post).toHaveBeenCalledWith(
         "/worker-payments/1/balance",

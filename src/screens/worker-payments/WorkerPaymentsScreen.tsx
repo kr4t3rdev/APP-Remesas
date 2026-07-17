@@ -11,24 +11,26 @@ import {
 import { Alert } from "../../utils/alert";
 
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
 import { Ionicons } from "@expo/vector-icons";
 import { FadeInDown, ScaleIn } from "../../components/animations";
 import { WorkerCard } from "../../components/worker-payments/WorkerCard";
 import { WorkerExpandableRow } from "../../components/worker-payments/WorkerExpandableRow";
 import { WorkerFormModal } from "../../components/worker-payments/WorkerFormModal";
-import { TransactionFormModal } from "../../components/worker-payments/TransactionFormModal";
+import { TransactionModal } from "../../components/business/modals/TransactionModal";
 import { AddBalanceModal } from "../../components/worker-payments/AddBalanceModal";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
-import type { Worker, CreateWorkerInput, UpdateWorkerInput } from "../../types";
+import type { Worker, CreateWorkerInput } from "../../types";
 import {
   useWorkersQuery,
+  useWorkerDetailQuery,
   useCreateWorkerMutation,
   useUpdateWorkerMutation,
   useDeleteWorkerMutation,
   useCreateTransactionMutation,
   useAddBalanceMutation,
-  useFetchWorkerByIdMutation,
+  useDepositMutation,
 } from "../../modules/worker-payments/application/useWorkerPayments";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
 
@@ -53,13 +55,11 @@ export const WorkerPaymentsScreen: React.FC = () => {
   const [showWorkerModal, setShowWorkerModal] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [showBalanceModal, setShowBalanceModal] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
   const [editingWorker, setEditingWorker] = useState<Worker | null>(null);
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   const [expandedWorkerId, setExpandedWorkerId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [workerDetailsById, setWorkerDetailsById] = useState<
-    Record<number, Worker>
-  >({});
 
   // Queries y mutations
   const workersQuery = useWorkersQuery();
@@ -68,7 +68,8 @@ export const WorkerPaymentsScreen: React.FC = () => {
   const deleteMutation = useDeleteWorkerMutation();
   const transactionMutation = useCreateTransactionMutation();
   const balanceMutation = useAddBalanceMutation();
-  const workerDetailMutation = useFetchWorkerByIdMutation();
+  const depositMutation = useDepositMutation();
+  const workerDetailQuery = useWorkerDetailQuery(expandedWorkerId ?? 0);
 
   const workers = workersQuery.data ?? [];
   const workersBySearch = useMemo(() => {
@@ -107,11 +108,9 @@ export const WorkerPaymentsScreen: React.FC = () => {
     setEditingWorker(null);
   }, []);
 
-  const handleCreateWorker = async (
-    data: CreateWorkerInput | UpdateWorkerInput,
-  ) => {
+  const handleCreateWorker = async (data: CreateWorkerInput) => {
     try {
-      await createMutation.mutateAsync(data as CreateWorkerInput);
+      await createMutation.mutateAsync(data);
       Alert.alert("Éxito", "Trabajador creado correctamente");
     } catch (error) {
       Alert.alert("Error", "No se pudo crear el trabajador");
@@ -119,14 +118,12 @@ export const WorkerPaymentsScreen: React.FC = () => {
     }
   };
 
-  const handleUpdateWorker = async (
-    data: CreateWorkerInput | UpdateWorkerInput,
-  ) => {
+  const handleUpdateWorker = async (data: CreateWorkerInput) => {
     try {
       if (!editingWorker) return;
       await updateMutation.mutateAsync({
         id: editingWorker.id,
-        input: data as UpdateWorkerInput,
+        input: data,
       });
       Alert.alert("Éxito", "Trabajador actualizado correctamente");
     } catch (error) {
@@ -158,19 +155,10 @@ export const WorkerPaymentsScreen: React.FC = () => {
 
   const handleOpenTransactionModal = useCallback(
     (worker: Worker) => {
-      (async () => {
-        try {
-          const workerDetail = await workerDetailMutation.mutateAsync(
-            worker.id,
-          );
-          setSelectedWorker(workerDetail);
-          setShowTransactionModal(true);
-        } catch {
-          Alert.alert("Error", "No se pudo obtener el detalle del trabajador");
-        }
-      })();
+      setSelectedWorker(worker);
+      setShowTransactionModal(true);
     },
-    [workerDetailMutation],
+    [],
   );
 
   const handleCloseTransactionModal = useCallback(() => {
@@ -186,17 +174,17 @@ export const WorkerPaymentsScreen: React.FC = () => {
     if (!selectedWorker) return;
     await transactionMutation.mutateAsync({
       workerId: selectedWorker.id,
-      input: { amount, profit, description },
+      input: { amount, profit, description, currencyId: selectedWorker.balances?.[0]?.currencyId ?? 0 },
     });
     Alert.alert("Éxito", "Transacción registrada correctamente");
   };
 
   const handleOpenBalanceModal = useCallback(
     (worker: Worker) => {
-      setSelectedWorker(workerDetailsById[worker.id] ?? worker);
+      setSelectedWorker(worker);
       setShowBalanceModal(true);
     },
-    [workerDetailsById],
+    [],
   );
 
   const handleCloseBalanceModal = useCallback(() => {
@@ -204,35 +192,54 @@ export const WorkerPaymentsScreen: React.FC = () => {
     setSelectedWorker(null);
   }, []);
 
-  const handleAddBalance = async (amount: number) => {
+  const handleAddBalance = async (data: {
+    amount: number;
+    sourceType?: "CASH" | "BANK_ACCOUNT";
+    sourceId?: number;
+    currencyId?: number;
+  }) => {
     if (!selectedWorker) return;
-    await balanceMutation.mutateAsync({ workerId: selectedWorker.id, amount });
+    await balanceMutation.mutateAsync({
+      workerId: selectedWorker.id,
+      ...data,
+    });
     Alert.alert("Éxito", "Saldo agregado correctamente");
+  };
+
+  const handleOpenDepositModal = useCallback(
+    (worker: Worker) => {
+      setSelectedWorker(worker);
+      setShowDepositModal(true);
+    },
+    [],
+  );
+
+  const handleCloseDepositModal = useCallback(() => {
+    setShowDepositModal(false);
+    setSelectedWorker(null);
+  }, []);
+
+  const handleDeposit = async (data: {
+    amount: number;
+    destinationType?: "CASH" | "BANK_ACCOUNT";
+    destinationId?: number;
+    currencyId?: number;
+  }) => {
+    if (!selectedWorker) return;
+    await depositMutation.mutateAsync({
+      workerId: selectedWorker.id,
+      ...data,
+    });
+    Alert.alert("Éxito", "Depósito realizado correctamente");
   };
 
   const handleToggleExpand = useCallback(
     (worker: Worker) => {
-      (async () => {
-        const nextExpandedWorkerId =
-          expandedWorkerId === worker.id ? null : worker.id;
-        setExpandedWorkerId(nextExpandedWorkerId);
-        if (!nextExpandedWorkerId) {
-          return;
-        }
-        try {
-          const workerDetail = await workerDetailMutation.mutateAsync(
-            worker.id,
-          );
-          setWorkerDetailsById((prev) => ({
-            ...prev,
-            [worker.id]: workerDetail,
-          }));
-        } catch {
-          Alert.alert("Error", "No se pudo obtener el detalle del trabajador");
-        }
-      })();
+      setExpandedWorkerId((prev) =>
+        prev === worker.id ? null : worker.id,
+      );
     },
-    [expandedWorkerId, workerDetailMutation],
+    [],
   );
 
   const isLoading =
@@ -241,6 +248,7 @@ export const WorkerPaymentsScreen: React.FC = () => {
     deleteMutation.isPending;
   const isTransactionLoading = transactionMutation.isPending;
   const isBalanceLoading = balanceMutation.isPending;
+  const isDepositLoading = depositMutation.isPending;
 
   const renderWorkerItem = ({
     item,
@@ -250,6 +258,9 @@ export const WorkerPaymentsScreen: React.FC = () => {
     index: number;
   }) => {
     const isExpanded = expandedWorkerId === item.id;
+    const expandedWorker = isExpanded
+      ? (workerDetailQuery.data ?? item)
+      : item;
 
     return (
       <View>
@@ -259,13 +270,12 @@ export const WorkerPaymentsScreen: React.FC = () => {
           onExpand={handleToggleExpand}
           onTransaction={handleOpenTransactionModal}
           onAddBalance={handleOpenBalanceModal}
+          onDeposit={handleOpenDepositModal}
           onEdit={handleOpenWorkerModal}
           onDelete={handleDeleteWorker}
           isExpanded={isExpanded}
         />
-        {isExpanded && (
-          <WorkerExpandableRow worker={workerDetailsById[item.id] ?? item} />
-        )}
+        {isExpanded && <WorkerExpandableRow worker={expandedWorker} />}
       </View>
     );
   };
@@ -274,6 +284,7 @@ export const WorkerPaymentsScreen: React.FC = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
+      <ProfileFeatureBackButton />
       <View style={styles.header}>
         <FadeInDown delay={0}>
           <View>
@@ -366,12 +377,10 @@ export const WorkerPaymentsScreen: React.FC = () => {
         isLoading={isLoading}
       />
 
-      <TransactionFormModal
+      <TransactionModal
         visible={showTransactionModal}
         onClose={handleCloseTransactionModal}
-        onSubmit={handleCreateTransaction}
         worker={selectedWorker}
-        isLoading={isTransactionLoading}
       />
 
       <AddBalanceModal
@@ -380,6 +389,16 @@ export const WorkerPaymentsScreen: React.FC = () => {
         onSubmit={handleAddBalance}
         worker={selectedWorker}
         isLoading={isBalanceLoading}
+        mode="add"
+      />
+
+      <AddBalanceModal
+        visible={showDepositModal}
+        onClose={handleCloseDepositModal}
+        onSubmit={handleDeposit}
+        worker={selectedWorker}
+        isLoading={isDepositLoading}
+        mode="deposit"
       />
 
       <ConfirmModal

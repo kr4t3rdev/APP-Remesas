@@ -27,11 +27,6 @@ export const useWorkerDetailQuery = (id: number) =>
     throwOnError: false,
   });
 
-export const useFetchWorkerByIdMutation = () =>
-  useMutation({
-    mutationFn: (id: number) => workerPaymentsRepository.getWorkerById(id),
-  });
-
 export const useCreateWorkerMutation = () => {
   const queryClient = useQueryClient();
 
@@ -106,8 +101,19 @@ export const useAddBalanceMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ workerId, amount }: { workerId: number; amount: number }) =>
-      workerPaymentsRepository.addBalance(workerId, amount),
+    mutationFn: ({
+      workerId,
+      amount,
+      sourceType,
+      sourceId,
+      currencyId,
+    }: {
+      workerId: number;
+      amount: number;
+      sourceType?: "CASH" | "BANK_ACCOUNT";
+      sourceId?: number;
+      currencyId?: number;
+    }) => workerPaymentsRepository.addBalance(workerId, { amount, sourceType, sourceId, currencyId }),
     onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({
@@ -116,6 +122,38 @@ export const useAddBalanceMutation = () => {
         queryClient.invalidateQueries({
           queryKey: queryKeys.workerPayments.detail(variables.workerId),
         }),
+      ]);
+    },
+  });
+};
+
+export const useDepositMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      workerId,
+      amount,
+      destinationType,
+      destinationId,
+      currencyId,
+    }: {
+      workerId: number;
+      amount: number;
+      destinationType?: "CASH" | "BANK_ACCOUNT";
+      destinationId?: number;
+      currencyId?: number;
+    }) => workerPaymentsRepository.deposit(workerId, { amount, destinationType, destinationId, currencyId }),
+    onSuccess: async (_data, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.workerPayments.list(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.workerPayments.detail(variables.workerId),
+        }),
+        queryClient.invalidateQueries({ queryKey: ["cash"] }),
+        queryClient.invalidateQueries({ queryKey: ["bankAccounts"] }),
       ]);
     },
   });

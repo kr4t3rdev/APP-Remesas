@@ -169,8 +169,10 @@ export const CashScreen: React.FC = () => {
       >
         <FadeIn>
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text.primary }]}>Caja</Text>
-            <Text style={[styles.subtitle, { color: colors.text.secondary }]}>Saldos y control de efectivo por moneda</Text>
+            <View style={styles.headerTitles}>
+              <Text accessibilityRole="header" style={[styles.title, { color: colors.text.primary }]}>Caja</Text>
+              <Text style={[styles.subtitle, { color: colors.text.secondary }]}>Saldos y control de efectivo por moneda</Text>
+            </View>
           </View>
         </FadeIn>
 
@@ -321,7 +323,7 @@ const AuditAmount = ({ label, value, color, labelColor }: { label: string; value
 
 const styles = StyleSheet.create({
   container: { flex: 1 }, loading: { flex: 1, alignItems: "center", justifyContent: "center" },
-  content: { padding: 20, paddingBottom: floatingTabBarMetrics.contentBottomPadding }, header: { marginBottom: 24 },
+  content: { padding: 20, paddingBottom: floatingTabBarMetrics.contentBottomPadding }, header: { marginBottom: 24 }, headerTitles: { flex: 1, minWidth: 0 },
   title: { fontSize: 30, fontWeight: "800", marginBottom: 4 }, subtitle: { fontSize: 14 }, section: { marginBottom: 26 },
   sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 12 }, sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   balanceRow: { gap: 12, paddingBottom: 4 }, balanceCard: { width: 130, borderRadius: 16, padding: 16 },

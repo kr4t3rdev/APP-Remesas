@@ -11,6 +11,11 @@ jest.mock("../../../../modules/transactions/application/useTransactions");
 
 describe("TransactionModal FX intent", () => {
   const mutate = jest.fn();
+  const workerWithBalance = {
+    id: 42,
+    name: "Ana",
+    balances: [{ id: 7, workerId: 42, currencyId: 1, currency: { code: "USD", isActive: true }, balance: 100, accumulatedProfit: 0, totalDelivered: 0 }],
+  };
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(transactions.useCreateTransactionMutation).mockReturnValue({ mutate, isPending: false } as any);
@@ -302,5 +307,45 @@ describe("TransactionModal FX intent", () => {
     rerender(<TransactionModal visible onClose={onClose} />);
     expect(getByLabelText("Transferencia").props.accessibilityState).toEqual({ selected: true });
     expect(getByLabelText("Guardar como tasa actual").props.accessibilityState).toEqual({ checked: false });
+  });
+
+  it("sends worker profit as FX context in the same request", () => {
+    const { getByLabelText, getByText } = render(
+      <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
+    );
+
+    expect(getByText(/se registra junto con FX/)).toBeTruthy();
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.changeText(getByLabelText("Ganancia del trabajador"), "3.5");
+    fireEvent.press(getByText("Guardar"));
+
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
+      workerId: 42,
+      workerProfit: 3.5,
+      workerCurrencyId: 1,
+    }), expect.any(Object));
+  });
+
+  it("shows only cash legs for worker FX operations", () => {
+    jest.mocked(banks.useBankAccountsQuery).mockReturnValue({ data: [
+      { id: 9, bankName: "Banco", name: "Cuenta USD", currencyId: 1, balance: 1000, isActive: true },
+    ] } as any);
+    const { getByLabelText, getByText, queryByLabelText } = render(
+      <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
+    );
+    expect(queryByLabelText("Banco · Cuenta USD")).toBeNull();
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ sourceType: "CASH", destinationType: "CASH", sourceBankAccountId: undefined, destinationBankAccountId: undefined }), expect.any(Object));
+  });
+
+  it("blocks worker FX without an explicit worker currency balance", () => {
+    const { getByLabelText, getAllByText } = render(
+      <TransactionModal visible onClose={jest.fn()} worker={{ id: 42, name: "Ana", balances: [] }} />,
+    );
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    expect(getAllByText(/no tiene un saldo monetario seleccionado/i).length).toBeGreaterThan(0);
+    expect(getByLabelText("Guardar").props.accessibilityState?.disabled ?? getByLabelText("Guardar").props.disabled).toBe(true);
+    expect(mutate).not.toHaveBeenCalled();
   });
 });

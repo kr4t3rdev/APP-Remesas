@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
   Modal,
   TouchableOpacity,
+  ScrollView,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -16,14 +17,34 @@ import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
+import { useBankAccountsQuery } from "../../modules/bank-accounts/application/useBankAccounts";
+import { useCashBalancesQuery } from "../../modules/cash/application/useCash";
+import { useCurrenciesQuery } from "../../modules/currencies/application/useCurrencies";
 import type { Worker } from "../../types";
+
+type AccountOption = {
+  key: string;
+  type: "CASH" | "BANK_ACCOUNT";
+  id?: number;
+  label: string;
+  currencyId?: number;
+  balance: number;
+};
 
 type AddBalanceModalProps = {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (amount: number) => Promise<void>;
+  onSubmit: (data: {
+    amount: number;
+    sourceType?: "CASH" | "BANK_ACCOUNT";
+    sourceId?: number;
+    destinationType?: "CASH" | "BANK_ACCOUNT";
+    destinationId?: number;
+    currencyId?: number;
+  }) => Promise<void>;
   worker: Worker | null;
   isLoading?: boolean;
+  mode?: "add" | "deposit";
 };
 
 export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
@@ -32,20 +53,107 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
   onSubmit,
   worker,
   isLoading = false,
+  mode = "add",
 }) => {
   const themeColors = useColors();
   const themeShadows = useShadows();
+  const { data: banks = [] } = useBankAccountsQuery();
+  const { data: cashBalances = [] } = useCashBalancesQuery();
+  const { data: currencies = [] } = useCurrenciesQuery();
 
   const [amount, setAmount] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedAccountKey, setSelectedAccountKey] = useState<string | null>(null);
+  const [selectedCurrencyId, setSelectedCurrencyId] = useState<number | null>(null);
+  const [isCurrencyPickerOpen, setIsCurrencyPickerOpen] = useState(false);
+
+  const isDeposit = mode === "deposit";
 
   useEffect(() => {
     if (visible) {
       setAmount("");
       setErrors({});
+      setSelectedAccountKey(null);
+      setSelectedCurrencyId(null);
+      setIsCurrencyPickerOpen(false);
     }
   }, [visible]);
+
+  const accounts = useMemo<AccountOption[]>(() => {
+    const cashByCurrencyId = new Map(
+      cashBalances.map((item) => [item.currencyId, item]),
+    );
+    const cashAccounts = currencies
+      .filter((c) => c.isActive !== false)
+      .map((currency) => {
+        const cashBalance = cashByCurrencyId.get(currency.id);
+        return {
+          key: `CASH:${currency.id}`,
+          type: "CASH" as const,
+          label: `Caja · ${currency.code}`,
+          currencyId: currency.id,
+          balance: cashBalance?.balance ?? 0,
+        };
+      });
+    const bankAccounts = banks
+      .filter((b) => b.isActive)
+      .map((b) => ({
+        key: `BANK_ACCOUNT:${b.id}`,
+        type: "BANK_ACCOUNT" as const,
+        id: b.id,
+        label: `${b.bankName} · ${b.name}`,
+        currencyId: b.currencyId,
+        balance: Number(b.balance) || 0,
+      }));
+    return [...cashAccounts, ...bankAccounts];
+  }, [cashBalances, banks, currencies]);
+
+  const uniqueCurrencies = useMemo(() => {
+    const seen = new Set<number>();
+    return currencies.filter((c) => {
+      if (seen.has(c.id)) return false;
+      seen.add(c.id);
+      return accounts.some((a) => a.currencyId === c.id);
+    });
+  }, [currencies, accounts]);
+
+  useEffect(() => {
+    if (visible && uniqueCurrencies.length > 0 && !selectedCurrencyId) {
+      setSelectedCurrencyId(uniqueCurrencies[0].id);
+    }
+  }, [visible, uniqueCurrencies, selectedCurrencyId]);
+
+  const filteredAccounts = useMemo(
+    () =>
+      selectedCurrencyId
+        ? accounts.filter((a) => a.currencyId === selectedCurrencyId)
+        : [],
+    [accounts, selectedCurrencyId],
+  );
+
+  useEffect(() => {
+    if (visible && filteredAccounts.length > 0) {
+      const stillExists = filteredAccounts.some(
+        (a) => a.key === selectedAccountKey,
+      );
+      if (!stillExists) {
+        setSelectedAccountKey(filteredAccounts[0].key);
+      }
+    }
+  }, [visible, filteredAccounts, selectedAccountKey]);
+
+  const selectedAccount = filteredAccounts.find(
+    (a) => a.key === selectedAccountKey,
+  );
+
+  const selectedCurrency = currencies.find(
+    (c) => c.id === selectedCurrencyId,
+  );
+  const workerBalance = selectedCurrencyId
+    ? worker?.balances?.find((balance) => balance.currencyId === selectedCurrencyId)
+    : undefined;
+  const currentWorkerBalance = Number(workerBalance?.balance ?? 0);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -53,6 +161,24 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
 
     if (!amount || numAmount <= 0) {
       newErrors.amount = "El monto debe ser mayor a cero";
+    }
+
+    if (!selectedAccountKey) {
+      newErrors.account = isDeposit
+        ? "Seleccioná un destino"
+        : "Seleccioná un origen";
+    }
+
+    if (isDeposit && worker && numAmount > currentWorkerBalance) {
+      newErrors.amount = "El monto supera el saldo disponible del trabajador";
+    }
+
+    if (
+      !isDeposit &&
+      selectedAccount &&
+      numAmount > selectedAccount.balance
+    ) {
+      newErrors.amount = "El monto supera el saldo disponible del origen";
     }
 
     setErrors(newErrors);
@@ -64,16 +190,39 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      await onSubmit(Number(amount));
+      const account = filteredAccounts.find(
+        (a) => a.key === selectedAccountKey,
+      );
+      await onSubmit({
+        amount: Number(amount),
+        ...(isDeposit
+          ? {
+              destinationType: account?.type as "CASH" | "BANK_ACCOUNT",
+              destinationId: account?.id,
+              currencyId: selectedCurrencyId as number,
+            }
+          : {
+              sourceType: account?.type as "CASH" | "BANK_ACCOUNT",
+              sourceId: account?.id,
+              currencyId: selectedCurrencyId as number,
+            }),
+      });
       onClose();
     } catch (error) {
-      Alert.alert("Error", "No se pudo agregar el saldo. Intenta de nuevo.");
+      Alert.alert(
+        "Error",
+        isDeposit
+          ? "No se pudo realizar el depósito. Intenta de nuevo."
+          : "No se pudo agregar el saldo. Intenta de nuevo.",
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const newBalance = worker ? Number(worker.balance) + Number(amount || 0) : 0;
+  const newBalance = isDeposit
+    ? (worker ? currentWorkerBalance - Number(amount || 0) : 0)
+    : (worker ? currentWorkerBalance + Number(amount || 0) : 0);
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -91,7 +240,7 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
           >
             <View style={styles.header}>
               <Text style={[styles.title, { color: themeColors.text.primary }]}>
-                Agregar Saldo
+                {isDeposit ? "Depositar Saldo" : "Agregar Saldo"}
               </Text>
               <TouchableOpacity
                 testID="close-balance-modal"
@@ -106,7 +255,11 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
               </TouchableOpacity>
             </View>
 
-            <View style={styles.content}>
+            <ScrollView
+              style={styles.content}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
               {worker && (
                 <View
                   style={[
@@ -144,21 +297,111 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
                         { color: themeColors.text.secondary },
                       ]}
                     >
-                      Saldo actual: ${Number(worker.balance).toLocaleString()}
+                      Saldo actual (${selectedCurrency?.code ?? ""}): ${currentWorkerBalance.toLocaleString()}
                     </Text>
                   </View>
                 </View>
               )}
 
+              <Text style={[styles.sectionLabel, { color: themeColors.text.secondary }]}>
+                MONEDA
+              </Text>
+              <TouchableOpacity
+                onPress={() => setIsCurrencyPickerOpen((c) => !c)}
+                style={[styles.pickerTrigger, { borderColor: themeColors.border }]}
+              >
+                <Text style={{ color: themeColors.text.primary }}>
+                  {selectedCurrency?.code ?? "Seleccionar moneda"}
+                </Text>
+                <Text style={{ color: themeColors.text.secondary }}>
+                  {isCurrencyPickerOpen ? "▲" : "▼"}
+                </Text>
+              </TouchableOpacity>
+              {isCurrencyPickerOpen && (
+                <ScrollView
+                  nestedScrollEnabled
+                  style={[styles.pickerMenu, { borderColor: themeColors.border, backgroundColor: themeColors.card }]}
+                >
+                  {uniqueCurrencies.map((c) => (
+                    <TouchableOpacity
+                      key={c.id}
+                      onPress={() => {
+                        setSelectedCurrencyId(c.id);
+                        setIsCurrencyPickerOpen(false);
+                      }}
+                      style={[
+                        styles.pickerOption,
+                        c.id === selectedCurrencyId && { backgroundColor: themeColors.primary[100] },
+                      ]}
+                    >
+                      <Text style={{ color: themeColors.text.primary }}>{c.code}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
+
               <Input
                 testID="balance-amount-input"
-                label="Monto a entregar"
+                label={isDeposit ? "Monto a depositar" : "Monto a entregar"}
                 value={amount}
                 onChangeText={setAmount}
                 placeholder="Ej: 500"
                 keyboardType="numeric"
                 error={errors.amount}
               />
+
+              <Text style={[styles.sectionLabel, { color: themeColors.text.secondary }]}>
+                {isDeposit ? "DESTINO" : "ORIGEN"}
+              </Text>
+              {filteredAccounts.length === 0 ? (
+                <Text style={[styles.emptyAccounts, { color: themeColors.danger }]}>
+                  {isDeposit
+                    ? "No hay cuentas disponibles para depositar"
+                    : "No hay cuentas disponibles para esta moneda"}
+                </Text>
+              ) : (
+                filteredAccounts.map((account) => {
+                  const isSelected = account.key === selectedAccountKey;
+                  const disabled = !isDeposit && account.balance <= 0;
+                  return (
+                    <TouchableOpacity
+                      key={account.key}
+                      disabled={disabled}
+                      onPress={() => setSelectedAccountKey(account.key)}
+                      style={[
+                        styles.accountOption,
+                        { borderColor: isSelected ? themeColors.primary[500] : themeColors.border },
+                        disabled && { opacity: 0.4 },
+                      ]}
+                    >
+                      <View style={styles.accountInfo}>
+                        <Ionicons
+                          name={account.type === "CASH" ? "wallet-outline" : "business-outline"}
+                          size={18}
+                          color={isSelected ? themeColors.primary[500] : themeColors.text.secondary}
+                        />
+                        <Text
+                          style={[
+                            styles.accountLabel,
+                            { color: isSelected ? themeColors.primary[500] : themeColors.text.primary },
+                          ]}
+                        >
+                          {account.label}
+                        </Text>
+                      </View>
+                      <Text style={{ color: themeColors.text.secondary, fontSize: 13 }}>
+                        ${Number(account.balance).toLocaleString()}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+
+              {errors.account && (
+                <Text style={[styles.errorText, { color: themeColors.danger }]}>
+                  {errors.account}
+                </Text>
+              )}
 
               <View
                 style={[
@@ -178,14 +421,14 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
                   <Text
                     style={[
                       styles.previewValue,
-                      { color: themeColors.success },
+                      { color: newBalance < 0 ? themeColors.danger : themeColors.success },
                     ]}
                   >
                     ${newBalance.toLocaleString()}
                   </Text>
                 </View>
               </View>
-            </View>
+            </ScrollView>
 
             <View style={styles.footer}>
               <Button
@@ -197,11 +440,11 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
               />
               <Button
                 testID="balance-submit-button"
-                title="Agregar"
+                title={isDeposit ? "Depositar" : "Agregar"}
                 onPress={handleSubmit}
                 loading={isSubmitting || isLoading}
                 disabled={isSubmitting || isLoading}
-                style={{ flex: 1, backgroundColor: "#10B981" }}
+                style={{ flex: 1, backgroundColor: isDeposit ? "#F59E0B" : "#10B981" }}
               />
             </View>
           </View>
@@ -237,6 +480,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.lg,
+    maxHeight: 500,
   },
   workerInfo: {
     flexDirection: "row",
@@ -267,6 +511,63 @@ const styles = StyleSheet.create({
   workerBalance: {
     fontSize: 14,
     marginTop: 2,
+  },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginBottom: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  pickerTrigger: {
+    minHeight: 44,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: spacing.sm,
+  },
+  pickerMenu: {
+    maxHeight: 160,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: spacing.sm,
+  },
+  pickerOption: {
+    minHeight: 44,
+    paddingHorizontal: 12,
+    justifyContent: "center",
+  },
+  accountOption: {
+    minHeight: 44,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  accountInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+  },
+  accountLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    flexShrink: 1,
+  },
+  emptyAccounts: {
+    fontSize: 13,
+    textAlign: "center",
+    marginVertical: spacing.md,
+  },
+  errorText: {
+    fontSize: 12,
+    marginTop: 4,
   },
   previewSection: {
     padding: spacing.md,

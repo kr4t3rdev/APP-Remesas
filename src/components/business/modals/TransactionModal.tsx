@@ -5,10 +5,17 @@ import { useCreateTransactionMutation, useCurrenciesQuery, useExchangeRatesQuery
 import { useBankAccountsQuery } from "../../../modules/bank-accounts/application/useBankAccounts";
 import { useCashBalancesQuery } from "../../../modules/cash/application/useCash";
 import { calculateTransferPreview } from "../../../types/business";
+import type { WorkerBalance } from "../../../types/worker";
 
 type AccountOption = { key: string; type: "CASH" | "BANK_ACCOUNT"; id?: number; label: string; currencyId: number; balance: number; active: boolean };
 
-export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
+type TransactionModalProps = {
+  visible: boolean;
+  onClose: () => void;
+  worker?: { id: number; name: string; balances?: WorkerBalance[] } | null;
+};
+
+export const TransactionModal = ({ visible, onClose, worker }: TransactionModalProps) => {
   const colors = useColors();
   const { mutate: createTx, isPending } = useCreateTransactionMutation();
   const rates = useExchangeRatesQuery();
@@ -27,6 +34,8 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
   const [destinationKey, setDestinationKey] = useState<string>();
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
   const [savedRateMessage, setSavedRateMessage] = useState<string>();
+  const [workerProfit, setWorkerProfit] = useState("");
+  const [workerCurrencyId, setWorkerCurrencyId] = useState<number>();
   const createIntentKey = () => `transfer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const intentKey = useRef(createIntentKey());
 
@@ -55,12 +64,23 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
       setCurrencyId(ratedCurrencies[0]?.id ?? 0);
     }
   }, [currencyId, ratedCurrencies]);
-  // A purchase creates its FX position, so it must not require a previous
-  // position. Sales still use the real position to enforce available stock.
   const selectedCurrencyId = ratedCurrencies.some((item) => item.id === currencyId)
     ? currencyId
     : ratedCurrencies[0]?.id ?? 0;
   const selectedCurrency = ratedCurrencies.find((item) => item.id === selectedCurrencyId);
+  const workerCurrencyOptions = useMemo(
+    () => (worker?.balances ?? []).filter((balance) => balance.currency?.isActive !== false),
+    [worker?.balances],
+  );
+  useEffect(() => {
+    if (!worker) {
+      setWorkerCurrencyId(undefined);
+      return;
+    }
+    if (!workerCurrencyOptions.some((balance) => balance.currencyId === workerCurrencyId)) {
+      setWorkerCurrencyId(workerCurrencyOptions[0]?.currencyId);
+    }
+  }, [worker, workerCurrencyId, workerCurrencyOptions]);
   const existingPosition = positions.data?.find((item) => item.currencyId === selectedCurrencyId);
   const position = type === "COMPRA" && selectedCurrencyId
     ? existingPosition ?? { currencyId: selectedCurrencyId, saldo: 0, costoPromedio: null, availableForSale: false }
@@ -77,6 +97,8 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
     setPersistRate(false);
     setSavedRateMessage(undefined);
     setSaveStatus("idle");
+    setWorkerProfit("");
+    setWorkerCurrencyId(undefined);
     setRateInput(activeRate > 0 ? String(activeRate) : "");
   }, [activeRate, visible]);
   const normalizedRateInput = rateInput.trim().replace(",", ".");
@@ -97,8 +119,9 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
         const cashBalance = cashByCurrencyId.get(currency.id);
         return { key: `CASH:${currency.id}`, type: "CASH" as const, label: `Caja · ${currency.code}`, currencyId: currency.id, balance: cashBalance?.balance ?? 0, active: true };
       });
-    return [...cashAccounts, ...(banks.data ?? []).map((item) => ({ key: `BANK_ACCOUNT:${item.id}`, type: "BANK_ACCOUNT" as const, id: item.id, label: `${item.bankName} · ${item.name}`, currencyId: item.currencyId, balance: Number(item.balance) || 0, active: item.isActive }))];
-  }, [banks.data, cash.data, currencies.data]);
+    const bankAccounts = worker ? [] : (banks.data ?? []).map((item) => ({ key: `BANK_ACCOUNT:${item.id}`, type: "BANK_ACCOUNT" as const, id: item.id, label: `${item.bankName} · ${item.name}`, currencyId: item.currencyId, balance: Number(item.balance) || 0, active: item.isActive }));
+    return [...cashAccounts, ...bankAccounts];
+  }, [banks.data, cash.data, currencies.data, worker]);
   const sourceDebit = type === "COMPRA" ? Number(amount || 0) * rate : Number(amount || 0);
   const sourceOptions = sourceCurrencyId ? accounts.filter((item) => item.active && item.currencyId === sourceCurrencyId && item.balance > 0 && item.balance >= sourceDebit) : [];
   const currencyConfigurationError = !baseCurrencyId ? "Configuración incompleta: no se encontró la moneda base CUP." : undefined;
@@ -108,16 +131,25 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
   useEffect(() => { if (!sourceOptions.some((item) => item.key === sourceKey)) setSourceKey(sourceOptions[0]?.key); }, [sourceKey, sourceOptions]);
   useEffect(() => { if (!destinationOptions.some((item) => item.key === destinationKey)) setDestinationKey(destinationOptions[0]?.key); }, [destinationKey, destinationOptions]);
 
-  const canSubmit = preview.isValid && Boolean(selectedCurrencyId && baseCurrencyId && source && destination);
+  const notes = worker
+    ? `Trabajador: ${worker.name} (ID: ${worker.id})${workerProfit ? `, Ganancia: $${workerProfit}` : ""}`
+    : undefined;
+
+  const workerCurrencyValidationError = worker && !workerCurrencyId
+    ? "El trabajador no tiene un saldo monetario seleccionado. Agregá saldo antes de registrar la operación."
+    : undefined;
+  const canSubmit = preview.isValid && Boolean(selectedCurrencyId && baseCurrencyId && source && destination)
+    && (!worker || Boolean(workerCurrencyId));
   const handleSave = () => {
     if (!canSubmit || !source || !destination) return;
     setSaveStatus("idle");
     setSavedRateMessage(undefined);
-    createTx({ type, currencyId: selectedCurrencyId, amount: Number(amount), rate, operationKind, persistRate, idempotencyKey: intentKey.current, sourceType: source.type, sourceBankAccountId: source.id, destinationType: destination.type, destinationBankAccountId: destination.id }, {
-      onSuccess: (response) => {
+    createTx({ type, currencyId: selectedCurrencyId, amount: Number(amount), rate, operationKind, persistRate, notes, idempotencyKey: intentKey.current, sourceType: source.type, sourceBankAccountId: source.id, destinationType: destination.type, destinationBankAccountId: destination.id, ...(worker && workerCurrencyId ? { workerId: worker.id, workerProfit: workerProfit.trim() ? Number(workerProfit) : 0, workerCurrencyId } : {}) }, {
+        onSuccess: (response) => {
         setAmount("");
         setSaveStatus("success");
         intentKey.current = createIntentKey();
+
         if (persistRate) {
           const effectiveRate = Number(response?.transaction?.rate ?? response?.transaction?.appliedRate ?? rate);
           setSavedRateMessage(`Tasa actual guardada: ${effectiveRate}`);
@@ -132,6 +164,7 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
 
   return <Modal visible={visible} transparent animationType="slide" accessibilityViewIsModal><View style={styles.overlay}><ScrollView accessibilityLabel="Nueva operación" keyboardShouldPersistTaps="handled" contentContainerStyle={styles.containerContent} style={[styles.container, { backgroundColor: colors.card }]}>
     <Text accessibilityRole="header" style={[styles.title, { color: colors.text.primary }]}>Nueva operación</Text>
+    {worker ? <View style={{ backgroundColor: colors.primary[100] + "40", padding: 10, borderRadius: 8, marginBottom: 12 }}><Text style={{ color: colors.primary[500], fontWeight: "600" }}>Trabajador: {worker.name}</Text></View> : null}
     <View accessibilityRole="tablist" style={styles.typeRow}>{(["TRANSFER", "REMITTANCE"] as const).map((option) => <TouchableOpacity key={option} accessibilityRole="tab" accessibilityLabel={option === "TRANSFER" ? "Transferencia" : "Remesas"} accessibilityState={{ selected: operationKind === option }} onPress={() => setOperationKind(option)} style={[styles.tabOption, operationKind === option && { borderBottomColor: colors.primary[500] }]}><Text style={{ color: operationKind === option ? colors.primary[500] : colors.text.primary, fontWeight: operationKind === option ? "600" : "400" }}>{option === "TRANSFER" ? "Transferencia" : "Remesas"}</Text></TouchableOpacity>)}</View>
     <View accessibilityRole="radiogroup" style={styles.typeRow}>{(["COMPRA", "VENTA"] as const).map((option) => <TouchableOpacity key={option} accessibilityRole="radio" accessibilityLabel={option === "COMPRA" ? "Compra" : "Venta"} accessibilityState={{ selected: type === option }} onPress={() => setType(option)} style={styles.radioOption}><Text style={{ color: colors.text.primary }}>{option === "COMPRA" ? "Compra" : "Venta"}</Text></TouchableOpacity>)}</View>
     <Text style={{ color: colors.text.primary, marginBottom: 6 }}>Monto de la operación</Text><TextInput accessibilityLabel="Monto de la operación" style={[styles.input, { borderColor: colors.border, color: colors.text.primary }]} placeholder="Monto" placeholderTextColor={colors.text.secondary} keyboardType="numeric" value={amount} onChangeText={setAmount} />
@@ -173,11 +206,13 @@ export const TransactionModal = ({ visible, onClose }: { visible: boolean; onClo
       <Text style={{ color: colors.text.primary }}>Guardar como tasa actual</Text>
     </TouchableOpacity>
     {currencyConfigurationError ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8 }}>{currencyConfigurationError}</Text> : null}
+    {worker ? <><Text style={{ color: colors.text.primary, marginTop: 10, marginBottom: 6 }}>Moneda del saldo del trabajador</Text>{workerCurrencyOptions.length > 0 ? <View accessibilityRole="radiogroup">{workerCurrencyOptions.map((balance) => <TouchableOpacity key={balance.currencyId} accessibilityRole="radio" accessibilityLabel={`Saldo trabajador ${balance.currency?.code ?? balance.currencyId}`} accessibilityState={{ selected: balance.currencyId === workerCurrencyId }} onPress={() => setWorkerCurrencyId(balance.currencyId)} style={[styles.accountOption, { borderColor: colors.border }, balance.currencyId === workerCurrencyId && { borderColor: colors.primary[500] }]}><Text style={{ color: colors.text.primary }}>{balance.currency?.code ?? `Moneda ${balance.currencyId}`}</Text><Text style={{ color: colors.text.secondary }}>{Number(balance.balance).toFixed(2)}</Text></TouchableOpacity>)}</View> : <Text accessibilityRole="alert" style={{ color: colors.danger }}>{workerCurrencyValidationError}</Text>}</> : null}
     {renderAccountPicker("Origen", sourceOptions, sourceKey, setSourceKey)}{renderAccountPicker("Destino", destinationOptions, destinationKey, setDestinationKey)}
+    {worker ? <><Text style={{ color: colors.text.primary, marginTop: 10, marginBottom: 6 }}>Ganancia del trabajador (opcional, se registra junto con FX)</Text><TextInput accessibilityLabel="Ganancia del trabajador" style={[styles.input, { borderColor: colors.border, color: colors.text.primary }]} placeholder="Ganancia generada" placeholderTextColor={colors.text.secondary} keyboardType="numeric" value={workerProfit} onChangeText={setWorkerProfit} /></> : null}
     <Text style={{ color: colors.text.secondary }}>Total: {preview.totalBase.toFixed(2)} · Saldo proyectado: {preview.projectedSaldo?.toFixed(2) ?? "—"}</Text>
     <Text accessibilityRole="summary" style={{ color: colors.text.secondary, marginTop: 10 }}>Resumen: salen {type === "COMPRA" ? preview.totalBase.toFixed(2) : amount || "0"} de {source?.label ?? "—"} y entran {type === "COMPRA" ? amount || "0" : preview.totalBase.toFixed(2)} en {destination?.label ?? "—"}</Text>
-    {saveStatus === "success" ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 8 }}>Operación guardada correctamente.</Text> : null}{savedRateMessage ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 4 }}>{savedRateMessage}</Text> : null}{saveStatus === "error" ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8 }}>No se pudo guardar la operación. Intentá nuevamente.</Text> : null}{amount && (!preview.isValid || !source || !destination) ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8 }}>{!preview.isValid ? preview.validationMessage : "Seleccioná origen y destino compatibles"}</Text> : null}
-    <View style={styles.actions}><TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancelar" onPress={() => { setPersistRate(false); setOperationKind("TRANSFER"); setSavedRateMessage(undefined); setSaveStatus("idle"); setAmount(""); setRateInput(activeRate > 0 ? String(activeRate) : ""); onClose(); }} style={[styles.button, { backgroundColor: colors.border }]}><Text style={{ color: colors.text.primary }}>Cancelar</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={isPending ? "Guardando" : "Guardar"} onPress={handleSave} disabled={isPending || !canSubmit} style={[styles.button, { backgroundColor: colors.primary[500], opacity: isPending || !canSubmit ? 0.5 : 1 }]}><Text style={{ color: "#fff" }}>{isPending ? "Guardando..." : "Guardar"}</Text></TouchableOpacity></View>
+    {saveStatus === "success" ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 8 }}>Operación guardada correctamente.</Text> : null}{savedRateMessage ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 4 }}>{savedRateMessage}</Text> : null}{saveStatus === "error" ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8 }}>No se pudo guardar la operación. Intentá nuevamente.</Text> : null}{amount && (!preview.isValid || !source || !destination || workerCurrencyValidationError) ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8 }}>{workerCurrencyValidationError ?? (!preview.isValid ? preview.validationMessage : "Seleccioná origen y destino compatibles")}</Text> : null}
+    <View style={styles.actions}><TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancelar" onPress={() => { setPersistRate(false); setOperationKind("TRANSFER"); setSavedRateMessage(undefined); setSaveStatus("idle"); setAmount(""); setWorkerProfit(""); setRateInput(activeRate > 0 ? String(activeRate) : ""); onClose(); }} style={[styles.button, { backgroundColor: colors.border }]}><Text style={{ color: colors.text.primary }}>Cancelar</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={isPending ? "Guardando" : "Guardar"} onPress={handleSave} disabled={isPending || !canSubmit} style={[styles.button, { backgroundColor: colors.primary[500], opacity: isPending || !canSubmit ? 0.5 : 1 }]}><Text style={{ color: "#fff" }}>{isPending ? "Guardando..." : "Guardar"}</Text></TouchableOpacity></View>
   </ScrollView></View></Modal>;
 };
 const styles = StyleSheet.create({ overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)", justifyContent: "center", alignItems: "center" }, container: { width: "80%", maxHeight: "95%", borderRadius: 12, elevation: 5 }, containerContent: { padding: 20 }, title: { fontSize: 18, fontWeight: "bold", marginBottom: 16 }, input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 8, minHeight: 44 }, typeRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 16 }, tabOption: { minHeight: 44, flex: 1, justifyContent: "center", alignItems: "center", borderBottomWidth: 2, borderBottomColor: "transparent" }, radioOption: { minHeight: 44, minWidth: 80, justifyContent: "center", alignItems: "center" }, checkboxRow: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: 10 }, checkbox: { width: 24, height: 24, borderWidth: 2, borderRadius: 4, alignItems: "center", justifyContent: "center" }, currencyTrigger: { minHeight: 44, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, currencyMenu: { maxHeight: 220, borderWidth: 1, borderRadius: 8, marginTop: 4 }, currencyOption: { minHeight: 44, paddingHorizontal: 12, justifyContent: "center" }, accountOption: { minHeight: 44, borderWidth: 1, borderRadius: 8, padding: 8, marginTop: 6, flexDirection: "row", justifyContent: "space-between" }, actions: { flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 16 }, button: { paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: 8 } });

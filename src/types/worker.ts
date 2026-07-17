@@ -8,6 +8,18 @@ export type WorkerTransaction = {
   balanceAfter: number | string;
   description?: string;
   createdAt: string;
+  currencyId?: number;
+  currency?: import("./index").Currency;
+};
+
+export type WorkerBalance = {
+  id: number;
+  workerId: number;
+  currencyId: number;
+  currency?: import("./index").Currency;
+  balance: number | string;
+  accumulatedProfit: number | string;
+  totalDelivered: number | string;
 };
 
 export type Worker = {
@@ -17,7 +29,9 @@ export type Worker = {
   phone?: string;
   photoUrl?: string;
   initials?: string;
-  balance: number | string;
+  balances?: WorkerBalance[];
+  /** @deprecated API compatibility while old records are migrated. */
+  balance?: number | string;
   accumulatedProfit?: number | string;
   totalDelivered?: number | string;
   transactions?: WorkerTransaction[];
@@ -37,9 +51,23 @@ export type CreateTransactionInput = {
   amount: number;
   profit?: number;
   description?: string;
+  currencyId?: number;
+  destinationType?: "CASH" | "BANK_ACCOUNT";
+  destinationId?: number;
 };
 
 export type AddBalanceInput = {
   workerId: number;
   amount: number;
+  sourceType: "CASH" | "BANK_ACCOUNT";
+  sourceId?: number;
+  currencyId: number;
+};
+
+export type DepositInput = {
+  workerId: number;
+  amount: number;
+  destinationType: "CASH" | "BANK_ACCOUNT";
+  destinationId?: number;
+  currencyId: number;
 };

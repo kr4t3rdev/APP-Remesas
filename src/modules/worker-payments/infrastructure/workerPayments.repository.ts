@@ -36,18 +36,42 @@ export const workerPaymentsRepository = {
     workerId: number,
     input: Omit<CreateTransactionInput, "workerId">,
   ): Promise<Worker> {
-    const response = await api.post<{ worker: Worker }>(
+    const response = await api.post<{ worker?: Worker; workerBalance?: Worker }>(
       `/worker-payments/${workerId}/transaction`,
       input,
     );
-    return response.data!.worker;
+    return response.data!.worker ?? response.data!.workerBalance!;
   },
 
-  async addBalance(workerId: number, amount: number): Promise<Worker> {
-    const response = await api.post<{ worker: Worker }>(
+  async addBalance(
+    workerId: number,
+    payload: {
+      amount: number;
+      sourceType?: "CASH" | "BANK_ACCOUNT";
+      sourceId?: number;
+      currencyId?: number;
+    },
+  ): Promise<Worker> {
+    const response = await api.post<{ worker?: Worker; workerBalance?: Worker }>(
       `/worker-payments/${workerId}/balance`,
-      { amount },
+      payload,
     );
-    return response.data!.worker;
+    return response.data!.worker ?? response.data!.workerBalance!;
+  },
+
+  async deposit(
+    workerId: number,
+    payload: {
+      amount: number;
+      destinationType?: "CASH" | "BANK_ACCOUNT";
+      destinationId?: number;
+      currencyId?: number;
+    },
+  ): Promise<Worker> {
+    const response = await api.post<{ worker?: Worker; workerBalance?: Worker }>(
+      `/worker-payments/${workerId}/deposit`,
+      payload,
+    );
+    return response.data!.worker ?? response.data!.workerBalance!;
   },
 };

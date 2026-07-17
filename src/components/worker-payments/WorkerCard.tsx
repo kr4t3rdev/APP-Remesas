@@ -12,6 +12,7 @@ type WorkerCardProps = {
   onExpand?: (worker: Worker) => void;
   onTransaction?: (worker: Worker) => void;
   onAddBalance?: (worker: Worker) => void;
+  onDeposit?: (worker: Worker) => void;
   onEdit?: (worker: Worker) => void;
   onDelete?: (worker: Worker) => void;
   isExpanded?: boolean;
@@ -23,6 +24,7 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({
   onExpand,
   onTransaction,
   onAddBalance,
+  onDeposit,
   onEdit,
   onDelete,
   isExpanded = false,
@@ -31,6 +33,16 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({
   const themeShadows = useShadows();
 
   const workerSubtitle = worker.phone?.trim() ? worker.phone : "Trabajador";
+  const balances = worker.balances ?? [];
+  const balanceLabel = balances.length > 0
+    ? balances.map((balance) => `${balance.currency?.code ?? ""} ${Number(balance.balance).toLocaleString()}`).join(" · ")
+    : `$${Number(worker.balance ?? 0).toLocaleString()}`;
+  const profitLabel = balances.length > 0
+    ? balances.map((balance) => `${balance.currency?.code ?? ""} ${Number(balance.accumulatedProfit).toLocaleString()}`).join(" · ")
+    : `$${Number(worker.accumulatedProfit ?? 0).toLocaleString()}`;
+  const hasNegativeBalance = balances.length > 0
+    ? balances.some((balance) => Number(balance.balance) < 0)
+    : Number(worker.balance ?? 0) < 0;
 
   return (
     <FadeInDown delay={index * 50}>
@@ -105,13 +117,13 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({
                   styles.statValue,
                   {
                     color:
-                      Number(worker.balance) < 0
+                      hasNegativeBalance
                         ? themeColors.danger
                         : themeColors.text.primary,
                   },
                 ]}
               >
-                ${Number(worker.balance).toLocaleString()}
+                {balanceLabel}
               </Text>
             </View>
             <View style={styles.statItem}>
@@ -124,7 +136,7 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({
                 GANANCIA ACUM.
               </Text>
               <Text style={[styles.statValue, { color: themeColors.success }]}>
-                ${Number(worker.accumulatedProfit ?? 0).toLocaleString()}
+                {profitLabel}
               </Text>
             </View>
           </View>
@@ -150,6 +162,17 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({
             <Ionicons name="add-circle-outline" size={18} color="#10B981" />
             <Text style={[styles.actionText, { color: "#10B981" }]}>
               Agregar Saldo
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            testID="worker-deposit-button"
+            onPress={() => onDeposit?.(worker)}
+            style={[styles.actionButton, { backgroundColor: "#F59E0B15" }]}
+          >
+            <Ionicons name="exit-outline" size={18} color="#F59E0B" />
+            <Text style={[styles.actionText, { color: "#F59E0B" }]}>
+              Depósito
             </Text>
           </TouchableOpacity>
         </View>

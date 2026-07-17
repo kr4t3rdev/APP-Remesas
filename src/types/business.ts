@@ -22,6 +22,9 @@ export type TransferRequest = {
   sourceBankAccountId?: number;
   destinationType?: "CASH" | "BANK_ACCOUNT";
   destinationBankAccountId?: number;
+  workerId?: number;
+  workerProfit?: number;
+  workerCurrencyId?: number;
 };
 
 export type TransferTransaction = Transaction & {
