@@ -178,13 +178,14 @@ export const HomeScreen: React.FC = () => {
       >
         <FadeIn delay={0}>
           <View style={styles.header}>
-            <View>
+            <View style={styles.headerTitles}>
               <Text
                 style={[styles.greeting, { color: themeColors.text.secondary }]}
               >
                 {getGreeting()}
               </Text>
               <Text
+                accessibilityRole="header"
                 style={[styles.userName, { color: themeColors.text.primary }]}
               >
                 {user?.name || "Usuario"}
@@ -816,6 +817,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: spacing.md,
+  },
+  headerTitles: {
+    flex: 1,
+    minWidth: 0,
   },
   greeting: {
     fontSize: 15,
