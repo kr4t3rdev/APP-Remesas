@@ -33,6 +33,11 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Local EAS signing credentials
+credentials.json
+.credentials/
+output/apk/
+
 # typescript
 *.tsbuildinfo
 

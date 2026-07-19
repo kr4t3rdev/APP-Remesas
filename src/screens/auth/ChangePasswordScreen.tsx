@@ -19,6 +19,7 @@ import { useColors } from "../../store/themeStore";
 import { borderRadius, spacing } from "../../theme";
 import type { RootStackParamList } from "../../navigation/types";
 import { ErrorModal } from "../../components/admin/ErrorModal";
+import { validatePassword } from "../../utils/validators";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -144,14 +145,16 @@ export const ChangePasswordScreen: React.FC = () => {
     },
   });
 
-  const validatePassword = (password: string): boolean => {
-    return password.length >= 6;
-  };
-
   const passwordsMatch =
     newPassword === confirmPassword && newPassword.length > 0;
 
-  const isValid = validatePassword(newPassword) && passwordsMatch;
+  const passwordValid = validatePassword(newPassword);
+  const hasUppercase = /[A-Z]/.test(newPassword);
+  const hasLowercase = /[a-z]/.test(newPassword);
+  const hasNumber = /\d/.test(newPassword);
+  const noSpaces = newPassword === newPassword.trim();
+
+  const isValid = passwordValid && passwordsMatch;
 
   const handleSubmit = async () => {
     if (!isValid) return;
@@ -267,25 +270,62 @@ export const ChangePasswordScreen: React.FC = () => {
               </Text>
               <View style={styles.requirement}>
                 <Ionicons
-                  name={
-                    newPassword.length >= 6
-                      ? "checkmark-circle"
-                      : "close-circle"
-                  }
+                  name={newPassword.length >= 8 ? "checkmark-circle" : "close-circle"}
                   size={14}
-                  color={
-                    newPassword.length >= 6
-                      ? theme.primary
-                      : theme.textSecondary
-                  }
+                  color={newPassword.length >= 8 ? theme.primary : theme.textSecondary}
                 />
                 <Text
                   style={[
                     styles.requirementText,
-                    newPassword.length >= 6 && styles.requirementMet,
+                    newPassword.length >= 8 && styles.requirementMet,
                   ]}
                 >
-                  Mínimo 6 caracteres
+                  Mínimo 8 caracteres
+                </Text>
+              </View>
+              <View style={styles.requirement}>
+                <Ionicons
+                  name={hasUppercase ? "checkmark-circle" : "close-circle"}
+                  size={14}
+                  color={hasUppercase ? theme.primary : theme.textSecondary}
+                />
+                <Text
+                  style={[
+                    styles.requirementText,
+                    hasUppercase && styles.requirementMet,
+                  ]}
+                >
+                  Al menos una mayúscula
+                </Text>
+              </View>
+              <View style={styles.requirement}>
+                <Ionicons
+                  name={hasLowercase ? "checkmark-circle" : "close-circle"}
+                  size={14}
+                  color={hasLowercase ? theme.primary : theme.textSecondary}
+                />
+                <Text
+                  style={[
+                    styles.requirementText,
+                    hasLowercase && styles.requirementMet,
+                  ]}
+                >
+                  Al menos una minúscula
+                </Text>
+              </View>
+              <View style={styles.requirement}>
+                <Ionicons
+                  name={hasNumber ? "checkmark-circle" : "close-circle"}
+                  size={14}
+                  color={hasNumber ? theme.primary : theme.textSecondary}
+                />
+                <Text
+                  style={[
+                    styles.requirementText,
+                    hasNumber && styles.requirementMet,
+                  ]}
+                >
+                  Al menos un número
                 </Text>
               </View>
               <View style={styles.requirement}>

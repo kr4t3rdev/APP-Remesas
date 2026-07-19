@@ -1,0 +1,95 @@
+{
+  "generatedAt": "2026-07-14T07:15:58.405Z",
+  "baseURL": "http://localhost:4173",
+  "executable": "/Users/arturo/Library/Caches/ms-playwright/chromium_headless_shell-1217/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+  "results": [
+    {
+      "status": "PASS",
+      "name": "Home loading state appears before dashboard resolves",
+      "evidence": "Visible text: Cargando dashboard... then Ganancia Hoy. Screenshot: output/playwright/qa-home-loaded.png"
+    },
+    {
+      "status": "PASS",
+      "name": "Navigation Home/Transactions works and Business is not exposed",
+      "evidence": "tab-Home/tab-Transactions visible; tab-Business/Business/Negocios absent; Transactions shows Compra de USD; Home returns to Ganancia Hoy."
+    },
+    {
+      "status": "PASS",
+      "name": "Buy operation submits POST and closes modal",
+      "evidence": "Captured POST /fx-operations/transfers with type=COMPRA, amount=10."
+    },
+    {
+      "status": "FAIL",
+      "name": "Sale above available balance is blocked before submission",
+      "evidence": "locator.click: Error: strict mode violation: getByText('Venta', { exact: true }) resolved to 2 elements:\n    1) <div dir=\"auto\" class=\"css-146c3p1 r-1gkfh8e r-zl2h9q\">Venta</div> aka locator('#root').getByText('Venta', { exact: true })\n    2) <div dir=\"auto\" class=\"css-146c3p1 r-a023e6 r-1kfrs79\">Venta</div> aka getByText('Venta').nth(4)\n\nCall log:\n\u001b[2m  - waiting for getByText('Venta', { exact: true })\u001b[22m\n\n    at /private/tmp/app-finance-functional-qa.js:151:52\n    at async step (/private/tmp/app-finance-functional-qa.js:37:9)\n    at async /private/tmp/app-finance-functional-qa.js:147:3"
+    },
+    {
+      "status": "PASS",
+      "name": "Remittance callback and duplicate callback return expected statuses",
+      "evidence": "first=201, duplicate=200, duplicate.body.duplicate=true"
+    },
+    {
+      "status": "FAIL",
+      "name": "Refresh/reload reconciles positions, transfers, and remittances dashboard evidence",
+      "evidence": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('tab-Home')\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"tab\" tabindex=\"0\" aria-label=\"Inicio\" data-testid=\"tab-Home\" class=\"css-g5y9jx r-1loqt21 r-1otgn73 r-1awozwy r-1777fci r-peo1c r-13qz1uu\">…</div>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-5kkj8d r-3z9gw1 r-1udh08x r-d23pfw r-16wqof\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div class=\"css-g5y9jx\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <textarea rows=\"2\" dir=\"auto\" autocorrect=\"on\" autocomplete=\"on\" spellcheck=\"true\" autocapitalize=\"sentences\" virtualkeyboardpolicy=\"auto\" class=\"css-11aywtz r-6taxm2\" placeholder=\"Descripción o comentario...\"></textarea> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-5kkj8d r-3z9gw1 r-1udh08x r-d23pfw r-16wqof\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  55 × retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\u001b[2m       - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-5kkj8d r-3z9gw1 r-1udh08x r-d23pfw r-16wqof\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\n    at /private/tmp/app-finance-functional-qa.js:175:40\n    at step (/private/tmp/app-finance-functional-qa.js:37:15)\n    at /private/tmp/app-finance-functional-qa.js:174:9"
+    },
+    {
+      "status": "FAIL",
+      "name": "Transactions empty state appears and recovers after data returns",
+      "evidence": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByTestId('tab-Home')\u001b[22m\n\u001b[2m    - locator resolved to <div role=\"tab\" tabindex=\"0\" aria-label=\"Inicio\" data-testid=\"tab-Home\" class=\"css-g5y9jx r-1loqt21 r-1otgn73 r-1awozwy r-1777fci r-peo1c r-13qz1uu\">…</div>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-5kkj8d r-3z9gw1 r-1udh08x r-d23pfw r-16wqof\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-5kkj8d r-3z9gw1 r-1udh08x r-d23pfw r-16wqof\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    56 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"css-g5y9jx r-f1w8kp r-cqzzvf r-5kkj8d r-3z9gw1 r-1udh08x r-d23pfw r-16wqof\">…</div> from <div>…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at /private/tmp/app-finance-functional-qa.js:186:40\n    at step (/private/tmp/app-finance-functional-qa.js:37:15)\n    at /private/tmp/app-finance-functional-qa.js:184:9"
+    },
+    {
+      "status": "FAIL",
+      "name": "Transactions error/retry state is visible on API failure",
+      "evidence": "Forced /transactions 500. UI showed empty state instead; visible error matches=0, retry matches=0. Screenshot: output/playwright/qa-transactions-error-no-retry.png"
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "warning",
+      "text": "Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md",
+      "location": {
+        "url": "http://localhost:4173/_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js",
+        "lineNumber": 392,
+        "columnNumber": 6878
+      }
+    },
+    {
+      "type": "warning",
+      "text": "Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md",
+      "location": {
+        "url": "http://localhost:4173/_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js",
+        "lineNumber": 392,
+        "columnNumber": 6878
+      }
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+      "location": {
+        "url": "https://tu-dominio-production.com/api/transactions",
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [
+    {
+      "status": 500,
+      "url": "https://tu-dominio-production.com/api/transactions"
+    }
+  ]
+}
+Starting server 1/1: cd "/Users/arturo/Documents/Proyecto Inventario/App Finance/APP" && pnpm build:web && python3 -m http.server 4173 --directory dist --bind localhost
+Waiting for server on port 4173...
+Server ready on port 4173
+
+All 1 server(s) ready
+Running: node /tmp/app-finance-functional-qa.js
+
+
+Stopping 1 server(s)...
+Server 1 stopped
+All servers stopped

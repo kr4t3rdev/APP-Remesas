@@ -20,10 +20,10 @@ import {
 import { useTabBarMotion } from "./TabBarMotionProvider";
 
 export const TAB_BAR_EMPHASIS_MOTION = {
-  barScaleX: 1.04,
-  barScaleY: 1.06,
-  iconScale: 1.05,
-  labelScale: 1.03,
+  barScaleX: 1.07,
+  barScaleY: 1.09,
+  iconScale: 1.08,
+  labelScale: 1.06,
   labelOpacity: 1,
 } as const;
 

@@ -41,6 +41,7 @@ import { useCurrenciesWithPrimaryQuery } from "../../modules/currencies/applicat
 import CountryFlag from "react-native-country-flag";
 import { getCountryCode } from "../../utils/currencyUtils";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
+import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
 
 type TabType = "current" | "history" | "manual";
 
@@ -659,6 +660,7 @@ export const ExchangeRatesScreen: React.FC = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
+      <ProfileFeatureBackButton />
       <FadeIn>
         <View style={styles.header}>
           {/* <Text style={[styles.title, { color: themeColors.text.primary }]}>Tasas de Cambio</Text>

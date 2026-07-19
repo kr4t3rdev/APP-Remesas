@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -20,7 +20,8 @@ import CountryFlag from "react-native-country-flag";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
-import { colors, spacing, borderRadius, shadows } from "../../theme";
+import { spacing, borderRadius } from "../../theme";
+import { useColors, useShadows, useIsDark } from "../../store/themeStore";
 import type { Currency } from "../../types";
 import {
   useCurrenciesWithPrimaryQuery,
@@ -36,6 +37,15 @@ import { getCountryCode, getCurrencySymbol } from "../../utils/currencyUtils";
 import { CURRENCY_CONFIG } from "../../config/constants";
 
 export const CurrenciesScreen: React.FC = () => {
+  const themeColors = useColors();
+  const themeShadows = useShadows();
+  const isDarkMode = useIsDark();
+
+  const styles = useMemo(
+    () => createStyles(themeColors, themeShadows, isDarkMode),
+    [themeColors, themeShadows, isDarkMode],
+  );
+
   const [confirmModal, setConfirmModal] = useState<{
     visible: boolean;
     title: string;
@@ -186,61 +196,61 @@ export const CurrenciesScreen: React.FC = () => {
     const countryCode = getCountryCode(item.code);
     return (
       <View style={styles.secondaryCard}>
-          <View style={styles.secondaryCardFlagContainer}>
-            {countryCode ? (
-              <CountryFlag
-                isoCode={countryCode}
-                size={24}
-                style={styles.flagStyle}
-              />
-            ) : (
-              <View style={styles.placeholderFlag} />
-            )}
-          </View>
-          <Text style={styles.secondaryCardCode}>{item.code}</Text>
-          <Text style={styles.secondaryCardName}>{item.name}</Text>
-          <Text style={styles.secondaryCardSymbol}>
-            {item.symbol} {item.code}
-          </Text>
+        <View style={styles.secondaryCardFlagContainer}>
+          {countryCode ? (
+            <CountryFlag
+              isoCode={countryCode}
+              size={24}
+              style={styles.flagStyle}
+            />
+          ) : (
+            <View style={styles.placeholderFlag} />
+          )}
+        </View>
+        <Text style={styles.secondaryCardCode}>{item.code}</Text>
+        <Text style={styles.secondaryCardName}>{item.name}</Text>
+        <Text style={styles.secondaryCardSymbol}>
+          {item.symbol} {item.code}
+        </Text>
 
+        <TouchableOpacity
+          style={styles.secondaryCardBtnPrimary}
+          onPress={() => handleSetPrimary(item.id)}
+        >
+          <Ionicons
+            name="star"
+            size={14}
+            color="#FFFFFF"
+            style={{ marginRight: 4 }}
+          />
+          <Text style={styles.secondaryCardBtnPrimaryText}>PRINCIPAL</Text>
+        </TouchableOpacity>
+
+        <View style={styles.secondaryCardActions}>
           <TouchableOpacity
-            style={styles.secondaryCardBtnPrimary}
-            onPress={() => handleSetPrimary(item.id)}
+            style={styles.secondaryCardBtnEdit}
+            onPress={() => openModal(item)}
           >
             <Ionicons
-              name="star"
+              name="pencil"
               size={14}
-              color="#fff"
+              color={themeColors.text.secondary}
               style={{ marginRight: 4 }}
             />
-            <Text style={styles.secondaryCardBtnPrimaryText}>PRINCIPAL</Text>
+            <Text style={styles.secondaryCardBtnEditText}>EDITAR</Text>
           </TouchableOpacity>
-
-          <View style={styles.secondaryCardActions}>
-            <TouchableOpacity
-              style={styles.secondaryCardBtnEdit}
-              onPress={() => openModal(item)}
-            >
-              <Ionicons
-                name="pencil"
-                size={14}
-                color={colors.text.secondary}
-                style={{ marginRight: 4 }}
-              />
-              <Text style={styles.secondaryCardBtnEditText}>EDITAR</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.secondaryCardBtnDelete}
-              onPress={() => handleDelete(item)}
-            >
-              <Ionicons
-                name="trash"
-                size={14}
-                color={colors.danger}
-                style={{ marginRight: 4 }}
-              />
-              <Text style={styles.secondaryCardBtnDeleteText}>QUITAR</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.secondaryCardBtnDelete}
+            onPress={() => handleDelete(item)}
+          >
+            <Ionicons
+              name="trash"
+              size={14}
+              color={themeColors.danger}
+              style={{ marginRight: 4 }}
+            />
+            <Text style={styles.secondaryCardBtnDeleteText}>QUITAR</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -261,148 +271,148 @@ export const CurrenciesScreen: React.FC = () => {
           </View>
         </View>
       ) : (
-      <>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={currenciesQuery.isRefetching}
-            onRefresh={handleRefresh}
-            tintColor={colors.primary[500]}
-          />
-        }
-      >
-        {/* Primary Currency Section */}
-        <FadeIn>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>MONEDA PRINCIPAL</Text>
-            <View style={styles.primaryBadgeSmall}>
-              <View style={styles.primaryDot} />
-              <Text style={styles.primaryBadgeSmallText}>PRINCIPAL</Text>
-            </View>
-          </View>
-
-          {primaryCurrency ? (
-            <TouchableOpacity
-              style={styles.primaryCard}
-              onPress={() => openModal(primaryCurrency)}
-              activeOpacity={0.85}
-            >
-              <View style={styles.primaryCardTop}>
-                <View style={styles.primaryFlagPlaceholder}>
-                  {getCountryCode(primaryCurrency.code) ? (
-                    <CountryFlag
-                      isoCode={getCountryCode(primaryCurrency.code)!}
-                      size={20}
-                      style={styles.flagStyle}
-                    />
-                  ) : (
-                    <View style={[styles.primaryFlagPlaceholder, { backgroundColor: "#666" }]} />
-                  )}
+        <>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={currenciesQuery.isRefetching}
+                onRefresh={handleRefresh}
+                tintColor={themeColors.primary[500]}
+              />
+            }
+          >
+            {/* Primary Currency Section */}
+            <FadeIn>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>MONEDA PRINCIPAL</Text>
+                <View style={styles.primaryBadgeSmall}>
+                  <View style={styles.primaryDot} />
+                  <Text style={styles.primaryBadgeSmallText}>PRINCIPAL</Text>
                 </View>
-                <Text style={styles.primaryCode}>{primaryCurrency.code}</Text>
-                <Ionicons
-                  name="earth"
-                  size={80}
-                  color="rgba(255,255,255,0.1)"
-                  style={styles.primaryCardBgIcon}
-                />
               </View>
-              <Text style={styles.primaryName}>{primaryCurrency.name}</Text>
 
-              <View style={styles.primaryCardBottom}>
-                <View style={styles.primaryInfoBlock}>
-                  <Text style={styles.primaryInfoLabel}>SÍMBOLO</Text>
-                  <Text style={styles.primaryInfoValue}>
-                    {primaryCurrency.symbol}{" "}
-                    {primaryCurrency.code === CURRENCY_CONFIG.BASE_CODE ? "MN" : ""}
+              {primaryCurrency ? (
+                <TouchableOpacity
+                  style={styles.primaryCard}
+                  onPress={() => openModal(primaryCurrency)}
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.primaryCardTop}>
+                    <View style={styles.primaryFlagPlaceholder}>
+                      {getCountryCode(primaryCurrency.code) ? (
+                        <CountryFlag
+                          isoCode={getCountryCode(primaryCurrency.code)!}
+                          size={20}
+                          style={styles.flagStyle}
+                        />
+                      ) : (
+                        <View style={[styles.primaryFlagPlaceholder, { backgroundColor: themeColors.text.tertiary }]} />
+                      )}
+                    </View>
+                    <Text style={styles.primaryCode}>{primaryCurrency.code}</Text>
+                    <Ionicons
+                      name="earth"
+                      size={80}
+                      color="rgba(255,255,255,0.1)"
+                      style={styles.primaryCardBgIcon}
+                    />
+                  </View>
+                  <Text style={styles.primaryName}>{primaryCurrency.name}</Text>
+
+                  <View style={styles.primaryCardBottom}>
+                    <View style={styles.primaryInfoBlock}>
+                      <Text style={styles.primaryInfoLabel}>SÍMBOLO</Text>
+                      <Text style={styles.primaryInfoValue}>
+                        {primaryCurrency.symbol}{" "}
+                        {primaryCurrency.code === CURRENCY_CONFIG.BASE_CODE ? "MN" : ""}
+                      </Text>
+                    </View>
+                    <View style={styles.primaryDivider} />
+                    <View style={styles.primaryInfoBlock}>
+                      <Text style={styles.primaryInfoLabel}>ESTADO</Text>
+                      <Text style={styles.primaryInfoValue}>Configurado</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <View
+                  style={[
+                    styles.primaryCard,
+                    {
+                      justifyContent: "center",
+                      alignItems: "center",
+                      paddingVertical: 40,
+                    },
+                  ]}
+                >
+                  <Text style={styles.primaryEmptyText}>
+                    No hay moneda principal configurada
+                  </Text>
+                  <Text>
+                    {" "}
+                  </Text>
+                  <Button
+                    title="Configurar"
+                    onPress={() => openModal()}
+                    style={{
+                      marginTop: 16,
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                    }}
+                  />
+                </View>
+              )}
+            </FadeIn>
+
+            {/* Secondary Currencies Section */}
+            <FadeIn delay={100}>
+              <View style={[styles.sectionHeader, { marginTop: spacing.xl }]}>
+                <Text style={styles.sectionTitleDark}>Otras Monedas</Text>
+                <View style={styles.activeBadge}>
+                  <Text style={styles.activeBadgeText}>
+                    {secondaryCurrencies.length} ACTIVAS
                   </Text>
                 </View>
-                <View style={styles.primaryDivider} />
-                <View style={styles.primaryInfoBlock}>
-                  <Text style={styles.primaryInfoLabel}>ESTADO</Text>
-                  <Text style={styles.primaryInfoValue}>Configurado</Text>
+              </View>
+
+              <ScrollView
+                horizontal
+                contentContainerStyle={styles.secondaryListContent}
+                showsHorizontalScrollIndicator={false}
+              >
+                {secondaryCurrencies.length === 0 ? (
+                  <View style={styles.secondaryEmpty}>
+                    <Text style={styles.secondaryEmptyText}>
+                      No hay otras monedas
+                    </Text>
+                  </View>
+                ) : (
+                  secondaryCurrencies.map((item, index) => (
+                    <FadeInDown key={item.id} delay={index * 50}>
+                      {renderSecondaryCurrencyItem(item)}
+                    </FadeInDown>
+                  ))
+                )}
+              </ScrollView>
+            </FadeIn>
+
+            {/* Market Status Section */}
+            <FadeIn delay={200}>
+              <View style={styles.marketStatusCard}>
+                <View style={styles.marketStatusIcon}>
+                  <Ionicons name="refresh" size={24} color={themeColors.primary[600]} />
+                </View>
+                <View style={styles.marketStatusInfo}>
+                  <Text style={styles.marketStatusLabel}>ESTADO DEL MERCADO</Text>
+                  <Text style={styles.marketStatusTitle}>{lastUpdateText}</Text>
+                  <Text style={styles.marketStatusDesc}>
+                    Sincronizado con exchange rates
+                  </Text>
                 </View>
               </View>
-            </TouchableOpacity>
-          ) : (
-            <View
-              style={[
-                styles.primaryCard,
-                {
-                  justifyContent: "center",
-                  alignItems: "center",
-                  paddingVertical: 40,
-                },
-              ]}
-            >
-              <Text style={{ color: "#fff", fontSize: 16 }}>
-                No hay moneda principal configurada
-              </Text>
-              <Text>
-                
-              </Text>
-              <Button
-                title="Configurar"
-                onPress={() => openModal()}
-                style={{
-                  marginTop: 16,
-                  backgroundColor: "rgba(255,255,255,0.2)",
-                }}
-              />
-            </View>
-          )}
-        </FadeIn>
-
-        {/* Secondary Currencies Section */}
-        <FadeIn delay={100}>
-          <View style={[styles.sectionHeader, { marginTop: spacing.xl }]}>
-            <Text style={styles.sectionTitleDark}>Otras Monedas</Text>
-            <View style={styles.activeBadge}>
-              <Text style={styles.activeBadgeText}>
-                {secondaryCurrencies.length} ACTIVAS
-              </Text>
-            </View>
-          </View>
-
-          <ScrollView
-            horizontal
-            contentContainerStyle={styles.secondaryListContent}
-            showsHorizontalScrollIndicator={false}
-          >
-            {secondaryCurrencies.length === 0 ? (
-              <View style={styles.secondaryEmpty}>
-                <Text style={styles.secondaryEmptyText}>
-                  No hay otras monedas
-                </Text>
-              </View>
-            ) : (
-              secondaryCurrencies.map((item, index) => (
-                <FadeInDown key={item.id} delay={index * 50}>
-                  {renderSecondaryCurrencyItem(item)}
-                </FadeInDown>
-              ))
-            )}
+            </FadeIn>
           </ScrollView>
-        </FadeIn>
-
-        {/* Market Status Section */}
-        <FadeIn delay={200}>
-          <View style={styles.marketStatusCard}>
-            <View style={styles.marketStatusIcon}>
-              <Ionicons name="refresh" size={24} color={colors.primary[600]} />
-            </View>
-            <View style={styles.marketStatusInfo}>
-              <Text style={styles.marketStatusLabel}>ESTADO DEL MERCADO</Text>
-              <Text style={styles.marketStatusTitle}>{lastUpdateText}</Text>
-              <Text style={styles.marketStatusDesc}>
-                Sincronizado con exchange rates
-              </Text>
-            </View>
-          </View>
-        </FadeIn>
-      </ScrollView>
-      </>
+        </>
       )}
 
       <ScaleIn delay={200}>
@@ -411,7 +421,7 @@ export const CurrenciesScreen: React.FC = () => {
           onPress={() => openModal()}
           activeOpacity={0.8}
         >
-          <Ionicons name="add" size={28} color="#fff" />
+          <Ionicons name="add" size={28} color="#FFFFFF" />
         </TouchableOpacity>
       </ScaleIn>
 
@@ -440,7 +450,7 @@ export const CurrenciesScreen: React.FC = () => {
                 <Ionicons
                   name="close"
                   size={24}
-                  color={colors.text.secondary}
+                  color={themeColors.text.secondary}
                 />
               </TouchableOpacity>
             </View>
@@ -520,8 +530,12 @@ export const CurrenciesScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8f9fc" },
+const createStyles = (
+  c: ReturnType<typeof useColors>,
+  s: ReturnType<typeof useShadows>,
+  isDark: boolean,
+) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.background },
   fab: {
     position: "absolute",
     bottom: spacing.lg,
@@ -529,10 +543,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.primary[500],
+    backgroundColor: c.primary[500],
     alignItems: "center",
     justifyContent: "center",
-    ...shadows.lg,
+    ...s.lg,
   },
   scrollContent: {
     padding: spacing.md,
@@ -547,18 +561,18 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: "700",
-    color: colors.text.secondary,
+    color: c.text.secondary,
     letterSpacing: 0.5,
   },
   sectionTitleDark: {
     fontSize: 18,
     fontWeight: "700",
-    color: colors.text.primary,
+    color: c.text.primary,
   },
   primaryBadgeSmall: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e8f5e9",
+    backgroundColor: c.secondary[100],
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -567,16 +581,16 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "#4caf50",
+    backgroundColor: c.secondary[500],
     marginRight: 4,
   },
   primaryBadgeSmallText: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#2e7d32",
+    color: c.secondary[700],
   },
   activeBadge: {
-    backgroundColor: "#e0e0e0",
+    backgroundColor: c.border,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -584,14 +598,14 @@ const styles = StyleSheet.create({
   activeBadgeText: {
     fontSize: 10,
     fontWeight: "700",
-    color: colors.text.secondary,
+    color: c.text.secondary,
   },
   primaryCard: {
-    backgroundColor: "#0d47a1",
+    backgroundColor: isDark ? "#0C3D49" : c.primary[600],
     borderRadius: 24,
     padding: spacing.xl,
     overflow: "hidden",
-    ...shadows.lg,
+    ...s.lg,
   },
   primaryEditBtn: {
     position: "absolute",
@@ -600,7 +614,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#fff",
+    backgroundColor: c.card,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -613,14 +627,14 @@ const styles = StyleSheet.create({
   primaryFlagPlaceholder: {
     width: 32,
     height: 20,
-    backgroundColor: "#212121",
+    backgroundColor: c.text.tertiary,
     borderRadius: 4,
     marginRight: spacing.sm,
     overflow: "hidden",
     position: "relative",
   },
   primaryCode: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",
     letterSpacing: 1,
@@ -631,7 +645,7 @@ const styles = StyleSheet.create({
     top: -20,
   },
   primaryName: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 36,
     fontWeight: "800",
     marginBottom: spacing.xl,
@@ -651,7 +665,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   primaryInfoValue: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",
   },
@@ -661,30 +675,34 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.2)",
     marginHorizontal: spacing.lg,
   },
+  primaryEmptyText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+  },
   secondaryListContent: {
     paddingRight: spacing.md,
     paddingBottom: spacing.sm,
   },
   secondaryEmpty: {
     padding: spacing.lg,
-    backgroundColor: "#fff",
+    backgroundColor: c.card,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: c.border,
   },
   secondaryEmptyText: {
-    color: colors.text.secondary,
+    color: c.text.secondary,
   },
   secondaryCard: {
-    backgroundColor: "#fff",
+    backgroundColor: c.card,
     borderRadius: 24,
     padding: spacing.lg,
     marginRight: spacing.md,
     width: 180,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: c.border,
     alignItems: "center",
-    ...shadows.sm,
+    ...s.sm,
   },
   secondaryCardFlagContainer: {
     width: 48,
@@ -699,30 +717,30 @@ const styles = StyleSheet.create({
   placeholderFlag: {
     width: 32,
     height: 24,
-    backgroundColor: "#424242",
+    backgroundColor: c.surface,
     borderRadius: 4,
   },
   secondaryCardCode: {
     fontSize: 20,
     fontWeight: "800",
-    color: colors.primary[700],
+    color: c.primary[700],
     marginBottom: 2,
   },
   secondaryCardName: {
     fontSize: 14,
     fontWeight: "600",
-    color: colors.text.primary,
+    color: c.text.primary,
     marginBottom: 2,
   },
   secondaryCardSymbol: {
     fontSize: 12,
-    color: colors.text.secondary,
+    color: c.text.secondary,
     marginBottom: spacing.lg,
   },
   secondaryCardBtnPrimary: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#0d47a1",
+    backgroundColor: isDark ? "#0C3D49" : c.primary[600],
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 16,
@@ -731,7 +749,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   secondaryCardBtnPrimaryText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 10,
     fontWeight: "700",
   },
@@ -746,45 +764,45 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: c.surface,
     paddingVertical: 8,
     borderRadius: 12,
   },
   secondaryCardBtnEditText: {
     fontSize: 10,
     fontWeight: "700",
-    color: colors.text.secondary,
+    color: c.text.secondary,
   },
   secondaryCardBtnDelete: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ffebee",
+    backgroundColor: isDark ? "rgba(239,68,68,0.15)" : c.financial.expenseLight,
     paddingVertical: 8,
     borderRadius: 12,
   },
   secondaryCardBtnDeleteText: {
     fontSize: 10,
     fontWeight: "700",
-    color: colors.danger,
+    color: c.danger,
   },
   marketStatusCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: c.card,
     borderRadius: 24,
     padding: spacing.lg,
     marginTop: spacing.xl,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    ...shadows.sm,
+    borderColor: c.border,
+    ...s.sm,
   },
   marketStatusIcon: {
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: colors.primary[50],
+    backgroundColor: c.primary[50],
     alignItems: "center",
     justifyContent: "center",
     marginRight: spacing.md,
@@ -795,24 +813,24 @@ const styles = StyleSheet.create({
   marketStatusLabel: {
     fontSize: 10,
     fontWeight: "700",
-    color: colors.text.secondary,
+    color: c.text.secondary,
     letterSpacing: 0.5,
     marginBottom: 2,
   },
   marketStatusTitle: {
     fontSize: 14,
     fontWeight: "700",
-    color: colors.text.primary,
+    color: c.text.primary,
     marginBottom: 2,
   },
   marketStatusDesc: {
     fontSize: 12,
-    color: colors.text.tertiary,
+    color: c.text.tertiary,
   },
   modalOverlay: { flex: 1, justifyContent: "flex-end" },
   modalBackdrop: { flex: 1, backgroundColor: "transparent" },
   modalContent: {
-    backgroundColor: colors.card,
+    backgroundColor: c.card,
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
     padding: spacing.lg,
@@ -825,7 +843,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: spacing.lg,
   },
-  modalTitle: { fontSize: 20, fontWeight: "700", color: colors.text.primary },
+  modalTitle: { fontSize: 20, fontWeight: "700", color: c.text.primary },
   submitButton: { marginTop: spacing.md },
   loadingContainer: {
     flex: 1,
@@ -834,7 +852,7 @@ const styles = StyleSheet.create({
   },
   skeletonPrimary: {
     height: 180,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: c.surface,
     borderRadius: 24,
   },
   skeletonSection: {
@@ -843,7 +861,7 @@ const styles = StyleSheet.create({
   skeletonBadge: {
     width: 80,
     height: 20,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: c.surface,
     borderRadius: 12,
   },
   skeletonRow: {
@@ -853,7 +871,7 @@ const styles = StyleSheet.create({
   skeletonCard: {
     width: 180,
     height: 200,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: c.surface,
     borderRadius: 24,
   },
 });

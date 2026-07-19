@@ -34,10 +34,11 @@ describe("API base URL selection", () => {
     expect(loadConfig("ios", false).baseURL).toBe("http://localhost:3000/api");
   });
 
-  it("keeps the Android emulator host alias", () => {
+  it("uses the configured web URL on Android emulator", () => {
+    process.env.EXPO_PUBLIC_WEB_API_URL = "http://localhost:4100/api";
     process.env.EXPO_PUBLIC_PHYSICAL_API_URL = "http://192.168.0.25:3000/api";
     expect(loadConfig("android", false).baseURL).toBe(
-      "http://10.0.2.2:3000/api",
+      "http://localhost:4100/api",
     );
   });
 

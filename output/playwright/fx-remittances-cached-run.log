@@ -1,0 +1,62 @@
+npm warn Unknown project config "store-dir". This will stop working in the next major version of npm.
+[2m[WebServer] [22m(node:8206) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(node:8216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[2m$ expo export --platform web[22m
+[2m[WebServer] [22m(node:8249) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:07] "GET / HTTP/1.1" 200 -
+
+Running 6 tests using 1 worker
+
+(node:8455) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:8455) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:09] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:09] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:09] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:09] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:09] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+  ✓  1 e2e/fx-trading-remittances.spec.ts:22:7 › FX trading and remittances — Phase 4 › reviewed opening → buy → sell shows saldo and rendimiento (2.6s)
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:11] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:11] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:11] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:11] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:11] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:12] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+  ✓  2 e2e/fx-trading-remittances.spec.ts:33:7 › FX trading and remittances — Phase 4 › sale above available saldo is blocked before submission (2.1s)
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:13] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:13] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:14] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:14] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:14] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:14] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+  ✓  3 e2e/fx-trading-remittances.spec.ts:42:7 › FX trading and remittances — Phase 4 › completed remittance applies one two-currency effect (1.7s)
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:15] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:15] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:15] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:15] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:15] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:15] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+  ✓  4 e2e/fx-trading-remittances.spec.ts:49:7 › FX trading and remittances — Phase 4 › duplicate remittance callback is reported as duplicate-safe (1.7s)
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:17] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:17] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:17] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:17] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:17] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:17] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:18] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:18] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:18] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+  ✓  5 e2e/fx-trading-remittances.spec.ts:59:7 › FX trading and remittances — Phase 4 › dashboard refresh reconciles positions, transfers, and remittances (1.6s)
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:18] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:18] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:19] "GET / HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:19] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:19] "GET /_expo/static/js/web/index-a02ef10180e23f93152822ed2ccd03ba.js HTTP/1.1" 200 -
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:12:19] "GET /assets/node_modules/.pnpm/@expo+vector-icons@15.0.3_expo-font@14.0.11_expo@54.0.33_@babel+core@7.29.0_react-nativ_78421202a6dfa7cb0516f7c2a08c858e/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf HTTP/1.1" 200 -
+  ✓  6 e2e/fx-trading-remittances.spec.ts:69:7 › FX trading and remittances — Phase 4 › loading, empty, error, and retry states recover deterministically (1.0s)
+
+  6 passed (24.0s)

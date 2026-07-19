@@ -1,0 +1,123 @@
+npm warn Unknown project config "store-dir". This will stop working in the next major version of npm.
+[2m[WebServer] [22m(node:6640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(node:6650) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m[2m$ expo export --platform web[22m
+[2m[WebServer] [22m(node:6683) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m::1 - - [14/Jul/2026 03:07:15] "GET / HTTP/1.1" 200 -
+
+Running 6 tests using 1 worker
+
+(node:7025) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7025) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 e2e/fx-trading-remittances.spec.ts:22:7 › FX trading and remittances — Phase 4 › reviewed opening → buy → sell shows saldo and rendimiento (2ms)
+(node:7039) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7039) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 e2e/fx-trading-remittances.spec.ts:33:7 › FX trading and remittances — Phase 4 › sale above available saldo is blocked before submission (2ms)
+(node:7046) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7046) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 e2e/fx-trading-remittances.spec.ts:42:7 › FX trading and remittances — Phase 4 › completed remittance applies one two-currency effect (1ms)
+(node:7054) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7054) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 e2e/fx-trading-remittances.spec.ts:49:7 › FX trading and remittances — Phase 4 › duplicate remittance callback is reported as duplicate-safe (2ms)
+(node:7089) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7089) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 e2e/fx-trading-remittances.spec.ts:59:7 › FX trading and remittances — Phase 4 › dashboard refresh reconciles positions, transfers, and remittances (1ms)
+(node:7093) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7093) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  6 e2e/fx-trading-remittances.spec.ts:69:7 › FX trading and remittances — Phase 4 › loading, empty, error, and retry states recover deterministically (2ms)
+
+
+  1) e2e/fx-trading-remittances.spec.ts:22:7 › FX trading and remittances — Phase 4 › reviewed opening → buy → sell shows saldo and rendimiento 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/arturo/Library/Caches/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+  2) e2e/fx-trading-remittances.spec.ts:33:7 › FX trading and remittances — Phase 4 › sale above available saldo is blocked before submission 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/arturo/Library/Caches/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+  3) e2e/fx-trading-remittances.spec.ts:42:7 › FX trading and remittances — Phase 4 › completed remittance applies one two-currency effect 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/arturo/Library/Caches/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+  4) e2e/fx-trading-remittances.spec.ts:49:7 › FX trading and remittances — Phase 4 › duplicate remittance callback is reported as duplicate-safe 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/arturo/Library/Caches/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+  5) e2e/fx-trading-remittances.spec.ts:59:7 › FX trading and remittances — Phase 4 › dashboard refresh reconciles positions, transfers, and remittances 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/arturo/Library/Caches/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+  6) e2e/fx-trading-remittances.spec.ts:69:7 › FX trading and remittances — Phase 4 › loading, empty, error, and retry states recover deterministically 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/arturo/Library/Caches/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+  6 failed
+    e2e/fx-trading-remittances.spec.ts:22:7 › FX trading and remittances — Phase 4 › reviewed opening → buy → sell shows saldo and rendimiento 
+    e2e/fx-trading-remittances.spec.ts:33:7 › FX trading and remittances — Phase 4 › sale above available saldo is blocked before submission 
+    e2e/fx-trading-remittances.spec.ts:42:7 › FX trading and remittances — Phase 4 › completed remittance applies one two-currency effect 
+    e2e/fx-trading-remittances.spec.ts:49:7 › FX trading and remittances — Phase 4 › duplicate remittance callback is reported as duplicate-safe 
+    e2e/fx-trading-remittances.spec.ts:59:7 › FX trading and remittances — Phase 4 › dashboard refresh reconciles positions, transfers, and remittances 
+    e2e/fx-trading-remittances.spec.ts:69:7 › FX trading and remittances — Phase 4 › loading, empty, error, and retry states recover deterministically 

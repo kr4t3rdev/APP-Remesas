@@ -43,6 +43,7 @@ import {
   useReportsDailyReportQuery,
   useReportsPeriodQuery,
 } from "../../modules/reports/application/useReports";
+import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -1151,6 +1152,7 @@ export const ReportsScreen: React.FC = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
+      <ProfileFeatureBackButton />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={

@@ -17,12 +17,12 @@ import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
-import type { Worker, CreateWorkerInput, UpdateWorkerInput } from "../../types";
+import type { Worker, CreateWorkerInput } from "../../types";
 
 type WorkerFormModalProps = {
   visible: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateWorkerInput | UpdateWorkerInput) => Promise<void>;
+  onSubmit: (data: CreateWorkerInput) => Promise<void>;
   worker?: Worker | null;
   recentWorkers?: Worker[];
   isLoading?: boolean;

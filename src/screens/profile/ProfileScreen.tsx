@@ -13,7 +13,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { FadeIn, FadeInDown, ScaleIn } from "../../components/animations";
 import { StatsCard, CircularProgress } from "../../components/charts/Charts";
-import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { spacing, borderRadius } from "../../theme";
 import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
@@ -35,6 +34,7 @@ import {
 } from "../../modules/profile/application/useProfile";
 import { profileNavigationItems } from "./profileNavigationItems";
 import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
+import { ChangePasswordModal } from "../../components/profile/ChangePasswordModal";
 
 type MenuItem = {
   id: string;
@@ -94,10 +94,7 @@ export const ProfileScreen: React.FC = () => {
     transactions: { total: 0 },
   };
 
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const isAdmin = user?.role === "ADMIN";
 
   const handleRefresh = async () => {
@@ -109,32 +106,9 @@ export const ProfileScreen: React.FC = () => {
     ]);
   };
 
-  const handleChangePassword = async () => {
-    if (!currentPassword || !newPassword) {
-      Alert.alert("Error", "Complete todos los campos");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await changePassword(currentPassword, newPassword);
-      Alert.alert("Éxito", "Contraseña actualizada");
-      setShowPasswordForm(false);
-      setCurrentPassword("");
-      setNewPassword("");
-    } catch (error: any) {
-      Alert.alert(
-        "Error",
-        error.response?.data?.message || "Error al cambiar contraseña",
-      );
-    } finally {
-      setLoading(false);
-    }
+  const handleChangePassword = async (current: string, newPwd: string) => {
+    await changePassword(current, newPwd);
+    Alert.alert("Éxito", "Contraseña actualizada");
   };
 
   const handleLogout = () => {
@@ -183,7 +157,7 @@ export const ProfileScreen: React.FC = () => {
       subtitle: "Actualizar credenciales",
       icon: "lock-closed-outline",
       color: themeColors.primary[500],
-      onPress: () => setShowPasswordForm(!showPasswordForm),
+      onPress: () => setShowChangePasswordModal(true),
     },
     {
       id: "rates",
@@ -472,48 +446,6 @@ export const ProfileScreen: React.FC = () => {
           </View>
         </FadeInDown>
 
-        {showPasswordForm && (
-          <FadeInDown>
-            <View style={styles.passwordForm}>
-              <Text style={styles.formTitle}>Cambiar Contraseña</Text>
-              <Input
-                label="Contraseña Actual"
-                placeholder="••••••••"
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-                secureTextEntry
-              />
-              <View style={{ marginTop: spacing.sm }}>
-                <Input
-                  label="Nueva Contraseña"
-                  placeholder="••••••••"
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  secureTextEntry
-                />
-              </View>
-              <View style={styles.formButtons}>
-                <Button
-                  title="Cancelar"
-                  variant="outline"
-                  onPress={() => {
-                    setShowPasswordForm(false);
-                    setCurrentPassword("");
-                    setNewPassword("");
-                  }}
-                  style={{ flex: 1 }}
-                />
-                <Button
-                  title="Guardar"
-                  onPress={handleChangePassword}
-                  loading={loading}
-                  style={{ flex: 1 }}
-                />
-              </View>
-            </View>
-          </FadeInDown>
-        )}
-
         <Button
           title="Cerrar Sesión"
           variant="outline"
@@ -523,6 +455,13 @@ export const ProfileScreen: React.FC = () => {
         />
 
       </ScrollView>
+
+      <ChangePasswordModal
+        visible={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        onChangePassword={handleChangePassword}
+      />
+
       <ConfirmModal
         visible={confirmModal.visible}
         title={confirmModal.title}
@@ -768,24 +707,6 @@ const createStyles = (
       fontSize: 12,
       color: themeColors.text.secondary,
       marginTop: 2,
-    },
-    passwordForm: {
-      backgroundColor: themeColors.card,
-      borderRadius: borderRadius.lg,
-      padding: spacing.md,
-      marginBottom: spacing.lg,
-      ...themeShadows.sm,
-    },
-    formTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: themeColors.text.primary,
-      marginBottom: spacing.md,
-    },
-    formButtons: {
-      flexDirection: "row",
-      gap: spacing.sm,
-      marginTop: spacing.md,
     },
     logoutButton: {
       marginTop: spacing.md,

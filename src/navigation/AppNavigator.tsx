@@ -48,12 +48,17 @@ const AuthStackNavigator: React.FC = () => (
 
 const MainStack = createNativeStackNavigator<RootStackParamList>();
 
-const MainStackNavigator: React.FC = () => {
+const MainStackNavigator: React.FC<{
+  initialRouteName?: keyof RootStackParamList;
+}> = ({ initialRouteName }) => {
   const { user } = useAuthStore();
   const isAdmin = user?.role === "ADMIN";
 
   return (
-    <MainStack.Navigator screenOptions={{ headerShown: false }}>
+    <MainStack.Navigator
+      initialRouteName={initialRouteName}
+      screenOptions={{ headerShown: false }}
+    >
       <MainStack.Screen
         name="Main"
         component={isAdmin ? AdminTabs : MainTabs}
@@ -176,7 +181,7 @@ export const AppNavigator: React.FC = () => {
   if (isAuthenticated && mustChangePassword) {
     return (
       <NavigationContainer>
-        <MainStackNavigator />
+        <MainStackNavigator initialRouteName="ChangePassword" />
       </NavigationContainer>
     );
   }

@@ -31,6 +31,7 @@ import {
   useDeleteBankAccountMutation,
 } from "../../modules/bank-accounts/application/useBankAccounts";
 import { useCurrenciesWithPrimaryQuery } from "../../modules/currencies/application/useCurrencies";
+import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
 
 type ConfirmAction = () => Promise<void>;
 
@@ -260,6 +261,7 @@ export const BankAccountsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ProfileFeatureBackButton />
       <FadeIn>
         <View style={styles.header}>
           <Text style={[styles.headerLabel, { color: colors.text.tertiary }]}>TOTAL NET CASH</Text>

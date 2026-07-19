@@ -7,6 +7,7 @@ import { useState, useMemo } from "react";
 import { Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useAuthStore } from "../../../store/authStore";
+import { validatePassword } from "../../../utils/validators";
 import {
   useThemeStore,
   useColors,
@@ -128,8 +129,10 @@ export const useAdminProfile = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setErrorMessage("La contraseña debe tener al menos 6 caracteres");
+    if (!validatePassword(newPassword)) {
+      setErrorMessage(
+        "La contraseña debe tener mínimo 8 caracteres, incluir mayúscula, minúscula y número",
+      );
       setShowErrorModal(true);
       return;
     }

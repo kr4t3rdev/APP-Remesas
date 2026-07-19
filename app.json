@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "XChange$ocial",
-    "slug": "xchange-sofial",
+    "name": "Cashflow",
+    "slug": "cashflows",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,7 +18,10 @@
       "bundleIdentifier": "com.xchangesocial.app",
       "buildNumber": "1",
       "infoPlist": {
-        "UIBackgroundModes": ["fetch", "remote-notification"]
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -29,7 +32,10 @@
         "backgroundColor": "#0ea5e9"
       },
       "edgeToEdgeEnabled": true,
-      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE"]
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -41,8 +47,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "your-project-id-here"
+        "projectId": "b1f45fa9-34eb-4642-aaf4-8dd7303af589"
       }
-    }
+    },
+    "owner": "migadev"
   }
 }
