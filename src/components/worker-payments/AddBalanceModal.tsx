@@ -110,13 +110,8 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
   }, [cashBalances, banks, currencies]);
 
   const uniqueCurrencies = useMemo(() => {
-    const seen = new Set<number>();
-    return currencies.filter((c) => {
-      if (seen.has(c.id)) return false;
-      seen.add(c.id);
-      return accounts.some((a) => a.currencyId === c.id);
-    });
-  }, [currencies, accounts]);
+    return currencies.filter((c) => c.isActive !== false);
+  }, [currencies]);
 
   useEffect(() => {
     if (visible && uniqueCurrencies.length > 0 && !selectedCurrencyId) {
@@ -171,14 +166,6 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
 
     if (isDeposit && worker && numAmount > currentWorkerBalance) {
       newErrors.amount = "El monto supera el saldo disponible del trabajador";
-    }
-
-    if (
-      !isDeposit &&
-      selectedAccount &&
-      numAmount > selectedAccount.balance
-    ) {
-      newErrors.amount = "El monto supera el saldo disponible del origen";
     }
 
     setErrors(newErrors);
@@ -362,16 +349,13 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
               ) : (
                 filteredAccounts.map((account) => {
                   const isSelected = account.key === selectedAccountKey;
-                  const disabled = !isDeposit && account.balance <= 0;
                   return (
                     <TouchableOpacity
                       key={account.key}
-                      disabled={disabled}
                       onPress={() => setSelectedAccountKey(account.key)}
                       style={[
                         styles.accountOption,
                         { borderColor: isSelected ? themeColors.primary[500] : themeColors.border },
-                        disabled && { opacity: 0.4 },
                       ]}
                     >
                       <View style={styles.accountInfo}>

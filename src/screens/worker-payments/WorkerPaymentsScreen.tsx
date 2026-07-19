@@ -199,11 +199,16 @@ export const WorkerPaymentsScreen: React.FC = () => {
     currencyId?: number;
   }) => {
     if (!selectedWorker) return;
-    await balanceMutation.mutateAsync({
-      workerId: selectedWorker.id,
-      ...data,
-    });
-    Alert.alert("Éxito", "Saldo agregado correctamente");
+    try {
+      await balanceMutation.mutateAsync({
+        workerId: selectedWorker.id,
+        ...data,
+      });
+      Alert.alert("Éxito", "Saldo agregado correctamente");
+    } catch (error) {
+      Alert.alert("Error", "No se pudo agregar el saldo. Intentá de nuevo.");
+      throw error;
+    }
   };
 
   const handleOpenDepositModal = useCallback(
@@ -226,11 +231,16 @@ export const WorkerPaymentsScreen: React.FC = () => {
     currencyId?: number;
   }) => {
     if (!selectedWorker) return;
-    await depositMutation.mutateAsync({
-      workerId: selectedWorker.id,
-      ...data,
-    });
-    Alert.alert("Éxito", "Depósito realizado correctamente");
+    try {
+      await depositMutation.mutateAsync({
+        workerId: selectedWorker.id,
+        ...data,
+      });
+      Alert.alert("Éxito", "Depósito realizado correctamente");
+    } catch (error) {
+      Alert.alert("Error", "No se pudo realizar el depósito. Intentá de nuevo.");
+      throw error;
+    }
   };
 
   const handleToggleExpand = useCallback(

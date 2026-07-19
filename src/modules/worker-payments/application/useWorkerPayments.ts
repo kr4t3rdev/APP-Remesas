@@ -122,6 +122,8 @@ export const useAddBalanceMutation = () => {
         queryClient.invalidateQueries({
           queryKey: queryKeys.workerPayments.detail(variables.workerId),
         }),
+        queryClient.invalidateQueries({ queryKey: ["cash"] }),
+        queryClient.invalidateQueries({ queryKey: ["bankAccounts"] }),
       ]);
     },
   });
