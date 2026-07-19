@@ -23,13 +23,13 @@ const getBaseURL = () => {
     if (Device.isDevice && Platform.OS !== "web") {
       return ENV.PHYSICAL_API_URL;
     }
-    // iOS Simulator: usa localhost
+    // iOS Simulator
     if (Platform.OS === "ios") {
-      return "http://localhost:3000/api";
+      return ENV.WEB_API_URL;
     }
-    // Android Emulator: usa 10.0.2.2 (IP especial del emulador)
+    // Android Emulator: 10.0.2.2 mapea a localhost de la máquina host
     if (Platform.OS === "android") {
-      return "http://10.0.2.2:3000/api";
+      return ENV.WEB_API_URL;
     }
     // Web: usa variable de entorno o localhost por defecto
     if (Platform.OS === "web") {
