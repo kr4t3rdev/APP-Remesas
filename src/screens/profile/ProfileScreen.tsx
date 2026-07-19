@@ -144,6 +144,14 @@ export const ProfileScreen: React.FC = () => {
       onPress: () => navigation.navigate(item.route),
     })),
     {
+      id: "objectives",
+      title: "Objetivos",
+      subtitle: "Gestionar metas y seguimiento",
+      icon: "flag-outline",
+      color: themeColors.success,
+      onPress: () => navigation.navigate("Objectives"),
+    },
+    {
       id: "theme",
       title: isDarkMode ? "Modo Claro" : "Modo Oscuro",
       subtitle: isDarkMode ? "Cambiar a tema claro" : "Cambiar a tema oscuro",
@@ -340,7 +348,9 @@ export const ProfileScreen: React.FC = () => {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Objetivos Activos</Text>
-                <TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("Objectives")}
+                >
                   <Text style={styles.seeAll}>Ver todo</Text>
                 </TouchableOpacity>
               </View>

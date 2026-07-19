@@ -22,6 +22,7 @@ export type RootStackParamList = {
   BusinessWorkers: undefined;
   UIWorkersRedirect: undefined;
   Reports: undefined;
+  Objectives: undefined;
 };
 
 export type MainTabParamList = {

@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { FadeInDown } from "../../components/animations";
 import { ObjectiveCard } from "../../components/objectives/ObjectiveCard";
+import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
 import { ObjectiveFormModal } from "../../components/objectives/ObjectiveFormModal";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
@@ -141,6 +142,7 @@ export const ObjectivesScreen: React.FC = () => {
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
       <View style={styles.header}>
+        <ProfileFeatureBackButton />
         <FadeInDown delay={0}>
           <View>
             <Text style={[styles.title, { color: themeColors.text.primary }]}>

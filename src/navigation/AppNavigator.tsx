@@ -12,6 +12,7 @@ import { ExchangeRatesScreen } from "../screens/exchange-rates/ExchangeRatesScre
 import { BankAccountsScreen } from "../screens/bank-accounts/BankAccountsScreen";
 import { CurrenciesScreen } from "../screens/currencies/CurrenciesScreen";
 import { ReportsScreen } from "../screens/reports/ReportsScreen";
+import { ObjectivesScreen } from "../screens/objectives/ObjectivesScreen";
 import { MainTabs } from "./MainTabs";
 import { AdminTabs } from "./AdminTabs";
 import { useAuthStore } from "../store/authStore";
@@ -113,6 +114,14 @@ const MainStackNavigator: React.FC<{
       <MainStack.Screen
         name="Reports"
         component={ReportsScreen}
+        options={{
+          headerShown: false,
+          presentation: "card",
+        }}
+      />
+      <MainStack.Screen
+        name="Objectives"
+        component={ObjectivesScreen}
         options={{
           headerShown: false,
           presentation: "card",
