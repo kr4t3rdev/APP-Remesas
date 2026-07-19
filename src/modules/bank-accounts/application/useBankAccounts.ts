@@ -8,8 +8,7 @@ export const useBankAccountsQuery = () =>
     queryFn: bankAccountsRepository.getAll,
     staleTime: 1000 * 60 * 5,
     throwOnError: false,
-    initialData: [],
-    initialDataUpdatedAt: 0,
+    placeholderData: [],
   });
 
 export const useBankAccountQuery = (id: number) =>

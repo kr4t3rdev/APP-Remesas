@@ -9,7 +9,7 @@ export const useSubscriptionLicensesQuery = (userId?: number) =>
     queryFn: () => subscriptionsRepository.getLicenses(userId),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useAssignLicenseMutation = () => {

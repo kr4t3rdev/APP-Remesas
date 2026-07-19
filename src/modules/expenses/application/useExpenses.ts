@@ -14,7 +14,7 @@ export const useExpensesQuery = (params?: {
     queryFn: () => expensesRepository.getExpenses(params),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useExpenseDetailQuery = (id: number) =>

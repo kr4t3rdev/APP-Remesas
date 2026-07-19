@@ -9,7 +9,7 @@ export const usePlansCatalogQuery = () =>
     queryFn: plansRepository.getAll,
     staleTime: 1000 * 60,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useCreatePlanMutation = () => {

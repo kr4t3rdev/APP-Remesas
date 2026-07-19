@@ -9,8 +9,7 @@ export const useCashBalancesQuery = () =>
     queryFn: cashRepository.getCashBalances,
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
-    initialDataUpdatedAt: 0,
+    placeholderData: [],
   });
 
 export const useCashOverviewQuery = () =>
@@ -27,7 +26,7 @@ export const useCashTransactionsQuery = () =>
     queryFn: cashRepository.getTransactions,
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useCashAuditsQuery = (currencyId?: number) =>
@@ -36,7 +35,7 @@ export const useCashAuditsQuery = (currencyId?: number) =>
     queryFn: () => cashRepository.getCashAudits(currencyId),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useCashAdjustmentsQuery = (currencyId?: number) =>
@@ -45,7 +44,7 @@ export const useCashAdjustmentsQuery = (currencyId?: number) =>
     queryFn: () => cashRepository.getCashAdjustments(currencyId),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useCreateCashAuditMutation = () => {

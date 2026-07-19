@@ -28,7 +28,7 @@ export const useAdminUsersQuery = () =>
     queryFn: adminRepository.getUsers,
     staleTime: 1000 * 60,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useAdminUserDetailQuery = (userId?: number) =>
@@ -137,7 +137,7 @@ export const useAdminBlockedUsersQuery = () =>
     queryFn: adminRepository.getBlockedUsers,
     staleTime: 1000 * 30,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useAdminExpiringLicensesQuery = (windowDays: 7 | 30) =>
@@ -146,7 +146,7 @@ export const useAdminExpiringLicensesQuery = (windowDays: 7 | 30) =>
     queryFn: () => adminRepository.getExpiringLicenses(windowDays),
     staleTime: 1000 * 60,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useAdminAuditLogsQuery = () =>
@@ -155,5 +155,5 @@ export const useAdminAuditLogsQuery = () =>
     queryFn: adminRepository.getAuditLogs,
     staleTime: 1000 * 30,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });

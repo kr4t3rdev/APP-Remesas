@@ -9,7 +9,7 @@ export const useCurrenciesQuery = () =>
     queryFn: exchangeRatesRepository.getCurrencies,
     staleTime: 1000 * 60 * 30,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useCurrentExchangeRatesQuery = () =>
@@ -18,7 +18,7 @@ export const useCurrentExchangeRatesQuery = () =>
     queryFn: exchangeRatesRepository.getExchangeRates,
     staleTime: 1000 * 60 * 5,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useAllExchangeRatesQuery = () =>
@@ -27,7 +27,7 @@ export const useAllExchangeRatesQuery = () =>
     queryFn: exchangeRatesRepository.getAllRates,
     staleTime: 1000 * 60 * 5,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useExchangeRatesByCurrencyQuery = (currencyId: number) =>
@@ -45,7 +45,7 @@ export const useRateHistoryQuery = (currencyId?: number) =>
     queryFn: () => exchangeRatesRepository.getRateHistory(currencyId),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useManualRatesQuery = () =>
@@ -54,7 +54,7 @@ export const useManualRatesQuery = () =>
     queryFn: exchangeRatesRepository.getManualRates,
     staleTime: 1000 * 60 * 5,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const usePairHistoryQuery = (fromId: number, toId: number) =>
@@ -64,7 +64,7 @@ export const usePairHistoryQuery = (fromId: number, toId: number) =>
     staleTime: 1000 * 60 * 5,
     enabled: !!fromId && !!toId,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const usePairStatsQuery = (fromId: number, toId: number) =>

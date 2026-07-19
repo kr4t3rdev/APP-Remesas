@@ -8,7 +8,7 @@ export const useProfileBankAccountsQuery = () =>
     queryFn: profileRepository.getBankAccounts,
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useProfileActiveObjectivesQuery = () =>
@@ -17,7 +17,7 @@ export const useProfileActiveObjectivesQuery = () =>
     queryFn: profileRepository.getActiveObjectives,
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useProfileCashBalancesQuery = () =>
@@ -26,7 +26,7 @@ export const useProfileCashBalancesQuery = () =>
     queryFn: profileRepository.getCashBalances,
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useProfileDailyReportQuery = () =>

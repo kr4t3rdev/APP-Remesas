@@ -13,7 +13,7 @@ export const useObjectivesQuery = (status?: ObjectiveStatus) =>
     queryFn: () => objectivesRepository.getObjectives(status),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    initialData: [],
+    placeholderData: [],
   });
 
 export const useObjectiveDetailQuery = (id: number) =>
