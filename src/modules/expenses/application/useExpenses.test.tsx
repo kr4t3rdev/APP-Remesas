@@ -36,7 +36,8 @@ describe("useExpenses hooks", () => {
     jest.clearAllMocks();
   });
 
-  it("loads expenses list with params", async () => {
+  it("fetches expenses on the first mount while showing an empty placeholder", async () => {
+    mockedRepository.getExpenses.mockResolvedValueOnce([] as never);
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -48,9 +49,14 @@ describe("useExpenses hooks", () => {
       },
     );
 
-    expect(result.current.isSuccess).toBe(true);
     expect(result.current.data).toEqual([]);
-    expect(mockedRepository.getExpenses).not.toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(mockedRepository.getExpenses).toHaveBeenCalledTimes(1);
+      expect(mockedRepository.getExpenses).toHaveBeenCalledWith({
+        category: "otros",
+      });
+    });
   });
 
   it("loads expense detail by id", async () => {
