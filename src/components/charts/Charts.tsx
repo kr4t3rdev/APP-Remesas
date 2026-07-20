@@ -453,6 +453,86 @@ export const CircularProgress: React.FC<CircularProgressProps> = ({
   );
 };
 
+type DonutSegment = {
+  value: number;
+  color: string;
+  label?: string;
+};
+
+type DonutChartProps = {
+  data: DonutSegment[];
+  size?: number;
+  strokeWidth?: number;
+  animated?: boolean;
+  children?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+};
+
+export const DonutChart: React.FC<DonutChartProps> = ({
+  data,
+  size = 140,
+  strokeWidth = 24,
+  children,
+  style,
+}) => {
+  const themeColors = useColors();
+  const radius = Math.max(0, (size - strokeWidth) / 2);
+  const circumference = 2 * Math.PI * radius;
+  const total = data.reduce((sum, s) => sum + s.value, 0);
+
+  if (data.length === 0 || total <= 0) {
+    return (
+      <FadeIn style={[{ width: size, height: size }, style]}>
+        <View style={[styles.donutContainer, { width: size, height: size }]}>
+          <Svg width={size} height={size}>
+            <Circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={themeColors.border} strokeWidth={strokeWidth} />
+          </Svg>
+          <Text style={[styles.donutEmptyText, { color: themeColors.text.secondary }]}>Sin datos</Text>
+        </View>
+      </FadeIn>
+    );
+  }
+
+  let cumulative = 0;
+
+  return (
+    <FadeIn style={[{ width: size, height: size }, style]}>
+      <View style={[styles.donutContainer, { width: size, height: size }]}>
+        <Svg width={size} height={size} style={styles.donutGraphic}>
+          <Circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={themeColors.border} strokeWidth={strokeWidth} />
+          {data.map((segment, index) => {
+            const segLen = (segment.value / total) * circumference;
+            const offset = circumference - cumulative;
+            cumulative += segLen;
+
+            return (
+              <Circle
+                key={segment.label ?? index}
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                fill="none"
+                stroke={segment.color}
+                strokeWidth={strokeWidth}
+                strokeLinecap="butt"
+                strokeDasharray={`${segLen} ${circumference - segLen}`}
+                strokeDashoffset={offset}
+                rotation={-90}
+                origin={`${size / 2}, ${size / 2}`}
+              />
+            );
+          })}
+        </Svg>
+        {children && (
+          <View style={styles.donutContent}>
+            {children}
+          </View>
+        )}
+      </View>
+    </FadeIn>
+  );
+};
+
 type StatsCardProps = {
   title: string;
   value: string | number;
@@ -753,5 +833,22 @@ const styles = StyleSheet.create({
   miniChartBar: {
     flex: 1,
     borderRadius: 2,
+  },
+  donutContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  donutGraphic: {
+    position: "absolute",
+  },
+  donutContent: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 999,
+  },
+  donutEmptyText: {
+    fontSize: 12,
+    fontWeight: "600",
   },
 });

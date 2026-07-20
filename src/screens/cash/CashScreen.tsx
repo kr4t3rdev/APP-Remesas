@@ -17,7 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { BarChart } from "../../components/charts/Charts";
+import { BarChart, DonutChart } from "../../components/charts/Charts";
 import { FadeIn, FadeInDown, FadeInOverlay, PressableScale, ScaleIn } from "../../components/animations";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
@@ -35,6 +35,7 @@ import {
   useCurrenciesWithPrimaryQuery,
 } from "../../modules/currencies/application/useCurrencies";
 import { useCurrentExchangeRatesQuery } from "../../modules/exchange-rates/application/useExchangeRates";
+import { useObjectivesQuery } from "../../modules/objectives/application/useObjectives";
 import { useBankAccountsQuery } from "../../modules/bank-accounts/application/useBankAccounts";
 import { useColors, useIsDark, useShadows } from "../../store/themeStore";
 import { Alert } from "../../utils/alert";
@@ -54,11 +55,14 @@ export const CashScreen: React.FC = () => {
   const createAdjustmentMutation = useCreateCashAdjustmentMutation();
   const bankAccountsQuery = useBankAccountsQuery();
   const exchangeRatesQuery = useCurrentExchangeRatesQuery();
+  const objectivesQuery = useObjectivesQuery();
   const tabBarScrollBehavior = useTabBarScrollBehavior();
   const scrollRef = useRef<ScrollView>(null);
   const overview = overviewQuery.data;
   const balances = overview?.balances ?? [];
   const bankAccounts = bankAccountsQuery.data ?? [];
+  const objectives = objectivesQuery.data ?? [];
+  const objectiveColors = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#F97316", "#6366F1", "#84CC16"];
   const availableCurrencies = [
     currenciesListQuery.data,
     currenciesWithPrimaryQuery.data?.currencies,
@@ -336,6 +340,44 @@ export const CashScreen: React.FC = () => {
                 )}
               </View>
             </FadeInDown>
+
+            <FadeInDown delay={550}>
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Objetivos</Text>
+                  <TouchableOpacity onPress={() => navigation.navigate("Objectives")} accessibilityRole="button" accessibilityLabel="Ver todos los objetivos">
+                    <Text style={[styles.link, { color: colors.primary[500] }]}>Ver todas</Text>
+                  </TouchableOpacity>
+                </View>
+                {objectives.length > 0 ? (
+                  <View style={styles.containerDonut}>
+                    <DonutChart
+                      data={objectives.map((o, i) => ({
+                        value: o.targetAmount,
+                        color: objectiveColors[i % objectiveColors.length],
+                        label: o.name,
+                      }))}
+                      size={160}
+                      strokeWidth={28}
+                    >
+                      <Text style={[styles.donutCenterText, { color: colors.text.primary }]}>{objectives.length}</Text>
+                      <Text style={[styles.donutCenterLabel, { color: colors.text.secondary }]}>objetivos</Text>
+                    </DonutChart>
+                    <View style={styles.objectiveLegend}>
+                      {objectives.slice(0, 5).map((o, i) => (
+                        <View key={o.id} style={styles.legendItem}>
+                          <View style={[styles.legendDot, { backgroundColor: objectiveColors[i % objectiveColors.length] }]} />
+                          <Text style={[styles.legendText, { color: colors.text.primary }]} numberOfLines={1}>{o.name}</Text>
+                          <Text style={[styles.legendAmount, { color: colors.text.secondary }]}>{formatAmount(o.targetAmount, o.currency.symbol)}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                ) : (
+                  <Text style={[styles.emptyText, { color: colors.text.secondary }]}>No hay objetivos creados.</Text>
+                )}
+              </View>
+            </FadeInDown>
           </>
         )}
       </ScrollView>
@@ -395,6 +437,14 @@ const styles = StyleSheet.create({
   currencyCode: { fontSize: 13, marginBottom: 4 }, balanceValue: { fontSize: 18, fontWeight: "700" },
   stateCard: { alignItems: "center", borderRadius: 16, padding: 24, gap: 8, marginBottom: 26 }, stateTitle: { fontSize: 17, fontWeight: "700", textAlign: "center" }, stateText: { fontSize: 14, textAlign: "center", marginBottom: 8 },
   actionWrapper: { marginBottom: 10 }, actionCard: { flexDirection: "row", alignItems: "center", borderRadius: 14, padding: 14 }, actionIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12 }, actionInfo: { flex: 1 }, actionTitle: { fontSize: 15, fontWeight: "700" }, actionSubtitle: { fontSize: 12, marginTop: 2 },
-  link: { fontSize: 14, fontWeight: "700", marginBottom: 12 }, emptyText: { fontSize: 14 }, chartCard: { marginTop: 12, marginBottom: 4 }, auditCard: { borderRadius: 16, padding: 18, marginBottom: 12 }, auditHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, auditDate: { fontSize: 12 }, statusBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, statusText: { fontSize: 11, fontWeight: "800" }, auditCurrency: { fontSize: 16, fontWeight: "800", marginTop: 12 }, auditAmounts: { flexDirection: "row", marginTop: 14 }, auditAmount: { flex: 1 }, auditLabel: { fontSize: 11, marginBottom: 4 }, auditValue: { fontSize: 16, fontWeight: "800" }, auditDifference: { fontSize: 13, fontWeight: "700", marginTop: 14 }, auditNotes: { fontSize: 12, marginTop: 8 },
+  link: { fontSize: 14, fontWeight: "700", marginBottom: 12 }, emptyText: { fontSize: 14 }, chartCard: { marginTop: 12, marginBottom: 4 },
+  containerDonut: { alignItems: "center", paddingVertical: 8 },
+  donutCenterText: { fontSize: 22, fontWeight: "800" },
+  donutCenterLabel: { fontSize: 11, fontWeight: "600", marginTop: 2 },
+  objectiveLegend: { width: "100%", marginTop: 16, gap: 8 },
+  legendItem: { flexDirection: "row", alignItems: "center", gap: 8 },
+  legendDot: { width: 8, height: 8, borderRadius: 4 },
+  legendText: { flex: 1, fontSize: 13, fontWeight: "600" },
+  legendAmount: { fontSize: 13, fontWeight: "700" }, auditCard: { borderRadius: 16, padding: 18, marginBottom: 12 }, auditHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, auditDate: { fontSize: 12 }, statusBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, statusText: { fontSize: 11, fontWeight: "800" }, auditCurrency: { fontSize: 16, fontWeight: "800", marginTop: 12 }, auditAmounts: { flexDirection: "row", marginTop: 14 }, auditAmount: { flex: 1 }, auditLabel: { fontSize: 11, marginBottom: 4 }, auditValue: { fontSize: 16, fontWeight: "800" }, auditDifference: { fontSize: 13, fontWeight: "700", marginTop: 14 }, auditNotes: { fontSize: 12, marginTop: 8 },
   modalOverlay: { flex: 1, justifyContent: "flex-end" }, modalBackdrop: { ...StyleSheet.absoluteFillObject }, modalCard: { borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 20, gap: 12 }, modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, modalTitle: { fontSize: 20, fontWeight: "800" }, fieldLabel: { fontSize: 14, fontWeight: "600" }, currencyOptions: { gap: 8, paddingBottom: 4 }, currencyOption: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 }, optionText: { fontWeight: "700" }, typeRow: { flexDirection: "row", gap: 8 }, typeOption: { flex: 1, borderWidth: 1, borderRadius: 10, alignItems: "center", paddingVertical: 11 },
 });
