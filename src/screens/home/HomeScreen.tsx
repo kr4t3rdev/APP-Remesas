@@ -22,10 +22,7 @@ import {
 } from "../../components/charts/Charts";
 import { useDashboardData } from "../../hooks/useDashboardData";
 import { useAuthStore } from "../../store/authStore";
-import {
-  useColors,
-  useShadows,
-} from "../../store/themeStore";
+import { useColors } from "../../store/themeStore";
 import { spacing, borderRadius } from "../../theme";
 import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 import {
@@ -59,7 +56,6 @@ const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description, color
 export const HomeScreen: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const themeColors = useColors();
-  const themeShadows = useShadows();
   const tabBarScrollBehavior = useTabBarScrollBehavior();
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollToTop = useCallback(() => {
@@ -218,7 +214,6 @@ export const HomeScreen: React.FC = () => {
             style={[
               styles.dateCard,
               { backgroundColor: themeColors.card },
-              themeShadows.sm,
             ]}
           >
             <View
@@ -358,7 +353,6 @@ export const HomeScreen: React.FC = () => {
                         {
                           backgroundColor: themeColors.card,
                         },
-                        themeShadows.sm,
                       ]}
                     >
                       <View
@@ -421,11 +415,10 @@ export const HomeScreen: React.FC = () => {
             </View>
             <View
               testID="home-section-surface"
-              style={[
-                styles.ratesContainer,
-                { backgroundColor: `${themeColors.primary[500]}08` },
-                themeShadows.sm,
-              ]}
+                style={[
+                  styles.ratesContainer,
+                  { backgroundColor: `${themeColors.primary[500]}08` },
+                ]}
             >
               {exchangeRates && exchangeRates.length > 0 ? exchangeRates.map((rate, index) => {
                 const currencyColor = getCurrencyColor(rate.currency.code);
@@ -537,11 +530,10 @@ export const HomeScreen: React.FC = () => {
             </View>
             <View
               testID="home-section-surface"
-              style={[
-                styles.chartCard,
-                { backgroundColor: `${themeColors.primary[500]}08` },
-                themeShadows.sm,
-              ]}
+                style={[
+                  styles.chartCard,
+                  { backgroundColor: `${themeColors.primary[500]}08` },
+                ]}
             >
               {summary.transactionSummary.comprasCount + summary.transactionSummary.ventasCount > 0 ? <>
                 <View style={styles.chartHeader}>
@@ -593,7 +585,6 @@ export const HomeScreen: React.FC = () => {
                       style={[
                         styles.objectiveCard,
                         { backgroundColor: themeColors.card },
-                        themeShadows.sm,
                       ]}
                     >
                       <View style={styles.objectiveHeader}>
@@ -634,12 +625,12 @@ export const HomeScreen: React.FC = () => {
                       >
                         {formatCurrency(
                           objective.currentAmount,
-                          objective.currency.symbol,
+                          objective.currency.code,
                         )}{" "}
                         /{" "}
                         {formatCurrency(
                           objective.targetAmount,
-                          objective.currency.symbol,
+                          objective.currency.code,
                         )}
                       </Text>
                     </View>
@@ -671,11 +662,10 @@ export const HomeScreen: React.FC = () => {
             </View>
             <View
               testID="home-section-surface"
-              style={[
-                styles.transactionsContainer,
-                { backgroundColor: `${themeColors.primary[500]}08` },
-                themeShadows.sm,
-              ]}
+                style={[
+                  styles.transactionsContainer,
+                  { backgroundColor: `${themeColors.primary[500]}08` },
+                ]}
             >
               {recentTransactions && recentTransactions.length > 0 ? (
                 recentTransactions.map((tx, index) => (

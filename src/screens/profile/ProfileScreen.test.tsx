@@ -96,14 +96,6 @@ describe("ProfileScreen", () => {
     jest.mocked(useProfile.useProfileDailyReportQuery).mockReturnValue(query(undefined));
   });
 
-  it("opens Workers from the Profile menu", () => {
-    const { getByText } = render(<ProfileScreen />);
-
-    fireEvent.press(getByText("Trabajadores"));
-
-    expect(mockNavigate).toHaveBeenCalledWith("BusinessWorkers");
-  });
-
   it("renders active objectives section when objectives exist", () => {
     jest.mocked(useProfile.useProfileActiveObjectivesQuery).mockReturnValue(
       query([makeObjective({ id: 1, name: "Ahorrar para laptop", percentage: 35, currentAmount: 350, targetAmount: 1000 })])

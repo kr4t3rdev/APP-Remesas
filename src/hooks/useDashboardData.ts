@@ -91,7 +91,7 @@ export const useDashboardData = () => {
   const recentTransactions = useRecentTransactions(5);
   const activeObjectives = useActiveObjectives();
   const fxPerformance = useQuery<FxPerformanceReport, Error>({
-    queryKey: ["dashboard", "fxPerformance"],
+    queryKey: queryKeys.dashboard.fxPerformance(),
     queryFn: dashboardRepository.getFxPerformance,
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
@@ -101,9 +101,17 @@ export const useDashboardData = () => {
     dailyReport.isLoading ||
     cashBalances.isLoading ||
     exchangeRates.isLoading ||
-    recentTransactions.isLoading;
+    recentTransactions.isLoading ||
+    activeObjectives.isLoading ||
+    fxPerformance.isLoading;
 
-  const isRefreshing = dailyReport.isFetching && !dailyReport.isLoading;
+  const isRefreshing =
+    (dailyReport.isFetching && !dailyReport.isLoading) ||
+    (cashBalances.isFetching && !cashBalances.isLoading) ||
+    (exchangeRates.isFetching && !exchangeRates.isLoading) ||
+    (recentTransactions.isFetching && !recentTransactions.isLoading) ||
+    (activeObjectives.isFetching && !activeObjectives.isLoading) ||
+    (fxPerformance.isFetching && !fxPerformance.isLoading);
 
   const refetchAll = async () => {
     await Promise.all([

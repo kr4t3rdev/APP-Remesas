@@ -9,6 +9,7 @@ export const queryKeys = {
     activeObjectives: () => ["dashboard", "activeObjectives"] as const,
     recentExpenses: (limit?: number) =>
       ["dashboard", "recentExpenses", limit ?? "all"] as const,
+    fxPerformance: () => ["dashboard", "fxPerformance"] as const,
   },
   transactions: {
     list: (params?: {

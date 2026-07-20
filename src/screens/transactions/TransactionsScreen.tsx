@@ -259,34 +259,62 @@ export const TransactionsScreen: React.FC = () => {
                 Compras, ventas y remesas
               </Text>
             </View>
-            <TouchableOpacity
-              onPress={() => setFilterModalVisible(true)}
-              style={[
-                styles.filterTrigger,
-                headerLayout === "stacked" && styles.filterTriggerStacked,
-                {
-                  backgroundColor: themeColors.card,
-                  borderColor: themeColors.border,
-                },
-                themeShadows.md,
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={`Filtrar transacciones. Filtro actual: ${filterLabel}`}
-            >
-              <Text
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("BusinessWorkers")}
                 style={[
-                  styles.filterTriggerText,
-                  { color: themeColors.text.primary },
+                  styles.workersTrigger,
+                  {
+                    backgroundColor: themeColors.card,
+                    borderColor: themeColors.border,
+                  },
+                  themeShadows.md,
                 ]}
+                accessibilityRole="button"
+                accessibilityLabel="Trabajadores"
               >
-                {filterLabel}
-              </Text>
-              <Ionicons
-                name="chevron-down"
-                size={18}
-                color={themeColors.primary[500]}
-              />
-            </TouchableOpacity>
+                <Ionicons
+                  name="people-outline"
+                  size={18}
+                  color={themeColors.primary[500]}
+                />
+                <Text
+                  style={[
+                    styles.workersTriggerText,
+                    { color: themeColors.text.primary },
+                  ]}
+                >
+                  Trabajadores
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setFilterModalVisible(true)}
+                style={[
+                  styles.filterTrigger,
+                  {
+                    backgroundColor: themeColors.card,
+                    borderColor: themeColors.border,
+                  },
+                  themeShadows.md,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={`Filtrar transacciones. Filtro actual: ${filterLabel}`}
+              >
+                <Text
+                  style={[
+                    styles.filterTriggerText,
+                    { color: themeColors.text.primary },
+                  ]}
+                >
+                  {filterLabel}
+                </Text>
+                <Ionicons
+                  name="chevron-down"
+                  size={18}
+                  color={themeColors.primary[500]}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </FadeIn>
@@ -422,8 +450,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
-  filterTriggerStacked: {
-    alignSelf: "flex-start",
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  workersTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.full,
+    gap: spacing.xs,
+    borderWidth: 1,
+    minHeight: 44,
+  },
+  workersTriggerText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
   listContent: {
     paddingHorizontal: spacing.md,
