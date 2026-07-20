@@ -1,5 +1,5 @@
 import React from "react";
-import { AccessibilityInfo, Animated, Keyboard } from "react-native";
+import { AccessibilityInfo, Animated, Keyboard, View } from "react-native";
 import { act, render, fireEvent, waitFor } from "@testing-library/react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
@@ -17,7 +17,10 @@ jest.mock("@expo/vector-icons", () => {
 });
 
 import { InstagramTabBar } from "./InstagramTabBar";
-import { TAB_BAR_EMPHASIS_MOTION } from "./InstagramTabBar";
+import {
+  ACTIVE_INDICATOR_GEOMETRY,
+  TAB_BAR_EMPHASIS_MOTION,
+} from "./InstagramTabBar";
 import {
   TabBarMotionProvider,
   useTabScrollToTop,
@@ -84,14 +87,12 @@ describe("InstagramTabBar", () => {
     jest.restoreAllMocks();
   });
 
-  it("renders all primary tabs, hides label on emphasized Cash tab", () => {
-    const { getByTestId, getByText } = renderTabBar(createProps(2));
+  it("renders all primary tabs without labels", () => {
+    const { getByTestId } = renderTabBar(createProps(2));
 
-    expect(getByText("Inicio")).toBeTruthy();
-    expect(getByText("Transacciones")).toBeTruthy();
-    expect(getByText("Gastos")).toBeTruthy();
-    expect(getByText("Perfil")).toBeTruthy();
-    expect(() => getByText("Cash")).toThrow();
+    routeNames.forEach((name) => {
+      expect(getByTestId(`tab-${name}`)).toBeTruthy();
+    });
     expect(getByTestId("tab-Cash").props.accessibilityState).toEqual({
       selected: true,
     });
@@ -116,12 +117,80 @@ describe("InstagramTabBar", () => {
     });
   });
 
-  it("enlarges the bar and icons on scroll-down, only Cash tab hides its label", () => {
+  it("enlarges the bar and icons on scroll-down without labels", () => {
     expect(TAB_BAR_EMPHASIS_MOTION.barScaleX).toBe(1.07);
     expect(TAB_BAR_EMPHASIS_MOTION.barScaleY).toBe(1.09);
     expect(TAB_BAR_EMPHASIS_MOTION.iconScale).toBe(1.08);
     expect(TAB_BAR_EMPHASIS_MOTION.labelScale).toBe(1.06);
     expect(TAB_BAR_EMPHASIS_MOTION.labelOpacity).toBe(1);
+  });
+
+  it("uses compact indicator geometry for labeled tabs and large geometry for Cash", () => {
+    expect(ACTIVE_INDICATOR_GEOMETRY).toEqual({
+      compact: { width: 48, height: 46 },
+      large: { width: 56, height: 48 },
+      top: 2,
+    });
+  });
+
+  it("animates the indicator to large geometry when Cash becomes active", () => {
+    const timing = jest.spyOn(Animated, "timing");
+    const view = renderTabBar(createProps(0));
+
+    view.rerender(
+      <TabBarMotionProvider>
+        <InstagramTabBar {...createProps(2)} />
+      </TabBarMotionProvider>,
+    );
+
+    expect(timing).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ toValue: 1, useNativeDriver: true }),
+    );
+  });
+
+  it("animates the indicator back to compact geometry for a labeled tab", () => {
+    const timing = jest.spyOn(Animated, "timing");
+    const view = renderTabBar(createProps(2));
+    timing.mockClear();
+
+    view.rerender(
+      <TabBarMotionProvider>
+        <InstagramTabBar {...createProps(4)} />
+      </TabBarMotionProvider>,
+    );
+
+    expect(timing).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ toValue: 0, useNativeDriver: true }),
+    );
+  });
+
+  it("isolates indicator translation from geometry scaling", async () => {
+    const view = renderTabBar(createProps(0));
+    await act(async () => undefined);
+    const itemsRow = view
+      .UNSAFE_getAllByType(View)
+      .find((node) => node.props.style?.flexDirection === "row");
+
+    expect(itemsRow).toBeTruthy();
+    act(() => {
+      fireEvent(itemsRow!, "layout", {
+        nativeEvent: { layout: { width: 350, height: 56, x: 0, y: 0 } },
+      });
+    });
+
+    const translationTransform = view.getByTestId("active-tab-indicator").props
+      .style.transform;
+    const geometryTransform = view.getByTestId("active-tab-indicator-shape")
+      .props.style.transform;
+
+    expect(
+      translationTransform.map((entry: object) => Object.keys(entry)[0]),
+    ).toEqual(["translateX"]);
+    expect(
+      geometryTransform.map((entry: object) => Object.keys(entry)[0]),
+    ).toEqual(["scaleX", "scaleY"]);
   });
 
   it("hides while the keyboard is visible and returns when it closes", () => {

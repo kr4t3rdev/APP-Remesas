@@ -27,6 +27,17 @@ export const TAB_BAR_EMPHASIS_MOTION = {
   labelOpacity: 1,
 } as const;
 
+export const ACTIVE_INDICATOR_GEOMETRY = {
+  compact: { width: 48, height: 46 },
+  large: { width: 56, height: 48 },
+  top: 2,
+} as const;
+
+const isEmphasizedRoute = (routeName: string | undefined) =>
+  mainTabDefinitions.some(
+    ({ route, emphasized }) => route === routeName && emphasized,
+  );
+
 export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
   state,
   descriptors,
@@ -40,7 +51,11 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
   const [reduceMotion, setReduceMotion] = useState(false);
   const [reduceTransparency, setReduceTransparency] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const activeRouteName = state.routes[state.index]?.name;
   const indicatorIndex = useRef(new Animated.Value(state.index)).current;
+  const indicatorEmphasis = useRef(
+    new Animated.Value(isEmphasizedRoute(activeRouteName) ? 1 : 0),
+  ).current;
   const pressScales = useRef(
     state.routes.map(() => new Animated.Value(1)),
   ).current;
@@ -107,16 +122,33 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
   useEffect(() => {
     if (reduceMotion) {
       indicatorIndex.setValue(state.index);
+      indicatorEmphasis.setValue(
+        isEmphasizedRoute(activeRouteName) ? 1 : 0,
+      );
       return;
     }
 
-    Animated.timing(indicatorIndex, {
-      toValue: state.index,
-      duration: 220,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  }, [indicatorIndex, reduceMotion, state.index]);
+    Animated.parallel([
+      Animated.timing(indicatorIndex, {
+        toValue: state.index,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(indicatorEmphasis, {
+        toValue: isEmphasizedRoute(activeRouteName) ? 1 : 0,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [
+    activeRouteName,
+    indicatorEmphasis,
+    indicatorIndex,
+    reduceMotion,
+    state.index,
+  ]);
 
   useEffect(() => {
     expand();
@@ -173,16 +205,48 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
       >
         {barWidth > 0 && (
           <Animated.View
+            testID="active-tab-indicator"
             pointerEvents="none"
-              style={[
-                  styles.activeIndicator,
-                  {
-                    left: itemWidth / 2 - 24,
-                backgroundColor: colors.activeBackground,
+            style={[
+              styles.activeIndicatorPosition,
+              {
+                left: itemWidth / 2 - ACTIVE_INDICATOR_GEOMETRY.large.width / 2,
                 transform: [{ translateX: indicatorTranslateX }],
               },
             ]}
-          />
+          >
+            <Animated.View
+              testID="active-tab-indicator-shape"
+              style={[
+                styles.activeIndicatorShape,
+                {
+                  backgroundColor: colors.activeBackground,
+                  transform: [
+                    {
+                      scaleX: indicatorEmphasis.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [
+                          ACTIVE_INDICATOR_GEOMETRY.compact.width /
+                            ACTIVE_INDICATOR_GEOMETRY.large.width,
+                          1,
+                        ],
+                      }),
+                    },
+                    {
+                      scaleY: indicatorEmphasis.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [
+                          ACTIVE_INDICATOR_GEOMETRY.compact.height /
+                            ACTIVE_INDICATOR_GEOMETRY.large.height,
+                          1,
+                        ],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            />
+          </Animated.View>
         )}
         {state.routes.map((route, index) => {
           const definition = mainTabDefinitions.find(
@@ -277,31 +341,7 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
                     />
                   </Animated.View>
                 </View>
-                {!emphasized && (
-                  <Animated.Text
-                    numberOfLines={1}
-                    style={[
-                      styles.label,
-                      { color: focused ? colors.active : colors.inactive },
-                      {
-                        opacity: progress.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [1, TAB_BAR_EMPHASIS_MOTION.labelOpacity],
-                        }),
-                        transform: [
-                          {
-                            scale: progress.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [1, TAB_BAR_EMPHASIS_MOTION.labelScale],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
-                  >
-                    {label}
-                  </Animated.Text>
-                )}
+
               </Pressable>
             </Animated.View>
           );
@@ -328,12 +368,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  activeIndicator: {
+  activeIndicatorPosition: {
     position: "absolute",
-    top: 4,
-    width: 48,
-    height: 38,
-    borderRadius: 19,
+    top: ACTIVE_INDICATOR_GEOMETRY.top,
+    width: ACTIVE_INDICATOR_GEOMETRY.large.width,
+    height: ACTIVE_INDICATOR_GEOMETRY.large.height,
+  },
+  activeIndicatorShape: {
+    width: "100%",
+    height: "100%",
+    borderRadius: ACTIVE_INDICATOR_GEOMETRY.large.height / 2,
   },
   iconContainer: {
     width: 34,
@@ -346,11 +390,5 @@ const styles = StyleSheet.create({
     width: 48,
     height: 42,
     borderRadius: 21,
-  },
-  label: {
-    maxWidth: "100%",
-    fontSize: 11,
-    fontWeight: "600",
-    marginTop: 1,
   },
 });
