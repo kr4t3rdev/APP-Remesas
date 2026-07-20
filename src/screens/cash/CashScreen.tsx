@@ -17,6 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { BarChart } from "../../components/charts/Charts";
 import { FadeIn, FadeInDown, PressableScale, ScaleIn } from "../../components/animations";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
@@ -33,6 +34,7 @@ import {
   useCurrenciesQuery,
   useCurrenciesWithPrimaryQuery,
 } from "../../modules/currencies/application/useCurrencies";
+import { useCurrentExchangeRatesQuery } from "../../modules/exchange-rates/application/useExchangeRates";
 import { useProfileBankAccountsQuery } from "../../modules/profile/application/useProfile";
 import { useColors, useIsDark, useShadows } from "../../store/themeStore";
 import { Alert } from "../../utils/alert";
@@ -51,6 +53,7 @@ export const CashScreen: React.FC = () => {
   const createAuditMutation = useCreateCashAuditMutation();
   const createAdjustmentMutation = useCreateCashAdjustmentMutation();
   const bankAccountsQuery = useProfileBankAccountsQuery();
+  const exchangeRatesQuery = useCurrentExchangeRatesQuery();
   const tabBarScrollBehavior = useTabBarScrollBehavior();
   const scrollRef = useRef<ScrollView>(null);
   const overview = overviewQuery.data;
@@ -251,6 +254,8 @@ export const CashScreen: React.FC = () => {
                 <QuickAction title="Cuentas Bancarias" subtitle="Administrar cuentas bancarias" icon="business-outline" color={colors.warning} onPress={() => navigation.navigate("BankAccounts")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
                 <QuickAction title="Monedas" subtitle="Gestionar monedas y principal" icon="cash-outline" color={colors.secondary[500]} onPress={() => navigation.navigate("Currencies")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
                 <QuickAction title="Tasa de Cambio" subtitle="Configurar tasas de referencia" icon="swap-horizontal-outline" color={colors.success} onPress={() => navigation.navigate("ExchangeRates")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
+                <QuickAction title="Objetivos" subtitle="Metas financieras y seguimiento" icon="flag-outline" color={colors.secondary[500]} onPress={() => navigation.navigate("Objectives")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
+                <QuickAction title="Reportes" subtitle="Informes y análisis financieros" icon="bar-chart-outline" color={colors.primary[500]} onPress={() => navigation.navigate("Reports")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
               </View>
             </FadeInDown>
 
@@ -262,7 +267,7 @@ export const CashScreen: React.FC = () => {
                     <Text style={[styles.link, { color: colors.primary[500] }]}>Ver historial</Text>
                   </TouchableOpacity>
                 </View>
-                {overview?.recentMovements.length ? overview.recentMovements.map((movement) => (
+                {overview?.recentMovements.length ? overview.recentMovements.slice(0, 5).map((movement) => (
                   <CashMovementCard key={movement.id} movement={{
                     id: movement.id,
                     title: movement.title,
@@ -304,6 +309,35 @@ export const CashScreen: React.FC = () => {
                 </View>
               </FadeInDown>
             ) : null}
+
+            <FadeInDown delay={500}>
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Tasas de Cambio</Text>
+                  <TouchableOpacity onPress={() => navigation.navigate("ExchangeRates")} accessibilityRole="button" accessibilityLabel="Ver todas las tasas">
+                    <Text style={[styles.link, { color: colors.primary[500] }]}>Ver todas</Text>
+                  </TouchableOpacity>
+                </View>
+                {exchangeRatesQuery.data?.length ? (
+                  <View style={styles.chartCard}>
+                    <BarChart
+                      data={exchangeRatesQuery.data
+                        .filter((r) => r.buyRate > 0)
+                        .map((r) => ({
+                          label: r.currency.code,
+                          value: r.buyRate,
+                          color: colors.primary[500],
+                        }))}
+                      height={100}
+                      showLabels
+                      showValues
+                    />
+                  </View>
+                ) : (
+                  <Text style={[styles.emptyText, { color: colors.text.secondary }]}>No hay tasas configuradas.</Text>
+                )}
+              </View>
+            </FadeInDown>
           </>
         )}
       </ScrollView>
@@ -362,6 +396,6 @@ const styles = StyleSheet.create({
   currencyCode: { fontSize: 13, marginBottom: 4 }, balanceValue: { fontSize: 18, fontWeight: "700" },
   stateCard: { alignItems: "center", borderRadius: 16, padding: 24, gap: 8, marginBottom: 26 }, stateTitle: { fontSize: 17, fontWeight: "700", textAlign: "center" }, stateText: { fontSize: 14, textAlign: "center", marginBottom: 8 },
   actionWrapper: { marginBottom: 10 }, actionCard: { flexDirection: "row", alignItems: "center", borderRadius: 14, padding: 14 }, actionIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12 }, actionInfo: { flex: 1 }, actionTitle: { fontSize: 15, fontWeight: "700" }, actionSubtitle: { fontSize: 12, marginTop: 2 },
-  link: { fontSize: 14, fontWeight: "700", marginBottom: 12 }, emptyText: { fontSize: 14 }, auditCard: { borderRadius: 16, padding: 18, marginBottom: 12 }, auditHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, auditDate: { fontSize: 12 }, statusBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, statusText: { fontSize: 11, fontWeight: "800" }, auditCurrency: { fontSize: 16, fontWeight: "800", marginTop: 12 }, auditAmounts: { flexDirection: "row", marginTop: 14 }, auditAmount: { flex: 1 }, auditLabel: { fontSize: 11, marginBottom: 4 }, auditValue: { fontSize: 16, fontWeight: "800" }, auditDifference: { fontSize: 13, fontWeight: "700", marginTop: 14 }, auditNotes: { fontSize: 12, marginTop: 8 },
+  link: { fontSize: 14, fontWeight: "700", marginBottom: 12 }, emptyText: { fontSize: 14 }, chartCard: { marginTop: 12, marginBottom: 4 }, auditCard: { borderRadius: 16, padding: 18, marginBottom: 12 }, auditHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, auditDate: { fontSize: 12 }, statusBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, statusText: { fontSize: 11, fontWeight: "800" }, auditCurrency: { fontSize: 16, fontWeight: "800", marginTop: 12 }, auditAmounts: { flexDirection: "row", marginTop: 14 }, auditAmount: { flex: 1 }, auditLabel: { fontSize: 11, marginBottom: 4 }, auditValue: { fontSize: 16, fontWeight: "800" }, auditDifference: { fontSize: 13, fontWeight: "700", marginTop: 14 }, auditNotes: { fontSize: 12, marginTop: 8 },
   modalOverlay: { flex: 1, justifyContent: "flex-end" }, modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15, 23, 42, 0.4)" }, modalCard: { borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 20, gap: 12 }, modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, modalTitle: { fontSize: 20, fontWeight: "800" }, fieldLabel: { fontSize: 14, fontWeight: "600" }, currencyOptions: { gap: 8, paddingBottom: 4 }, currencyOption: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 }, optionText: { fontWeight: "700" }, typeRow: { flexDirection: "row", gap: 8 }, typeOption: { flex: 1, borderWidth: 1, borderRadius: 10, alignItems: "center", paddingVertical: 11 },
 });

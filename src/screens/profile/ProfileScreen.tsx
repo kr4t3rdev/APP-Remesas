@@ -12,7 +12,6 @@ import { Alert } from "../../utils/alert";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { FadeIn, FadeInDown, ScaleIn } from "../../components/animations";
-import { StatsCard, CircularProgress } from "../../components/charts/Charts";
 import { Button } from "../../components/ui/Button";
 import { spacing, borderRadius } from "../../theme";
 import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
@@ -26,13 +25,7 @@ import {
 } from "../../store/themeStore";
 import type { RootStackScreenProps } from "../../navigation/types";
 import { useNavigation } from "@react-navigation/native";
-import {
-  useProfileActiveObjectivesQuery,
-  useProfileBankAccountsQuery,
-  useProfileCashBalancesQuery,
-  useProfileDailyReportQuery,
-} from "../../modules/profile/application/useProfile";
-import { profileNavigationItems } from "./profileNavigationItems";
+
 import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 import { ChangePasswordModal } from "../../components/profile/ChangePasswordModal";
 
@@ -80,30 +73,10 @@ export const ProfileScreen: React.FC = () => {
     [themeColors, themeShadows],
   );
 
-  const bankAccountsQuery = useProfileBankAccountsQuery();
-  const objectivesQuery = useProfileActiveObjectivesQuery();
-  const cashBalancesQuery = useProfileCashBalancesQuery();
-  const dailyReportQuery = useProfileDailyReportQuery();
-
-  const bankAccounts = bankAccountsQuery.data ?? [];
-  const objectives = objectivesQuery.data ?? [];
-  const cashBalances = cashBalancesQuery.data ?? [];
-  const dailyReport = dailyReportQuery.data;
-  const safeDailyReport = dailyReport ?? {
-    profit: { net: 0 },
-    transactions: { total: 0 },
-  };
-
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const isAdmin = user?.role === "ADMIN";
 
   const handleRefresh = async () => {
-    await Promise.all([
-      bankAccountsQuery.refetch(),
-      objectivesQuery.refetch(),
-      cashBalancesQuery.refetch(),
-      dailyReportQuery.refetch(),
-    ]);
   };
 
   const handleChangePassword = async (current: string, newPwd: string) => {
@@ -132,25 +105,7 @@ export const ProfileScreen: React.FC = () => {
     });
   };
 
-  const formatNumber = (value: number | string) => {
-    const num = Number(value) || 0;
-    return num.toLocaleString("es-CU", { minimumFractionDigits: 2 });
-  };
-
   const menuItems: MenuItem[] = [
-    ...profileNavigationItems.map((item) => ({
-      ...item,
-      color: themeColors.primary[500],
-      onPress: () => navigation.navigate(item.route),
-    })),
-    {
-      id: "objectives",
-      title: "Objetivos",
-      subtitle: "Gestionar metas y seguimiento",
-      icon: "flag-outline",
-      color: themeColors.success,
-      onPress: () => navigation.navigate("Objectives"),
-    },
     {
       id: "theme",
       title: isDarkMode ? "Modo Claro" : "Modo Oscuro",
@@ -181,16 +136,6 @@ export const ProfileScreen: React.FC = () => {
     },
   ];
 
-  const activeObjectives = objectives.filter((o) => o.status === "ACTIVO");
-  const totalBankBalance = bankAccounts.reduce(
-    (sum, acc) => sum + Number(acc.balance),
-    0,
-  );
-  const totalCashBalance = cashBalances.reduce(
-    (sum, b) => sum + Number(b.balance),
-    0,
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -199,12 +144,7 @@ export const ProfileScreen: React.FC = () => {
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
-            refreshing={
-              bankAccountsQuery.isRefetching ||
-              objectivesQuery.isRefetching ||
-              cashBalancesQuery.isRefetching ||
-              dailyReportQuery.isRefetching
-            }
+            refreshing={false}
             onRefresh={handleRefresh}
             tintColor={themeColors.primary[500]}
           />
@@ -250,152 +190,7 @@ export const ProfileScreen: React.FC = () => {
           </View>
         </FadeInDown>
 
-        <View style={styles.statsGrid}>
-          <ScaleIn delay={100}>
-            <StatsCard
-              title="Total Banco"
-              value={`$ ${formatNumber(totalBankBalance)}`}
-              icon={
-                <Ionicons
-                  name="card"
-                  size={20}
-                  color={themeColors.primary[500]}
-                />
-              }
-              color={themeColors.primary[500]}
-              style={styles.statCard}
-            />
-          </ScaleIn>
-          <ScaleIn delay={150}>
-            <StatsCard
-              title="Total Caja"
-              value={`$ ${formatNumber(totalCashBalance)}`}
-              icon={
-                <Ionicons name="wallet" size={20} color={themeColors.success} />
-              }
-              color={themeColors.success}
-              style={styles.statCard}
-            />
-          </ScaleIn>
-        </View>
-
-        {dailyReport && (
-          <FadeInDown delay={200}>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Resumen del Día</Text>
-              <View style={styles.summaryCard}>
-                <View style={styles.summaryRow}>
-                  <View style={styles.summaryItem}>
-                    <Ionicons
-                      name="trending-up"
-                      size={20}
-                      color={themeColors.success}
-                    />
-                    <Text style={styles.summaryLabel}>Ganancia</Text>
-                    <Text
-                      style={[
-                        styles.summaryValue,
-                        { color: themeColors.success },
-                      ]}
-                    >
-                      $ {formatNumber(safeDailyReport.profit.net)}
-                    </Text>
-                  </View>
-                  <View style={styles.summaryDivider} />
-                  <View style={styles.summaryItem}>
-                    <Ionicons
-                      name="swap-horizontal"
-                      size={20}
-                      color={themeColors.primary[500]}
-                    />
-                    <Text style={styles.summaryLabel}>Transacciones</Text>
-                    <Text style={styles.summaryValue}>
-                      {safeDailyReport.transactions.total}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </FadeInDown>
-        )}
-
-        {activeObjectives.length > 0 && (
-          <FadeInDown delay={250}>
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Objetivos Activos</Text>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Objectives")}
-                >
-                  <Text style={styles.seeAll}>Ver todo</Text>
-                </TouchableOpacity>
-              </View>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.objectivesScroll}
-              >
-                {activeObjectives.slice(0, 3).map((objective, index) => (
-                  <ScaleIn key={objective.id} delay={300 + index * 50}>
-                    <View style={styles.objectiveCard}>
-                      <CircularProgress
-                        percentage={objective.percentage}
-                        size={60}
-                        strokeWidth={5}
-                        color={
-                          objective.percentage >= 100
-                            ? themeColors.success
-                            : themeColors.primary[500]
-                        }
-                      >
-                        <Text style={styles.objectivePercent}>
-                          {objective.percentage.toFixed(0)}%
-                        </Text>
-                      </CircularProgress>
-                      <Text style={styles.objectiveName} numberOfLines={1}>
-                        {objective.name}
-                      </Text>
-                      <Text style={styles.objectiveAmount}>
-                        {formatNumber(objective.currentAmount)} /{" "}
-                        {formatNumber(objective.targetAmount)}
-                      </Text>
-                    </View>
-                  </ScaleIn>
-                ))}
-              </ScrollView>
-            </View>
-          </FadeInDown>
-        )}
-
-        {/* {bankAccounts.length > 0 && (
-          <FadeInDown delay={300}>
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Cuentas Bancarias</Text>
-                <TouchableOpacity>
-                  <Text style={styles.seeAll}>Ver todo</Text>
-                </TouchableOpacity>
-              </View>
-              {bankAccounts.slice(0, 2).map((account, index) => (
-                <View key={account.id} style={styles.accountCard}>
-                  <View style={styles.accountIcon}>
-                    <Ionicons name="business" size={20} color={themeColors.primary[500]} />
-                  </View>
-                  <View style={styles.accountInfo}>
-                    <Text style={styles.accountName}>{account.name}</Text>
-                    <Text style={styles.accountBank}>{account.bankName}</Text>
-                  </View>
-                  <View style={styles.accountBalance}>
-                    <Text style={styles.balanceLabel}>Saldo</Text>
-                    <Text style={styles.balanceValue}>$ {formatNumber(account.balance)}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </FadeInDown>
-        )} */}
-
-        <FadeInDown delay={350}>
+        <FadeInDown delay={100}>
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Configuración</Text>
             {menuItems.map((item, index) => (
@@ -533,136 +328,14 @@ const createStyles = (
       color: themeColors.text.secondary,
       marginTop: 4,
     },
-    statsGrid: {
-      flexDirection: "row",
-      gap: spacing.md,
-      marginBottom: spacing.lg,
-    },
-    statCard: {
-      flex: 1,
-    },
     section: {
       marginBottom: spacing.lg,
-    },
-    sectionHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: spacing.md,
     },
     sectionTitle: {
       fontSize: 18,
       fontWeight: "600",
       color: themeColors.text.primary,
       marginBottom: spacing.sm,
-    },
-    seeAll: {
-      fontSize: 14,
-      color: themeColors.primary[500],
-      fontWeight: "500",
-    },
-    summaryCard: {
-      backgroundColor: themeColors.card,
-      borderRadius: borderRadius.lg,
-      padding: spacing.md,
-      ...themeShadows.sm,
-    },
-    summaryRow: {
-      flexDirection: "row",
-      alignItems: "center",
-    },
-    summaryItem: {
-      flex: 1,
-      alignItems: "center",
-    },
-    summaryLabel: {
-      fontSize: 12,
-      color: themeColors.text.secondary,
-      marginTop: spacing.xs,
-    },
-    summaryValue: {
-      fontSize: 18,
-      fontWeight: "700",
-      color: themeColors.text.primary,
-      marginTop: 4,
-    },
-    summaryDivider: {
-      width: 1,
-      height: 50,
-      backgroundColor: themeColors.border,
-    },
-    objectivesScroll: {
-      paddingRight: spacing.md,
-      gap: spacing.md,
-    },
-    objectiveCard: {
-      width: 140,
-      backgroundColor: themeColors.card,
-      borderRadius: borderRadius.lg,
-      padding: spacing.md,
-      alignItems: "center",
-      ...themeShadows.sm,
-    },
-    objectivePercent: {
-      fontSize: 12,
-      fontWeight: "700",
-      color: themeColors.text.primary,
-    },
-    objectiveName: {
-      fontSize: 13,
-      fontWeight: "600",
-      color: themeColors.text.primary,
-      marginTop: spacing.sm,
-      textAlign: "center",
-    },
-    objectiveAmount: {
-      fontSize: 11,
-      color: themeColors.text.secondary,
-      marginTop: 4,
-      textAlign: "center",
-    },
-    accountCard: {
-      backgroundColor: themeColors.card,
-      borderRadius: borderRadius.lg,
-      padding: spacing.md,
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: spacing.sm,
-      ...themeShadows.sm,
-    },
-    accountIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: themeColors.primary[50],
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    accountInfo: {
-      flex: 1,
-      marginLeft: spacing.md,
-    },
-    accountName: {
-      fontSize: 15,
-      fontWeight: "600",
-      color: themeColors.text.primary,
-    },
-    accountBank: {
-      fontSize: 12,
-      color: themeColors.text.secondary,
-      marginTop: 2,
-    },
-    accountBalance: {
-      alignItems: "flex-end",
-    },
-    balanceLabel: {
-      fontSize: 11,
-      color: themeColors.text.tertiary,
-    },
-    balanceValue: {
-      fontSize: 16,
-      fontWeight: "700",
-      color: themeColors.text.primary,
     },
     menuItem: {
       backgroundColor: themeColors.card,
