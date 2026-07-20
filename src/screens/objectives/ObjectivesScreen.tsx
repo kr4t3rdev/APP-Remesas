@@ -30,6 +30,7 @@ import {
   useUpdateObjectiveStatusMutation,
   useDeleteObjectiveMutation,
 } from "../../modules/objectives/application/useObjectives";
+import { useCurrenciesWithPrimaryQuery } from "../../modules/currencies/application/useCurrencies";
 
 const FILTERS = [
   { key: "all", label: "Todos" },
@@ -54,6 +55,8 @@ export const ObjectivesScreen: React.FC = () => {
   );
 
   const objectivesQuery = useObjectivesQuery(selectedStatus);
+  const currenciesQuery = useCurrenciesWithPrimaryQuery();
+  const primaryCurrencyId = currenciesQuery.data?.primaryCurrencyId;
   const createMutation = useCreateObjectiveMutation();
   const updateMutation = useUpdateObjectiveMutation();
   const statusMutation = useUpdateObjectiveStatusMutation();
@@ -86,7 +89,17 @@ export const ObjectivesScreen: React.FC = () => {
   const handleCreateObjective = async (
     data: CreateObjectiveInput | UpdateObjectiveInput,
   ) => {
-    await createMutation.mutateAsync(data as CreateObjectiveInput);
+    if (!primaryCurrencyId) {
+      Alert.alert("Error", "No hay una moneda principal configurada");
+      return;
+    }
+    const payload: CreateObjectiveInput = {
+      name: (data as any).name,
+      description: (data as any).description,
+      targetAmount: (data as any).targetAmount,
+      currencyId: primaryCurrencyId,
+    };
+    await createMutation.mutateAsync(payload);
     Alert.alert("Éxito", "Objetivo creado correctamente");
   };
 
