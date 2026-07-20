@@ -76,7 +76,7 @@ describe("TransactionModal FX intent", () => {
     fireEvent.press(getByLabelText("Moneda, FX1"));
 
     expect(getByTestId("currency-options-scroll").props.style).toEqual(expect.arrayContaining([
-      expect.objectContaining({ maxHeight: 220 }),
+      expect.objectContaining({ maxHeight: 180 }),
     ]));
     expect(getByLabelText("FX12")).toBeTruthy();
   });
@@ -111,7 +111,7 @@ describe("TransactionModal FX intent", () => {
     rerender(<TransactionModal visible onClose={jest.fn()} />);
 
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
-    expect(getByText(/Saldo proyectado: 110\.00/)).toBeTruthy();
+    expect(getByText(/Saldo proy\.: 110\.00/)).toBeTruthy();
   });
 
   it("shows success feedback after saving the operation", () => {
@@ -314,7 +314,7 @@ describe("TransactionModal FX intent", () => {
       <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
     );
 
-    expect(getByText(/se registra junto con FX/)).toBeTruthy();
+    expect(getByText(/opcional/)).toBeTruthy();
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     fireEvent.changeText(getByLabelText("Ganancia del trabajador"), "3.5");
     fireEvent.press(getByText("Guardar"));
