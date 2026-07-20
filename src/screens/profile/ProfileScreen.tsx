@@ -168,30 +168,6 @@ export const ProfileScreen: React.FC = () => {
       onPress: () => setShowChangePasswordModal(true),
     },
     {
-      id: "rates",
-      title: "Tasas de Cambio",
-      subtitle: "Configurar tasas de referencia",
-      icon: "swap-horizontal-outline",
-      color: themeColors.success,
-      onPress: () => navigation.navigate("ExchangeRates"),
-    },
-    {
-      id: "currencies",
-      title: "Monedas",
-      subtitle: "Gestionar monedas y principal",
-      icon: "cash-outline",
-      color: themeColors.secondary[500],
-      onPress: () => navigation.navigate("Currencies"),
-    },
-    {
-      id: "accounts",
-      title: "Cuentas Bancarias",
-      subtitle: `${bankAccounts.length} cuentas`,
-      icon: "business-outline",
-      color: themeColors.warning,
-      onPress: () => navigation.navigate("BankAccounts"),
-    },
-    {
       id: "about",
       title: "Acerca de",
       subtitle: "Versión 1.0.0",
@@ -199,7 +175,7 @@ export const ProfileScreen: React.FC = () => {
       color: themeColors.text.secondary,
       onPress: () =>
         Alert.alert(
-          "Casa de Cambio",
+          "Cashflow",
           "Versión 1.0.0\nSistema de gestión para casa de cambio",
         ),
     },

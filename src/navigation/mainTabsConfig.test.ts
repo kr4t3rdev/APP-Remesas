@@ -5,7 +5,7 @@ describe("mainTabDefinitions", () => {
     expect(mainTabDefinitions.map(({ route, label, icon }) => ({ route, label, icon }))).toEqual([
       { route: "Home", label: "Inicio", icon: "home" },
       { route: "Transactions", label: "Transacciones", icon: "swap-horizontal" },
-      { route: "Cash", label: "Caja", icon: "wallet" },
+      { route: "Cash", label: "Cash", icon: "wallet" },
       { route: "Expenses", label: "Gastos", icon: "receipt" },
       { route: "Profile", label: "Perfil", icon: "person" },
     ]);

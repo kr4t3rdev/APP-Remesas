@@ -86,6 +86,10 @@ jest.mock("../../../modules/currencies/application/useCurrencies", () => ({
   useCurrenciesWithPrimaryQuery: () => ({ data: mockCurrenciesWithPrimary }),
 }));
 
+jest.mock("../../../modules/profile/application/useProfile", () => ({
+  useProfileBankAccountsQuery: () => ({ data: [] }),
+}));
+
 describe("CashScreen", () => {
   beforeEach(() => {
     jest.clearAllMocks();

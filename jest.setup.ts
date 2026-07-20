@@ -22,6 +22,7 @@ jest.mock('./src/store/themeStore', () => {
     card: '#F9FAFB',
     text: { primary: '#1F2937', secondary: '#6B7280' },
     primary: { 500: '#3B82F6' },
+    secondary: { 500: '#22C55E' },
     success: '#10B981',
     warning: '#F59E0B',
     danger: '#EF4444',

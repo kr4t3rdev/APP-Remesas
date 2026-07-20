@@ -84,14 +84,14 @@ describe("InstagramTabBar", () => {
     jest.restoreAllMocks();
   });
 
-  it("renders all primary tabs and marks the active route", () => {
+  it("renders all primary tabs, hides label on emphasized Cash tab", () => {
     const { getByTestId, getByText } = renderTabBar(createProps(2));
 
     expect(getByText("Inicio")).toBeTruthy();
     expect(getByText("Transacciones")).toBeTruthy();
-    expect(getByText("Caja")).toBeTruthy();
     expect(getByText("Gastos")).toBeTruthy();
     expect(getByText("Perfil")).toBeTruthy();
+    expect(() => getByText("Cash")).toThrow();
     expect(getByTestId("tab-Cash").props.accessibilityState).toEqual({
       selected: true,
     });
@@ -116,7 +116,7 @@ describe("InstagramTabBar", () => {
     });
   });
 
-  it("keeps labels visible and subtly enlarges the bar, icons, and labels on scroll-down", () => {
+  it("enlarges the bar and icons on scroll-down, only Cash tab hides its label", () => {
     expect(TAB_BAR_EMPHASIS_MOTION.barScaleX).toBe(1.07);
     expect(TAB_BAR_EMPHASIS_MOTION.barScaleY).toBe(1.09);
     expect(TAB_BAR_EMPHASIS_MOTION.iconScale).toBe(1.08);

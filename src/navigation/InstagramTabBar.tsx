@@ -174,10 +174,10 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
         {barWidth > 0 && (
           <Animated.View
             pointerEvents="none"
-            style={[
-              styles.activeIndicator,
-              {
-                left: itemWidth / 2 - 18,
+              style={[
+                  styles.activeIndicator,
+                  {
+                    left: itemWidth / 2 - 24,
                 backgroundColor: colors.activeBackground,
                 transform: [{ translateX: indicatorTranslateX }],
               },
@@ -270,36 +270,38 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
                   >
                     <Ionicons
                       name={icon}
-                      size={emphasized ? 27 : 22}
+                      size={emphasized ? 36 : 22}
                       color={
                         focused || emphasized ? colors.active : colors.inactive
                       }
                     />
                   </Animated.View>
                 </View>
-                <Animated.Text
-                  numberOfLines={1}
-                  style={[
-                    styles.label,
-                    { color: focused ? colors.active : colors.inactive },
-                    {
-                      opacity: progress.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [1, TAB_BAR_EMPHASIS_MOTION.labelOpacity],
-                      }),
-                      transform: [
-                        {
-                          scale: progress.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [1, TAB_BAR_EMPHASIS_MOTION.labelScale],
-                          }),
-                        },
-                      ],
-                    },
-                  ]}
-                >
-                  {label}
-                </Animated.Text>
+                {!emphasized && (
+                  <Animated.Text
+                    numberOfLines={1}
+                    style={[
+                      styles.label,
+                      { color: focused ? colors.active : colors.inactive },
+                      {
+                        opacity: progress.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [1, TAB_BAR_EMPHASIS_MOTION.labelOpacity],
+                        }),
+                        transform: [
+                          {
+                            scale: progress.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [1, TAB_BAR_EMPHASIS_MOTION.labelScale],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  >
+                    {label}
+                  </Animated.Text>
+                )}
               </Pressable>
             </Animated.View>
           );
@@ -328,10 +330,10 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     position: "absolute",
-    top: 0,
-    width: 36,
-    height: 30,
-    borderRadius: 15,
+    top: 4,
+    width: 48,
+    height: 38,
+    borderRadius: 19,
   },
   iconContainer: {
     width: 34,
@@ -341,9 +343,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   emphasizedIconContainer: {
-    width: 40,
-    height: 34,
-    borderRadius: 17,
+    width: 48,
+    height: 42,
+    borderRadius: 21,
   },
   label: {
     maxWidth: "100%",
