@@ -18,7 +18,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { BarChart } from "../../components/charts/Charts";
-import { FadeIn, FadeInDown, PressableScale, ScaleIn } from "../../components/animations";
+import { FadeIn, FadeInDown, FadeInOverlay, PressableScale, ScaleIn } from "../../components/animations";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { CashMovementCard } from "../business/components/CashMovementCard";
@@ -35,7 +35,7 @@ import {
   useCurrenciesWithPrimaryQuery,
 } from "../../modules/currencies/application/useCurrencies";
 import { useCurrentExchangeRatesQuery } from "../../modules/exchange-rates/application/useExchangeRates";
-import { useProfileBankAccountsQuery } from "../../modules/profile/application/useProfile";
+import { useBankAccountsQuery } from "../../modules/bank-accounts/application/useBankAccounts";
 import { useColors, useIsDark, useShadows } from "../../store/themeStore";
 import { Alert } from "../../utils/alert";
 
@@ -52,7 +52,7 @@ export const CashScreen: React.FC = () => {
   const currenciesWithPrimaryQuery = useCurrenciesWithPrimaryQuery();
   const createAuditMutation = useCreateCashAuditMutation();
   const createAdjustmentMutation = useCreateCashAdjustmentMutation();
-  const bankAccountsQuery = useProfileBankAccountsQuery();
+  const bankAccountsQuery = useBankAccountsQuery();
   const exchangeRatesQuery = useCurrentExchangeRatesQuery();
   const tabBarScrollBehavior = useTabBarScrollBehavior();
   const scrollRef = useRef<ScrollView>(null);
@@ -322,10 +322,10 @@ export const CashScreen: React.FC = () => {
                   <View style={styles.chartCard}>
                     <BarChart
                       data={exchangeRatesQuery.data
-                        .filter((r) => r.buyRate > 0)
+                        .filter((r) => r.referenceRate > 0)
                         .map((r) => ({
                           label: r.currency.code,
-                          value: r.buyRate,
+                          value: r.referenceRate,
                           color: colors.primary[500],
                         }))}
                       height={100}
@@ -344,6 +344,7 @@ export const CashScreen: React.FC = () => {
 
       <Modal visible={activeAction !== null} transparent animationType="slide" onRequestClose={closeAction}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.modalOverlay}>
+          <FadeInOverlay targetOpacity={0.4} />
           <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={closeAction} accessibilityLabel="Cerrar modal" />
           <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
@@ -397,5 +398,5 @@ const styles = StyleSheet.create({
   stateCard: { alignItems: "center", borderRadius: 16, padding: 24, gap: 8, marginBottom: 26 }, stateTitle: { fontSize: 17, fontWeight: "700", textAlign: "center" }, stateText: { fontSize: 14, textAlign: "center", marginBottom: 8 },
   actionWrapper: { marginBottom: 10 }, actionCard: { flexDirection: "row", alignItems: "center", borderRadius: 14, padding: 14 }, actionIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12 }, actionInfo: { flex: 1 }, actionTitle: { fontSize: 15, fontWeight: "700" }, actionSubtitle: { fontSize: 12, marginTop: 2 },
   link: { fontSize: 14, fontWeight: "700", marginBottom: 12 }, emptyText: { fontSize: 14 }, chartCard: { marginTop: 12, marginBottom: 4 }, auditCard: { borderRadius: 16, padding: 18, marginBottom: 12 }, auditHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, auditDate: { fontSize: 12 }, statusBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, statusText: { fontSize: 11, fontWeight: "800" }, auditCurrency: { fontSize: 16, fontWeight: "800", marginTop: 12 }, auditAmounts: { flexDirection: "row", marginTop: 14 }, auditAmount: { flex: 1 }, auditLabel: { fontSize: 11, marginBottom: 4 }, auditValue: { fontSize: 16, fontWeight: "800" }, auditDifference: { fontSize: 13, fontWeight: "700", marginTop: 14 }, auditNotes: { fontSize: 12, marginTop: 8 },
-  modalOverlay: { flex: 1, justifyContent: "flex-end" }, modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15, 23, 42, 0.4)" }, modalCard: { borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 20, gap: 12 }, modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, modalTitle: { fontSize: 20, fontWeight: "800" }, fieldLabel: { fontSize: 14, fontWeight: "600" }, currencyOptions: { gap: 8, paddingBottom: 4 }, currencyOption: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 }, optionText: { fontWeight: "700" }, typeRow: { flexDirection: "row", gap: 8 }, typeOption: { flex: 1, borderWidth: 1, borderRadius: 10, alignItems: "center", paddingVertical: 11 },
+  modalOverlay: { flex: 1, justifyContent: "flex-end" }, modalBackdrop: { ...StyleSheet.absoluteFillObject }, modalCard: { borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 20, gap: 12 }, modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, modalTitle: { fontSize: 20, fontWeight: "800" }, fieldLabel: { fontSize: 14, fontWeight: "600" }, currencyOptions: { gap: 8, paddingBottom: 4 }, currencyOption: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 }, optionText: { fontWeight: "700" }, typeRow: { flexDirection: "row", gap: 8 }, typeOption: { flex: 1, borderWidth: 1, borderRadius: 10, alignItems: "center", paddingVertical: 11 },
 });
