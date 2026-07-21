@@ -205,8 +205,12 @@ export const WorkerPaymentsScreen: React.FC = () => {
         ...data,
       });
       Alert.alert("Éxito", "Saldo agregado correctamente");
-    } catch (error) {
-      Alert.alert("Error", "No se pudo agregar el saldo. Intentá de nuevo.");
+    } catch (error: any) {
+      const backendMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "No se pudo agregar el saldo. Intentá de nuevo.";
+      Alert.alert("Error", backendMessage);
       throw error;
     }
   };
@@ -237,8 +241,12 @@ export const WorkerPaymentsScreen: React.FC = () => {
         ...data,
       });
       Alert.alert("Éxito", "Depósito realizado correctamente");
-    } catch (error) {
-      Alert.alert("Error", "No se pudo realizar el depósito. Intentá de nuevo.");
+    } catch (error: any) {
+      const backendMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "No se pudo realizar el depósito. Intentá de nuevo.";
+      Alert.alert("Error", backendMessage);
       throw error;
     }
   };

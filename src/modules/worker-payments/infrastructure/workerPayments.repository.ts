@@ -52,11 +52,24 @@ export const workerPaymentsRepository = {
       currencyId?: number;
     },
   ): Promise<Worker> {
-    const response = await api.post<{ worker?: Worker; workerBalance?: Worker }>(
-      `/worker-payments/${workerId}/balance`,
-      payload,
-    );
-    return response.data!.worker ?? response.data!.workerBalance!;
+    try {
+      const response = await api.post<{ worker?: Worker; workerBalance?: Worker }>(
+        `/worker-payments/${workerId}/balance`,
+        payload,
+      );
+      return response.data!.worker ?? response.data!.workerBalance!;
+    } catch (error: any) {
+      if (__DEV__) {
+        console.warn("[WorkerPayments] addBalance falló", {
+          url: `/worker-payments/${workerId}/balance`,
+          payload,
+          status: error?.status,
+          statusText: error?.statusText,
+          backendMessage: error?.response?.data ?? error?.message,
+        });
+      }
+      throw error;
+    }
   },
 
   async deposit(
@@ -68,10 +81,23 @@ export const workerPaymentsRepository = {
       currencyId?: number;
     },
   ): Promise<Worker> {
-    const response = await api.post<{ worker?: Worker; workerBalance?: Worker }>(
-      `/worker-payments/${workerId}/deposit`,
-      payload,
-    );
-    return response.data!.worker ?? response.data!.workerBalance!;
+    try {
+      const response = await api.post<{ worker?: Worker; workerBalance?: Worker }>(
+        `/worker-payments/${workerId}/deposit`,
+        payload,
+      );
+      return response.data!.worker ?? response.data!.workerBalance!;
+    } catch (error: any) {
+      if (__DEV__) {
+        console.warn("[WorkerPayments] deposit falló", {
+          url: `/worker-payments/${workerId}/deposit`,
+          payload,
+          status: error?.status,
+          statusText: error?.statusText,
+          backendMessage: error?.response?.data ?? error?.message,
+        });
+      }
+      throw error;
+    }
   },
 };

@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { Alert } from "../../utils/alert";
 
 import { Ionicons } from "@expo/vector-icons";
 import { FadeInDown } from "../animations";
@@ -84,16 +83,20 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
     const cashByCurrencyId = new Map(
       cashBalances.map((item) => [item.currencyId, item]),
     );
+    // Solo mostrar cajas que existan realmente en el backend. Si mostramos una
+    // caja "fantasma" (sin registro), el backend la rechaza con "Caja no
+    // encontrada" aunque el usuario la vea en la lista.
     const cashAccounts = currencies
       .filter((c) => c.isActive !== false)
+      .filter((currency) => cashByCurrencyId.has(currency.id))
       .map((currency) => {
-        const cashBalance = cashByCurrencyId.get(currency.id);
+        const cashBalance = cashByCurrencyId.get(currency.id)!;
         return {
           key: `CASH:${currency.id}`,
           type: "CASH" as const,
           label: `Caja · ${currency.code}`,
           currencyId: currency.id,
-          balance: cashBalance?.balance ?? 0,
+          balance: Number(cashBalance.balance) || 0,
         };
       });
     const bankAccounts = banks
@@ -168,6 +171,14 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
       newErrors.amount = "El monto supera el saldo disponible del trabajador";
     }
 
+    // En modo "add" (entregar al trabajador) el origen debe tener saldo
+    // suficiente. El backend rechaza esto con "Saldo insuficiente en caja" o
+    // "Saldo insuficiente en la cuenta bancaria" — mejor validar acá y dar
+    // feedback inmediato al usuario.
+    if (!isDeposit && selectedAccount && numAmount > Number(selectedAccount.balance)) {
+      newErrors.amount = `El monto supera el saldo disponible del origen ($${selectedAccount.balance.toLocaleString()})`;
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -195,13 +206,8 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
             }),
       });
       onClose();
-    } catch (error) {
-      Alert.alert(
-        "Error",
-        isDeposit
-          ? "No se pudo realizar el depósito. Intenta de nuevo."
-          : "No se pudo agregar el saldo. Intenta de nuevo.",
-      );
+    } catch {
+      // El error ya fue notificado por la screen con el mensaje real del backend.
     } finally {
       setIsSubmitting(false);
     }
