@@ -1,16 +1,16 @@
-# Graph Report - APP  (2026-07-19)
+# Graph Report - APP  (2026-07-20)
 
 ## Corpus Check
-- 373 files · ~212,985 words
+- 371 files · ~213,600 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2074 nodes · 4466 edges · 151 communities (143 shown, 8 thin omitted)
+- 2074 nodes · 4205 edges · 161 communities (148 shown, 13 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.5)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `60af3505`
+- Built from commit: `818202fe`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -39,20 +39,20 @@
 - ExpenseItemsScreen.tsx
 - Toast.tsx
 - api.ts
-- AuthWrapper.tsx
-- ExpenseFormModal.tsx
-- AdminServicesScreen.tsx
-- BusinessScreen.tsx
-- AdminUsersScreen.tsx
-- FadeInDown
+- useAdminHomeData.ts
+- types.ts
+- AdminAuditLogScreen.tsx
+- AdminHomeEventRow.tsx
+- MainTabs.tsx
+- AdminReportsScreen
 - Integration Testing Guide
 - AdminUserDetailScreen.tsx
-- useBusinessQueries.ts
+- AdminTempBlockModal.tsx
 - AdminPlanCreateScreen.tsx
 - useBankAccounts.ts
 - licensesApi.ts
 - AdminPlanCreateScreen.tsx
-- AddUserFormModal.tsx
+- ErrorModal.tsx
 - ExchangeRatesScreen.tsx
 - Design: Admin Users Unified Flow
 - package.json
@@ -65,7 +65,7 @@
 - Design: Currencies Screen Redesign (Viajero Global)
 - MODIFIED Requirements
 - AdminReportsScreen.tsx
-- licensesApi.ts
+- SuccessModal.tsx
 - Design: Admin License Detail View
 - Design: Admin Licenses Management
 - Design: Admin Subscription Plans Management
@@ -84,23 +84,26 @@
 - UI Specification
 - scripts
 - CashAuditCard.tsx
-- VerificationPendingScreen.tsx
+- DeleteButton.tsx
 - Plan: Observabilidad con Grafana Stack (Prometheus + Loki + Grafana)
 - Verification Report: admin-users-unified-flow
 - Requirement: Use Burnt for Application Alerts
 - Requirement: Custom Confirmation Component
 - devDependencies
+- TransactionModal.tsx
 - UserAvatar.tsx
+- validators.ts
 - Design: Delete Exchange Rate Functionality
 - Implementation Progress
-- AssignLicenseModal.tsx
+- AdminUserDetailModal
+- TabSelector.tsx
 - bankAccounts.repository.ts
 - Tasks: Admin Users Unified Flow
 - Design: Rediseño de Tarjetas de Exchange Rates
 - Exchange Rates Validation Specification
 - Tasks: Fix App-Wide Dark Mode
 - useBankAccountsQuery
-- useSubscriptions.ts
+- AdminHomeScreen.test.tsx
 - types.ts
 - Proposal: Admin License Detail View
 - Tasks: Admin License Detail View
@@ -112,9 +115,11 @@
 - Tasks: Admin User Details Screen
 - Proposal: Admin User Management Screen
 - Tasks: Admin User Management Screen
-- AdminHomeHeroCard.tsx
+- ReportsBlockedList.tsx
+- useCurrencies.ts
 - profile.repository.ts
 - tabBarScreenIntegration.test.ts
+- TabBarMotionProvider.tsx
 - fix-alerts.js
 - fix_isdark_colors.js
 - fix-screens-confirm.js
@@ -125,10 +130,13 @@
 - Proposal: Replace Native Alerts with Custom Confirmation Modal
 - package.json
 - replace-alerts.js
+- AdminScreenPerfil
 - FadeIn
+- fintechTabBar.ts
+- ReportsAuditLogList.tsx
 - ProfileScreen
 - ActionGridItem.tsx
-- AdminTempBlockSuccessModal.tsx
+- WelcomeScreen.tsx
 - fix_auth_colors.js
 - fix_auth_colors2.js
 - fix_auth_colors3.js
@@ -139,77 +147,79 @@
 - fix_hardcoded_colors_smart.js
 - replace_hardcoded_colors.js
 - replace_hardcoded_colors2.js
-- bankAccounts.repository.ts
+- AdminUsersScreen.test.tsx
 - ObjectiveProgressRing.tsx
-- ReportsPlanFilter.tsx
+- useAuthStore
+- responsiveStore.ts
 - tsconfig.json
 - fix_static_colors.js
-- profileNavigationItems.ts
+- HomeScreen.test.tsx
 - proMax.ts
 - SuccessModal.tsx
 - fx-trading-remittances.spec.ts
-- AdminTempBlockModal.tsx
-- AppNavigator
-- AdminReportsPeriodSegment.tsx
+- AdminActionConfirmModal.tsx
 - GradientCard.tsx
-- getApiErrorMessage
+- AppNavigator
+- WelcomeScreen.tsx
+- GradientCard.tsx
+- AdminUserDetailModal
 
 ## God Nodes (most connected - your core abstractions)
-1. `useColors()` - 227 edges
-2. `spacing` - 97 edges
-3. `borderRadius` - 84 edges
-4. `useShadows()` - 69 edges
-5. `Alert` - 47 edges
-6. `FadeInDown()` - 40 edges
+1. `useColors()` - 212 edges
+2. `spacing` - 92 edges
+3. `borderRadius` - 79 edges
+4. `useShadows()` - 59 edges
+5. `Alert` - 39 edges
+6. `FadeInDown()` - 35 edges
 7. `api` - 35 edges
-8. `Button()` - 27 edges
-9. `Input()` - 26 edges
+8. `Button()` - 25 edges
+9. `Input()` - 25 edges
 10. `queryKeys` - 23 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `AdminUserDetailModal()` --references--> `react`  [EXTRACTED]
   src/components/admin/AdminUserDetailModal.tsx → package.json
-- `ReportsEmptyState()` --calls--> `useColors()`  [EXTRACTED]
-  src/components/admin/ReportsEmptyState.tsx → src/store/themeStore.ts
-- `TransactionItem()` --calls--> `useColors()`  [EXTRACTED]
-  src/components/worker-payments/WorkerExpandableRow.tsx → src/store/themeStore.ts
-- `Header()` --calls--> `useColors()`  [EXTRACTED]
-  src/screens/business/BusinessScreen.tsx → src/store/themeStore.ts
-- `BusinessScreen()` --calls--> `useColors()`  [EXTRACTED]
-  src/screens/business/BusinessScreen.tsx → src/store/themeStore.ts
+- `Section()` --calls--> `useColors()`  [EXTRACTED]
+  src/components/admin/AddUserFormModal.tsx → src/store/themeStore.ts
+- `BooleanRow()` --calls--> `useColors()`  [EXTRACTED]
+  src/components/admin/AddUserFormModal.tsx → src/store/themeStore.ts
+- `RoleSelector()` --calls--> `useColors()`  [EXTRACTED]
+  src/components/admin/AddUserFormModal.tsx → src/store/themeStore.ts
+- `Pill()` --calls--> `useColors()`  [EXTRACTED]
+  src/components/admin/AddUserFormModal.tsx → src/store/themeStore.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (151 total, 8 thin omitted)
+## Communities (161 total, 13 thin omitted)
 
 ### Community 0 - "RegisterScreen.tsx"
-Cohesion: 0.13
-Nodes (17): AssignLicensePayload, BackendUserLicense, BillingCycle, licensesApi, AssignLicenseModal(), AssignLicenseModalProps, BILLING_CYCLES, createStyles() (+9 more)
+Cohesion: 0.15
+Nodes (12): useCreatePlanMutation(), usePlansCatalogQuery(), useOperationalUsersQuery(), usersRepository, mockNavigate, mockUseAssignLicenseMutation, mockUseCreatePlanMutation, mockUseOperationalUsersQuery (+4 more)
 
 ### Community 1 - "useDashboardData.ts"
-Cohesion: 0.06
-Nodes (49): Header(), HeaderProps, styles, MainLayout(), MainLayoutProps, styles, ResponsiveContainer(), ResponsiveContainerProps (+41 more)
+Cohesion: 0.13
+Nodes (22): Header(), HeaderProps, styles, MainLayout(), MainLayoutProps, styles, ResponsiveContainer(), ResponsiveContainerProps (+14 more)
 
 ### Community 2 - "ObjectivesScreen.tsx"
-Cohesion: 0.13
-Nodes (24): ObjectiveFormModal(), ObjectiveFormModalProps, styles, ObjectiveStatusPicker(), ObjectiveStatusPickerProps, STATUS_OPTIONS, styles, mockedRepository (+16 more)
+Cohesion: 0.16
+Nodes (20): AdminReportsDashboardVM, AdminReportsPeriod, buildCashFlowBars(), buildCashFlowModel(), buildMetricTiles(), buildSystemUsageRows(), buildTrend(), buildUsersGrowthPoints() (+12 more)
 
 ### Community 3 - "index.tsx"
-Cohesion: 0.17
-Nodes (11): useAssignLicenseMutation(), useRegisterSubscriptionPaymentMutation(), useSubscriptionLicensesQuery(), subscriptionsRepository, AdminCashScreen(), createStyles(), mockUseBankAccountsQuery, mockUseRegisterSubscriptionPaymentMutation (+3 more)
+Cohesion: 0.08
+Nodes (37): KpiCardProps, ReportsKpiCard(), CATEGORY_COLORS, CATEGORY_ICONS, ExpenseCard(), ExpenseCardProps, styles, ExpenseFormModal() (+29 more)
 
 ### Community 4 - "useAdminReportsDashboard.ts"
-Cohesion: 0.20
-Nodes (11): plansApi, AdminHeader(), AdminHeaderProps, getInitials(), ICONS, styles, THEME_COLORS, styles (+3 more)
+Cohesion: 0.12
+Nodes (21): AdminReportsCashFlowCard(), AdminReportsCashFlowCardProps, createStyles(), AdminReportsMetricTile(), AdminReportsMetricTileProps, createStyles(), AdminReportsPeriodSegment(), AdminReportsPeriodSegmentProps (+13 more)
 
 ### Community 5 - "borderRadius"
-Cohesion: 0.18
-Nodes (6): API_CONFIG, CURRENCY_CONFIG, ENV, STORAGE_KEYS, AuthState, AuthResponse
+Cohesion: 0.10
+Nodes (20): ExpenseAmountInput(), ExpenseAmountInputProps, styles, CATEGORIES, ExpenseCategoryPicker(), ExpenseCategoryPickerProps, styles, ExpenseDatePicker() (+12 more)
 
 ### Community 6 - "index.ts"
-Cohesion: 0.07
-Nodes (38): BalanceCardProps, currenciesRepository, exchangeRatesRepository, ExchangeRatesResponse, profileRepository, FxPerformanceReport, AccountReportItem, AccountsReport (+30 more)
+Cohesion: 0.08
+Nodes (33): UseAdminUserControlActionOptions, adminRepository, FxPerformanceReport, AccountReportItem, AccountsReport, AdminAuditLog, AdminCreateUserRequest, AdminKpiSnapshot (+25 more)
 
 ### Community 7 - "expo"
 Cohesion: 0.06
@@ -224,8 +234,8 @@ Cohesion: 0.06
 Nodes (34): dependencies, clsx, date-fns, expo, expo-blur, expo-device, expo-font, expo-image-picker (+26 more)
 
 ### Community 10 - "useSubscriptions.ts"
-Cohesion: 0.07
-Nodes (42): styles, WorkerCard(), WorkerCardProps, styles, TransactionItem(), TransactionItemProps, WorkerExpandableRow(), WorkerExpandableRowProps (+34 more)
+Cohesion: 0.13
+Nodes (26): styles, TransactionItem(), TransactionItemProps, WorkerExpandableRow(), WorkerExpandableRowProps, mockedRepository, useAddBalanceMutation(), useCreateTransactionMutation() (+18 more)
 
 ### Community 11 - "Requirement: Modal-Based Feedback"
 Cohesion: 0.07
@@ -240,96 +250,96 @@ Cohesion: 0.07
 Nodes (28): 1. Client-Side Validation, 1. POST /auth/register, 2. GET /auth/check-email?email=..., 2. Real-Time Async Validation, 3. GET /auth/check-nickname?nickname=..., 3. Separated Concerns, 4. Better Error Messages, 5. Documentation (+20 more)
 
 ### Community 14 - "useColors"
-Cohesion: 0.19
-Nodes (15): RFC-5322, ChangePasswordModal(), useDebounce(), useRegisterAnimations(), UseRegisterAnimationsResult, createStyles(), RegisterScreen(), RegisterScreenProps (+7 more)
+Cohesion: 0.25
+Nodes (7): mockedRepository, dashboardRepository, ExchangeRatesResponse, safeArray(), safeData(), safeObject(), safePath()
 
 ### Community 15 - "useShadows"
-Cohesion: 0.15
-Nodes (17): useCashOverviewQuery(), useCreateCashAdjustmentMutation(), useCreateCashAuditMutation(), useCurrenciesQuery(), useCurrenciesWithPrimaryQuery(), CashMovement, CashMovementCard(), Props (+9 more)
+Cohesion: 0.06
+Nodes (30): useCashOverviewQuery(), useCreateCashAdjustmentMutation(), useCreateCashAuditMutation(), FintechTabBarColors, floatingTabBarMetrics, getFintechTabBarStyle(), BUSINESS_TABS, BusinessScreen() (+22 more)
 
 ### Community 16 - "Authentication API Endpoints"
 Cohesion: 0.07
 Nodes (27): Authentication API Endpoints, Backend Implementation Notes, Backend Implementation Notes, Backend Validations Required, Common Status Codes, Email Check Flow, Error Handling, Example Request (+19 more)
 
 ### Community 17 - "ReportsScreen.tsx"
-Cohesion: 0.09
-Nodes (20): BankAccountBalance, bankAccountsRepository, BankAccountTransactions, CreateBankAccountDto, UpdateBankAccountDto, cashRepository, mockedApi, mockedApi (+12 more)
+Cohesion: 0.16
+Nodes (17): getIconForPlan(), getStatusColor(), getStatusLabel(), LicenseCard(), LicenseCardProps, styles, LicenseSummaryCard(), LicenseSummaryCardProps (+9 more)
 
 ### Community 18 - "themeStore.ts"
-Cohesion: 0.09
-Nodes (25): AdminResetPasswordModalProps, styles, createStyles(), DateFilter(), DateFilterProps, createStyles(), ReportsUserList(), ReportsUserListProps (+17 more)
+Cohesion: 0.11
+Nodes (11): mockedApi, mockedApi, plansRepository, mockedApi, subscriptionsRepository, api, RequestConfig, ForgotPasswordResponse (+3 more)
 
 ### Community 19 - "WorkerPaymentsScreen.tsx"
 Cohesion: 0.08
 Nodes (23): Accessibility, Animation strategy, Components, Content integration, Current Context, Definition of Done, Expanded state, Goal (+15 more)
 
 ### Community 20 - "AppNavigator.tsx"
-Cohesion: 0.11
-Nodes (22): AnimatedCircle, BarChart(), BarChartProps, BarItem(), BarItemProps, CircularProgress(), CircularProgressProps, clamp() (+14 more)
+Cohesion: 0.06
+Nodes (36): AnimatedCircle, BarChart(), BarChartProps, BarItem(), BarItemProps, CircularProgress(), CircularProgressProps, clamp() (+28 more)
 
 ### Community 21 - "ExpenseItemsScreen.tsx"
-Cohesion: 0.15
-Nodes (12): react, AdminActionConfirmModal(), AdminActionConfirmModalProps, styles, { width }, AdminUserDetailModal(), AdminUserDetailModalProps, styles (+4 more)
+Cohesion: 0.24
+Nodes (10): mockedRepository, useReportsAccountsQuery(), useReportsAuditSummaryQuery(), useReportsCashFlowQuery(), useReportsCurrencyQuery(), useReportsExpensesQuery(), useReportsObjectivesQuery(), useReportsPeriodQuery() (+2 more)
 
 ### Community 22 - "Toast.tsx"
-Cohesion: 0.19
-Nodes (11): uploadApi, UploadResponse, mockUseAdminAuditLogsProfileQuery, mockUseAdminStatsQuery, mockUseAuthStore, mockUser, mockUseThemeStore, useAdminAuditLogsProfileQuery() (+3 more)
+Cohesion: 0.18
+Nodes (13): mockedRepository, useCreateObjectiveMutation(), useDeleteObjectiveMutation(), useObjectiveDetailQuery(), useObjectiveProgressQuery(), useUpdateObjectiveMutation(), useUpdateObjectiveStatusMutation(), objectivesRepository (+5 more)
 
 ### Community 23 - "api.ts"
-Cohesion: 0.07
-Nodes (38): AdminHomeEventRow(), AdminHomeEventRowProps, AdminHomeEventRowType, deriveTypeFromAction(), EVENT_LABELS, formatEventDate(), styles, createStyles() (+30 more)
+Cohesion: 0.15
+Nodes (8): uploadApi, UploadResponse, API_CONFIG, CURRENCY_CONFIG, ENV, STORAGE_KEYS, AuthState, AuthResponse
 
-### Community 24 - "AuthWrapper.tsx"
-Cohesion: 0.40
-Nodes (5): contrastRatio(), dashboardData, mockUseDashboardData, mockUseTabScrollToTop, relativeLuminance()
+### Community 24 - "useAdminHomeData.ts"
+Cohesion: 0.11
+Nodes (24): AuthCard(), AuthCardProps, styles, AuthWrapper(), AuthWrapperProps, createStyles(), BrandingPanel(), BrandingPanelProps (+16 more)
 
-### Community 25 - "ExpenseFormModal.tsx"
-Cohesion: 0.27
-Nodes (10): Card(), useReportsCashBalancesQuery(), useReportsDailyReportQuery(), ReportCardData, ReportsScreen(), ReportType, styles, { width: SCREEN_WIDTH } (+2 more)
+### Community 25 - "types.ts"
+Cohesion: 0.12
+Nodes (16): useSidebarSync(), MainTabs(), Tab, tabComponents, MainTabDefinition, mainTabDefinitions, MainTabParamList, FILTERS (+8 more)
 
-### Community 26 - "AdminServicesScreen.tsx"
-Cohesion: 0.24
-Nodes (10): LicenseSummaryCard(), LicenseSummaryCardProps, styles, LicenseUserRow(), LicenseUserRowProps, styles, styles, LicenseDetail (+2 more)
+### Community 26 - "AdminAuditLogScreen.tsx"
+Cohesion: 0.26
+Nodes (8): mockUseWindowDimensions, mockUseWindowDimensions, BreakpointListener, BreakpointNotifier, useBreakpointListener(), useBreakpointNotifier(), Breakpoint, BREAKPOINTS
 
-### Community 27 - "BusinessScreen.tsx"
+### Community 27 - "AdminHomeEventRow.tsx"
 Cohesion: 0.20
-Nodes (7): BusinessWorkersScreen(), NavigationProp, UIWorkersRedirect(), AdminStackParamList, MainTabScreenProps, RootStackParamList, RootStackScreenProps
+Nodes (6): useAssignLicenseMutation(), useRegisterSubscriptionPaymentMutation(), useSubscriptionLicensesQuery(), mockUseBankAccountsQuery, mockUseRegisterSubscriptionPaymentMutation, BillingCycle
 
-### Community 28 - "AdminUsersScreen.tsx"
-Cohesion: 0.48
-Nodes (4): useAdminProfile(), AdminScreenPerfil(), createStyles(), mockUseAdminProfile
-
-### Community 29 - "FadeInDown"
+### Community 28 - "MainTabs.tsx"
 Cohesion: 0.18
-Nodes (13): AppNavigator(), AuthStack, MainStack, MainStackNavigator(), mockCheckAuth, mockUseAuthStore, MainTabs(), ChangePasswordScreen() (+5 more)
+Nodes (13): plansApi, AdminRoutes(), Stack, AdminPlanCreateScreen(), ICONS, styles, THEME_COLORS, AdminPlansListScreen() (+5 more)
+
+### Community 29 - "AdminReportsScreen"
+Cohesion: 0.17
+Nodes (16): StaggerList(), AdminHomeViewModel, useAdminHomeData(), useAdminAuditLogsQuery(), useAdminBlockedUsersQuery(), useAdminExpiringLicensesQuery(), useAdminKpisQuery(), AdminHomeNavigationProp (+8 more)
 
 ### Community 30 - "Integration Testing Guide"
 Cohesion: 0.10
 Nodes (19): Check Email, Check Nickname, Debounce Hook, E2E Tests with Mock Server, File Structure, Integration Testing Guide, Integration Tests, Key Features (+11 more)
 
 ### Community 31 - "AdminUserDetailScreen.tsx"
-Cohesion: 0.50
-Nodes (3): ActionTile(), Props, styles
+Cohesion: 0.13
+Nodes (21): Badge(), BadgeProps, BadgeVariant, getVariantStyles(), ConfirmModal(), ConfirmModalProps, styles, useCreateCurrencyMutation() (+13 more)
 
-### Community 32 - "useBusinessQueries.ts"
-Cohesion: 0.50
-Nodes (4): BlockedUser, createStyles(), ReportsBlockedList(), ReportsBlockedListProps
+### Community 32 - "AdminTempBlockModal.tsx"
+Cohesion: 0.33
+Nodes (7): AdminHomeEventRow(), AdminHomeEventRowProps, AdminHomeEventRowType, deriveTypeFromAction(), EVENT_LABELS, formatEventDate(), styles
 
 ### Community 33 - "AdminPlanCreateScreen.tsx"
-Cohesion: 0.12
-Nodes (20): useCreateCurrencyMutation(), useDeleteCurrencyMutation(), useSetPrimaryCurrencyMutation(), useUpdateCurrencyMutation(), useCurrentExchangeRatesQuery(), useDeleteExchangeRateMutation(), usePairHistoryQuery(), usePairStatsQuery() (+12 more)
+Cohesion: 0.13
+Nodes (13): useDeleteExchangeRateMutation(), usePairHistoryQuery(), usePairStatsQuery(), useRateHistoryQuery(), useResetRateHistoryMutation(), useUpdateExchangeRateMutation(), exchangeRatesRepository, ExchangeRatesResponse (+5 more)
 
 ### Community 35 - "licensesApi.ts"
-Cohesion: 0.07
-Nodes (33): AddUserFormModal(), AddUserFormModalProps, AddUserFormValues, BooleanRow(), compactPayload(), createStyles(), ErrorState, getSubmitFeedback() (+25 more)
+Cohesion: 0.16
+Nodes (16): AddUserFormModal(), AddUserFormModalProps, AddUserFormValues, BooleanRow(), compactPayload(), createStyles(), ErrorState, getSubmitFeedback() (+8 more)
 
 ### Community 36 - "AdminPlanCreateScreen.tsx"
-Cohesion: 0.13
-Nodes (12): mockMetrics, BottomNav(), Props, styles, InfoCard(), Props, styles, t() (+4 more)
+Cohesion: 0.09
+Nodes (18): mockMetrics, ActionTile(), Props, styles, BottomNav(), Props, styles, GradientCard() (+10 more)
 
-### Community 37 - "AddUserFormModal.tsx"
-Cohesion: 0.60
-Nodes (4): createStyles(), getFeatures(), WelcomeScreen(), WelcomeScreenProps
+### Community 37 - "ErrorModal.tsx"
+Cohesion: 0.14
+Nodes (16): AssignLicensePayload, BackendUserLicense, BillingCycle, licensesApi, AssignLicenseModal(), AssignLicenseModalProps, BILLING_CYCLES, createStyles() (+8 more)
 
 ### Community 38 - "ExchangeRatesScreen.tsx"
 Cohesion: 0.17
@@ -348,16 +358,16 @@ Cohesion: 0.14
 Nodes (13): Anti-Patterns Verdict, Design Health Score, Minor Observations, Overall Impression, [P1] Data failures are hidden, [P1] No hierarchy of importance, [P2] Controls lack action and accessibility semantics, [P2] Generated visual patterns weaken credibility (+5 more)
 
 ### Community 42 - "authStore.ts"
-Cohesion: 0.06
-Nodes (51): AccountOption, styles, TransactionModal(), TransactionModalProps, AccountOption, AddBalanceModal(), AddBalanceModalProps, styles (+43 more)
+Cohesion: 0.07
+Nodes (35): AccountOption, styles, TransactionModal(), TransactionModalProps, businessKeys, mockFetch(), useBankAccounts(), useCashMovements() (+27 more)
 
 ### Community 43 - "ProfileScreen"
-Cohesion: 0.50
-Nodes (3): ProfileNavigationItem, profileNavigationItems, ProfileRoute
+Cohesion: 0.40
+Nodes (4): AdminTempBlockSuccessModal(), AdminTempBlockSuccessModalProps, styles, { width }
 
 ### Community 44 - "CashRegisterTab.tsx"
-Cohesion: 0.22
-Nodes (8): mockAlert, mockCreateAdjustment, mockCreateAudit, mockCup, mockNavigate, mockPopulatedOverview, mockRefetch, mockUsd
+Cohesion: 0.31
+Nodes (10): AdminAuditLogNavigation, AdminAuditLogScreen(), CATEGORIES, Category, createStyles(), formatActionTitle(), getCategoryForAction(), getColorForAction() (+2 more)
 
 ### Community 45 - "server.js"
 Cohesion: 0.15
@@ -376,12 +386,12 @@ Cohesion: 0.15
 Nodes (12): ADDED Requirements, MODIFIED Requirements, Plan API Specification, REMOVED Requirements, Requirement: Create Plan, Requirement: Delete Plan, Requirement: Fetch Plans, Requirement: Update Plan (+4 more)
 
 ### Community 49 - "AdminReportsScreen.tsx"
-Cohesion: 0.08
-Nodes (37): AdminResetPasswordModal(), AdminResetPasswordSuccessModal(), AdminResetPasswordSuccessModalProps, styles, AdminSuspendAccountModal(), AdminSuspendAccountModalProps, styles, { width } (+29 more)
+Cohesion: 0.33
+Nodes (3): AdminReportsScreen(), createStyles(), mockUseAdminReportsDashboard
 
-### Community 50 - "licensesApi.ts"
-Cohesion: 0.50
-Nodes (4): alpha08(), CurrencyInfo, currencyInfoMap, hexToRgba()
+### Community 50 - "SuccessModal.tsx"
+Cohesion: 0.17
+Nodes (10): BankAccountBalance, bankAccountsRepository, BankAccountTransactions, CreateBankAccountDto, UpdateBankAccountDto, currenciesRepository, BankAccount, CurrenciesWithPrimary (+2 more)
 
 ### Community 51 - "Design: Admin License Detail View"
 Cohesion: 0.17
@@ -396,20 +406,20 @@ Cohesion: 0.17
 Nodes (11): Architecture Decisions, Data Flow, Decision: Data Model, Decision: Navigation Structure, Design: Admin Subscription Plans Management, File Changes, Interfaces / Contracts, Open Questions (+3 more)
 
 ### Community 54 - "AdminServices.integration.test.tsx"
-Cohesion: 0.09
-Nodes (29): CATEGORY_COLORS, CATEGORY_ICONS, ExpenseCard(), ExpenseCardProps, styles, ExpenseDatePicker(), ExpenseFormModal(), ExpenseFormModalProps (+21 more)
+Cohesion: 0.40
+Nodes (4): AdminTempBlockModal(), AdminTempBlockModalProps, styles, { width }
 
 ### Community 55 - "useReports.ts"
 Cohesion: 0.25
 Nodes (4): bankAccounts, cashBalances, currencies, Route
 
 ### Community 56 - "AdminActionConfirmModal.tsx"
-Cohesion: 0.07
-Nodes (29): AdminChangePasswordSuccessModal(), AdminChangePasswordSuccessModalProps, styles, ReportsEmptyState(), ReportsEmptyStateProps, styles, ExpenseAmountInput(), ExpenseAmountInputProps (+21 more)
+Cohesion: 0.50
+Nodes (3): styles, WorkerCard(), WorkerCardProps
 
 ### Community 57 - "AdminPlanCreateScreen.tsx"
-Cohesion: 0.24
-Nodes (8): useAdminUserControlActionMutation(), UseAdminUserControlActionOptions, adminRepository, AdminCreateUserRequest, AdminKpiSnapshot, AdminUserControlRequest, AdminUserDetail, getApiErrorMessage()
+Cohesion: 0.50
+Nodes (4): alpha08(), CurrencyInfo, currencyInfoMap, hexToRgba()
 
 ### Community 58 - "Design: Admin User Details Screen"
 Cohesion: 0.18
@@ -424,16 +434,12 @@ Cohesion: 0.18
 Nodes (10): API Backend, Arquitectura Actual, Casa de Cambio - Mobile App, Convención para Nuevos Módulos, Diseño y UI, Estructura (resumen), Instalación, Módulos Implementados (+2 more)
 
 ### Community 61 - "TabSelector.tsx"
-Cohesion: 0.13
-Nodes (19): FintechTabBarColors, floatingTabBarMetrics, getFintechTabBarStyle(), InstagramTabBar(), styles, TAB_BAR_EMPHASIS_MOTION, routeNames, ScrollToTopRegistration() (+11 more)
-
-### Community 62 - "ExpenseCategoryPicker.tsx"
-Cohesion: 0.27
-Nodes (7): useCreateBankAccountMutation(), useDeleteBankAccountMutation(), useUpdateBankAccountMutation(), BankAccountsScreen(), ConfirmAction, styles, getCurrencyInfo()
+Cohesion: 0.25
+Nodes (6): ACTIVE_INDICATOR_GEOMETRY, InstagramTabBar(), isEmphasizedRoute(), styles, TAB_BAR_EMPHASIS_MOTION, routeNames
 
 ### Community 63 - "ExchangeRatesScreen.tsx"
-Cohesion: 0.16
-Nodes (17): Tab, tabComponents, useTabBarScrollBehavior(), ExpensesScreen(), HomeScreen(), getTransactionFilterLabel(), Props, styles (+9 more)
+Cohesion: 0.56
+Nodes (7): useActiveObjectives(), useCashBalances(), useDailyReport(), useDashboardData(), useExchangeRates(), useRecentExpenses(), useRecentTransactions()
 
 ### Community 64 - "Mock Auth Backend Server"
 Cohesion: 0.20
@@ -452,12 +458,12 @@ Cohesion: 0.20
 Nodes (10): scripts, android, build:web, ios, start, test, test:e2e, test:e2e:list (+2 more)
 
 ### Community 68 - "CashAuditCard.tsx"
-Cohesion: 0.16
-Nodes (14): AuthCard(), AuthCardProps, styles, AuthWrapper(), AuthWrapperProps, createStyles(), BrandingPanel(), BrandingPanelProps (+6 more)
+Cohesion: 0.20
+Nodes (10): useDebounce(), useRegisterAnimations(), UseRegisterAnimationsResult, createStyles(), RegisterScreen(), RegisterScreenProps, checkEmailExists(), checkNicknameExists() (+2 more)
 
-### Community 69 - "VerificationPendingScreen.tsx"
-Cohesion: 0.36
-Nodes (6): AdminAuditLogSummary, AdminMenuItem, AdminProfileStats, AdminProfileViewModel, DEFAULT_STATS, User
+### Community 69 - "DeleteButton.tsx"
+Cohesion: 0.22
+Nodes (4): profileRepository, CashBalance, DailyReport, Objective
 
 ### Community 70 - "Plan: Observabilidad con Grafana Stack (Prometheus + Loki + Grafana)"
 Cohesion: 0.22
@@ -479,9 +485,17 @@ Nodes (8): ADDED Requirements, Delta for UI: Custom Confirmation Modal, MODIFIED
 Cohesion: 0.20
 Nodes (10): devDependencies, babel-preset-expo, jest, jest-expo, @playwright/test, react-test-renderer, @testing-library/react-native, @types/jest (+2 more)
 
+### Community 75 - "TransactionModal.tsx"
+Cohesion: 0.19
+Nodes (11): useCashAdjustmentsQuery(), useCashAuditsQuery(), cashRepository, CashHistoryScreen(), HistoryItem, styles, CashAdjustment, CashAdjustmentType (+3 more)
+
 ### Community 76 - "UserAvatar.tsx"
 Cohesion: 0.31
 Nodes (8): COLOR_PALETTE, getBackgroundColor(), getInitials(), hashString(), styles, UserAvatar(), UserAvatarProps, UserAvatarUser
+
+### Community 77 - "validators.ts"
+Cohesion: 0.57
+Nodes (6): RFC-5322, validateEmail(), validateForm(), validateName(), validateNickname(), validatePassword()
 
 ### Community 78 - "Design: Delete Exchange Rate Functionality"
 Cohesion: 0.25
@@ -491,13 +505,17 @@ Nodes (7): Architecture Decisions, Decision: Delete Action Location, Decision: T
 Cohesion: 0.25
 Nodes (7): Completed Tasks, Deviations from Design, Files Changed, Implementation Progress, Issues Found, Remaining Tasks, Status
 
-### Community 81 - "AssignLicenseModal.tsx"
+### Community 80 - "AdminUserDetailModal"
+Cohesion: 0.11
+Nodes (17): AdminTabs(), Tab, AppNavigator(), AuthStack, MainStack, mockCheckAuth, mockUseAuthStore, BusinessWorkersScreen() (+9 more)
+
+### Community 81 - "TabSelector.tsx"
 Cohesion: 0.40
 Nodes (5): createStyles(), defaultTabs, ReportTab, TabSelector(), TabSelectorProps
 
 ### Community 82 - "bankAccounts.repository.ts"
-Cohesion: 0.23
-Nodes (10): createStyles(), ForgotPasswordScreen(), ForgotPasswordScreenProps, createStyles(), ResetPasswordScreen(), ResetPasswordScreenProps, forgotPassword(), ForgotPasswordResponse (+2 more)
+Cohesion: 0.08
+Nodes (30): AdminChangePasswordSuccessModal(), AdminChangePasswordSuccessModalProps, styles, AdminLogoutModal(), AdminLogoutModalProps, styles, AdminResetPasswordModalProps, styles (+22 more)
 
 ### Community 83 - "Tasks: Admin Users Unified Flow"
 Cohesion: 0.29
@@ -516,12 +534,12 @@ Cohesion: 0.29
 Nodes (6): Phase 1: Navigation and Layout Components, Phase 2: Auth Screens, Phase 3: Main App Screens & Components, Phase 4: Admin Module, Phase 5: Verification, Tasks: Fix App-Wide Dark Mode
 
 ### Community 87 - "useBankAccountsQuery"
-Cohesion: 0.39
-Nodes (7): getIconForPlan(), getStatusColor(), getStatusLabel(), LicenseCard(), LicenseCardProps, styles, License
+Cohesion: 0.24
+Nodes (13): AdminResetPasswordModal(), AdminResetPasswordSuccessModal(), AdminResetPasswordSuccessModalProps, styles, useAdminDeleteUserMutation(), useAdminUpdateUserBasicMutation(), useAdminUserControlActionMutation(), useAdminUserDetailQuery() (+5 more)
 
-### Community 88 - "useSubscriptions.ts"
-Cohesion: 0.40
-Nodes (4): ErrorModal(), ErrorModalProps, styles, NavigationProp
+### Community 88 - "AdminHomeScreen.test.tsx"
+Cohesion: 0.50
+Nodes (3): AdminDeleteConfirmModal(), AdminDeleteConfirmModalProps, styles
 
 ### Community 89 - "types.ts"
 Cohesion: 0.40
@@ -567,13 +585,21 @@ Nodes (5): Approach, Context, Intent, Proposal: Admin User Management Screen, Sc
 Cohesion: 0.33
 Nodes (5): Phase 1: Foundation & Data, Phase 2: UI Components, Phase 3: Integration, Phase 4: Verification, Tasks: Admin User Management Screen
 
-### Community 100 - "AdminHomeHeroCard.tsx"
-Cohesion: 0.47
-Nodes (5): getRoleBadge(), getStyles(), UserManagementCard(), UserManagementCardProps, UserType
+### Community 100 - "ReportsBlockedList.tsx"
+Cohesion: 0.50
+Nodes (3): DeleteButton(), DeleteButtonProps, styles
+
+### Community 101 - "useCurrencies.ts"
+Cohesion: 0.12
+Nodes (17): AdminSuspendAccountModal(), AdminSuspendAccountModalProps, styles, { width }, AdminSuspendSuccessModal(), AdminSuspendSuccessModalProps, styles, { width } (+9 more)
 
 ### Community 102 - "profile.repository.ts"
-Cohesion: 0.21
-Nodes (11): mockedRepository, useCreateExpenseMutation(), useDeleteExpenseMutation(), useExpenseDetailQuery(), useExpensesQuery(), useUpdateExpenseMutation(), expensesRepository, mockedApi (+3 more)
+Cohesion: 0.13
+Nodes (24): mockedRepository, useCreateExpenseMutation(), useDeleteExpenseMutation(), useExpenseDetailQuery(), useExpensesQuery(), useUpdateExpenseMutation(), expensesRepository, mockedApi (+16 more)
+
+### Community 104 - "TabBarMotionProvider.tsx"
+Cohesion: 0.33
+Nodes (5): ErrorModal(), ErrorModalProps, styles, ChangePasswordScreen(), NavigationProp
 
 ### Community 105 - "fix-alerts.js"
 Cohesion: 0.50
@@ -611,21 +637,25 @@ Nodes (4): main, name, private, version
 Cohesion: 0.50
 Nodes (4): fs, path, processFile(), walkDir()
 
-### Community 116 - "FadeIn"
-Cohesion: 0.10
-Nodes (19): AnimatedNumberProps, AnimatedWrapperProps, FadeIn(), FadeInDown(), LoadingDots(), LoadingDotsProps, PressableScale(), PressableScaleProps (+11 more)
+### Community 115 - "AdminScreenPerfil"
+Cohesion: 0.14
+Nodes (17): mockUseAdminAuditLogsProfileQuery, mockUseAdminStatsQuery, mockUseAuthStore, mockUser, mockUseThemeStore, useAdminAuditLogsProfileQuery(), Navigation, useAdminProfile() (+9 more)
 
-### Community 119 - "ProfileScreen"
-Cohesion: 0.29
-Nodes (8): useProfileActiveObjectivesQuery(), useProfileBankAccountsQuery(), useProfileCashBalancesQuery(), useProfileDailyReportQuery(), createStyles(), MenuItem, ProfileScreen(), mockNavigate
+### Community 116 - "FadeIn"
+Cohesion: 0.07
+Nodes (29): BlockedUser, createStyles(), ReportsBlockedList(), ReportsBlockedListProps, createStyles(), DateFilter(), DateFilterProps, createStyles() (+21 more)
+
+### Community 118 - "ReportsAuditLogList.tsx"
+Cohesion: 0.48
+Nodes (6): createStyles(), formatActionName(), getActionColor(), getActionIcon(), ReportsAuditLogList(), ReportsAuditLogListProps
 
 ### Community 120 - "ActionGridItem.tsx"
 Cohesion: 0.50
 Nodes (4): ActionGridItem(), ActionGridItemProps, getStyles(), { width }
 
-### Community 122 - "AdminTempBlockSuccessModal.tsx"
-Cohesion: 0.40
-Nodes (4): AdminTempBlockSuccessModal(), AdminTempBlockSuccessModalProps, styles, { width }
+### Community 122 - "WelcomeScreen.tsx"
+Cohesion: 0.32
+Nodes (7): getRoleBadge(), getStyles(), UserManagementCard(), UserManagementCardProps, UserType, AdminProfileViewModel, User
 
 ### Community 123 - "fix_auth_colors.js"
 Cohesion: 0.50
@@ -659,69 +689,69 @@ Nodes (3): files, fs, path
 Cohesion: 0.50
 Nodes (3): files, fs, glob
 
-### Community 133 - "bankAccounts.repository.ts"
-Cohesion: 0.13
-Nodes (14): useCreatePlanMutation(), usePlansCatalogQuery(), plansRepository, useOperationalUsersQuery(), usersRepository, mockNavigate, mockUseAssignLicenseMutation, mockUseCreatePlanMutation (+6 more)
+### Community 133 - "AdminUsersScreen.test.tsx"
+Cohesion: 0.29
+Nodes (6): mockNavigate, mockUseAdminUpdateUserBasicMutation, mockUseAdminUserControlActionMutation, mockUseAdminUserDetailQuery, mockUseAdminUsersQuery, mockUseCreateAdminUserMutation
 
-### Community 136 - "ReportsPlanFilter.tsx"
-Cohesion: 0.50
-Nodes (4): createStyles(), defaultPlans, PlanFilter(), PlanFilterProps
+### Community 135 - "useAuthStore"
+Cohesion: 0.47
+Nodes (5): AdminHeader(), AdminHeaderProps, getInitials(), MainStackNavigator(), useAuthStore
+
+### Community 136 - "responsiveStore.ts"
+Cohesion: 0.33
+Nodes (3): ResponsiveState, SidebarState, STORAGE_KEYS
 
 ### Community 137 - "tsconfig.json"
 Cohesion: 0.50
 Nodes (3): compilerOptions, strict, extends
 
-### Community 143 - "profileNavigationItems.ts"
-Cohesion: 0.40
-Nodes (4): CashAudit, CashAuditCard(), Props, styles
+### Community 143 - "HomeScreen.test.tsx"
+Cohesion: 0.22
+Nodes (8): EmptyStateProps, HomeScreen(), styles, contrastRatio(), dashboardData, mockUseDashboardData, mockUseTabScrollToTop, relativeLuminance()
 
 ### Community 153 - "SuccessModal.tsx"
-Cohesion: 0.50
-Nodes (3): AdminHomeHeroCard(), AdminHomeHeroCardProps, styles
+Cohesion: 0.06
+Nodes (40): AdminHomeHeroCard(), AdminHomeHeroCardProps, styles, AdminReportsTopBar(), AdminReportsTopBarProps, createStyles(), ReportsEmptyState(), ReportsEmptyStateProps (+32 more)
 
 ### Community 154 - "fx-trading-remittances.spec.ts"
 Cohesion: 0.25
 Nodes (3): currencies, openingPosition, rates
 
-### Community 156 - "AdminTempBlockModal.tsx"
+### Community 155 - "AdminActionConfirmModal.tsx"
 Cohesion: 0.40
-Nodes (4): AdminTempBlockModal(), AdminTempBlockModalProps, styles, { width }
+Nodes (4): AdminActionConfirmModal(), AdminActionConfirmModalProps, styles, { width }
 
 ### Community 157 - "AppNavigator"
 Cohesion: 0.08
-Nodes (27): queryClient, Badge(), BadgeProps, BadgeVariant, getVariantStyles(), ErrorToast(), getBackgroundColor(), getIcon() (+19 more)
+Nodes (28): queryClient, Select(), SelectOption, SelectProps, ErrorToast(), getBackgroundColor(), getIcon(), InfoToast() (+20 more)
 
-### Community 159 - "AdminReportsPeriodSegment.tsx"
-Cohesion: 0.05
-Nodes (54): AdminReportsCashFlowCard(), AdminReportsCashFlowCardProps, createStyles(), AdminReportsMetricTile(), AdminReportsMetricTileProps, createStyles(), AdminReportsPeriodSegment(), AdminReportsPeriodSegmentProps (+46 more)
+### Community 158 - "WelcomeScreen.tsx"
+Cohesion: 0.60
+Nodes (4): createStyles(), getFeatures(), WelcomeScreen(), WelcomeScreenProps
 
 ### Community 160 - "GradientCard.tsx"
-Cohesion: 0.50
-Nodes (3): GradientCard(), Props, styles
-
-### Community 166 - "getApiErrorMessage"
-Cohesion: 0.22
-Nodes (9): AdminRoutes(), Stack, AdminTabs(), Tab, AdminTabParamList, AdminLicenseDetailScreen(), AdminPlanCreateScreen(), AdminPlansListScreen() (+1 more)
+Cohesion: 0.31
+Nodes (6): AdminUserDetailModalProps, styles, createStyles(), UserControlActionCard(), UserControlActionCardProps, AdminUserControlActionType
 
 ## Knowledge Gaps
-- **906 isolated node(s):** `queryClient`, `name`, `slug`, `version`, `orientation` (+901 more)
+- **907 isolated node(s):** `AccountOption`, `TransactionModalProps`, `styles`, `FILTERS`, `styles` (+902 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useColors()` connect `licensesApi.ts` to `RegisterScreen.tsx`, `useDashboardData.ts`, `ObjectivesScreen.tsx`, `index.tsx`, `useAdminReportsDashboard.ts`, `ReportsPlanFilter.tsx`, `useSubscriptions.ts`, `useColors`, `profileNavigationItems.ts`, `useShadows`, `themeStore.ts`, `AppNavigator.tsx`, `ExpenseItemsScreen.tsx`, `Toast.tsx`, `api.ts`, `SuccessModal.tsx`, `AdminServicesScreen.tsx`, `ExpenseFormModal.tsx`, `AdminTempBlockModal.tsx`, `AdminUsersScreen.tsx`, `AppNavigator`, `AdminReportsPeriodSegment.tsx`, `GradientCard.tsx`, `useBusinessQueries.ts`, `AdminUserDetailScreen.tsx`, `FadeInDown`, `AdminPlanCreateScreen.tsx`, `AddUserFormModal.tsx`, `ExchangeRatesScreen.tsx`, `getApiErrorMessage`, `AdminPlanCreateScreen.tsx`, `authStore.ts`, `AdminReportsScreen.tsx`, `AdminServices.integration.test.tsx`, `AdminActionConfirmModal.tsx`, `ExpenseCategoryPicker.tsx`, `ExchangeRatesScreen.tsx`, `CashAuditCard.tsx`, `AssignLicenseModal.tsx`, `bankAccounts.repository.ts`, `useBankAccountsQuery`, `useSubscriptions.ts`, `FadeIn`, `ProfileScreen`, `AdminTempBlockSuccessModal.tsx`?**
-  _High betweenness centrality (0.125) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `package.json`, `ExpenseItemsScreen.tsx`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
-- **Why does `AdminUserDetailModal()` connect `ExpenseItemsScreen.tsx` to `licensesApi.ts`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
-- **What connects `queryClient`, `name`, `slug` to the rest of the system?**
-  _906 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `useColors()` connect `useAdminHomeData.ts` to `useDashboardData.ts`, `index.tsx`, `useAdminReportsDashboard.ts`, `borderRadius`, `useAuthStore`, `useSubscriptions.ts`, `useShadows`, `ReportsScreen.tsx`, `SuccessModal.tsx`, `AdminActionConfirmModal.tsx`, `MainTabs.tsx`, `AppNavigator`, `AdminReportsScreen`, `AdminUserDetailScreen.tsx`, `AdminTempBlockModal.tsx`, `GradientCard.tsx`, `AdminUserDetailModal`, `licensesApi.ts`, `AdminPlanCreateScreen.tsx`, `ErrorModal.tsx`, `ExchangeRatesScreen.tsx`, `WelcomeScreen.tsx`, `AdminPlanCreateScreen.tsx`, `authStore.ts`, `ProfileScreen`, `CashRegisterTab.tsx`, `AdminReportsScreen.tsx`, `AdminServices.integration.test.tsx`, `AdminActionConfirmModal.tsx`, `CashAuditCard.tsx`, `AdminUserDetailModal`, `TabSelector.tsx`, `bankAccounts.repository.ts`, `useBankAccountsQuery`, `AdminHomeScreen.test.tsx`, `useCurrencies.ts`, `profile.repository.ts`, `TabBarMotionProvider.tsx`, `AdminScreenPerfil`, `FadeIn`, `ReportsAuditLogList.tsx`?**
+  _High betweenness centrality (0.112) - this node is a cross-community bridge._
+- **Why does `dependencies` connect `dependencies` to `package.json`, `AdminUserDetailModal`?**
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+- **Why does `AdminUserDetailModal()` connect `AdminUserDetailModal` to `GradientCard.tsx`, `useAdminHomeData.ts`?**
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+- **What connects `AccountOption`, `TransactionModalProps`, `styles` to the rest of the system?**
+  _907 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `RegisterScreen.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.1341991341991342 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.14705882352941177 - nodes in this community are weakly interconnected._
 - **Should `useDashboardData.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05995975855130785 - nodes in this community are weakly interconnected._
-- **Should `ObjectivesScreen.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.1310483870967742 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1339031339031339 - nodes in this community are weakly interconnected._
+- **Should `index.tsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.08 - nodes in this community are weakly interconnected._

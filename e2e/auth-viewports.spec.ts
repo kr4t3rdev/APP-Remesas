@@ -54,7 +54,7 @@ test.describe('Auth screens responsive layout', () => {
       await page.setViewportSize({ width: 375, height: 812 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-      await expect(page.getByText('XChange$ocial').first()).toBeVisible();
+      await expect(page.getByText('Cashflow').first()).toBeVisible();
       await expect(page.getByText('Tu gestor de finanzas personales')).toBeVisible();
       await expect(page.getByText('Cambio de divisas')).toBeVisible();
       await expect(page.getByText('Control de transacciones')).toBeVisible();
@@ -66,7 +66,7 @@ test.describe('Auth screens responsive layout', () => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-      await expect(page.getByText('XChange$ocial').first()).toBeVisible();
+      await expect(page.getByText('Cashflow').first()).toBeVisible();
       await expect(page.getByText('Tu gestor de finanzas personales')).toBeVisible();
       await expect(page.getByText('Cambio de divisas')).toBeVisible();
       await expect(page.getByText('Iniciar Sesión').first()).toBeVisible();
@@ -78,11 +78,11 @@ test.describe('Auth screens responsive layout', () => {
 
       await page.setViewportSize({ width: 375, height: 812 });
       await page.waitForTimeout(300);
-      await expect(page.getByText('XChange$ocial').first()).toBeVisible();
+      await expect(page.getByText('Cashflow').first()).toBeVisible();
 
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.waitForTimeout(300);
-      await expect(page.getByText('XChange$ocial').first()).toBeVisible();
+      await expect(page.getByText('Cashflow').first()).toBeVisible();
     });
   });
 
@@ -97,7 +97,7 @@ test.describe('Auth screens responsive layout', () => {
     test('mobile viewport (375px) - renders mobile layout without BrandingPanel', async ({ page }) => {
       await navigateToLogin(page, { width: 375, height: 812 });
 
-      await expect(page.getByText('Casa de Cambio')).toBeVisible();
+      await expect(page.getByText('Cashflow')).toBeVisible();
       await expect(page.getByText('Inicia sesión para continuar')).toBeVisible();
       await expect(page.getByPlaceholder('admin@cambios.com')).toBeVisible();
       await expect(page.getByPlaceholder('••••••••')).toBeVisible();
@@ -121,7 +121,7 @@ test.describe('Auth screens responsive layout', () => {
       await page.goto('/', { waitUntil: 'domcontentloaded' });
       await page.getByText('Iniciar Sesión').first().click();
       await expect(page.getByPlaceholder('admin@cambios.com')).toBeVisible({ timeout: 10_000 });
-      await expect(page.getByText('Casa de Cambio')).toBeVisible();
+      await expect(page.getByText('Cashflow')).toBeVisible();
       await expect(page.locator('[data-testid="branding-panel"]')).not.toBeVisible();
 
       await page.setViewportSize({ width: 1280, height: 800 });
