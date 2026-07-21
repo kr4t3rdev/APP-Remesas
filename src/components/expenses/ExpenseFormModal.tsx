@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 
@@ -136,10 +134,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <KeyboardAvoidingView
-        style={styles.overlay}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
+      <View style={styles.overlay}>
         <FadeInDown>
           <View
             style={[
@@ -168,6 +163,8 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             <ScrollView
               style={styles.content}
               showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
             >
               <Input
                 testID="expense-description-input"
@@ -257,7 +254,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             </View>
           </View>
         </FadeInDown>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 };
