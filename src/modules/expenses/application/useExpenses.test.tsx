@@ -103,6 +103,73 @@ describe("useExpenses hooks", () => {
     });
   });
 
+  it("invalidates cash and bank balance caches after creating a cash expense", async () => {
+    mockedRepository.createExpense.mockResolvedValueOnce({ id: 3 } as never);
+    const queryClient = new QueryClient({
+      defaultOptions: { mutations: { retry: false } },
+    });
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useCreateExpenseMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await result.current.mutateAsync({
+      description: "Insumos",
+      amount: 250,
+      currencyId: 1,
+      sourceType: "CASH",
+      category: "insumos",
+      date: "2026-03-07",
+    });
+
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.cash.balances(),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.bankAccounts.list(),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.dashboard.cashBalances(),
+      });
+    });
+  });
+
+  it("invalidates the affected bank-account balance cache after creating a bank-account expense", async () => {
+    mockedRepository.createExpense.mockResolvedValueOnce({ id: 4 } as never);
+    const queryClient = new QueryClient({
+      defaultOptions: { mutations: { retry: false } },
+    });
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useCreateExpenseMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await result.current.mutateAsync({
+      description: "Renta",
+      amount: 1500,
+      currencyId: 1,
+      sourceType: "BANK_ACCOUNT",
+      sourceBankAccountId: 7,
+      category: "renta",
+      date: "2026-03-07",
+    });
+
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.bankAccounts.balance(7),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.bankAccounts.detail(7),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.bankAccounts.transactions(7),
+      });
+    });
+  });
+
   it("invalidates detail and list queries after update", async () => {
     mockedRepository.updateExpense.mockResolvedValueOnce({ id: 10 } as never);
     const queryClient = new QueryClient({

@@ -26,16 +26,44 @@ export const useExpenseDetailQuery = (id: number) =>
   });
 
 
+const invalidateBalanceQueries = (queryClient: ReturnType<typeof useQueryClient>, sourceBankAccountId?: number) => {
+  const invalidations: ReturnType<typeof queryClient.invalidateQueries>[] = [
+    queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.cash.balances() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.list() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.cashBalances() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.profile.cashBalances() }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.reports.cashBalances() }),
+  ];
+  if (sourceBankAccountId !== undefined) {
+    invalidations.push(
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.bankAccounts.balance(sourceBankAccountId),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.bankAccounts.detail(sourceBankAccountId),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.bankAccounts.transactions(sourceBankAccountId),
+      }),
+    );
+  }
+  return invalidations;
+};
+
 export const useCreateExpenseMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: CreateExpenseInput) =>
       expensesRepository.createExpense(data),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
-      ]);
+    onSuccess: async (_expense, variables) => {
+      await Promise.all(
+        invalidateBalanceQueries(
+          queryClient,
+          variables.sourceBankAccountId ?? undefined,
+        ),
+      );
     },
   });
 };
@@ -47,8 +75,10 @@ export const useUpdateExpenseMutation = () => {
     mutationFn: (input: { id: number; data: UpdateExpenseInput }) =>
       expensesRepository.updateExpense(input.id, input.data),
     onSuccess: async (_data, variables) => {
+      const sourceBankAccountId =
+        variables.data.sourceBankAccountId ?? undefined;
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
+        ...invalidateBalanceQueries(queryClient, sourceBankAccountId),
         queryClient.invalidateQueries({
           queryKey: queryKeys.expenses.detail(variables.id),
         }),
@@ -64,7 +94,7 @@ export const useDeleteExpenseMutation = () => {
     mutationFn: (id: number) => expensesRepository.deleteExpense(id),
     onSuccess: async (_data, id) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
+        ...invalidateBalanceQueries(queryClient),
         queryClient.invalidateQueries({
           queryKey: queryKeys.expenses.detail(id),
         }),
