@@ -4,6 +4,22 @@ import { ScrollView, TouchableOpacity } from "react-native";
 import { HomeScreen } from "./HomeScreen";
 import { colors, darkColors } from "../../theme";
 
+jest.mock("../../hooks/useResponsive", () => ({
+  useResponsive: () => ({
+    width: 390,
+    height: 844,
+    breakpoint: "mobile",
+    isMobile: true,
+    isTablet: false,
+    isDesktop: false,
+    isTouchDevice: true,
+    shouldShowSidebar: false,
+    shouldShowBottomTabs: true,
+    sidebarMode: "collapsed",
+  }),
+  BREAKPOINTS: { mobile: 0, tablet: 640, desktop: 1024, wide: 1440 },
+}));
+
 const mockUseDashboardData = jest.fn();
 const mockUseTabScrollToTop = jest.fn();
 
@@ -70,6 +86,13 @@ jest.mock("../../components/animations", () => ({
   },
   PressableScale: ({ children }: { children: React.ReactNode }) => children,
   LoadingDots: () => null,
+}));
+
+jest.mock("../../components/notifications/NotificationCenter", () => ({
+  NotificationCenter: () => {
+    const { View } = require("react-native");
+    return <View accessibilityLabel="Notificaciones pendientes" />;
+  },
 }));
 
 jest.mock("../../components/charts/Charts", () => {
