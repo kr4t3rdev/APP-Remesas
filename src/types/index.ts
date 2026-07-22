@@ -357,11 +357,16 @@ export type CashFlowReport = {
   inflows: {
     ventas: number;
     adjustments: number;
+    adjustmentsRaw: number;
+    unconvertedAdjustmentsCount: number;
   };
   outflows: {
     compras: number;
     expenses: number;
+    expensesRaw: number;
+    unconvertedExpensesCount: number;
     adjustments: number;
+    adjustmentsRaw: number;
   };
 };
 
