@@ -9,12 +9,18 @@ jest.mock("../../../../modules/cash/application/useCash");
 
 jest.mock("../../../../modules/transactions/application/useTransactions");
 
+jest.mock("../../../animations", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return { FadeInOverlay: () => React.createElement(View) };
+});
+
 describe("TransactionModal FX intent", () => {
   const mutate = jest.fn();
   const workerWithBalance = {
     id: 42,
     name: "Ana",
-    balances: [{ id: 7, workerId: 42, currencyId: 1, currency: { code: "USD", isActive: true }, balance: 100, accumulatedProfit: 0, totalDelivered: 0 }],
+    balances: [{ id: 7, workerId: 42, currencyId: 1, currency: { id: 1, code: "USD", name: "US Dollar", symbol: "$", isActive: true }, balance: 100, accumulatedProfit: 0, totalDelivered: 0 }],
   };
   beforeEach(() => {
     jest.clearAllMocks();

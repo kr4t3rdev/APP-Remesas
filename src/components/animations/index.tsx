@@ -62,6 +62,44 @@ type AnimatedWrapperProps = {
   style?: StyleProp<ViewStyle>;
 };
 
+type FadeInOverlayProps = {
+  targetOpacity?: number;
+};
+
+export const FadeInOverlay: React.FC<FadeInOverlayProps> = ({
+  targetOpacity = 0.4,
+}) => {
+  const opacity = useRef(new Animated.Value(targetOpacity)).current;
+  const reducedMotion = useReducedMotion();
+  const previousReducedMotion = useRef<boolean | null>(null);
+
+  useEffect(() => {
+    const wasResolved = previousReducedMotion.current !== null;
+    previousReducedMotion.current = reducedMotion;
+    if (reducedMotion !== false || !wasResolved) {
+      opacity.setValue(targetOpacity);
+      return;
+    }
+
+    opacity.setValue(0);
+    const animation = Animated.timing(opacity, {
+      toValue: targetOpacity,
+      duration: DEFAULT_DURATION,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [opacity, reducedMotion, targetOpacity]);
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[StyleSheet.absoluteFillObject, { backgroundColor: "#000", opacity }]}
+    />
+  );
+};
+
 export const FadeIn: React.FC<AnimatedWrapperProps> = ({
   children,
   delay = 0,

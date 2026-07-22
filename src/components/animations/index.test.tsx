@@ -1,7 +1,7 @@
 import React from "react";
 import { act, fireEvent, render } from "@testing-library/react-native";
-import { AccessibilityInfo, Animated, Text } from "react-native";
-import { FadeInDown, PressableScale, ScaleIn, useReducedMotion } from ".";
+import { AccessibilityInfo, Animated, StyleSheet, Text } from "react-native";
+import { FadeInDown, FadeInOverlay, PressableScale, ScaleIn, useReducedMotion } from ".";
 
 const flushPromises = () => act(async () => Promise.resolve());
 
@@ -79,5 +79,25 @@ describe("reduced motion animations", () => {
 
     expect(timing).not.toHaveBeenCalled();
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders a non-interactive full-screen overlay at the requested opacity", async () => {
+    jest
+      .spyOn(AccessibilityInfo, "isReduceMotionEnabled")
+      .mockResolvedValue(true);
+    const { UNSAFE_getByType } = render(<FadeInOverlay targetOpacity={0.25} />);
+    await flushPromises();
+
+    const overlay = UNSAFE_getByType(Animated.View);
+    expect(overlay.props.pointerEvents).toBe("none");
+    expect(StyleSheet.flatten(overlay.props.style)).toMatchObject({
+      position: "absolute",
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      backgroundColor: "#000",
+    });
+    expect(overlay.props.style[1].opacity.__getValue()).toBe(0.25);
   });
 });

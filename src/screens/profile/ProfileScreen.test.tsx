@@ -1,7 +1,6 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 import { ProfileScreen } from "./ProfileScreen";
-import * as useProfile from "../../modules/profile/application/useProfile";
 
 const mockNavigate = jest.fn();
 
@@ -43,103 +42,37 @@ jest.mock("../../navigation/TabBarMotionProvider", () => ({
   useTabScrollToTop: jest.fn(),
 }));
 
-jest.mock("../../modules/profile/application/useProfile", () => ({
-  useProfileActiveObjectivesQuery: jest.fn(),
-  useProfileBankAccountsQuery: jest.fn(),
-  useProfileCashBalancesQuery: jest.fn(),
-  useProfileDailyReportQuery: jest.fn(),
-}));
-
 jest.mock("../../components/animations", () => ({
   FadeIn: ({ children }: { children: React.ReactNode }) => children,
   FadeInDown: ({ children }: { children: React.ReactNode }) => children,
   ScaleIn: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-jest.mock("../../components/charts/Charts", () => ({
-  StatsCard: () => null,
-  CircularProgress: () => null,
-}));
-
-const query = (data: unknown) => ({
-  data,
-  isRefetching: false,
-  refetch: jest.fn().mockResolvedValue(undefined),
-});
-
-const makeObjective = (overrides: Partial<{
-  id: number;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-  percentage: number;
-  status: string;
-}> = {}) => ({
-  id: 1,
-  name: "Ahorrar para laptop",
-  targetAmount: 1000,
-  currentAmount: 350,
-  percentage: 35,
-  status: "ACTIVO",
-  currencyId: 1,
-  currency: { id: 1, code: "USD", name: "Dólar", symbol: "$", isActive: true },
-  remaining: 650,
-  ...overrides,
-});
-
 describe("ProfileScreen", () => {
   beforeEach(() => {
     mockNavigate.mockClear();
-    jest.mocked(useProfile.useProfileActiveObjectivesQuery).mockReturnValue(query([]));
-    jest.mocked(useProfile.useProfileBankAccountsQuery).mockReturnValue(query([]));
-    jest.mocked(useProfile.useProfileCashBalancesQuery).mockReturnValue(query([]));
-    jest.mocked(useProfile.useProfileDailyReportQuery).mockReturnValue(query(undefined));
   });
 
-  it("renders active objectives section when objectives exist", () => {
-    jest.mocked(useProfile.useProfileActiveObjectivesQuery).mockReturnValue(
-      query([makeObjective({ id: 1, name: "Ahorrar para laptop", percentage: 35, currentAmount: 350, targetAmount: 1000 })])
-    );
-
+  it("renders the signed-in user's profile and settings", () => {
     const { getByText } = render(<ProfileScreen />);
 
-    expect(getByText("Objetivos Activos")).toBeTruthy();
-    expect(getByText("Ahorrar para laptop")).toBeTruthy();
-    expect(getByText(/350/)).toBeTruthy();
-    expect(getByText(/1.000/)).toBeTruthy();
+    expect(getByText("Test User")).toBeTruthy();
+    expect(getByText("test@example.com")).toBeTruthy();
+    expect(getByText("Configuración")).toBeTruthy();
+    expect(getByText("Modo Oscuro")).toBeTruthy();
   });
 
-  it("does not render objectives section when no active objectives exist", () => {
+  it("keeps financial objectives out of the settings-only profile screen", () => {
     const { queryByText } = render(<ProfileScreen />);
 
     expect(queryByText("Objetivos Activos")).toBeNull();
   });
 
-  it("renders multiple objectives in a horizontal scroll", () => {
-    const objectives = [
-      makeObjective({ id: 1, name: "Objetivo 1", percentage: 50 }),
-      makeObjective({ id: 2, name: "Objetivo 2", percentage: 75 }),
-    ];
-    jest.mocked(useProfile.useProfileActiveObjectivesQuery).mockReturnValue(query(objectives));
-
+  it("opens the change-password form from settings", () => {
     const { getByText } = render(<ProfileScreen />);
 
-    expect(getByText("Objetivo 1")).toBeTruthy();
-    expect(getByText("Objetivo 2")).toBeTruthy();
-  });
+    fireEvent.press(getByText("Cambiar Contraseña"));
 
-  it("only shows objectives with ACTIVE status", () => {
-    const objectives = [
-      makeObjective({ id: 1, name: "Activo", status: "ACTIVO" }),
-      makeObjective({ id: 2, name: "Completado", status: "COMPLETADO" }),
-      makeObjective({ id: 3, name: "Pausado", status: "PAUSADO" }),
-    ];
-    jest.mocked(useProfile.useProfileActiveObjectivesQuery).mockReturnValue(query(objectives));
-
-    const { getByText, queryByText } = render(<ProfileScreen />);
-
-    expect(getByText("Activo")).toBeTruthy();
-    expect(queryByText("Completado")).toBeNull();
-    expect(queryByText("Pausado")).toBeNull();
+    expect(getByText("Contraseña Actual")).toBeTruthy();
   });
 });

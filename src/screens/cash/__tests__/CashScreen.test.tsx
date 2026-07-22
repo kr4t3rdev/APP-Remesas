@@ -60,6 +60,7 @@ jest.mock("../../../components/animations", () => {
   return {
     FadeIn: ({ children }: any) => React.createElement(View, null, children),
     FadeInDown: ({ children }: any) => React.createElement(View, null, children),
+    FadeInOverlay: () => React.createElement(View),
     ScaleIn: ({ children }: any) => React.createElement(View, null, children),
     PressableScale: ({ children, onPress, ...props }: any) =>
       React.createElement(TouchableOpacity, { onPress, ...props }, children),
@@ -86,8 +87,16 @@ jest.mock("../../../modules/currencies/application/useCurrencies", () => ({
   useCurrenciesWithPrimaryQuery: () => ({ data: mockCurrenciesWithPrimary }),
 }));
 
-jest.mock("../../../modules/profile/application/useProfile", () => ({
-  useProfileBankAccountsQuery: () => ({ data: [] }),
+jest.mock("../../../modules/bank-accounts/application/useBankAccounts", () => ({
+  useBankAccountsQuery: () => ({ data: [] }),
+}));
+
+jest.mock("../../../modules/exchange-rates/application/useExchangeRates", () => ({
+  useCurrentExchangeRatesQuery: () => ({ data: [] }),
+}));
+
+jest.mock("../../../modules/objectives/application/useObjectives", () => ({
+  useObjectivesQuery: () => ({ data: [] }),
 }));
 
 describe("CashScreen", () => {
