@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 import { useIsDark } from "../store/themeStore";
 import { mainTabDefinitions } from "./mainTabsConfig";
 import {
@@ -31,6 +32,11 @@ export const ACTIVE_INDICATOR_GEOMETRY = {
   compact: { width: 48, height: 46 },
   large: { width: 56, height: 48 },
   top: 2,
+} as const;
+
+export const TAB_BAR_BLUR = {
+  intensity: 52,
+  androidReductionFactor: 4,
 } as const;
 
 const isEmphasizedRoute = (routeName: string | undefined) =>
@@ -200,6 +206,31 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
       ]}
     >
       <View
+        testID="tab-bar-material"
+        pointerEvents="none"
+        style={[
+          styles.materialLayer,
+          {
+            backgroundColor: reduceTransparency
+              ? colors.opaqueBackground
+              : colors.background,
+          },
+        ]}
+      >
+        {!reduceTransparency && (
+          <BlurView
+            testID="tab-bar-blur"
+            pointerEvents="none"
+            intensity={TAB_BAR_BLUR.intensity}
+            tint={isDark ? "systemThinMaterialDark" : "systemThinMaterialLight"}
+            experimentalBlurMethod="dimezisBlurView"
+            blurReductionFactor={TAB_BAR_BLUR.androidReductionFactor}
+            style={StyleSheet.absoluteFillObject}
+          />
+        )}
+      </View>
+      <View
+        testID="tab-bar-items"
         style={styles.itemsRow}
         onLayout={({ nativeEvent }) => setBarWidth(nativeEvent.layout.width)}
       >
@@ -352,6 +383,11 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
 };
 
 const styles = StyleSheet.create({
+  materialLayer: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 28,
+    overflow: "hidden",
+  },
   itemsRow: {
     flex: 1,
     flexDirection: "row",

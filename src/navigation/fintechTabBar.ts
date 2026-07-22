@@ -20,7 +20,7 @@ export const floatingTabBarMetrics = {
 
 export const fintechTabBarColors: Record<"light" | "dark", FintechTabBarColors> = {
   light: {
-    background: "rgba(255, 255, 255, 0.94)",
+    background: "rgba(255, 255, 255, 0.32)",
     opaqueBackground: "#FFFFFF",
     border: "rgba(148, 163, 184, 0.42)",
     opaqueBorder: "#94A3B8",
@@ -29,7 +29,7 @@ export const fintechTabBarColors: Record<"light" | "dark", FintechTabBarColors> 
     inactive: "#475569",
   },
   dark: {
-    background: "rgba(8, 26, 30, 0.94)",
+    background: "rgba(8, 26, 30, 0.38)",
     opaqueBackground: "#10272C",
     border: "rgba(79, 143, 154, 0.7)",
     opaqueBorder: "#4F8F9A",
@@ -51,9 +51,7 @@ export const getFintechTabBarStyle = (
     left: 44,
     right: 44,
     bottom: bottomInset + floatingTabBarMetrics.bottom,
-    backgroundColor: reduceTransparency
-      ? theme.opaqueBackground
-      : theme.background,
+    backgroundColor: reduceTransparency ? theme.opaqueBackground : "transparent",
     borderColor: reduceTransparency ? theme.opaqueBorder : theme.border,
     borderWidth: 1,
     borderRadius: 28,

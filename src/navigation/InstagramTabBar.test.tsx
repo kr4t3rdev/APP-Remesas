@@ -3,6 +3,12 @@ import { AccessibilityInfo, Animated, Keyboard, View } from "react-native";
 import { act, render, fireEvent, waitFor } from "@testing-library/react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
+jest.mock("expo-blur", () => {
+  const React = require("react");
+  const { View } = require("react-native");
+  return { BlurView: (props: object) => <View {...props} /> };
+});
+
 jest.mock("../store/themeStore", () => ({
   useIsDark: () => false,
 }));
@@ -19,6 +25,7 @@ jest.mock("@expo/vector-icons", () => {
 import { InstagramTabBar } from "./InstagramTabBar";
 import {
   ACTIVE_INDICATOR_GEOMETRY,
+  TAB_BAR_BLUR,
   TAB_BAR_EMPHASIS_MOTION,
 } from "./InstagramTabBar";
 import {
@@ -102,6 +109,26 @@ describe("InstagramTabBar", () => {
     expect(getByTestId("tab-Profile").props.accessibilityHint).toBe(
       "Abre la pestaña Perfil.",
     );
+  });
+
+  it("places a clipped system blur layer behind crisp tab content", () => {
+    const view = renderTabBar(createProps());
+    const bar = view.getByTestId("floating-tab-bar");
+    const material = view.getByTestId("tab-bar-material");
+    const blur = view.getByTestId("tab-bar-blur");
+    const items = view.getByTestId("tab-bar-items");
+
+    expect(material.props.style).toMatchObject({
+      borderRadius: 28,
+      overflow: "hidden",
+    });
+    expect(blur.props).toMatchObject({
+      intensity: TAB_BAR_BLUR.intensity,
+      tint: "systemThinMaterialLight",
+      experimentalBlurMethod: "dimezisBlurView",
+      pointerEvents: "none",
+    });
+    expect(bar.children.indexOf(material)).toBeLessThan(bar.children.indexOf(items));
   });
 
   it("provides forgiving touch targets for every tab", () => {
@@ -347,6 +374,10 @@ describe("InstagramTabBar", () => {
       expect(getByTestId("floating-tab-bar").props.style).toMatchObject({
         backgroundColor: "#FFFFFF",
       });
+      expect(getByTestId("tab-bar-material").props.style).toMatchObject({
+        backgroundColor: "#FFFFFF",
+      });
+      expect(() => getByTestId("tab-bar-blur")).toThrow();
     });
   });
 

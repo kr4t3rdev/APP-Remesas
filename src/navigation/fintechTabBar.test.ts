@@ -17,11 +17,11 @@ describe("fintech tab bar styling", () => {
 
   it("uses separate light and dark fintech surfaces", () => {
     expect(getFintechTabBarStyle(0, false)).toMatchObject({
-      backgroundColor: "rgba(255, 255, 255, 0.94)",
+      backgroundColor: "transparent",
       borderColor: "rgba(148, 163, 184, 0.42)",
     });
     expect(getFintechTabBarStyle(0, true)).toMatchObject({
-      backgroundColor: "rgba(8, 26, 30, 0.94)",
+      backgroundColor: "transparent",
       borderColor: "rgba(79, 143, 154, 0.7)",
     });
   });
@@ -38,10 +38,8 @@ describe("fintech tab bar styling", () => {
   });
 
   it("keeps the configured surfaces", () => {
-    expect(getFintechTabBarStyle(0, false)).toMatchObject({
-      backgroundColor: "rgba(255, 255, 255, 0.94)",
-      borderColor: "rgba(148, 163, 184, 0.42)",
-    });
+    expect(fintechTabBarColors.light.background).toBe("rgba(255, 255, 255, 0.32)");
+    expect(fintechTabBarColors.dark.background).toBe("rgba(8, 26, 30, 0.38)");
   });
 
   it("keeps readable inactive and selected colors in both appearances", () => {
