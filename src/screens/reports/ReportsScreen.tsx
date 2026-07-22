@@ -801,7 +801,8 @@ export const ReportsScreen: React.FC = () => {
               >
                 <StatsCard
                   title="Ganancia Neta"
-                  value={`$ ${formatNumber(periodReport.summary.totalProfit)}`}
+                  value={`$ ${formatNumber(periodReport.summary.netProfit)}`}
+                  subtitle={`Margen: $ ${formatNumber(periodReport.summary.marginProfit)}`}
                   icon={
                     <Ionicons
                       name="trending-up"
@@ -811,9 +812,9 @@ export const ReportsScreen: React.FC = () => {
                   }
                   color={themeColors.success}
                   trend={
-                    periodReport.summary.totalProfit > 0
+                    periodReport.summary.netProfit > 0
                       ? "up"
-                      : periodReport.summary.totalProfit < 0
+                      : periodReport.summary.netProfit < 0
                         ? "down"
                         : "neutral"
                   }

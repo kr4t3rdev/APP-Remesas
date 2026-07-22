@@ -291,7 +291,7 @@ function buildCashFlowModel(
   periodReport?: PeriodReport | null,
 ) {
   const bars = buildCashFlowBars(periodReport?.dailyBreakdown ?? []);
-  const totalValue = periodReport?.summary?.totalProfit ?? 0;
+  const totalValue = periodReport?.summary?.netProfit ?? 0;
   const delta = buildTrend(kpis?.trialToPaidConversionPct ?? 0);
 
   const deltaPrefix =

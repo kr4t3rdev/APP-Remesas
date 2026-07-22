@@ -266,7 +266,8 @@ export type PeriodReport = {
     totalTransactions: number;
     totalExpensesCount: number;
     totalExpensesAmount: number;
-    totalProfit: number;
+    marginProfit: number;
+    netProfit: number;
   };
   dailyBreakdown: DailyBreakdownItem[];
   transactionsByCurrency: CurrencyTransactionSummary;
