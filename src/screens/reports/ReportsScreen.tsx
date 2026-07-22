@@ -40,6 +40,7 @@ import {
 import { format, subDays } from "date-fns";
 import {
   useReportsCashBalancesQuery,
+  useReportsCashFlowQuery,
   useReportsDailyReportQuery,
   useReportsPeriodQuery,
   useReportsProfitQuery,
@@ -79,13 +80,24 @@ export const ReportsScreen: React.FC = () => {
   const [profitEnd, setProfitEnd] = useState(
     new Date().toISOString().split("T")[0],
   );
+  const [cashFlowStart, setCashFlowStart] = useState(
+    subDays(new Date(), 7).toISOString().split("T")[0],
+  );
+  const [cashFlowEnd, setCashFlowEnd] = useState(
+    new Date().toISOString().split("T")[0],
+  );
   const [periodError, setPeriodError] = useState<string | null>(null);
   const [profitError, setProfitError] = useState<string | null>(null);
+  const [cashFlowError, setCashFlowError] = useState<string | null>(null);
 
   const dailyReportQuery = useReportsDailyReportQuery(selectedDate);
   const cashBalancesQuery = useReportsCashBalancesQuery();
   const periodReportQuery = useReportsPeriodQuery(periodStart, periodEnd);
   const profitReportQuery = useReportsProfitQuery(profitStart, profitEnd);
+  const cashFlowReportQuery = useReportsCashFlowQuery(
+    cashFlowStart,
+    cashFlowEnd,
+  );
 
   const dailyReport = dailyReportQuery.data;
   const periodReport = periodReportQuery.data;
@@ -104,7 +116,31 @@ export const ReportsScreen: React.FC = () => {
       cashBalancesQuery.refetch(),
       periodReportQuery.refetch(),
       profitReportQuery.refetch(),
+      cashFlowReportQuery.refetch(),
     ]);
+  };
+
+  const validateCashFlowRange = (start: string, end: string): boolean => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays > 30) {
+      setCashFlowError("El período no puede exceder 30 días");
+      return false;
+    }
+    setCashFlowError(null);
+    return true;
+  };
+
+  const handleCashFlowStartChange = (date: string) => {
+    setCashFlowStart(date);
+    validateCashFlowRange(date, cashFlowEnd);
+  };
+
+  const handleCashFlowEndChange = (date: string) => {
+    setCashFlowEnd(date);
+    validateCashFlowRange(cashFlowStart, date);
   };
 
   const validateProfitRange = (start: string, end: string): boolean => {
@@ -1230,137 +1266,323 @@ export const ReportsScreen: React.FC = () => {
   };
 
   const renderCashFlowReport = () => {
-    const entradas = safeDailyReport.transactions.totalVentas;
-    const salidas = dailyReport
-      ? safeDailyReport.transactions.totalCompras + safeDailyReport.expenses.totalAmount
-      : 0;
-    const balance = entradas - salidas;
+    const cashFlowReport = cashFlowReportQuery.data;
+
+    const entradasVentas = cashFlowReport?.inflows?.ventas ?? 0;
+    const entradasAjustes = cashFlowReport?.inflows?.adjustments ?? 0;
+    const totalEntradas = entradasVentas + entradasAjustes;
+
+    const salidasCompras = cashFlowReport?.outflows?.compras ?? 0;
+    const salidasGastos = cashFlowReport?.outflows?.expenses ?? 0;
+    const salidasAjustes = cashFlowReport?.outflows?.adjustments ?? 0;
+    const totalSalidas = salidasCompras + salidasGastos + salidasAjustes;
+
+    const balance = totalEntradas - totalSalidas;
     const isPositive = balance >= 0;
+    const hasData =
+      cashFlowReport &&
+      (totalEntradas > 0 || totalSalidas > 0);
 
     return (
-      <FadeInDown>
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: themeColors.card },
-            themeShadows.lg,
-          ]}
-        >
-          <Text
-            style={[styles.sectionTitle, { color: themeColors.text.primary }]}
+      <>
+        <FadeInDown>
+          <View style={styles.section}>
+            <View
+              style={[
+                styles.dateRangeCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
+              <View style={styles.dateField}>
+                <ExpenseDatePicker
+                  value={cashFlowStart}
+                  onChange={handleCashFlowStartChange}
+                  label="Desde"
+                />
+              </View>
+              <View style={styles.dateField}>
+                <ExpenseDatePicker
+                  value={cashFlowEnd}
+                  onChange={handleCashFlowEndChange}
+                  label="Hasta"
+                  error={cashFlowError || undefined}
+                />
+              </View>
+            </View>
+          </View>
+        </FadeInDown>
+
+        <FadeInDown delay={50}>
+          <View
+            style={[
+              styles.section,
+              { backgroundColor: themeColors.card },
+              themeShadows.lg,
+            ]}
           >
-            Flujo de Caja
-          </Text>
+            <Text
+              style={[
+                styles.sectionTitle,
+                { color: themeColors.text.primary },
+              ]}
+            >
+              Flujo de Caja
+            </Text>
 
-          <View style={styles.flowSummary}>
-            <View
-              style={[
-                styles.flowBalanceCard,
-                {
-                  backgroundColor: isPositive
-                    ? `${themeColors.success}15`
-                    : `${themeColors.danger}15`,
-                },
-              ]}
-            >
-              <Ionicons
-                name={isPositive ? "arrow-up" : "arrow-down"}
-                size={24}
-                color={isPositive ? themeColors.success : themeColors.danger}
-              />
-              <Text
-                style={[
-                  styles.flowBalanceLabel,
-                  { color: themeColors.text.secondary },
-                ]}
-              >
-                Balance Neto
-              </Text>
-              <Text
-                style={[
-                  styles.flowBalanceValue,
-                  {
-                    color: isPositive
-                      ? themeColors.success
-                      : themeColors.danger,
-                  },
-                ]}
-              >
-                {isPositive ? "+" : "-"}${formatNumber(Math.abs(balance))}
-              </Text>
-            </View>
-          </View>
+            {cashFlowReportQuery.isLoading ? (
+              <View style={styles.emptyState}>
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  Cargando...
+                </Text>
+              </View>
+            ) : cashFlowReportQuery.isError ? (
+              <View style={styles.emptyState}>
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  No se pudo cargar el reporte. Intenta de nuevo.
+                </Text>
+              </View>
+            ) : !hasData ? (
+              <View style={styles.emptyState}>
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  Sin movimientos en este período
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={styles.flowSummary}>
+                  <View
+                    style={[
+                      styles.flowBalanceCard,
+                      {
+                        backgroundColor: isPositive
+                          ? `${themeColors.success}15`
+                          : `${themeColors.danger}15`,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name={isPositive ? "arrow-up" : "arrow-down"}
+                      size={24}
+                      color={
+                        isPositive ? themeColors.success : themeColors.danger
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.flowBalanceLabel,
+                        { color: themeColors.text.secondary },
+                      ]}
+                    >
+                      Balance Neto
+                    </Text>
+                    <Text
+                      style={[
+                        styles.flowBalanceValue,
+                        {
+                          color: isPositive
+                            ? themeColors.success
+                            : themeColors.danger,
+                        },
+                      ]}
+                    >
+                      {isPositive ? "+" : "-"}$
+                      {formatNumber(Math.abs(balance))}
+                    </Text>
+                  </View>
+                </View>
 
-          <View style={styles.flowRow}>
-            <View
-              style={[
-                styles.flowItem,
-                { backgroundColor: themeColors.surface },
-              ]}
-            >
-              <View
-                style={[
-                  styles.flowIcon,
-                  { backgroundColor: `${themeColors.success}15` },
-                ]}
-              >
-                <Ionicons
-                  name="arrow-down"
-                  size={24}
-                  color={themeColors.success}
-                />
-              </View>
-              <Text
-                style={[
-                  styles.flowLabel,
-                  { color: themeColors.text.secondary },
-                ]}
-              >
-                Entradas
-              </Text>
-              <Text style={[styles.flowValue, { color: themeColors.success }]}>
-                {dailyReport ? `$ ${formatNumber(entradas)}` : "$ 0.00"}
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.flowDivider,
-                { backgroundColor: themeColors.border },
-              ]}
-            />
-            <View
-              style={[
-                styles.flowItem,
-                { backgroundColor: themeColors.surface },
-              ]}
-            >
-              <View
-                style={[
-                  styles.flowIcon,
-                  { backgroundColor: `${themeColors.danger}15` },
-                ]}
-              >
-                <Ionicons
-                  name="arrow-up"
-                  size={24}
-                  color={themeColors.danger}
-                />
-              </View>
-              <Text
-                style={[
-                  styles.flowLabel,
-                  { color: themeColors.text.secondary },
-                ]}
-              >
-                Salidas
-              </Text>
-              <Text style={[styles.flowValue, { color: themeColors.danger }]}>
-                {dailyReport ? `$ ${formatNumber(salidas)}` : "$ 0.00"}
-              </Text>
-            </View>
+                <View style={styles.flowRow}>
+                  <View
+                    style={[
+                      styles.flowItem,
+                      { backgroundColor: themeColors.surface },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.flowIcon,
+                        { backgroundColor: `${themeColors.success}15` },
+                      ]}
+                    >
+                      <Ionicons
+                        name="arrow-down"
+                        size={24}
+                        color={themeColors.success}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.flowLabel,
+                        { color: themeColors.text.secondary },
+                      ]}
+                    >
+                      Ventas
+                    </Text>
+                    <Text
+                      style={[
+                        styles.flowValue,
+                        { color: themeColors.success },
+                      ]}
+                    >
+                      $ {formatNumber(entradasVentas)}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.flowItem,
+                      { backgroundColor: themeColors.surface },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.flowIcon,
+                        { backgroundColor: `${themeColors.success}15` },
+                      ]}
+                    >
+                      <Ionicons
+                        name="add-circle-outline"
+                        size={24}
+                        color={themeColors.success}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.flowLabel,
+                        { color: themeColors.text.secondary },
+                      ]}
+                    >
+                      Ajustes
+                    </Text>
+                    <Text
+                      style={[
+                        styles.flowValue,
+                        { color: themeColors.success },
+                      ]}
+                    >
+                      $ {formatNumber(entradasAjustes)}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={[styles.flowRow, { marginTop: spacing.md }]}>
+                  <View
+                    style={[
+                      styles.flowItem,
+                      { backgroundColor: themeColors.surface },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.flowIcon,
+                        { backgroundColor: `${themeColors.danger}15` },
+                      ]}
+                    >
+                      <Ionicons
+                        name="arrow-up"
+                        size={24}
+                        color={themeColors.danger}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.flowLabel,
+                        { color: themeColors.text.secondary },
+                      ]}
+                    >
+                      Compras
+                    </Text>
+                    <Text
+                      style={[styles.flowValue, { color: themeColors.danger }]}
+                    >
+                      $ {formatNumber(salidasCompras)}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.flowItem,
+                      { backgroundColor: themeColors.surface },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.flowIcon,
+                        { backgroundColor: `${themeColors.danger}15` },
+                      ]}
+                    >
+                      <Ionicons
+                        name="remove-circle-outline"
+                        size={24}
+                        color={themeColors.danger}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.flowLabel,
+                        { color: themeColors.text.secondary },
+                      ]}
+                    >
+                      Gastos
+                    </Text>
+                    <Text
+                      style={[styles.flowValue, { color: themeColors.danger }]}
+                    >
+                      $ {formatNumber(salidasGastos)}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.flowItem,
+                      { backgroundColor: themeColors.surface },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.flowIcon,
+                        { backgroundColor: `${themeColors.danger}15` },
+                      ]}
+                    >
+                      <Ionicons
+                        name="swap-vertical"
+                        size={24}
+                        color={themeColors.danger}
+                      />
+                    </View>
+                    <Text
+                      style={[
+                        styles.flowLabel,
+                        { color: themeColors.text.secondary },
+                      ]}
+                    >
+                      Ajustes
+                    </Text>
+                    <Text
+                      style={[styles.flowValue, { color: themeColors.danger }]}
+                    >
+                      $ {formatNumber(salidasAjustes)}
+                    </Text>
+                  </View>
+                </View>
+              </>
+            )}
           </View>
-        </View>
-      </FadeInDown>
+        </FadeInDown>
+      </>
     );
   };
 
