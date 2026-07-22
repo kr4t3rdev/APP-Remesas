@@ -9,10 +9,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Alert } from "../../utils/alert";
 
 import { Ionicons } from "@expo/vector-icons";
-import { FadeInDown } from "../animations";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { ExpenseCategoryPicker } from "./ExpenseCategoryPicker";
@@ -47,6 +47,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 }) => {
   const themeColors = useColors();
   const themeShadows = useShadows();
+  const insets = useSafeAreaInsets();
   const currencies = useCurrenciesQuery().data ?? [];
   const bankAccounts = useBankAccountsQuery().data ?? [];
 
@@ -136,18 +137,23 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <KeyboardAvoidingView
-        style={styles.overlay}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <FadeInDown>
-          <View
-            style={[
-              styles.container,
-              { backgroundColor: themeColors.card },
-              themeShadows.lg,
-            ]}
+      <View testID="expense-modal-overlay" style={styles.overlay}>
+        <View testID="expense-modal-bottom-anchor" style={styles.bottomAnchor}>
+          <KeyboardAvoidingView
+            testID="expense-modal-keyboard-region"
+            style={styles.keyboardRegion}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
           >
+            <View
+              style={[
+                styles.container,
+                {
+                  backgroundColor: themeColors.card,
+                  paddingBottom: insets.bottom,
+                },
+                themeShadows.lg,
+              ]}
+            >
             <View style={styles.header}>
               <Text style={[styles.title, { color: themeColors.text.primary }]}>
                 {isEditing ? "Editar Gasto" : "Nuevo Gasto"}
@@ -168,6 +174,8 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             <ScrollView
               style={styles.content}
               showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
             >
               <Input
                 testID="expense-description-input"
@@ -255,23 +263,33 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 style={{ flex: 1 }}
               />
             </View>
-          </View>
-        </FadeInDown>
-      </KeyboardAvoidingView>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
+  },
+  bottomAnchor: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    maxHeight: "90%",
+  },
+  keyboardRegion: {
+    flexShrink: 1,
   },
   container: {
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
-    maxHeight: "90%",
+    maxHeight: "100%",
   },
   header: {
     flexDirection: "row",
