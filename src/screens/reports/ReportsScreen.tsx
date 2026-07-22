@@ -82,9 +82,9 @@ export const ReportsScreen: React.FC = () => {
   const periodReport = periodReportQuery.data;
   const cashBalances = cashBalancesQuery.data ?? [];
   const safeDailyReport = dailyReport ?? {
-    profit: { net: 0, margin: 0 },
+    profit: { net: 0, margin: 0, marginProfit: 0 },
     transactions: { total: 0, compras: 0, ventas: 0, totalCompras: 0, totalVentas: 0 },
-    expenses: { totalAmount: 0, total: 0, byCategory: {} },
+    expenses: { totalAmount: 0, total: 0, totalAmountInCup: null, unconvertedCount: 0, byCategory: {} },
   };
 
   const [selectedReportIndex, setSelectedReportIndex] = useState(0);
@@ -462,7 +462,7 @@ export const ReportsScreen: React.FC = () => {
                     { color: themeColors.text.secondary },
                   ]}
                 >
-                  Total Gastos
+                  Total Gastos{safeDailyReport.expenses.totalAmountInCup !== null ? " (CUP)" : ""}
                 </Text>
                 <Text
                   style={[
@@ -470,8 +470,22 @@ export const ReportsScreen: React.FC = () => {
                     { color: themeColors.text.primary },
                   ]}
                 >
-                  $ {formatNumber(safeDailyReport.expenses.totalAmount)}
+                  $ {formatNumber(
+                    safeDailyReport.expenses.totalAmountInCup !== null
+                      ? safeDailyReport.expenses.totalAmountInCup
+                      : safeDailyReport.expenses.totalAmount,
+                  )}
                 </Text>
+                {safeDailyReport.expenses.unconvertedCount > 0 && (
+                  <Text
+                    style={[
+                      styles.expenseLabel,
+                      { color: themeColors.warning, marginTop: 2, fontSize: 11 },
+                    ]}
+                  >
+                    {safeDailyReport.expenses.unconvertedCount} sin tasa
+                  </Text>
+                )}
               </View>
               <View style={styles.expenseStat}>
                 <Text
@@ -772,8 +786,16 @@ export const ReportsScreen: React.FC = () => {
               >
                 <StatsCard
                   title="Gastos"
-                  value={`$ ${formatNumber(periodReport.summary.totalExpensesAmount)}`}
-                  subtitle={`${periodReport.summary.totalExpensesCount} gastos`}
+                  value={`$ ${formatNumber(
+                    periodReport.summary.totalExpensesInCup !== null
+                      ? periodReport.summary.totalExpensesInCup
+                      : periodReport.summary.totalExpensesAmount,
+                  )}`}
+                  subtitle={`${periodReport.summary.totalExpensesCount} gastos${
+                    periodReport.summary.unconvertedExpensesCount > 0
+                      ? ` · ${periodReport.summary.unconvertedExpensesCount} sin tasa`
+                      : ""
+                  }`}
                   icon={
                     <Ionicons
                       name="arrow-up-circle"

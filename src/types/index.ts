@@ -230,6 +230,8 @@ export type DailyReport = {
   expenses: {
     total: number;
     totalAmount: number;
+    totalAmountInCup: number | null;
+    unconvertedCount: number;
     byCategory: Record<string, { count: number; total: number }>;
   };
   profit: {
@@ -266,6 +268,8 @@ export type PeriodReport = {
     totalTransactions: number;
     totalExpensesCount: number;
     totalExpensesAmount: number;
+    totalExpensesInCup: number | null;
+    unconvertedExpensesCount: number;
     marginProfit: number;
     netProfit: number;
   };
@@ -316,6 +320,8 @@ export type CurrencyReport = {
 export type ExpensesReport = {
   total: number;
   totalAmount: number;
+  totalAmountInCup: number | null;
+  unconvertedCount: number;
   byCategory: CategorySummary;
   byCurrency: CurrencyExpenseSummary;
   expenses: Expense[];
