@@ -42,6 +42,7 @@ import {
   useReportsCashBalancesQuery,
   useReportsDailyReportQuery,
   useReportsPeriodQuery,
+  useReportsProfitQuery,
 } from "../../modules/reports/application/useReports";
 import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
 
@@ -72,11 +73,19 @@ export const ReportsScreen: React.FC = () => {
   const [periodEnd, setPeriodEnd] = useState(
     new Date().toISOString().split("T")[0],
   );
+  const [profitStart, setProfitStart] = useState(
+    subDays(new Date(), 7).toISOString().split("T")[0],
+  );
+  const [profitEnd, setProfitEnd] = useState(
+    new Date().toISOString().split("T")[0],
+  );
   const [periodError, setPeriodError] = useState<string | null>(null);
+  const [profitError, setProfitError] = useState<string | null>(null);
 
   const dailyReportQuery = useReportsDailyReportQuery(selectedDate);
   const cashBalancesQuery = useReportsCashBalancesQuery();
   const periodReportQuery = useReportsPeriodQuery(periodStart, periodEnd);
+  const profitReportQuery = useReportsProfitQuery(profitStart, profitEnd);
 
   const dailyReport = dailyReportQuery.data;
   const periodReport = periodReportQuery.data;
@@ -94,7 +103,31 @@ export const ReportsScreen: React.FC = () => {
       dailyReportQuery.refetch(),
       cashBalancesQuery.refetch(),
       periodReportQuery.refetch(),
+      profitReportQuery.refetch(),
     ]);
+  };
+
+  const validateProfitRange = (start: string, end: string): boolean => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays > 30) {
+      setProfitError("El período no puede exceder 30 días");
+      return false;
+    }
+    setProfitError(null);
+    return true;
+  };
+
+  const handleProfitStartChange = (date: string) => {
+    setProfitStart(date);
+    validateProfitRange(date, profitEnd);
+  };
+
+  const handleProfitEndChange = (date: string) => {
+    setProfitEnd(date);
+    validateProfitRange(profitStart, date);
   };
 
   const formatNumber = (value: number | string) => {
@@ -915,96 +948,97 @@ export const ReportsScreen: React.FC = () => {
     );
   };
 
-  const renderProfitReport = () => (
-    <>
-      <FadeInDown delay={100}>
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: themeColors.card },
-            themeShadows.lg,
-          ]}
-        >
+  const renderProfitReport = () => {
+    const profitReport = profitReportQuery.data;
+    const marginPct =
+      profitReport && profitReport.totalVentas > 0
+        ? (profitReport.totalMarginProfit / profitReport.totalVentas) * 100
+        : 0;
+    const hasData =
+      profitReport && (profitReport.totalMarginProfit !== 0 || profitReport.totalVentas > 0);
+
+    const profitByCurrency = profitReport
+      ? Object.entries(profitReport.byCurrency).map(([code, data]) => ({
+          label: code,
+          value: data.marginProfit,
+          count: data.count,
+        }))
+      : [];
+
+    return (
+      <>
+        <FadeInDown>
+          <View style={styles.section}>
+            <View
+              style={[
+                styles.dateRangeCard,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
+              <View style={styles.dateField}>
+                <ExpenseDatePicker
+                  value={profitStart}
+                  onChange={handleProfitStartChange}
+                  label="Desde"
+                />
+              </View>
+              <View style={styles.dateField}>
+                <ExpenseDatePicker
+                  value={profitEnd}
+                  onChange={handleProfitEndChange}
+                  label="Hasta"
+                  error={profitError || undefined}
+                />
+              </View>
+            </View>
+          </View>
+        </FadeInDown>
+
+        <FadeInDown delay={100}>
           <View
             style={[
-              styles.profitHeader,
-              { borderBottomColor: themeColors.border },
+              styles.section,
+              { backgroundColor: themeColors.card },
+              themeShadows.lg,
             ]}
           >
-            <Text
-              style={[styles.sectionTitle, { color: themeColors.text.primary }]}
-            >
-              Margen de Ganancias
-            </Text>
             <View
               style={[
-                styles.profitBadge,
-                { backgroundColor: `${themeColors.success}20` },
+                styles.profitHeader,
+                { borderBottomColor: themeColors.border },
               ]}
             >
-              <Ionicons
-                name="trending-up"
-                size={16}
-                color={themeColors.success}
-              />
-              <Text
-                style={[styles.profitBadgeText, { color: themeColors.success }]}
-              >
-                {dailyReport
-                  ? `${safeDailyReport.profit.margin.toFixed(1)}%`
-                  : "0%"}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.profitContent}>
-            <View
-              style={[
-                styles.profitCircle,
-                { borderColor: themeColors.success },
-              ]}
-            >
-              <Text
-                style={[styles.profitValue, { color: themeColors.success }]}
-              >
-                {dailyReport
-                  ? `$ ${formatNumber(safeDailyReport.profit.net)}`
-                  : "$ 0.00"}
-              </Text>
               <Text
                 style={[
-                  styles.profitLabel,
-                  { color: themeColors.text.secondary },
+                  styles.sectionTitle,
+                  { color: themeColors.text.primary },
                 ]}
               >
-                Ganancia Neta
+                Margen de Ganancias
               </Text>
+              <View
+                style={[
+                  styles.profitBadge,
+                  { backgroundColor: `${themeColors.success}20` },
+                ]}
+              >
+                <Ionicons
+                  name="trending-up"
+                  size={16}
+                  color={themeColors.success}
+                />
+                <Text
+                  style={[
+                    styles.profitBadgeText,
+                    { color: themeColors.success },
+                  ]}
+                >
+                  {profitReport ? `${marginPct.toFixed(1)}%` : "0%"}
+                </Text>
+              </View>
             </View>
-          </View>
-        </View>
-      </FadeInDown>
-
-      <FadeInDown delay={150}>
-        <View
-          style={[
-            styles.section,
-            { backgroundColor: themeColors.card },
-            themeShadows.md,
-          ]}
-        >
-          <Text
-            style={[styles.sectionTitle, { color: themeColors.text.primary }]}
-          >
-            Distribución de Saldos
-          </Text>
-          <View style={styles.chartCard}>
-            {balanceChartData.length > 0 ? (
-              <BarChart
-                data={balanceChartData}
-                height={100}
-                showLabels
-                showValues
-              />
-            ) : (
+            {profitReportQuery.isLoading ? (
               <View style={styles.emptyState}>
                 <Text
                   style={[
@@ -1012,15 +1046,188 @@ export const ReportsScreen: React.FC = () => {
                     { color: themeColors.text.secondary },
                   ]}
                 >
-                  No hay datos de saldo
+                  Cargando...
                 </Text>
               </View>
+            ) : profitReportQuery.isError ? (
+              <View style={styles.emptyState}>
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  No se pudo cargar el reporte. Intenta de nuevo.
+                </Text>
+              </View>
+            ) : !hasData ? (
+              <View style={styles.emptyState}>
+                <Text
+                  style={[
+                    styles.emptySubtitle,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  No hay transacciones en este período
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={styles.statsGrid}>
+                  <View
+                    style={[
+                      styles.statsCardWrapper,
+                      { backgroundColor: themeColors.card },
+                      themeShadows.md,
+                    ]}
+                  >
+                    <StatsCard
+                      title="Margen FX"
+                      value={`$ ${formatNumber(profitReport!.totalMarginProfit)}`}
+                      icon={
+                        <Ionicons
+                          name="cash-outline"
+                          size={20}
+                          color={themeColors.success}
+                        />
+                      }
+                      color={themeColors.success}
+                      style={styles.statCard}
+                    />
+                  </View>
+                  <View
+                    style={[
+                      styles.statsCardWrapper,
+                      { backgroundColor: themeColors.card },
+                      themeShadows.md,
+                    ]}
+                  >
+                    <StatsCard
+                      title="Flow neto"
+                      value={`$ ${formatNumber(profitReport!.netFlow)}`}
+                      icon={
+                        <Ionicons
+                          name="swap-vertical"
+                          size={20}
+                          color={
+                            profitReport!.netFlow >= 0
+                              ? themeColors.success
+                              : themeColors.danger
+                          }
+                        />
+                      }
+                      color={
+                        profitReport!.netFlow >= 0
+                          ? themeColors.success
+                          : themeColors.danger
+                      }
+                      style={styles.statCard}
+                    />
+                  </View>
+                </View>
+                <View
+                  style={[
+                    styles.statsCardWrapper,
+                    {
+                      backgroundColor: themeColors.card,
+                      marginTop: spacing.md,
+                    },
+                    themeShadows.md,
+                  ]}
+                >
+                  <StatsCard
+                    title="Compras vs Ventas"
+                    value={`$ ${formatNumber(profitReport!.totalVentas)}`}
+                    subtitle={`Compras: $ ${formatNumber(profitReport!.totalCompras)}`}
+                    icon={
+                      <Ionicons
+                        name="trending-up"
+                        size={20}
+                        color={themeColors.primary[500]}
+                      />
+                    }
+                    color={themeColors.primary[500]}
+                    style={styles.statCard}
+                  />
+                </View>
+              </>
             )}
           </View>
-        </View>
-      </FadeInDown>
-    </>
-  );
+        </FadeInDown>
+
+        {profitByCurrency.length > 0 && (
+          <FadeInDown delay={150}>
+            <View
+              style={[
+                styles.section,
+                { backgroundColor: themeColors.card },
+                themeShadows.md,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: themeColors.text.primary },
+                ]}
+              >
+                Ganancia por Moneda
+              </Text>
+              <View style={styles.chartCard}>
+                <HorizontalBarChart
+                  data={profitByCurrency.map((d) => ({
+                    label: `${d.label} (${d.count})`,
+                    value: d.value,
+                    color: themeColors.success,
+                  }))}
+                  maxValue={Math.max(
+                    ...profitByCurrency.map((d) => Math.abs(d.value)),
+                    100,
+                  )}
+                />
+              </View>
+            </View>
+          </FadeInDown>
+        )}
+
+        <FadeInDown delay={200}>
+          <View
+            style={[
+              styles.section,
+              { backgroundColor: themeColors.card },
+              themeShadows.md,
+            ]}
+          >
+            <Text
+              style={[styles.sectionTitle, { color: themeColors.text.primary }]}
+            >
+              Distribución de Saldos
+            </Text>
+            <View style={styles.chartCard}>
+              {balanceChartData.length > 0 ? (
+                <BarChart
+                  data={balanceChartData}
+                  height={100}
+                  showLabels
+                  showValues
+                />
+              ) : (
+                <View style={styles.emptyState}>
+                  <Text
+                    style={[
+                      styles.emptySubtitle,
+                      { color: themeColors.text.secondary },
+                    ]}
+                  >
+                    No hay datos de saldo
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </FadeInDown>
+      </>
+    );
+  };
 
   const renderCashFlowReport = () => {
     const entradas = safeDailyReport.transactions.totalVentas;
