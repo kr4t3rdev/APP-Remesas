@@ -772,7 +772,8 @@ export const ReportsScreen: React.FC = () => {
               >
                 <StatsCard
                   title="Gastos"
-                  value={`$ ${formatNumber(periodReport.summary.totalExpenses)}`}
+                  value={`$ ${formatNumber(periodReport.summary.totalExpensesAmount)}`}
+                  subtitle={`${periodReport.summary.totalExpensesCount} gastos`}
                   icon={
                     <Ionicons
                       name="arrow-up-circle"

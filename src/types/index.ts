@@ -263,7 +263,8 @@ export type PeriodReport = {
   };
   summary: {
     totalTransactions: number;
-    totalExpenses: number;
+    totalExpensesCount: number;
+    totalExpensesAmount: number;
     totalProfit: number;
   };
   dailyBreakdown: DailyBreakdownItem[];
