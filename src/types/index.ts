@@ -234,6 +234,7 @@ export type DailyReport = {
   };
   profit: {
     margin: number;
+    marginProfit: number;
     net: number;
   };
 };

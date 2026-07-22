@@ -89,12 +89,15 @@ export const TransactionSummaryCard: React.FC<TransactionSummaryCardProps> = ({
       >
         <View>
           <Text style={{ fontSize: 12, color: colors.text.secondary }}>
-            Ganancia
+            Margen
           </Text>
           <Text
             style={{ fontSize: 16, fontWeight: "600", color: colors.success }}
           >
-            $ {report.profit.margin.toLocaleString()}
+            {report.profit.margin.toLocaleString(undefined, {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1,
+            })}%
           </Text>
         </View>
         <View style={{ alignItems: "flex-end" }}>
