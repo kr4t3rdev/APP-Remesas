@@ -469,6 +469,25 @@ export type AdminKpiSnapshot = {
   revenueAtRiskCup: number;
 };
 
+export type AdminPlatformSeriesBucket = {
+  label: string;
+  year: number;
+  month: number;
+  billingCup: number;
+  newUsers: number;
+  churn: number;
+};
+
+export type AdminPlatformSeries = {
+  monthsBack: number;
+  series: AdminPlatformSeriesBucket[];
+  totals: {
+    billingCup: number;
+    newUsers: number;
+    churn: number;
+  };
+};
+
 export type AdminNotificationEvent =
   | {
       type: "NEW_USER_REGISTERED";

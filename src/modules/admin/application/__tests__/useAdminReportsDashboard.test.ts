@@ -24,24 +24,25 @@ describe("useAdminReportsDashboard helpers", () => {
     expect(buildTrend(0)).toEqual({ direction: "neutral", valueLabel: "0.0%" });
   });
 
-  it("creates 6 platform bars from KPIs without mixing user data", () => {
-    const kpis = {
-      mrrEstimateCup: 5000,
-      newUsersPeriod: 42,
-      churnPeriod: 5,
-      suspendedUsers: 2,
-      renewalRatePct: 60,
-      cancellationRatePct: 8,
-      totalUsers: 200,
-    } as any;
+  it("creates 6 platform bars from real platform series data", () => {
+    const series = [
+      { label: "ENE", year: 2026, month: 0, billingCup: 100, newUsers: 5, churn: 1 },
+      { label: "FEB", year: 2026, month: 1, billingCup: 250, newUsers: 8, churn: 2 },
+      { label: "MAR", year: 2026, month: 2, billingCup: 400, newUsers: 12, churn: 1 },
+      { label: "ABR", year: 2026, month: 3, billingCup: 600, newUsers: 15, churn: 3 },
+      { label: "MAY", year: 2026, month: 4, billingCup: 500, newUsers: 10, churn: 2 },
+      { label: "JUN", year: 2026, month: 5, billingCup: 700, newUsers: 18, churn: 4 },
+    ];
 
-    const bars = buildPlatformBars(kpis);
+    const bars = buildPlatformBars(series);
     expect(bars).toHaveLength(6);
     expect(bars.filter((bar) => bar.isActive)).toHaveLength(1);
+    expect(bars[5].isActive).toBe(true);
+    expect(bars[5].value).toBe(700);
   });
 
-  it("returns empty bars when KPI snapshot is null", () => {
-    expect(buildPlatformBars(null)).toEqual([]);
+  it("returns empty bars when series is empty", () => {
+    expect(buildPlatformBars([])).toEqual([]);
   });
 
   it("creates growth points and avoids duplicate peak label when top values are tied", () => {

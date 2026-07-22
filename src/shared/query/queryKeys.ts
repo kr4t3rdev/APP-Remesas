@@ -107,6 +107,8 @@ export const queryKeys = {
     expiringLicenses: (windowDays: 7 | 30) =>
       ["admin", "expiringLicenses", windowDays] as const,
     auditLogs: () => ["admin", "auditLogs"] as const,
+    platformSeries: (monthsBack: number) =>
+      ["admin", "platformSeries", monthsBack] as const,
   },
   expenses: {
     list: () => ["expenses", "list"] as const,

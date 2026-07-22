@@ -3,8 +3,14 @@ import { format, startOfDay, subDays } from "date-fns";
 import type {
   AdminAuditLog,
   AdminKpiSnapshot,
+  AdminPlatformSeries,
+  AdminPlatformSeriesBucket,
 } from "../../../types";
-import { useAdminAuditLogsQuery, useAdminKpisQuery } from "./useAdminMetrics";
+import {
+  useAdminAuditLogsQuery,
+  useAdminKpisQuery,
+  useAdminPlatformSeriesQuery,
+} from "./useAdminMetrics";
 
 export type AdminReportsPeriod = "weekly" | "monthly" | "annual";
 
@@ -124,47 +130,19 @@ function normalizeDateSafe(date: string): Date | null {
 }
 
 export function buildPlatformBars(
-  kpis: AdminKpiSnapshot | null,
-  bucketCount = 6,
+  series: AdminPlatformSeriesBucket[] = [],
 ): DashboardPlatformBar[] {
-  if (!kpis || bucketCount <= 0) return [];
+  if (!series.length) return [];
 
-  const referenceDate = new Date();
-  const months: Array<{ label: string; date: Date }> = [];
-  for (let i = bucketCount - 1; i >= 0; i -= 1) {
-    const d = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - i, 1);
-    months.push({
-      label: MONTH_LABELS[d.getMonth()] ?? `${d.getMonth() + 1}`,
-      date: d,
-    });
-  }
+  const maxAbs = Math.max(...series.map((s) => Math.abs(s.billingCup)), 0);
+  const activeIndex =
+    maxAbs <= 0
+      ? Math.floor(series.length / 2)
+      : series.findIndex((s) => Math.abs(s.billingCup) === maxAbs);
 
-  const mrr = kpis.mrrEstimateCup ?? 0;
-  const newUsers = kpis.newUsersPeriod ?? 0;
-  const cancelled = (kpis.churnPeriod ?? 0) + (kpis.suspendedUsers ?? 0);
-
-  // distribute values sin inventar serie temporal: usamos una vista estable
-  // de "salud de plataforma" (MRR relativo, newUsers, churn) en 6 columnas.
-  // La primera columna es el valor mas relevante (newUsers normalizado),
-  // la ultima el delta de churn. El usuario interpretara como una vista
-  // resumida hasta tener un endpoint admin dedicado a series temporales.
-  const values: number[] = months.map((_, idx) => {
-    if (idx === 0) return newUsers;
-    if (idx === months.length - 1) return -cancelled;
-    const mid = Math.max(0, mrr > 0 ? mrr / 50 : 0) * (1 - idx / months.length);
-    return Math.round(mid);
-  });
-  const empties = values.every((v) => v === 0);
-  if (empties) return [];
-
-  const maxAbs = Math.max(...values.map((v) => Math.abs(v)), 0);
-  const activeIndex = maxAbs <= 0
-    ? Math.floor(values.length / 2)
-    : values.findIndex((v) => Math.abs(v) === maxAbs);
-
-  return months.map((m, idx) => ({
-    label: m.label,
-    value: values[idx],
+  return series.map((bucket, idx) => ({
+    label: bucket.label,
+    value: bucket.billingCup,
     isActive: idx === activeIndex,
   }));
 }
@@ -275,24 +253,32 @@ function buildSystemUsageRows(): DashboardSystemUsageRow[] {
   ];
 }
 
-function buildPlatformModel(kpis: AdminKpiSnapshot | null) {
-  const bars = buildPlatformBars(kpis);
-  const newUsersTotal = kpis?.newUsersPeriod ?? 0;
-  const cancellationDelta = buildTrend(
-    kpis ? -((kpis.cancellationRatePct ?? 0) - (kpis.renewalRatePct ?? 0)) : 0,
+function buildPlatformModel(
+  kpis: AdminKpiSnapshot | null,
+  platformSeries?: AdminPlatformSeries | null,
+) {
+  const bars = buildPlatformBars(platformSeries?.series ?? []);
+  const totalBilling = platformSeries?.totals?.billingCup ?? 0;
+  const newUsersTotal = platformSeries?.totals?.newUsers ?? 0;
+  const churnTotal = platformSeries?.totals?.churn ?? 0;
+
+  const renewalDelta = buildTrend(
+    kpis ? (kpis.renewalRatePct ?? 0) - (kpis.cancellationRatePct ?? 0) : 0,
   );
   const deltaPrefix =
-    cancellationDelta.direction === "up"
+    renewalDelta.direction === "up"
       ? "+"
-      : cancellationDelta.direction === "down"
+      : renewalDelta.direction === "down"
         ? "-"
         : "";
 
   return {
-    totalLabel: formatIntegerLabel(newUsersTotal),
-    deltaLabel: `${deltaPrefix}${cancellationDelta.valueLabel}`,
+    totalLabel: formatCurrencyLabel(totalBilling),
+    deltaLabel: `${deltaPrefix}${renewalDelta.valueLabel}`,
     bars,
     isEmpty: !bars.length || bars.every((bar) => bar.value === 0),
+    newUsersTotal,
+    churnTotal,
   };
 }
 
@@ -302,6 +288,7 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
   const [lastRefreshFailures, setLastRefreshFailures] = useState({
     kpis: false,
     audit: false,
+    series: false,
   });
 
   const periodRange = useMemo(() => resolvePeriodRange(period), [period]);
@@ -311,6 +298,7 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
     dateTo: periodRange.endDate,
   });
   const auditLogsQuery = useAdminAuditLogsQuery();
+  const platformSeriesQuery = useAdminPlatformSeriesQuery(6);
 
   const refetchAll = useCallback(async () => {
     setIsRefreshing(true);
@@ -318,15 +306,17 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
     const results = await Promise.allSettled([
       kpisQuery.refetch(),
       auditLogsQuery.refetch(),
+      platformSeriesQuery.refetch(),
     ]);
 
     setLastRefreshFailures({
       kpis: results[0].status === "rejected",
       audit: results[1].status === "rejected",
+      series: results[2].status === "rejected",
     });
 
     setIsRefreshing(false);
-  }, [auditLogsQuery, kpisQuery]);
+  }, [auditLogsQuery, kpisQuery, platformSeriesQuery]);
 
   const metricTiles = useMemo(
     () => buildMetricTiles(kpisQuery.data ?? null),
@@ -334,8 +324,12 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
   );
 
   const platform = useMemo(
-    () => buildPlatformModel(kpisQuery.data ?? null),
-    [kpisQuery.data],
+    () =>
+      buildPlatformModel(
+        kpisQuery.data ?? null,
+        platformSeriesQuery.data ?? null,
+      ),
+    [kpisQuery.data, platformSeriesQuery.data],
   );
 
   const usersGrowth = useMemo(
@@ -343,13 +337,18 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
     [auditLogsQuery.data],
   );
 
-  const isLoading = kpisQuery.isLoading || auditLogsQuery.isLoading;
+  const isLoading =
+    kpisQuery.isLoading ||
+    auditLogsQuery.isLoading ||
+    platformSeriesQuery.isLoading;
 
   const hasPartialError =
     kpisQuery.isError ||
     auditLogsQuery.isError ||
+    platformSeriesQuery.isError ||
     lastRefreshFailures.kpis ||
-    lastRefreshFailures.audit;
+    lastRefreshFailures.audit ||
+    lastRefreshFailures.series;
 
   return {
     period,

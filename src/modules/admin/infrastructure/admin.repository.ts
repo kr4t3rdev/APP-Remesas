@@ -3,6 +3,7 @@ import type {
   AdminAuditLog,
   AdminCreateUserRequest,
   AdminKpiSnapshot,
+  AdminPlatformSeries,
   AdminUserControlRequest,
   AdminUserDetail,
   User,
@@ -16,6 +17,14 @@ export const adminRepository = {
     planId?: number;
   }): Promise<AdminKpiSnapshot> {
     const response = await api.get<AdminKpiSnapshot>("/admin/kpis", { params });
+    return response.data!;
+  },
+
+  async getPlatformSeries(monthsBack = 6): Promise<AdminPlatformSeries> {
+    const response = await api.get<AdminPlatformSeries>(
+      "/admin/reports/platform-series",
+      { params: { monthsBack } },
+    );
     return response.data!;
   },
 

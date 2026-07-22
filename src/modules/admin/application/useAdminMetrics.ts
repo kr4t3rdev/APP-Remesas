@@ -157,3 +157,11 @@ export const useAdminAuditLogsQuery = () =>
     throwOnError: false,
     placeholderData: [],
   });
+
+export const useAdminPlatformSeriesQuery = (monthsBack = 6) =>
+  useQuery({
+    queryKey: queryKeys.admin.platformSeries(monthsBack),
+    queryFn: () => adminRepository.getPlatformSeries(monthsBack),
+    staleTime: 1000 * 60 * 5,
+    throwOnError: false,
+  });
