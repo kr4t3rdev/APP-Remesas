@@ -23,6 +23,7 @@ import {
 import { useDashboardData } from "../../hooks/useDashboardData";
 import { useAuthStore } from "../../store/authStore";
 import { useColors } from "../../store/themeStore";
+import { BREAKPOINTS, useResponsive } from "../../hooks/useResponsive";
 import { spacing, borderRadius } from "../../theme";
 import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 import {
@@ -31,6 +32,7 @@ import {
 } from "../../navigation/TabBarMotionProvider";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { NotificationCenter } from "../../components/notifications/NotificationCenter";
 
 type EmptyStateProps = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -54,6 +56,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description, color
 );
 
 export const HomeScreen: React.FC = () => {
+  const { width } = useResponsive();
   const user = useAuthStore((state) => state.user);
   const themeColors = useColors();
   const tabBarScrollBehavior = useTabBarScrollBehavior();
@@ -187,25 +190,11 @@ export const HomeScreen: React.FC = () => {
                 {user?.name || "Usuario"}
               </Text>
             </View>
-            <View
-              testID="home-notification-indicator"
-              accessible
-              accessibilityRole="image"
-              accessibilityLabel="Notificaciones pendientes"
-              style={styles.notificationIndicator}
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color={themeColors.text.primary}
-              />
-              <View
-                style={[
-                  styles.notificationBadge,
-                  { backgroundColor: themeColors.danger },
-                ]}
-              />
-            </View>
+            {width < BREAKPOINTS.tablet ? (
+              <View testID="home-notification-indicator" style={styles.notificationIndicator}>
+                <NotificationCenter />
+              </View>
+            ) : null}
           </View>
         </FadeIn>
 

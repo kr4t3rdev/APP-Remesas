@@ -48,7 +48,7 @@ describe("fintech tab bar styling", () => {
       inactive: "#475569",
     });
     expect(fintechTabBarColors.dark).toMatchObject({
-      background: "rgba(8, 26, 30, 0.94)",
+      background: "rgba(8, 26, 30, 0.38)",
       opaqueBackground: "#10272C",
       border: "rgba(79, 143, 154, 0.7)",
       opaqueBorder: "#4F8F9A",

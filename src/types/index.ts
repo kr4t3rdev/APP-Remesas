@@ -511,6 +511,39 @@ export type AdminNotificationEvent =
       channel?: "IN_APP" | "WEBHOOK" | "EMAIL";
     };
 
+export type NotificationType =
+  | "NEW_USER_REGISTERED"
+  | "USER_TEMP_BLOCKED"
+  | "USER_BANNED"
+  | "LICENSE_EXPIRING"
+  | "PASSWORD_RESET"
+  | "EMAIL_VERIFICATION";
+
+export type UserNotification = {
+  id: number;
+  userId: number | null;
+  type: NotificationType;
+  channel: "IN_APP" | "WEBHOOK" | "EMAIL";
+  title: string;
+  message: string;
+  payload?: Record<string, unknown> | null;
+  readAt?: string | null;
+  sentAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NotificationsPage = {
+  data: UserNotification[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    unreadCount: number;
+    totalPages: number;
+  };
+};
+
 export type AdminAuditLog = {
   id: number;
   actorUserId: number;

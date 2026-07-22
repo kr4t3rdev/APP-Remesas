@@ -1,5 +1,11 @@
 import React from "react";
-import { AccessibilityInfo, Animated, Keyboard, View } from "react-native";
+import {
+  AccessibilityInfo,
+  Animated,
+  Keyboard,
+  StyleSheet,
+  View,
+} from "react-native";
 import { act, render, fireEvent, waitFor } from "@testing-library/react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
@@ -118,7 +124,7 @@ describe("InstagramTabBar", () => {
     const blur = view.getByTestId("tab-bar-blur");
     const items = view.getByTestId("tab-bar-items");
 
-    expect(material.props.style).toMatchObject({
+    expect(StyleSheet.flatten(material.props.style)).toMatchObject({
       borderRadius: 28,
       overflow: "hidden",
     });
@@ -128,7 +134,12 @@ describe("InstagramTabBar", () => {
       experimentalBlurMethod: "dimezisBlurView",
       pointerEvents: "none",
     });
-    expect(bar.children.indexOf(material)).toBeLessThan(bar.children.indexOf(items));
+    const childTestIds = bar.children
+      .filter((child): child is typeof material => typeof child !== "string")
+      .map((child) => child.props.testID);
+    expect(childTestIds.indexOf("tab-bar-material")).toBeLessThan(
+      childTestIds.indexOf("tab-bar-items"),
+    );
   });
 
   it("provides forgiving touch targets for every tab", () => {
@@ -371,10 +382,14 @@ describe("InstagramTabBar", () => {
     const { getByTestId } = renderTabBar(createProps(0));
 
     await waitFor(() => {
-      expect(getByTestId("floating-tab-bar").props.style).toMatchObject({
+      expect(
+        StyleSheet.flatten(getByTestId("floating-tab-bar").props.style),
+      ).toMatchObject({
         backgroundColor: "#FFFFFF",
       });
-      expect(getByTestId("tab-bar-material").props.style).toMatchObject({
+      expect(
+        StyleSheet.flatten(getByTestId("tab-bar-material").props.style),
+      ).toMatchObject({
         backgroundColor: "#FFFFFF",
       });
       expect(() => getByTestId("tab-bar-blur")).toThrow();

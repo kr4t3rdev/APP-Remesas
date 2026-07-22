@@ -12,6 +12,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useColors } from "../../store/themeStore";
 import { useResponsive, BREAKPOINTS } from "../../hooks/useResponsive";
 import { spacing, header } from "../../theme";
+import { NotificationCenter } from "../notifications/NotificationCenter";
 
 interface HeaderProps {
   title?: string;
@@ -96,22 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Right: Actions + User */}
           <View style={styles.rightSection}>
             {/* Notifications */}
-            <TouchableOpacity
-              style={styles.iconButton}
-              accessibilityLabel="Notificaciones"
-            >
-              <Ionicons
-                name="notifications-outline"
-                size={22}
-                color={colors.text.primary}
-              />
-              <View
-                style={[
-                  styles.notificationBadge,
-                  { backgroundColor: colors.danger, borderColor: colors.card },
-                ]}
-              />
-            </TouchableOpacity>
+            <NotificationCenter />
 
             {/* Settings */}
             <TouchableOpacity
@@ -218,15 +204,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-  },
-  notificationBadge: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    borderWidth: 1,
   },
   userAvatar: {
     width: 36,
