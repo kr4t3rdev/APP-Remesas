@@ -3,12 +3,12 @@ import { StyleSheet, Text, View } from "react-native";
 import { FadeInDown } from "../animations";
 import { useColors } from "../../store/themeStore";
 import { borderRadius, spacing } from "../../theme";
-import type { DashboardCashFlowBar } from "../../modules/admin/application/useAdminReportsDashboard";
+import type { DashboardPlatformBar } from "../../modules/admin/application/useAdminReportsDashboard";
 
 type AdminReportsCashFlowCardProps = {
   totalLabel: string;
   deltaLabel: string;
-  bars: DashboardCashFlowBar[];
+  bars: DashboardPlatformBar[];
   isEmpty?: boolean;
   delay?: number;
 };
@@ -25,7 +25,7 @@ export const AdminReportsCashFlowCard: React.FC<
     <FadeInDown delay={delay} duration={260}>
       <View style={styles.card} testID="admin-reports-cashflow-card">
         <View style={styles.headerRow}>
-          <Text style={styles.title}>Flujo de Efectivo</Text>
+          <Text style={styles.title}>Actividad de Plataforma</Text>
           <Text
             style={[
               styles.delta,

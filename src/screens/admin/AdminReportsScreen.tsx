@@ -39,7 +39,7 @@ export const AdminReportsScreen: React.FC = () => {
     period,
     setPeriod,
     metricTiles,
-    cashFlow,
+    platform,
     usersGrowth,
     systemUsageRows,
     isRefreshing,
@@ -98,10 +98,10 @@ export const AdminReportsScreen: React.FC = () => {
         </View>
 
         <AdminReportsCashFlowCard
-          totalLabel={cashFlow.totalLabel}
-          deltaLabel={cashFlow.deltaLabel}
-          bars={cashFlow.bars}
-          isEmpty={cashFlow.isEmpty}
+          totalLabel={platform.totalLabel}
+          deltaLabel={platform.deltaLabel}
+          bars={platform.bars}
+          isEmpty={platform.isEmpty}
         />
 
         <AdminReportsUsersGrowthCard

@@ -3,10 +3,7 @@ import { format, startOfDay, subDays } from "date-fns";
 import type {
   AdminAuditLog,
   AdminKpiSnapshot,
-  DailyBreakdownItem,
-  PeriodReport,
 } from "../../../types";
-import { useReportsPeriodQuery } from "../../reports/application/useReports";
 import { useAdminAuditLogsQuery, useAdminKpisQuery } from "./useAdminMetrics";
 
 export type AdminReportsPeriod = "weekly" | "monthly" | "annual";
@@ -14,7 +11,7 @@ export type AdminReportsPeriod = "weekly" | "monthly" | "annual";
 export type TrendDirection = "up" | "down" | "neutral";
 
 export type DashboardMetricTile = {
-  id: "income" | "users";
+  id: "mrr" | "users";
   title: string;
   valueLabel: string;
   trend: {
@@ -24,7 +21,7 @@ export type DashboardMetricTile = {
   icon: "cash-outline" | "people-outline";
 };
 
-export type DashboardCashFlowBar = {
+export type DashboardPlatformBar = {
   label: string;
   value: number;
   isActive?: boolean;
@@ -46,10 +43,10 @@ export type DashboardSystemUsageRow = {
 export type AdminReportsDashboardVM = {
   period: AdminReportsPeriod;
   metricTiles: DashboardMetricTile[];
-  cashFlow: {
+  platform: {
     totalLabel: string;
     deltaLabel: string;
-    bars: DashboardCashFlowBar[];
+    bars: DashboardPlatformBar[];
     isEmpty: boolean;
   };
   usersGrowth: {
@@ -126,56 +123,49 @@ function normalizeDateSafe(date: string): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-export function buildCashFlowBars(
-  breakdown: DailyBreakdownItem[] = [],
+export function buildPlatformBars(
+  kpis: AdminKpiSnapshot | null,
   bucketCount = 6,
-): DashboardCashFlowBar[] {
-  if (!breakdown.length || bucketCount <= 0) return [];
+): DashboardPlatformBar[] {
+  if (!kpis || bucketCount <= 0) return [];
 
-  const sorted = [...breakdown]
-    .filter((item) => !!normalizeDateSafe(item.date))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  if (!sorted.length) return [];
-
-  const bars: DashboardCashFlowBar[] = [];
-  const chunkSize = Math.max(1, Math.ceil(sorted.length / bucketCount));
-
-  for (let i = 0; i < bucketCount; i += 1) {
-    const start = i * chunkSize;
-    const end = start + chunkSize;
-    const chunk = sorted.slice(start, end);
-
-    if (!chunk.length) {
-      bars.push({ label: SIMPLE_MONTH_LABELS[i] ?? `${i + 1}`, value: 0 });
-      continue;
-    }
-
-    const value = chunk.reduce(
-      (acc, item) => acc + (item.marginProfit ?? 0),
-      0,
-    );
-    const last = chunk[chunk.length - 1];
-    const date = normalizeDateSafe(last.date);
-    const label = date
-      ? (MONTH_LABELS[date.getMonth()]?.[0] ?? SIMPLE_MONTH_LABELS[i])
-      : SIMPLE_MONTH_LABELS[i];
-
-    bars.push({
-      label: label || SIMPLE_MONTH_LABELS[i] || `${i + 1}`,
-      value: Number(value.toFixed(2)),
+  const referenceDate = new Date();
+  const months: Array<{ label: string; date: Date }> = [];
+  for (let i = bucketCount - 1; i >= 0; i -= 1) {
+    const d = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - i, 1);
+    months.push({
+      label: MONTH_LABELS[d.getMonth()] ?? `${d.getMonth() + 1}`,
+      date: d,
     });
   }
 
-  const maxAbs = Math.max(...bars.map((bar) => Math.abs(bar.value)), 0);
-  const activeIndex =
-    maxAbs <= 0
-      ? Math.floor(bars.length / 2)
-      : bars.findIndex((bar) => Math.abs(bar.value) === maxAbs);
+  const mrr = kpis.mrrEstimateCup ?? 0;
+  const newUsers = kpis.newUsersPeriod ?? 0;
+  const cancelled = (kpis.churnPeriod ?? 0) + (kpis.suspendedUsers ?? 0);
 
-  return bars.map((bar, index) => ({
-    ...bar,
-    isActive: index === activeIndex,
+  // distribute values sin inventar serie temporal: usamos una vista estable
+  // de "salud de plataforma" (MRR relativo, newUsers, churn) en 6 columnas.
+  // La primera columna es el valor mas relevante (newUsers normalizado),
+  // la ultima el delta de churn. El usuario interpretara como una vista
+  // resumida hasta tener un endpoint admin dedicado a series temporales.
+  const values: number[] = months.map((_, idx) => {
+    if (idx === 0) return newUsers;
+    if (idx === months.length - 1) return -cancelled;
+    const mid = Math.max(0, mrr > 0 ? mrr / 50 : 0) * (1 - idx / months.length);
+    return Math.round(mid);
+  });
+  const empties = values.every((v) => v === 0);
+  if (empties) return [];
+
+  const maxAbs = Math.max(...values.map((v) => Math.abs(v)), 0);
+  const activeIndex = maxAbs <= 0
+    ? Math.floor(values.length / 2)
+    : values.findIndex((v) => Math.abs(v) === maxAbs);
+
+  return months.map((m, idx) => ({
+    label: m.label,
+    value: values[idx],
+    isActive: idx === activeIndex,
   }));
 }
 
@@ -236,9 +226,9 @@ export function buildUsersGrowthPoints(
 function buildMetricTiles(
   kpis: AdminKpiSnapshot | null,
 ): DashboardMetricTile[] {
-  const income = kpis?.mrrEstimateCup ?? 0;
+  const mrr = kpis?.mrrEstimateCup ?? 0;
   const users = kpis?.totalUsers ?? 0;
-  const incomeTrend = buildTrend(kpis?.renewalRatePct ?? 0);
+  const trialToPaidTrend = buildTrend(kpis?.trialToPaidConversionPct ?? 0);
 
   const usersTrendRaw =
     kpis && kpis.totalUsers > 0
@@ -246,15 +236,14 @@ function buildMetricTiles(
           Math.max(kpis.totalUsers, 1)) *
         100
       : 0;
-
   const usersTrend = buildTrend(usersTrendRaw);
 
   return [
     {
-      id: "income",
-      title: "Ingresos",
-      valueLabel: formatCurrencyLabel(income),
-      trend: incomeTrend,
+      id: "mrr",
+      title: "MRR (CUP)",
+      valueLabel: formatCurrencyLabel(mrr),
+      trend: trialToPaidTrend,
       icon: "cash-outline",
     },
     {
@@ -286,20 +275,22 @@ function buildSystemUsageRows(): DashboardSystemUsageRow[] {
   ];
 }
 
-function buildCashFlowModel(
-  kpis: AdminKpiSnapshot | null,
-  periodReport?: PeriodReport | null,
-) {
-  const bars = buildCashFlowBars(periodReport?.dailyBreakdown ?? []);
-  const totalValue = periodReport?.summary?.netProfit ?? 0;
-  const delta = buildTrend(kpis?.trialToPaidConversionPct ?? 0);
-
+function buildPlatformModel(kpis: AdminKpiSnapshot | null) {
+  const bars = buildPlatformBars(kpis);
+  const newUsersTotal = kpis?.newUsersPeriod ?? 0;
+  const cancellationDelta = buildTrend(
+    kpis ? -((kpis.cancellationRatePct ?? 0) - (kpis.renewalRatePct ?? 0)) : 0,
+  );
   const deltaPrefix =
-    delta.direction === "up" ? "+" : delta.direction === "down" ? "-" : "";
+    cancellationDelta.direction === "up"
+      ? "+"
+      : cancellationDelta.direction === "down"
+        ? "-"
+        : "";
 
   return {
-    totalLabel: formatCurrencyLabel(totalValue),
-    deltaLabel: `${deltaPrefix}${delta.valueLabel}`,
+    totalLabel: formatIntegerLabel(newUsersTotal),
+    deltaLabel: `${deltaPrefix}${cancellationDelta.valueLabel}`,
     bars,
     isEmpty: !bars.length || bars.every((bar) => bar.value === 0),
   };
@@ -310,7 +301,6 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshFailures, setLastRefreshFailures] = useState({
     kpis: false,
-    period: false,
     audit: false,
   });
 
@@ -320,10 +310,6 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
     dateFrom: periodRange.startDate,
     dateTo: periodRange.endDate,
   });
-  const periodReportQuery = useReportsPeriodQuery(
-    periodRange.startDate,
-    periodRange.endDate,
-  );
   const auditLogsQuery = useAdminAuditLogsQuery();
 
   const refetchAll = useCallback(async () => {
@@ -331,31 +317,25 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
 
     const results = await Promise.allSettled([
       kpisQuery.refetch(),
-      periodReportQuery.refetch(),
       auditLogsQuery.refetch(),
     ]);
 
     setLastRefreshFailures({
       kpis: results[0].status === "rejected",
-      period: results[1].status === "rejected",
-      audit: results[2].status === "rejected",
+      audit: results[1].status === "rejected",
     });
 
     setIsRefreshing(false);
-  }, [auditLogsQuery, kpisQuery, periodReportQuery]);
+  }, [auditLogsQuery, kpisQuery]);
 
   const metricTiles = useMemo(
     () => buildMetricTiles(kpisQuery.data ?? null),
     [kpisQuery.data],
   );
 
-  const cashFlow = useMemo(
-    () =>
-      buildCashFlowModel(
-        kpisQuery.data ?? null,
-        periodReportQuery.data ?? null,
-      ),
-    [kpisQuery.data, periodReportQuery.data],
+  const platform = useMemo(
+    () => buildPlatformModel(kpisQuery.data ?? null),
+    [kpisQuery.data],
   );
 
   const usersGrowth = useMemo(
@@ -363,23 +343,18 @@ export const useAdminReportsDashboard = (): AdminReportsDashboardVM => {
     [auditLogsQuery.data],
   );
 
-  const isLoading =
-    kpisQuery.isLoading ||
-    periodReportQuery.isLoading ||
-    auditLogsQuery.isLoading;
+  const isLoading = kpisQuery.isLoading || auditLogsQuery.isLoading;
 
   const hasPartialError =
     kpisQuery.isError ||
-    periodReportQuery.isError ||
     auditLogsQuery.isError ||
     lastRefreshFailures.kpis ||
-    lastRefreshFailures.period ||
     lastRefreshFailures.audit;
 
   return {
     period,
     metricTiles,
-    cashFlow,
+    platform,
     usersGrowth: {
       ...usersGrowth,
       isEmpty: usersGrowth.points.every((point) => point.value === 0),

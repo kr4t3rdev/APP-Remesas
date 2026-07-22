@@ -32,8 +32,8 @@ const createDashboardVM = () => ({
       icon: "people-outline" as const,
     },
   ],
-  cashFlow: {
-    totalLabel: "$128,400",
+  platform: {
+    totalLabel: "42",
     deltaLabel: "+8.4%",
     bars: [
       { label: "E", value: 4 },
@@ -98,7 +98,7 @@ describe("AdminReportsScreen", () => {
     expect(getByText("Semanal")).toBeTruthy();
     expect(getByText("Mensual")).toBeTruthy();
     expect(getByText("Anual")).toBeTruthy();
-    expect(getByText("Flujo de Efectivo")).toBeTruthy();
+    expect(getByText("Actividad de Plataforma")).toBeTruthy();
     expect(getByText("Crecimiento de Usuarios")).toBeTruthy();
     expect(getByText("Uso del Sistema")).toBeTruthy();
   });
@@ -117,8 +117,8 @@ describe("AdminReportsScreen", () => {
   it("shows fallback empty states when reports data is missing", () => {
     mockUseAdminReportsDashboard.mockReturnValueOnce({
       ...createDashboardVM(),
-      cashFlow: {
-        totalLabel: "$0",
+      platform: {
+        totalLabel: "0",
         deltaLabel: "0.0%",
         bars: [],
         isEmpty: true,
