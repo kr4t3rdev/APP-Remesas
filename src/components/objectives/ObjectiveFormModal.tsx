@@ -9,10 +9,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Alert } from "../../utils/alert";
 
 import { Ionicons } from "@expo/vector-icons";
-import { FadeInDown } from "../animations";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { ObjectiveStatusPicker } from "./ObjectiveStatusPicker";
@@ -45,6 +45,7 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
 }) => {
   const themeColors = useColors();
   const themeShadows = useShadows();
+  const insets = useSafeAreaInsets();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -109,15 +110,18 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <KeyboardAvoidingView
-        style={styles.overlay}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <FadeInDown>
+      <View testID="objective-modal-overlay" style={styles.overlay}>
+        <View testID="objective-modal-bottom-anchor" style={styles.bottomAnchor}>
+          <KeyboardAvoidingView
+            testID="objective-modal-keyboard-region"
+            style={styles.keyboardRegion}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
           <View
             style={[
               styles.container,
               { backgroundColor: themeColors.card },
+              { paddingBottom: insets.bottom },
               themeShadows.lg,
             ]}
           >
@@ -141,6 +145,8 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
             <ScrollView
               style={styles.content}
               showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
             >
               <Input
                 testID="objective-name-input"
@@ -195,22 +201,32 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
               />
             </View>
           </View>
-        </FadeInDown>
-      </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
+        </View>
+      </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
+  },
+  bottomAnchor: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    maxHeight: "90%",
+  },
+  keyboardRegion: {
+    flexShrink: 1,
   },
   container: {
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
-    maxHeight: "90%",
+    maxHeight: "100%",
   },
   header: {
     flexDirection: "row",
