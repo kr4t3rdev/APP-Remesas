@@ -211,7 +211,6 @@ export const ObjectiveFormModal: React.FC<ObjectiveFormModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
   },
   bottomAnchor: {
     position: "absolute",

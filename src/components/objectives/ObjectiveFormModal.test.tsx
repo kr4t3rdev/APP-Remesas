@@ -12,7 +12,9 @@ describe("ObjectiveFormModal layout", () => {
 
   it("anchors the sheet to the viewport bottom independently from keyboard layout", () => {
     const { getByTestId } = render(<ObjectiveFormModal visible onClose={jest.fn()} onSubmit={jest.fn()} />);
-    expect(StyleSheet.flatten(getByTestId("objective-modal-overlay").props.style)).toEqual(expect.objectContaining({ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }));
+    const overlayStyle = StyleSheet.flatten(getByTestId("objective-modal-overlay").props.style);
+    expect(overlayStyle).toEqual(expect.objectContaining({ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }));
+    expect(overlayStyle).not.toHaveProperty("backgroundColor");
     const bottomAnchor = getByTestId("objective-modal-bottom-anchor");
     expect(StyleSheet.flatten(bottomAnchor.props.style)).toEqual(expect.objectContaining({ position: "absolute", right: 0, bottom: 0, left: 0 }));
     expect(within(bottomAnchor).getByTestId("objective-modal-keyboard-region")).toBeTruthy();
