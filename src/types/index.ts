@@ -256,7 +256,11 @@ export type CurrencyExpenseSummary = Record<
 export type DailyBreakdownItem = {
   date: string;
   transactions: number;
+  transactionsTotalCup: number;
   expenses: number;
+  expensesTotalCup: number;
+  expensesUnconverted: number;
+  marginProfit: number;
 };
 
 export type PeriodReport = {

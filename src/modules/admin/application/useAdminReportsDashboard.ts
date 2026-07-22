@@ -152,7 +152,7 @@ export function buildCashFlowBars(
     }
 
     const value = chunk.reduce(
-      (acc, item) => acc + item.transactions - item.expenses,
+      (acc, item) => acc + (item.marginProfit ?? 0),
       0,
     );
     const last = chunk[chunk.length - 1];

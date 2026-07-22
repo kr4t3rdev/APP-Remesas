@@ -217,7 +217,7 @@ export const ReportsScreen: React.FC = () => {
   const periodDailyChartData = periodReport?.dailyBreakdown
     ? periodReport.dailyBreakdown.map((item) => ({
         label: format(new Date(item.date), "dd/MM"),
-        value: item.transactions,
+        value: item.marginProfit,
         color: themeColors.primary[500],
       }))
     : [];
@@ -863,7 +863,7 @@ export const ReportsScreen: React.FC = () => {
                   { color: themeColors.text.primary },
                 ]}
               >
-                Evolución Diaria
+                Ganancia Diaria (CUP)
               </Text>
               <View style={styles.chartCard}>
                 <BarChart

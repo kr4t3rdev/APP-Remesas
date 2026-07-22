@@ -26,17 +26,19 @@ describe("useAdminReportsDashboard helpers", () => {
 
   it("creates 6 bars and marks the max absolute value as active", () => {
     const bars = buildCashFlowBars([
-      { date: "2026-01-01", transactions: 100, expenses: 80 },
-      { date: "2026-01-05", transactions: 300, expenses: 100 },
-      { date: "2026-01-10", transactions: 200, expenses: 190 },
-      { date: "2026-01-15", transactions: 450, expenses: 100 },
-      { date: "2026-01-20", transactions: 120, expenses: 20 },
-      { date: "2026-01-25", transactions: 80, expenses: 70 },
+      { date: "2026-01-01", transactions: 100, transactionsTotalCup: 100, expenses: 80, expensesTotalCup: 80, expensesUnconverted: 0, marginProfit: 20 },
+      { date: "2026-01-05", transactions: 300, transactionsTotalCup: 300, expenses: 100, expensesTotalCup: 100, expensesUnconverted: 0, marginProfit: 200 },
+      { date: "2026-01-10", transactions: 200, transactionsTotalCup: 200, expenses: 190, expensesTotalCup: 190, expensesUnconverted: 0, marginProfit: 10 },
+      { date: "2026-01-15", transactions: 450, transactionsTotalCup: 450, expenses: 100, expensesTotalCup: 100, expensesUnconverted: 0, marginProfit: 350 },
+      { date: "2026-01-20", transactions: 120, transactionsTotalCup: 120, expenses: 20, expensesTotalCup: 20, expensesUnconverted: 0, marginProfit: 100 },
+      { date: "2026-01-25", transactions: 80, transactionsTotalCup: 80, expenses: 70, expensesTotalCup: 70, expensesUnconverted: 0, marginProfit: 10 },
     ]);
 
     expect(bars).toHaveLength(6);
     expect(bars.filter((bar) => bar.isActive)).toHaveLength(1);
     expect(bars.some((bar) => bar.value !== 0)).toBe(true);
+    expect(bars[3].isActive).toBe(true);
+    expect(bars[3].value).toBe(350);
   });
 
   it("creates growth points and avoids duplicate peak label when top values are tied", () => {
