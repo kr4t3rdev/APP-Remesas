@@ -354,20 +354,17 @@ export type CashFlowReport = {
     startDate: string;
     endDate: string;
   };
-  inflows: {
-    ventas: number;
-    adjustments: number;
-    adjustmentsRaw: number;
-    unconvertedAdjustmentsCount: number;
-  };
-  outflows: {
-    compras: number;
-    expenses: number;
-    expensesRaw: number;
-    unconvertedExpensesCount: number;
-    adjustments: number;
-    adjustmentsRaw: number;
-  };
+  currencies: Array<{
+    currency: { code: string; symbol: string };
+    inflows: { transactions: number; adjustments: number; total: number };
+    outflows: {
+      transactions: number;
+      expenses: number;
+      adjustments: number;
+      total: number;
+    };
+    balance: number;
+  }>;
 };
 
 export type AuditSummaryReport = {

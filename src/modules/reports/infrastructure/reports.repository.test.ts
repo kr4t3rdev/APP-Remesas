@@ -107,7 +107,7 @@ describe("reportsRepository", () => {
   });
 
   it("requests cash flow report", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: { inflows: {} }, status: 200, statusText: 'OK', headers: new Headers() });
+    mockedApi.get.mockResolvedValueOnce({ data: { currencies: [] }, status: 200, statusText: 'OK', headers: new Headers() });
 
     const result = await reportsRepository.getCashFlowReport(
       "2026-01-01",
@@ -117,7 +117,7 @@ describe("reportsRepository", () => {
     expect(mockedApi.get).toHaveBeenCalledWith("/reports/cash-flow", {
       params: { startDate: "2026-01-01", endDate: "2026-03-06" },
     });
-    expect(result).toEqual({ inflows: {} });
+    expect(result).toEqual({ currencies: [] });
   });
 
   it("requests audit summary report", async () => {

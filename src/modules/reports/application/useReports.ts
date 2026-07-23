@@ -29,20 +29,20 @@ export const useReportsCashBalancesQuery = () =>
     staleTime: 1000 * 60 * 2,
   });
 
-export const useReportsPeriodQuery = (startDate: string, endDate: string) =>
+export const useReportsPeriodQuery = (startDate: string, endDate: string, isValid = true) =>
   useQuery({
     queryKey: queryKeys.reports.periodReport(startDate, endDate),
     queryFn: () => reportsRepository.getPeriodReport(startDate, endDate),
     staleTime: 1000 * 60 * 5,
-    enabled: !!startDate && !!endDate,
+    enabled: !!startDate && !!endDate && isValid,
   });
 
-export const useReportsProfitQuery = (startDate: string, endDate: string) =>
+export const useReportsProfitQuery = (startDate: string, endDate: string, isValid = true) =>
   useQuery({
     queryKey: queryKeys.reports.profitReport(startDate, endDate),
     queryFn: () => reportsRepository.getProfitReport(startDate, endDate),
     staleTime: 1000 * 60 * 5,
-    enabled: !!startDate && !!endDate,
+    enabled: !!startDate && !!endDate && isValid,
   });
 
 export const useReportsCurrencyQuery = (
@@ -84,12 +84,12 @@ export const useReportsObjectivesQuery = () =>
     staleTime: 1000 * 60 * 5,
   });
 
-export const useReportsCashFlowQuery = (startDate: string, endDate: string) =>
+export const useReportsCashFlowQuery = (startDate: string, endDate: string, isValid = true) =>
   useQuery({
     queryKey: queryKeys.reports.cashFlowReport(startDate, endDate),
     queryFn: () => reportsRepository.getCashFlowReport(startDate, endDate),
     staleTime: 1000 * 60 * 5,
-    enabled: !!startDate && !!endDate,
+    enabled: !!startDate && !!endDate && isValid,
   });
 
 export const useReportsAuditSummaryQuery = (

@@ -171,7 +171,8 @@ describe("useReports hooks", () => {
 
   it("loads cash flow report with date range", async () => {
     mockedRepository.getCashFlowReport.mockResolvedValueOnce({
-      inflows: {},
+      period: { startDate: "2026-01-01", endDate: "2026-03-06" },
+      currencies: [],
     } as never);
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
@@ -190,6 +191,19 @@ describe("useReports hooks", () => {
       "2026-01-01",
       "2026-03-06",
     );
+  });
+
+  it("does not request reports for inverted ranges", () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    renderHook(
+      () => useReportsCashFlowQuery("2026-03-06", "2026-01-01", false),
+      { wrapper: createWrapper(queryClient) },
+    );
+
+    expect(mockedRepository.getCashFlowReport).not.toHaveBeenCalled();
   });
 
   it("loads audit summary with date range", async () => {
