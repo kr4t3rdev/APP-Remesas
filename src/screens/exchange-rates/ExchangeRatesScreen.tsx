@@ -140,6 +140,22 @@ export const ExchangeRatesScreen: React.FC = () => {
     const exactBuy = parseFloat(formData.exactBuy) || referenceRate;
     const exactSell = parseFloat(formData.exactSell) || referenceRate;
 
+    if (exactBuy > referenceRate) {
+      Alert.alert(
+        "Error de validación",
+        "La tasa de compra no puede ser mayor que la tasa de referencia.",
+      );
+      return;
+    }
+
+    if (exactSell < referenceRate) {
+      Alert.alert(
+        "Error de validación",
+        "La tasa de venta no puede ser menor que la tasa de referencia.",
+      );
+      return;
+    }
+
     const buyMargin = 1 - exactBuy / referenceRate;
     const sellMargin = exactSell / referenceRate - 1;
 
