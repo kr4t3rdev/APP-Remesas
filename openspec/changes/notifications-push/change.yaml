@@ -1,0 +1,11 @@
+schema: change-v1
+name: notifications-push
+status: designed
+created: 2026-07-23
+author: el-gentleman
+summary: >
+  Agregar push notifications (Firebase Cloud Messaging / APNs) a la APP.
+  Actualmente las notificaciones solo se consultan via REST polling.
+  Push notifications permitirán alertas en tiempo real sin depender del
+  staleTime de 30s de TanStack Query.
+dependencies: [notifications-mobile-support]

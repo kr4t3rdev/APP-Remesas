@@ -1,0 +1,12 @@
+schema: change-v1
+name: notifications-mobile-support
+status: designed
+created: 2026-07-23
+author: el-gentleman
+summary: >
+  Agregar soporte mobile al centro de notificaciones.
+  Actualmente NotificationCenter solo se muestra en el Header de escritorio
+  (tablet/desktop). En mobile (width < BREAKPOINTS.tablet) no hay acceso
+  a las notificaciones. Este cambio agrega un badge en la tab bar y
+  una pantalla/sheet de notificaciones accesible desde mobile.
+dependencies: []
