@@ -44,3 +44,6 @@ output/apk/
 # generated native folders
 /ios
 /android
+# Local Pi runtime state
+.atl/
+.pi-subagents/

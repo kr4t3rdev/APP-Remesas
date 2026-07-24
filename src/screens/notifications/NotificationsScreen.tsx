@@ -5,7 +5,7 @@ import { clearAppBadge } from "../../services/pushNotifications";
 import { useNotificationNavigation } from "../../modules/notifications/application/useNotificationNavigation";
 import {
 	useMarkAllNotificationsAsReadMutation,
-	useNotificationsQuery,
+	useNotificationsInfiniteQuery,
 	useUnreadNotificationsCountQuery,
 } from "../../modules/notifications/application/useNotifications";
 import { NotificationList } from "../../components/notifications/NotificationCenter";
@@ -18,7 +18,14 @@ import type { UserNotification } from "../../types";
  */
 export const NotificationsScreen: React.FC = () => {
 	const colors = useColors();
-	const notificationsQuery = useNotificationsQuery(1, 20, true);
+	const {
+		data,
+		isLoading,
+		isError,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+	} = useNotificationsInfiniteQuery(20, true);
 	const { data: unreadCount } = useUnreadNotificationsCountQuery();
 	const { mutate: markAllAsRead } = useMarkAllNotificationsAsReadMutation();
 	const onPressNotification = useNotificationNavigation();
@@ -28,7 +35,7 @@ export const NotificationsScreen: React.FC = () => {
 		clearAppBadge();
 	}, []);
 
-	const notifications = notificationsQuery.data?.data ?? [];
+	const notifications = data?.pages.flatMap((p) => p.data) ?? [];
 
 	return (
 		<View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -55,14 +62,21 @@ export const NotificationsScreen: React.FC = () => {
 				) : null}
 			</View>
 
-			{/* Notification list */}
+			{/* Notification list with infinite scroll */}
 			<NotificationList
 				notifications={notifications}
-				isLoading={notificationsQuery.isLoading}
-				isError={notificationsQuery.isError}
+				isLoading={isLoading}
+				isError={isError}
 				onPressNotification={(item: UserNotification) =>
 					onPressNotification(item)
 				}
+				onEndReached={() => {
+					if (hasNextPage && !isFetchingNextPage) {
+						fetchNextPage();
+					}
+				}}
+				isFetchingNextPage={isFetchingNextPage}
+				hasNextPage={hasNextPage}
 			/>
 		</View>
 	);

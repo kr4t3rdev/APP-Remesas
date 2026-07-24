@@ -28,6 +28,7 @@ import { useNavigation } from "@react-navigation/native";
 
 import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 import { ChangePasswordModal } from "../../components/profile/ChangePasswordModal";
+import { AboutModal } from "../../components/profile/AboutModal";
 
 type MenuItem = {
   id: string;
@@ -74,6 +75,7 @@ export const ProfileScreen: React.FC = () => {
   );
 
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const isAdmin = user?.role === "ADMIN";
 
   const handleRefresh = async () => {
@@ -128,11 +130,7 @@ export const ProfileScreen: React.FC = () => {
       subtitle: "Versión 1.0.0",
       icon: "information-circle-outline",
       color: themeColors.text.secondary,
-      onPress: () =>
-        Alert.alert(
-          "Cashflow",
-          "Versión 1.0.0\nSistema de gestión para casa de cambio",
-        ),
+      onPress: () => setShowAboutModal(true),
     },
   ];
 
@@ -241,6 +239,11 @@ export const ProfileScreen: React.FC = () => {
         visible={showChangePasswordModal}
         onClose={() => setShowChangePasswordModal(false)}
         onChangePassword={handleChangePassword}
+      />
+
+      <AboutModal
+        visible={showAboutModal}
+        onClose={() => setShowAboutModal(false)}
       />
 
       <ConfirmModal

@@ -48,6 +48,7 @@ export const useAdminProfile = () => {
 
   // Modal states
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
   const [showPasswordSuccessModal, setShowPasswordSuccessModal] =
     useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -196,11 +197,7 @@ export const useAdminProfile = () => {
         subtitle: "Versión 1.0.0",
         icon: "information-circle-outline",
         color: themeColors.text.secondary,
-        onPress: () =>
-          Alert.alert(
-            "Casa de Cambio",
-            "Versión 1.0.0\nSistema de gestión para casa de cambio",
-          ),
+        onPress: () => setShowAboutModal(true),
       },
     ],
     [isDarkMode, showPasswordForm, themeColors, navigation, toggleTheme],
@@ -246,6 +243,8 @@ export const useAdminProfile = () => {
     modalState: {
       showLogoutModal,
       setShowLogoutModal,
+      showAboutModal,
+      setShowAboutModal,
       showPasswordSuccessModal,
       setShowPasswordSuccessModal,
       showErrorModal,

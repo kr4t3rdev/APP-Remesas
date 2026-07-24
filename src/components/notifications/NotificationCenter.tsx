@@ -41,6 +41,12 @@ export type NotificationListProps = {
 	isError: boolean;
 	onPressNotification: (item: UserNotification) => void;
 	ListHeaderComponent?: React.ReactElement;
+	/** Called when the list scrolls near the end (infinite scroll). */
+	onEndReached?: () => void;
+	/** Whether a next page fetch is in progress. */
+	isFetchingNextPage?: boolean;
+	/** Whether there are more pages to load. */
+	hasNextPage?: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -54,6 +60,9 @@ export const NotificationList: React.FC<NotificationListProps> = ({
 	isError,
 	onPressNotification,
 	ListHeaderComponent,
+	onEndReached,
+	isFetchingNextPage,
+	hasNextPage,
 }) => {
 	const colors = useColors();
 
@@ -91,6 +100,16 @@ export const NotificationList: React.FC<NotificationListProps> = ({
 			data={notifications}
 			keyExtractor={(item) => String(item.id)}
 			ListHeaderComponent={ListHeaderComponent}
+			onEndReached={onEndReached}
+			onEndReachedThreshold={0.3}
+			ListFooterComponent={
+				isFetchingNextPage ? (
+					<ActivityIndicator
+						color={colors.primary[500]}
+						style={styles.loader}
+					/>
+				) : hasNextPage ? null : null
+			}
 			renderItem={({ item }) => {
 				const isUnread = !item.readAt;
 

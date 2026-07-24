@@ -28,6 +28,7 @@ import { API_CONFIG } from "../../config/constants";
 import { AdminLogoutModal } from "../../components/admin/AdminLogoutModal";
 import { AdminChangePasswordSuccessModal } from "../../components/admin/AdminChangePasswordSuccessModal";
 import { ErrorModal } from "../../components/admin/ErrorModal";
+import { AboutModal } from "../../components/profile/AboutModal";
 
 export const AdminScreenPerfil: React.FC = () => {
   const {
@@ -349,6 +350,11 @@ export const AdminScreenPerfil: React.FC = () => {
         title="Error"
         message={modalState.errorMessage}
          onCancel={() => modalState.setShowErrorModal(false)}
+      />
+
+      <AboutModal
+        visible={modalState.showAboutModal}
+        onClose={() => modalState.setShowAboutModal(false)}
       />
     </SafeAreaView>
   );

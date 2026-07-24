@@ -1,7 +1,6 @@
 import React from "react";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { usePushNotificationHandler } from "./src/hooks/usePushNotificationHandler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppNavigator } from "./src/navigation/AppNavigator";
@@ -17,17 +16,23 @@ const queryClient = new QueryClient({
 	},
 });
 
-export default function App() {
-	usePushNotificationHandler();
+function AppRoot() {
+	return (
+		<>
+			<StatusBar barStyle="dark-content" />
+			<ToastContainer />
+			<WebToaster />
+			<AppNavigator />
+		</>
+	);
+}
 
+export default function App() {
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<SafeAreaProvider>
 				<QueryClientProvider client={queryClient}>
-					<StatusBar barStyle="dark-content" />
-					<ToastContainer />
-					<WebToaster />
-					<AppNavigator />
+					<AppRoot />
 				</QueryClientProvider>
 			</SafeAreaProvider>
 		</GestureHandlerRootView>
