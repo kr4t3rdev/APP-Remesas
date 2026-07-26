@@ -83,8 +83,8 @@ export const queryKeys = {
       ["subscriptions", "payments", userId ?? "all"] as const,
   },
   notifications: {
-    list: (page?: number, unreadOnly?: boolean) =>
-      ["notifications", "list", page ?? 1, unreadOnly ?? false] as const,
+    list: () => ["notifications", "list"] as const,
+    infinite: () => ["notifications", "infinite"] as const,
     unreadCount: () => ["notifications", "unreadCount"] as const,
   },
   admin: {

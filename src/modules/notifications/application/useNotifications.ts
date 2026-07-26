@@ -9,7 +9,7 @@ import { notificationsRepository } from "../infrastructure/notifications.reposit
 
 export const useNotificationsInfiniteQuery = (limit = 20, enabled = true) =>
 	useInfiniteQuery({
-		queryKey: ["notifications", "infinite"],
+		queryKey: queryKeys.notifications.infinite(),
 		queryFn: ({ pageParam = 1 }) =>
 			notificationsRepository.getNotifications({
 				page: pageParam as number,
@@ -26,10 +26,11 @@ export const useNotificationsInfiniteQuery = (limit = 20, enabled = true) =>
 		enabled,
 	});
 
-export const useNotificationsQuery = (page = 1, limit = 20, enabled = true) =>
+export const useNotificationsQuery = (_page = 1, limit = 20, enabled = true) =>
 	useQuery({
-		queryKey: queryKeys.notifications.list(page),
-		queryFn: () => notificationsRepository.getNotifications({ page, limit }),
+		queryKey: queryKeys.notifications.list(),
+		queryFn: () =>
+			notificationsRepository.getNotifications({ page: _page, limit }),
 		staleTime: 1000 * 30,
 		throwOnError: false,
 		enabled,
@@ -50,7 +51,12 @@ export const useMarkNotificationAsReadMutation = () => {
 		mutationFn: (id: number) => notificationsRepository.markAsRead(id),
 		onSuccess: async () => {
 			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: ["notifications", "list"] }),
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.notifications.list(),
+				}),
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.notifications.infinite(),
+				}),
 				queryClient.invalidateQueries({
 					queryKey: queryKeys.notifications.unreadCount(),
 				}),
@@ -66,7 +72,12 @@ export const useMarkAllNotificationsAsReadMutation = () => {
 		mutationFn: notificationsRepository.markAllAsRead,
 		onSuccess: async () => {
 			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: ["notifications", "list"] }),
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.notifications.list(),
+				}),
+				queryClient.invalidateQueries({
+					queryKey: queryKeys.notifications.infinite(),
+				}),
 				queryClient.invalidateQueries({
 					queryKey: queryKeys.notifications.unreadCount(),
 				}),

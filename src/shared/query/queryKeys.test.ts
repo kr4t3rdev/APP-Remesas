@@ -30,3 +30,35 @@ describe("transaction query keys", () => {
     ]);
   });
 });
+
+describe("notification query keys", () => {
+  it("exports the paginated list key under notifications.list", () => {
+    expect(queryKeys.notifications.list()).toEqual(["notifications", "list"]);
+  });
+
+  it("exports the infinite scroll key under notifications.infinite", () => {
+    expect(queryKeys.notifications.infinite()).toEqual([
+      "notifications",
+      "infinite",
+    ]);
+  });
+
+  it("exports the unread count key under notifications.unreadCount", () => {
+    expect(queryKeys.notifications.unreadCount()).toEqual([
+      "notifications",
+      "unreadCount",
+    ]);
+  });
+
+  it("keeps all three notification keys under the same notifications scope", () => {
+    const allRoot = [
+      queryKeys.notifications.list(),
+      queryKeys.notifications.infinite(),
+      queryKeys.notifications.unreadCount(),
+    ];
+    for (const key of allRoot) {
+      expect(key[0]).toBe("notifications");
+    }
+  });
+});
+
