@@ -31,11 +31,11 @@ export const NotificationList: React.FC<{
 
 **Checklist**:
 
-- [ ] `NotificationList` exportado e importable
-- [ ] `renderNotification` adaptado para recibir `onPressNotification` externo (no hardcodeado a `markAsReadMutation`)
-- [ ] `iconForNotification` sigue siendo función standalone
-- [ ] ConnectedNotificationCenter sigue funcionando (usa NotificationList internamente)
-- [ ] Tests existentes pasan
+- [x] `NotificationList` exportado e importable
+- [x] `renderNotification` adaptado para recibir `onPressNotification` externo (no hardcodeado a `markAsReadMutation`)
+- [x] `iconForNotification` sigue siendo función standalone
+- [x] ConnectedNotificationCenter sigue funcionando (usa NotificationList internamente)
+- [x] Tests existentes pasan
 
 ### T002 — Crear hook useNotificationNavigation
 
@@ -60,11 +60,11 @@ export function useNotificationNavigation() {
 
 **Checklist**:
 
-- [ ] Hook creado en `src/modules/notifications/application/`
-- [ ] Switch cubre los 6 tipos de notificación
-- [ ] Navegación solo si `user.role === "ADMIN"` para screens admin
-- [ ] Fallback: si no hay navegación aplicable, solo marca como leída
-- [ ] Type narrowing sobre `payload: Record<string, unknown>`
+- [x] Hook creado en `src/modules/notifications/application/`
+- [x] Switch cubre los 6 tipos de notificación
+- [x] Navegación solo si `user.role === "ADMIN"` para screens admin
+- [x] Fallback: si no hay navegación aplicable, solo marca como leída
+- [x] Type narrowing sobre `payload: Record<string, unknown>`
 
 ### T003 — Agregar badge support a MainTabDefinition e InstagramTabBar
 
@@ -81,11 +81,11 @@ export function useNotificationNavigation() {
 
 **Checklist**:
 
-- [ ] `MainTabDefinition.badge` agregado
-- [ ] Badge renderizado en InstagramTabBar para tabs con badge > 0
-- [ ] Estilo consistente con el badge actual del NotificationCenter
-- [ ] Solamente el tab "Notifications" tiene badge > 0
-- [ ] useUnreadNotificationsCountQuery integrada sin romper existing tests
+- [x] `MainTabDefinition.badge` agregado
+- [x] Badge renderizado en InstagramTabBar para tabs con badge > 0
+- [x] Estilo consistente con el badge actual del NotificationCenter
+- [x] Solamente el tab "Notifications" tiene badge > 0
+- [x] useUnreadNotificationsCountQuery integrada sin romper existing tests
 
 ### T004 — Crear NotificationsScreen
 
@@ -113,11 +113,11 @@ const NotificationsScreen: React.FC = () => {
 
 **Checklist**:
 
-- [ ] Screen full-height (flex: 1, no Modal)
-- [ ] Header con título + botón "Leer todas"
-- [ ] Usa NotificationList compartido
-- [ ] Usa useNotificationNavigation para onPress
-- [ ] Test: renderiza correctamente en mobile
+- [x] Screen full-height (flex: 1, no Modal)
+- [x] Header con título + botón "Leer todas"
+- [x] Usa NotificationList compartido
+- [x] Usa useNotificationNavigation para onPress
+- [x] Test: renderiza correctamente en mobile
 
 ### T005 — Agregar tab Notificaciones a MainTabs
 
@@ -133,9 +133,9 @@ const NotificationsScreen: React.FC = () => {
 
 **Checklist**:
 
-- [ ] Type actualizado
-- [ ] Tab definition agregada entre Expenses y Profile
-- [ ] Screen registrada en MainTabs
+- [x] Type actualizado
+- [x] Tab definition agregada entre Expenses y Profile
+- [x] Screen registrada en MainTabs
 
 ### T006 — Agregar tab Notificaciones a AdminTabs
 
@@ -151,10 +151,10 @@ const NotificationsScreen: React.FC = () => {
 
 **Checklist**:
 
-- [ ] Type actualizado
-- [ ] Tab agregado entre AdminReports y AdminProfile
-- [ ] tabBarBadge funciona correctamente
-- [ ] Mismo NotificationsScreen importado de `src/screens/notifications/`
+- [x] Type actualizado
+- [x] Tab agregado entre AdminReports y AdminProfile
+- [x] tabBarBadge funciona correctamente
+- [x] Mismo NotificationsScreen importado de `src/screens/notifications/`
 
 ### T007 — Verificar que desktop/tablet sigue funcionando
 
@@ -171,10 +171,10 @@ const NotificationsScreen: React.FC = () => {
 
 **Checklist**:
 
-- [ ] Header desktop renderiza NotificationCenter correctamente
-- [ ] Badge del Header muestra conteo
-- [ ] Modal se abre/cierra correctamente
-- [ ] No hay regresiones visuales
+- [x] Header desktop renderiza NotificationCenter correctamente
+- [x] Badge del Header muestra conteo
+- [x] Modal se abre/cierra correctamente
+- [x] No hay regresiones visuales
 
 ## Resumen de archivos cambiados
 
