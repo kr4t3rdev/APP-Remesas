@@ -23,9 +23,9 @@ npx expo install expo-notifications
 
 **Checklist**:
 
-- [ ] `expo-notifications` en package.json
-- [ ] Plugin `"expo-notifications"` en app.json plugins array
-- [ ] No se rompe `npx expo start`
+- [x] `expo-notifications` en package.json
+- [x] Plugin `"expo-notifications"` en app.json plugins array
+- [x] No se rompe `npx expo start`
 
 ### APP-T002 — Crear servicio pushNotifications.ts
 
@@ -35,10 +35,10 @@ npx expo install expo-notifications
 
 **Checklist**:
 
-- [ ] `setNotificationHandler` configurado (shouldShowAlert: false)
-- [ ] Canal "default" de Android creado con importance HIGH
-- [ ] `getExpoPushToken()` maneja permiso concedido/denegado
-- [ ] Retorna `null` si permiso denegado (fallback silencioso)
+- [x] `setNotificationHandler` configurado (shouldShowAlert: false)
+- [x] Canal "default" de Android creado con importance HIGH
+- [x] `getExpoPushToken()` maneja permiso concedido/denegado
+- [x] Retorna `null` si permiso denegado (fallback silencioso)
 
 ### APP-T003 — Crear hook usePushTokenRegistration
 
@@ -54,9 +54,9 @@ npx expo install expo-notifications
 
 **Checklist**:
 
-- [ ] `useMutation` con `api.post("/notifications/register-push-token", ...)`
-- [ ] Retry: 2 intentos
-- [ ] No requiere invalidación de queries
+- [x] `useMutation` con `api.post("/notifications/register-push-token", ...)`
+- [x] Retry: 2 intentos
+- [x] No requiere invalidación de queries
 
 ### APP-T004 — Crear hook usePushNotificationHandler
 
@@ -71,11 +71,11 @@ npx expo install expo-notifications
 
 **Checklist**:
 
-- [ ] `getExpoPushToken()` solo si `isAuthenticated`
-- [ ] `addNotificationReceivedListener` → invalidateQueries(["notifications"])
-- [ ] `addNotificationResponseReceivedListener` → navega a "Notifications"
-- [ ] `AppState` listener para retry
-- [ ] No memory leaks (remover listeners en cleanup)
+- [x] `getExpoPushToken()` solo si `isAuthenticated`
+- [x] `addNotificationReceivedListener` → invalidateQueries(["notifications"])
+- [x] `addNotificationResponseReceivedListener` → navega a "Notifications"
+- [x] `AppState` listener para retry
+- [x] No memory leaks (remover listeners en cleanup)
 
 ### APP-T005 — Montar usePushNotificationHandler en root
 
@@ -85,8 +85,8 @@ npx expo install expo-notifications
 
 **Checklist**:
 
-- [ ] Hook montado en el componente correcto
-- [ ] Se ejecuta una vez al iniciar la app
+- [x] Hook montado en el componente correcto
+- [x] Se ejecuta una vez al iniciar la app
 
 ### APP-T006 — Badge count en NotificationsScreen
 
@@ -96,8 +96,8 @@ npx expo install expo-notifications
 
 **Checklist**:
 
-- [ ] `Notifications.setBadgeCountAsync(0)` al montar la screen
-- [ ] No rompe el renderizado existente
+- [x] `Notifications.setBadgeCountAsync(0)` al montar la screen
+- [x] No rompe el renderizado existente
 
 ### APP-T007 — Verificación y smoke test
 
@@ -119,10 +119,10 @@ npx expo install expo-notifications
 
 **Checklist**:
 
-- [ ] Enum actualizado
-- [ ] Modelo PushDevice con campos: id, userId, pushToken, platform, createdAt, updatedAt
-- [ ] Unique constraint en `[userId, pushToken]`
-- [ ] Migración aplicada (`npx prisma migrate dev`)
+- [x] Enum actualizado
+- [x] Modelo PushDevice con campos: id, userId, pushToken, platform, createdAt, updatedAt
+- [x] Unique constraint en `[userId, pushToken]`
+- [x] Migración aplicada (`npx prisma migrate dev`)
 
 ### API-T002 — Instalar expo-server-sdk
 
@@ -134,7 +134,7 @@ npm install expo-server-sdk
 
 **Checklist**:
 
-- [ ] `expo-server-sdk` en package.json
+- [x] `expo-server-sdk` en package.json
 
 ### API-T003 — Crear PushNotificationsService
 
@@ -149,11 +149,11 @@ npm install expo-server-sdk
 
 **Checklist**:
 
-- [ ] `upsertDevice` funciona (crea y actualiza)
-- [ ] `sendPushToUser` busca devices del userId
-- [ ] `sendPushToUser` chunkea y envía
-- [ ] `handleReceipts` detecta DeviceNotRegistered y elimina
-- [ ] Errores logueados con logger.warn
+- [x] `upsertDevice` funciona (crea y actualiza)
+- [x] `sendPushToUser` busca devices del userId
+- [x] `sendPushToUser` chunkea y envía
+- [x] `handleReceipts` detecta DeviceNotRegistered y elimina
+- [x] Errores logueados con logger.warn
 
 ### API-T004 — Endpoint POST /register-push-token
 
@@ -174,9 +174,9 @@ class RegisterPushTokenDto {
 
 **Checklist**:
 
-- [ ] Endpoint POST protegido con JwtAuthGuard
-- [ ] DTO validado con class-validator
-- [ ] Responde 201
+- [x] Endpoint POST protegido con JwtAuthGuard
+- [x] DTO validado con class-validator
+- [x] Responde 201
 
 ### API-T005 — Extender notifyMixed para enviar push
 
@@ -186,9 +186,9 @@ class RegisterPushTokenDto {
 
 **Checklist**:
 
-- [ ] Push enviado después de crear IN_APP
-- [ ] Fire-and-forget (no await, catch errors)
-- [ ] No bloquea la creación de la notificación IN_APP
+- [x] Push enviado después de crear IN_APP
+- [x] Fire-and-forget (no await, catch errors)
+- [x] No bloquea la creación de la notificación IN_APP
 
 ### API-T006 — Registrar PushNotificationsService en el módulo
 
@@ -196,8 +196,8 @@ class RegisterPushTokenDto {
 
 **Checklist**:
 
-- [ ] `PushNotificationsService` en `providers`
-- [ ] Exportado si es necesario
+- [x] `PushNotificationsService` en `providers`
+- [x] Exportado si es necesario
 
 ### API-T007 — Verificación
 
