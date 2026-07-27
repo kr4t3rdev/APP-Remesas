@@ -1,11 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AppState } from "react-native";
 import * as Notifications from "expo-notifications";
 import { useNavigation } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../store/authStore";
 import { getExpoPushToken } from "../services/pushNotifications";
-import { usePushTokenRegistration } from "../modules/notifications/application/usePushTokenRegistration";
+import {
+	usePushTokenRegistration,
+	useUnregisterPushTokenMutation,
+} from "../modules/notifications/application/usePushTokenRegistration";
 
 /**
  * Global hook that orchestrates push notification lifecycle:
@@ -14,14 +17,17 @@ import { usePushTokenRegistration } from "../modules/notifications/application/u
  * 2. Invalidates TanStack Query caches when a push arrives in foreground.
  * 3. Navigates to the Notifications screen when a push is tapped.
  * 4. Retries token registration when the app returns from background.
+ * 5. Removes the registered token when the user logs out (privacy).
  *
  * Mount this once at the app root.
  */
 export function usePushNotificationHandler() {
-	const { isAuthenticated } = useAuthStore();
+	const { isAuthenticated, checkAuth } = useAuthStore();
 	const queryClient = useQueryClient();
 	const navigation = useNavigation();
 	const { mutate: registerToken } = usePushTokenRegistration();
+	const { mutate: unregisterToken } = useUnregisterPushTokenMutation();
+	const lastRegisteredTokenRef = useRef<string | null>(null);
 
 	// ── 1. Register push token when user is authenticated ────────────────
 	useEffect(() => {
@@ -32,7 +38,10 @@ export function usePushNotificationHandler() {
 		(async () => {
 			const token = await getExpoPushToken();
 			if (!cancelled && token) {
-				registerToken(token);
+				if (token !== lastRegisteredTokenRef.current) {
+					lastRegisteredTokenRef.current = token;
+					registerToken(token);
+				}
 			}
 		})();
 
@@ -40,6 +49,22 @@ export function usePushNotificationHandler() {
 			cancelled = true;
 		};
 	}, [isAuthenticated, registerToken]);
+
+	// ── 5. Remove push token when user logs out ─────────────────────────
+	useEffect(() => {
+		// Only fire on the true → false transition (when there was a token).
+		if (isAuthenticated) return;
+
+		const token = lastRegisteredTokenRef.current;
+		if (!token) return;
+
+		// Best-effort cleanup; ignore network errors during logout.
+		unregisterToken(token, {
+			onSettled: () => {
+				lastRegisteredTokenRef.current = null;
+			},
+		});
+	}, [isAuthenticated, unregisterToken]);
 
 	// ── 2. Foreground: refresh notification queries ──────────────────────
 	useEffect(() => {
@@ -70,8 +95,11 @@ export function usePushNotificationHandler() {
 		const subscription = AppState.addEventListener("change", (state) => {
 			if (state === "active") {
 				(async () => {
+					// Ensure auth state is synced (handles login during background)
+					await checkAuth();
 					const token = await getExpoPushToken();
-					if (token) {
+					if (token && token !== lastRegisteredTokenRef.current) {
+						lastRegisteredTokenRef.current = token;
 						registerToken(token);
 					}
 				})();
@@ -79,5 +107,5 @@ export function usePushNotificationHandler() {
 		});
 
 		return () => subscription.remove();
-	}, [isAuthenticated, registerToken]);
+	}, [isAuthenticated, registerToken, checkAuth]);
 }

@@ -21,3 +21,16 @@ export function usePushTokenRegistration() {
 		retry: 2,
 	});
 }
+
+/**
+ * Removes the device push token from the backend.
+ * Idempotent; safe to call on logout even if no token was registered.
+ */
+export function useUnregisterPushTokenMutation() {
+	return useMutation({
+		mutationFn: (pushToken: string) =>
+			api.delete("/notifications/push-token", {
+				data: { pushToken },
+			}),
+	});
+}

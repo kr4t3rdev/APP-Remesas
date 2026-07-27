@@ -12,7 +12,10 @@ const mockResponseSubscription = { remove: jest.fn() };
 
 let mockGetExpoPushToken: jest.Mock;
 let mockRegisterToken: jest.Mock;
+let mockUnregisterToken: jest.Mock;
+let mockCheckAuth: jest.Mock;
 let mockIsAuthenticated = false;
+let mockQClient: QueryClient;
 
 let mockAppStateHandler: ((state: string) => void) | null = null;
 const mockAppStateSubscription = { remove: jest.fn() };
@@ -29,8 +32,8 @@ jest.mock("expo-notifications", () => ({
 		mockForegroundHandler = mockCb;
 		return mockForegroundSubscription;
 	}),
-	addNotificationResponseReceivedListener: jest.fn(() =>
-		mockResponseSubscription,
+	addNotificationResponseReceivedListener: jest.fn(
+		() => mockResponseSubscription,
 	),
 }));
 
@@ -64,11 +67,18 @@ jest.mock(
 		usePushTokenRegistration: () => ({
 			mutate: (token: string) => mockRegisterToken(token),
 		}),
+		useUnregisterPushTokenMutation: () => ({
+			mutate: (token: string, options?: any) =>
+				mockUnregisterToken(token, options),
+		}),
 	}),
 );
 
 jest.mock("../store/authStore", () => ({
-	useAuthStore: () => ({ isAuthenticated: mockIsAuthenticated }),
+	useAuthStore: () => ({
+		isAuthenticated: mockIsAuthenticated,
+		checkAuth: mockCheckAuth,
+	}),
 }));
 
 import { usePushNotificationHandler } from "./usePushNotificationHandler";
@@ -84,12 +94,8 @@ function withQueryClient(): React.ComponentType<{ children: React.ReactNode }> {
 			queries: { retry: false, gcTime: Infinity },
 			mutations: { retry: false },
 		},
-		logger: {
-			log: () => undefined,
-			warn: () => undefined,
-			error: () => undefined,
-		},
 	});
+	mockQClient = client;
 	const mockOriginalInvalidate = client.invalidateQueries.bind(client);
 	client.invalidateQueries = jest.fn(async (mockFilters?: any) => {
 		if (mockFilters?.queryKey) {
@@ -118,6 +124,8 @@ describe("usePushNotificationHandler", () => {
 		mockAppStateHandler = null;
 		mockGetExpoPushToken = jest.fn(async () => null);
 		mockRegisterToken = jest.fn();
+		mockUnregisterToken = jest.fn();
+		mockCheckAuth = jest.fn(async () => undefined);
 		mockIsAuthenticated = false;
 	});
 
@@ -226,5 +234,74 @@ describe("usePushNotificationHandler", () => {
 		await waitFor(() => expect(mockAppStateHandler).not.toBeNull());
 		unmountFn();
 		expect(mockAppStateSubscription.remove).toHaveBeenCalled();
+	});
+
+	it("does not unregister a token on initial render when never authenticated", async () => {
+		mockIsAuthenticated = false;
+		render(<Harness />, { wrapper: withQueryClient() });
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		expect(mockUnregisterToken).not.toHaveBeenCalled();
+	});
+
+	it("unregisters the previously registered token when authentication flips to false", async () => {
+		mockIsAuthenticated = true;
+		mockGetExpoPushToken.mockResolvedValue("ExponentPushToken[ghost]");
+
+		const { rerender } = render(<Harness />, { wrapper: withQueryClient() });
+
+		await waitFor(() =>
+			expect(mockRegisterToken).toHaveBeenCalledWith("ExponentPushToken[ghost]"),
+		);
+
+		mockIsAuthenticated = false;
+		rerender(
+			<QueryClientProvider client={mockQClient}>
+				<Harness />
+			</QueryClientProvider>,
+		);
+
+		await waitFor(() =>
+			expect(mockUnregisterToken).toHaveBeenCalledWith(
+				"ExponentPushToken[ghost]",
+				expect.objectContaining({ onSettled: expect.any(Function) }),
+			),
+		);
+	});
+
+	it("does not unregister when authentication flips to false but no token was registered", async () => {
+		mockIsAuthenticated = false;
+		mockGetExpoPushToken.mockResolvedValue(null);
+
+		const { rerender } = render(<Harness />, { wrapper: withQueryClient() });
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		expect(mockUnregisterToken).not.toHaveBeenCalled();
+
+		// simulate logout while still no token — must not call unregister
+		mockIsAuthenticated = true;
+		rerender(
+			<QueryClientProvider client={mockQClient}>
+				<Harness />
+			</QueryClientProvider>,
+		);
+		mockIsAuthenticated = false;
+		rerender(
+			<QueryClientProvider client={mockQClient}>
+				<Harness />
+			</QueryClientProvider>,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+
+		expect(mockUnregisterToken).not.toHaveBeenCalled();
 	});
 });
