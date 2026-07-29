@@ -669,6 +669,7 @@ export type CreateRateHistoryInput = {
   currencyFromId: number;
   currencyToId: number;
   rate: number;
+  source?: "MANUAL" | "SYSTEM";
 };
 
 export type CurrencyDetail = {

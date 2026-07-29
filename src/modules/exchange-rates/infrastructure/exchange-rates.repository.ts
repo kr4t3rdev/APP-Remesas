@@ -28,11 +28,11 @@ export const exchangeRatesRepository = {
     return response.data!;
   },
 
-  async getRatesByCurrency(currencyId: number): Promise<ExchangeRate> {
-    const response = await api.get<ExchangeRate>(
+  async getRatesByCurrency(currencyId: number): Promise<ExchangeRate[]> {
+    const response = await api.get<ExchangeRate[]>(
       `/exchange-rates/${currencyId}`,
     );
-    return response.data!;
+    return response.data ?? [];
   },
 
   async getRateHistory(currencyId?: number): Promise<RateHistory[]> {
@@ -74,7 +74,10 @@ export const exchangeRatesRepository = {
   async createRateHistory(
     data: CreateRateHistoryInput,
   ): Promise<RateHistoryEntry> {
-    const response = await api.post<RateHistoryEntry>("/rate-history", data);
+    const response = await api.post<RateHistoryEntry>("/rate-history", {
+      ...data,
+      source: data.source ?? "MANUAL",
+    });
     return response.data!;
   },
 
