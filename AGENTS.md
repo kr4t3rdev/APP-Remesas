@@ -15,6 +15,31 @@ Contexto para siguientes sesiones de opencode/Claude.
 - **Engram MCP**: configurado global en `~/.config/opencode/opencode.jsonc` con binario `/opt/homebrew/bin/engram mcp --tools=agent`. Si NO ves tools `mem_save`/`mem_search` al iniciar sesión, Engram no cargó. Revisá con `engram doctor`.
 - Use **Ripgrep (`rg`)** / **`fd`** / **`eza`** instead of grep/find/ls (regla del CLAUDE.md del usuario).
 
+## Codebase Knowledge Graph (codebase-memory-mcp)
+
+Ambos proyectos (APP y API) están indexados con codebase-memory-mcp. Los agentes DEBEN usar las herramientas del grafo para explorar el código antes de recurrir a grep/glob.
+
+### Prioridad de búsqueda
+1. `search_graph` — encontrar funciones, clases, rutas, variables por nombre/patrón
+2. `trace_path` — trazar quién llama a una función o qué llama ella
+3. `get_code_snippet` — leer código fuente de una función/clase específica (usar `qualified_name` de `search_graph`)
+4. `query_graph` — consultas Cypher para patrones complejos (N+1, alto acoplamiento, etc.)
+5. `get_architecture` — vista general del proyecto (paquetes, servicios, dependencias, clusters)
+6. Fallback a grep/glob cuando se busquen strings literales, mensajes de error, configs, o archivos no-code
+
+### Ambos proyectos indexados
+- **APP** (`search_graph project="app-remesas"`) — 17k+ nodos
+- **API** (`search_graph project="API-Remesas"`) — 7k+ nodos
+- **Cross-repo**: usar `trace_path mode="cross_service"` para seguir llamadas HTTP entre APP y API
+- **Indexar cambios**: correr `codebase-memory-mcp_index_repository` después de modificaciones significativas
+
+### graphify
+El proyecto también tiene un grafo AST local en `graphify-out/`. Usar para:
+- Preguntas generales: `graphify query "<pregunta>"`
+- Relaciones: `graphify path "<A>" "<B>"`
+- Conceptos enfocados: `graphify explain "<concepto>"`
+- Después de modificar: `graphify update .`
+
 ## Hooks git importantes
 
 - **APP tiene pre-push hook (ECC)** que corre `jest` sin filtros. Actualmente **38 tests preexistentes rotos** (NO son del flujo worker-payments):
