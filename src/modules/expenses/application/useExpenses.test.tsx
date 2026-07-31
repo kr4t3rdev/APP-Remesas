@@ -25,6 +25,13 @@ const mockedRepository = expensesRepository as jest.Mocked<
   typeof expensesRepository
 >;
 
+const paginatedExpenses = (items: unknown[] = []) => ({
+  items,
+  total: items.length,
+  page: 1,
+  pageSize: 50,
+});
+
 const createWrapper = (queryClient: QueryClient) => {
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -36,8 +43,8 @@ describe("useExpenses hooks", () => {
     jest.clearAllMocks();
   });
 
-  it("fetches expenses on the first mount while showing an empty placeholder", async () => {
-    mockedRepository.getExpenses.mockResolvedValueOnce([] as never);
+  it("fetches expenses on the first mount with params baked into the queryKey", async () => {
+    mockedRepository.getExpenses.mockResolvedValueOnce(paginatedExpenses() as never);
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -49,14 +56,30 @@ describe("useExpenses hooks", () => {
       },
     );
 
-    expect(result.current.data).toEqual([]);
-
     await waitFor(() => {
       expect(mockedRepository.getExpenses).toHaveBeenCalledTimes(1);
-      expect(mockedRepository.getExpenses).toHaveBeenCalledWith({
-        category: "otros",
-      });
+      expect(mockedRepository.getExpenses).toHaveBeenCalledWith(
+        expect.objectContaining({ category: "otros", page: 1, pageSize: 50 }),
+      );
+      expect(result.current.isSuccess).toBe(true);
     });
+  });
+
+  it("uses distinct queryKeys for distinct params", () => {
+    mockedRepository.getExpenses.mockResolvedValue(paginatedExpenses() as never);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const wrapper = createWrapper(queryClient);
+
+    renderHook(() => useExpensesQuery({ category: "renta" }), { wrapper });
+    renderHook(() => useExpensesQuery({ category: "salario" }), { wrapper });
+
+    expect(queryClient.getQueryData(queryKeys.expenses.list({ category: "renta" }))).toBeUndefined();
+    expect(queryClient.getQueryData(queryKeys.expenses.list({ category: "salario" }))).toBeUndefined();
+    expect(queryKeys.expenses.list({ category: "renta" })).not.toEqual(
+      queryKeys.expenses.list({ category: "salario" }),
+    );
   });
 
   it("loads expense detail by id", async () => {
@@ -98,12 +121,12 @@ describe("useExpenses hooks", () => {
 
     await waitFor(() => {
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: queryKeys.expenses.list(),
+        queryKey: ["expenses"],
       });
     });
   });
 
-  it("invalidates cash and bank balance caches after creating a cash expense", async () => {
+  it("invalidates dependent domains after creating a cash expense", async () => {
     mockedRepository.createExpense.mockResolvedValueOnce({ id: 3 } as never);
     const queryClient = new QueryClient({
       defaultOptions: { mutations: { retry: false } },
@@ -125,13 +148,16 @@ describe("useExpenses hooks", () => {
 
     await waitFor(() => {
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: queryKeys.cash.balances(),
+        queryKey: ["cash"],
       });
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: queryKeys.bankAccounts.list(),
+        queryKey: ["bankAccounts"],
       });
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: queryKeys.dashboard.cashBalances(),
+        queryKey: ["dashboard"],
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: ["reports"],
       });
     });
   });
@@ -185,7 +211,7 @@ describe("useExpenses hooks", () => {
 
     await waitFor(() => {
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: queryKeys.expenses.list(),
+        queryKey: ["expenses"],
       });
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: queryKeys.expenses.detail(10),
@@ -208,10 +234,40 @@ describe("useExpenses hooks", () => {
 
     await waitFor(() => {
       expect(invalidateSpy).toHaveBeenCalledWith({
-        queryKey: queryKeys.expenses.list(),
+        queryKey: ["expenses"],
       });
       expect(invalidateSpy).toHaveBeenCalledWith({
         queryKey: queryKeys.expenses.detail(12),
+      });
+    });
+  });
+
+  it("invalidates the deleted expense's bank-account caches", async () => {
+    mockedRepository.deleteExpense.mockResolvedValueOnce(undefined as never);
+    const queryClient = new QueryClient({
+      defaultOptions: { mutations: { retry: false } },
+    });
+    queryClient.setQueryData(queryKeys.expenses.detail(12), {
+      id: 12,
+      sourceBankAccountId: 7,
+    });
+    const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useDeleteExpenseMutation(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await result.current.mutateAsync(12);
+
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.bankAccounts.balance(7),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.bankAccounts.detail(7),
+      });
+      expect(invalidateSpy).toHaveBeenCalledWith({
+        queryKey: queryKeys.bankAccounts.transactions(7),
       });
     });
   });

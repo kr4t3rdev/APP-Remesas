@@ -10,7 +10,6 @@ import {
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Alert } from "../../utils/alert";
 
 import { Ionicons } from "@expo/vector-icons";
 import { Input } from "../ui/Input";
@@ -95,7 +94,8 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     if (!description.trim()) {
       newErrors.description = "La descripción es requerida";
     }
-    if (!amount || Number(amount) <= 0) {
+    const numericAmount = Number(amount.replace(",", "."));
+    if (!amount || !Number.isFinite(numericAmount) || numericAmount <= 0) {
       newErrors.amount = "El monto debe ser mayor a 0";
     }
     if (!date) {
@@ -115,9 +115,10 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 
     setIsSubmitting(true);
     try {
+      const numericAmount = Number(amount.replace(",", "."));
       const payload = {
         description: description.trim(),
-        amount: Number(amount),
+        amount: numericAmount,
         category,
         date,
         notes: notes.trim() || undefined,
@@ -128,8 +129,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 
       await onSubmit(payload);
       onClose();
-    } catch (error) {
-      Alert.alert("Error", "No se pudo guardar el gasto. Intenta de nuevo.");
+    } catch {
     } finally {
       setIsSubmitting(false);
     }

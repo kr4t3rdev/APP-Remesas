@@ -87,8 +87,8 @@ export const dashboardRepository = {
     currencyId?: number;
   }): Promise<Expense[]> {
     try {
-      const response = await api.get<Expense[]>("/expenses", { params });
-      return safeArray(response.data);
+      const response = await api.get<{ items: Expense[] }>("/expenses", { params });
+      return safeArray(response.data?.items);
     } catch (error) {
       console.error("[dashboardRepository] Error fetching expenses:", error);
       return [];

@@ -84,7 +84,12 @@ export const ExpensesScreen: React.FC = () => {
 
   const expenses = expensesQuery.data ?? [];
   const filteredExpenses = expenses;
-  const totalExpenses = filteredExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+  const totalsByCurrency = filteredExpenses.reduce<Record<string, number>>((acc, expense) => {
+    const code = expense.currency?.code ?? "???";
+    acc[code] = (acc[code] ?? 0) + Number(expense.amount);
+    return acc;
+  }, {});
+  const hasTotals = Object.keys(totalsByCurrency).length > 0;
 
   const handleRefresh = async () => {
     try {
@@ -97,16 +102,34 @@ export const ExpensesScreen: React.FC = () => {
   const handleCreateExpense = async (
     data: CreateExpenseInput | UpdateExpenseInput,
   ) => {
-    await createMutation.mutateAsync(data as CreateExpenseInput);
-    Alert.alert("Éxito", "Gasto creado correctamente");
+    try {
+      await createMutation.mutateAsync(data as CreateExpenseInput);
+      Alert.alert("Éxito", "Gasto creado correctamente");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ??
+        error?.message ??
+        "No se pudo guardar el gasto";
+      Alert.alert("Error", message);
+      throw error;
+    }
   };
 
   const handleUpdateExpense = async (
     data: CreateExpenseInput | UpdateExpenseInput,
   ) => {
     if (!editingExpense) return;
-    await updateMutation.mutateAsync({ id: editingExpense.id, data });
-    Alert.alert("Éxito", "Gasto actualizado correctamente");
+    try {
+      await updateMutation.mutateAsync({ id: editingExpense.id, data });
+      Alert.alert("Éxito", "Gasto actualizado correctamente");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ??
+        error?.message ??
+        "No se pudo actualizar el gasto";
+      Alert.alert("Error", message);
+      throw error;
+    }
   };
 
   const handleDeleteExpense = async (expense: Expense) => {
@@ -120,8 +143,12 @@ export const ExpensesScreen: React.FC = () => {
         try {
           await deleteMutation.mutateAsync(expense.id);
           Alert.alert("Éxito", "Gasto eliminado correctamente");
-        } catch {
-          Alert.alert("Error", "No se pudo eliminar el gasto");
+        } catch (error: any) {
+          const message =
+            error?.response?.data?.message ??
+            error?.message ??
+            "No se pudo eliminar el gasto";
+          Alert.alert("Error", message);
         }
       },
     });
@@ -141,15 +168,6 @@ export const ExpensesScreen: React.FC = () => {
     setShowModal(false);
     setEditingExpense(null);
   };
-
-  const statsData = [
-    {
-      label: "Total Gastos",
-      value: `$ ${totalExpenses.toLocaleString()}`,
-      color: themeColors.danger,
-      icon: "wallet-outline" as const,
-    },
-  ];
 
   return (
     <SafeAreaView
@@ -172,38 +190,51 @@ export const ExpensesScreen: React.FC = () => {
 
       <FadeInDown delay={50}>
         <View style={styles.statsRow}>
-          {statsData.map((stat) => (
+          <View
+            style={[
+              styles.statCard,
+              { backgroundColor: themeColors.card },
+              themeShadows.sm,
+            ]}
+          >
             <View
-              key={stat.label}
               style={[
-                styles.statCard,
-                { backgroundColor: themeColors.card },
-                themeShadows.sm,
+                styles.statIcon,
+                { backgroundColor: `${themeColors.danger}15` },
               ]}
             >
-              <View
+              <Ionicons
+                name="wallet-outline"
+                size={20}
+                color={themeColors.danger}
+              />
+            </View>
+            <View style={styles.statInfo}>
+              <Text
                 style={[
-                  styles.statIcon,
-                  { backgroundColor: `${stat.color}15` },
+                  styles.statLabel,
+                  { color: themeColors.text.secondary },
                 ]}
               >
-                <Ionicons name={stat.icon} size={20} color={stat.color} />
-              </View>
-              <View style={styles.statInfo}>
-                <Text
-                  style={[
-                    styles.statLabel,
-                    { color: themeColors.text.secondary },
-                  ]}
-                >
-                  {stat.label}
+                Total Gastos
+              </Text>
+              {!hasTotals ? (
+                <Text style={[styles.statValue, { color: themeColors.danger }]}>
+                  Sin gastos
                 </Text>
-                <Text style={[styles.statValue, { color: stat.color }]}>
-                  {stat.value}
-                </Text>
-              </View>
+              ) : (
+                Object.entries(totalsByCurrency).map(([code, amount]) => (
+                  <Text
+                    key={code}
+                    testID={`expense-total-${code}`}
+                    style={[styles.statValue, { color: themeColors.danger }]}
+                  >
+                    {code} {amount.toLocaleString()}
+                  </Text>
+                ))
+              )}
             </View>
-          ))}
+          </View>
         </View>
       </FadeInDown>
 
@@ -266,13 +297,19 @@ export const ExpensesScreen: React.FC = () => {
           />
         )}
         contentContainerStyle={styles.listContent}
-        refreshControl={
+         refreshControl={
           <RefreshControl
             refreshing={expensesQuery.isRefetching}
             onRefresh={handleRefresh}
             tintColor={themeColors.primary[500]}
           />
-        }
+         }
+         onEndReached={() => {
+           if (expensesQuery.hasNextPage && !expensesQuery.isFetchingNextPage) {
+             void expensesQuery.fetchNextPage();
+           }
+         }}
+         onEndReachedThreshold={0.5}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons

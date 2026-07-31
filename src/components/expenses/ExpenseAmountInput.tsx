@@ -21,11 +21,19 @@ export const ExpenseAmountInput: React.FC<ExpenseAmountInputProps> = ({
   const themeColors = useColors();
 
   const handleChange = (text: string) => {
-    const cleaned = text.replace(/[^0-9.]/g, "");
-    const parts = cleaned.split(".");
-    if (parts.length > 2) return;
-    if (parts[1] && parts[1].length > 2) return;
-    onChange(cleaned);
+    const cleaned = text.replace(/[^0-9.,]/g, "").replace(",", ".");
+    const separatorIndex = cleaned.indexOf(".");
+    if (separatorIndex === -1) {
+      onChange(cleaned);
+      return;
+    }
+
+    const integerPart = cleaned.slice(0, separatorIndex);
+    const decimalPart = cleaned
+      .slice(separatorIndex + 1)
+      .replace(/\./g, "")
+      .slice(0, 2);
+    onChange(`${integerPart}.${decimalPart}`);
   };
 
   const formattedValue = value

@@ -112,7 +112,15 @@ export const queryKeys = {
       ["admin", "platformSeries", monthsBack] as const,
   },
   expenses: {
-    list: () => ["expenses", "list"] as const,
+    list: (params?: { category?: string; startDate?: string; endDate?: string; currencyId?: number }) =>
+      [
+        "expenses",
+        "list",
+        params?.category ?? "all",
+        params?.currencyId ?? "all",
+        params?.startDate ?? "none",
+        params?.endDate ?? "none",
+      ] as const,
     detail: (id: number) => ["expenses", "detail", id] as const,
   },
   workerPayments: {

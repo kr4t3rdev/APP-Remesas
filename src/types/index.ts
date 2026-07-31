@@ -142,6 +142,13 @@ export type Expense = {
   notes?: string;
 };
 
+export type ExpenseListResponse = {
+  items: Expense[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
 export type CreateExpenseInput = {
   description: string;
   amount: number;

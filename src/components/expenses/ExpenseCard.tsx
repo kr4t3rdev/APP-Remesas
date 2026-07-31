@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Alert } from "../../utils/alert";
 
 import { Ionicons } from "@expo/vector-icons";
 import { PressableScale, FadeInDown } from "../animations";
@@ -51,18 +50,7 @@ export const ExpenseCard: React.FC<ExpenseCardProps> = ({
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      "Eliminar Gasto",
-      `¿Estás seguro de eliminar "${expense.description}"?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: () => onDelete?.(expense),
-        },
-      ],
-    );
+    onDelete?.(expense);
   };
 
 

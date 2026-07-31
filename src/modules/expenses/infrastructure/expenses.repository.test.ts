@@ -18,14 +18,14 @@ describe("expensesRepository", () => {
     jest.clearAllMocks();
   });
 
-  it("requests expenses list with params", async () => {
-    mockedApi.get.mockResolvedValueOnce({ data: [{ id: 1 }] as never[], status: 200, statusText: 'OK', headers: new Headers() });
+  it("requests expenses list with params and returns paginated response", async () => {
+    mockedApi.get.mockResolvedValueOnce({ data: { items: [{ id: 1 }], total: 1, page: 1, pageSize: 50 }, status: 200, statusText: 'OK', headers: new Headers() } as never);
 
     const params = { category: "otros", startDate: "2026-03-01" };
     const result = await expensesRepository.getExpenses(params);
 
     expect(mockedApi.get).toHaveBeenCalledWith("/expenses", { params });
-    expect(result).toEqual([{ id: 1 }]);
+    expect(result).toEqual({ items: [{ id: 1 }], total: 1, page: 1, pageSize: 50 });
   });
 
   it("requests expense detail by id", async () => {
@@ -70,6 +70,81 @@ describe("expensesRepository", () => {
     await expensesRepository.deleteExpense(4);
 
     expect(mockedApi.delete).toHaveBeenCalledWith("/expenses/4");
+  });
+
+  describe("error handling", () => {
+    const backendError = {
+      response: { data: { message: "Saldo insuficiente en caja" }, status: 400, statusText: "Bad Request", headers: new Headers() },
+      status: 400,
+      statusText: "Bad Request",
+    };
+
+    it("logs and rethrows getExpenses failures", async () => {
+      mockedApi.get.mockRejectedValueOnce(backendError);
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+      await expect(expensesRepository.getExpenses()).rejects.toEqual(backendError);
+      expect(warnSpy).toHaveBeenCalledWith(
+        "[Expenses] getExpenses falló",
+        expect.objectContaining({
+          backendMessage: backendError.response.data,
+          status: 400,
+          statusText: "Bad Request",
+        }),
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it("logs and rethrows createExpense failures", async () => {
+      mockedApi.post.mockRejectedValueOnce(backendError);
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+      await expect(
+        expensesRepository.createExpense({
+          description: "Internet",
+          amount: 50,
+          currencyId: 1,
+          sourceType: "CASH",
+          category: "servicios",
+          date: "2026-03-06",
+        }),
+      ).rejects.toEqual(backendError);
+      expect(warnSpy).toHaveBeenCalledWith(
+        "[Expenses] createExpense falló",
+        expect.objectContaining({ backendMessage: backendError.response.data }),
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it("logs and rethrows updateExpense failures", async () => {
+      mockedApi.patch.mockRejectedValueOnce(backendError);
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+      await expect(
+        expensesRepository.updateExpense(3, { notes: "x" }),
+      ).rejects.toEqual(backendError);
+      expect(warnSpy).toHaveBeenCalledWith(
+        "[Expenses] updateExpense falló",
+        expect.objectContaining({ backendMessage: backendError.response.data }),
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it("logs and rethrows deleteExpense failures", async () => {
+      mockedApi.delete.mockRejectedValueOnce(backendError);
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+      await expect(expensesRepository.deleteExpense(4)).rejects.toEqual(backendError);
+      expect(warnSpy).toHaveBeenCalledWith(
+        "[Expenses] deleteExpense falló",
+        expect.objectContaining({ backendMessage: backendError.response.data }),
+      );
+
+      warnSpy.mockRestore();
+    });
   });
 
 });

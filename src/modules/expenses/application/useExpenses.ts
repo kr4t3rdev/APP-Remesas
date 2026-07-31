@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "../../../shared/query/queryKeys";
 import { expensesRepository } from "../infrastructure/expenses.repository";
 import type { CreateExpenseInput, UpdateExpenseInput } from "../../../types";
@@ -8,13 +8,21 @@ export const useExpensesQuery = (params?: {
   startDate?: string;
   endDate?: string;
   currencyId?: number;
+  page?: number;
+  pageSize?: number;
 }) =>
-  useQuery({
-    queryKey: queryKeys.expenses.list(),
-    queryFn: () => expensesRepository.getExpenses(params),
+  useInfiniteQuery({
+    queryKey: queryKeys.expenses.list(params),
+    queryFn: ({ pageParam }) => expensesRepository.getExpenses({ ...params, page: pageParam, pageSize: 50 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.page * lastPage.pageSize < lastPage.total
+        ? lastPage.page + 1
+        : undefined,
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    placeholderData: [],
+    placeholderData: keepPreviousData,
+    select: (data) => data.pages.flatMap((page) => page.items),
   });
 
 export const useExpenseDetailQuery = (id: number) =>
@@ -28,12 +36,12 @@ export const useExpenseDetailQuery = (id: number) =>
 
 const invalidateBalanceQueries = (queryClient: ReturnType<typeof useQueryClient>, sourceBankAccountId?: number) => {
   const invalidations: ReturnType<typeof queryClient.invalidateQueries>[] = [
-    queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.cash.balances() }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.list() }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.cashBalances() }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.profile.cashBalances() }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.reports.cashBalances() }),
+    queryClient.invalidateQueries({ queryKey: ["expenses"] }),
+    queryClient.invalidateQueries({ queryKey: ["cash"] }),
+    queryClient.invalidateQueries({ queryKey: ["bankAccounts"] }),
+    queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+    queryClient.invalidateQueries({ queryKey: ["profile"] }),
+    queryClient.invalidateQueries({ queryKey: ["reports"] }),
   ];
   if (sourceBankAccountId !== undefined) {
     invalidations.push(
@@ -92,9 +100,13 @@ export const useDeleteExpenseMutation = () => {
 
   return useMutation({
     mutationFn: (id: number) => expensesRepository.deleteExpense(id),
-    onSuccess: async (_data, id) => {
+    onMutate: (id) => {
+      const cached = queryClient.getQueryData<{ sourceBankAccountId?: number }>(queryKeys.expenses.detail(id));
+      return { sourceBankAccountId: cached?.sourceBankAccountId };
+    },
+    onSuccess: async (_data, id, context) => {
       await Promise.all([
-        ...invalidateBalanceQueries(queryClient),
+        ...invalidateBalanceQueries(queryClient, context?.sourceBankAccountId),
         queryClient.invalidateQueries({
           queryKey: queryKeys.expenses.detail(id),
         }),
