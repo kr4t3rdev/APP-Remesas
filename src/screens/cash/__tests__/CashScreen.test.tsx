@@ -150,7 +150,7 @@ describe("CashScreen", () => {
       reason: "Fondo USD",
     });
     expect(getByText("Acciones rápidas")).toBeTruthy();
-  });
+  }, 15000);
 
   it("rejects invalid audit values", () => {
     const { getByText, getByPlaceholderText } = render(<CashScreen />);

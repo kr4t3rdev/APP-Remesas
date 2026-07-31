@@ -8,6 +8,10 @@ jest.mock("../store/authStore", () => ({
   useAuthStore: () => mockUseAuthStore(),
 }));
 
+jest.mock("../hooks/usePushNotificationHandler", () => ({
+  usePushNotificationHandler: jest.fn(),
+}));
+
 jest.mock("@react-navigation/native", () => ({
   NavigationContainer: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>
