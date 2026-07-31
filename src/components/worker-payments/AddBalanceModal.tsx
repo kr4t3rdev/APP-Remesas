@@ -20,6 +20,7 @@ import { useBankAccountsQuery } from "../../modules/bank-accounts/application/us
 import { useCashBalancesQuery } from "../../modules/cash/application/useCash";
 import { useCurrenciesQuery } from "../../modules/currencies/application/useCurrencies";
 import type { Worker } from "../../types";
+import { parseDecimalInput } from "../../utils/numberValidation";
 
 type AccountOption = {
   key: string;
@@ -155,10 +156,10 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-    const numAmount = Number(amount);
+    const numAmount = parseDecimalInput(amount, { min: 0.01, maxDecimalPlaces: 2 });
 
-    if (!amount || numAmount <= 0) {
-      newErrors.amount = "El monto debe ser mayor a cero";
+    if (numAmount === null) {
+      newErrors.amount = "Ingresá un monto válido de hasta 2 decimales";
     }
 
     if (!selectedAccountKey) {
@@ -167,7 +168,7 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
         : "Seleccioná un origen";
     }
 
-    if (isDeposit && worker && numAmount > currentWorkerBalance) {
+    if (isDeposit && worker && numAmount !== null && numAmount > currentWorkerBalance) {
       newErrors.amount = "El monto supera el saldo disponible del trabajador";
     }
 
@@ -175,7 +176,7 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
     // suficiente. El backend rechaza esto con "Saldo insuficiente en caja" o
     // "Saldo insuficiente en la cuenta bancaria" — mejor validar acá y dar
     // feedback inmediato al usuario.
-    if (!isDeposit && selectedAccount && numAmount > Number(selectedAccount.balance)) {
+    if (!isDeposit && selectedAccount && numAmount !== null && numAmount > Number(selectedAccount.balance)) {
       newErrors.amount = `El monto supera el saldo disponible del origen ($${selectedAccount.balance.toLocaleString()})`;
     }
 
@@ -185,6 +186,8 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
 
   const handleSubmit = async () => {
     if (!validate()) return;
+    const normalizedAmount = parseDecimalInput(amount, { min: 0.01, maxDecimalPlaces: 2 });
+    if (normalizedAmount === null) return;
 
     setIsSubmitting(true);
     try {
@@ -192,7 +195,7 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
         (a) => a.key === selectedAccountKey,
       );
       await onSubmit({
-        amount: Number(amount),
+        amount: normalizedAmount,
         ...(isDeposit
           ? {
               destinationType: account?.type as "CASH" | "BANK_ACCOUNT",
@@ -213,9 +216,10 @@ export const AddBalanceModal: React.FC<AddBalanceModalProps> = ({
     }
   };
 
+  const previewAmount = parseDecimalInput(amount, { min: 0, maxDecimalPlaces: 2 }) ?? 0;
   const newBalance = isDeposit
-    ? (worker ? currentWorkerBalance - Number(amount || 0) : 0)
-    : (worker ? currentWorkerBalance + Number(amount || 0) : 0);
+    ? (worker ? currentWorkerBalance - previewAmount : 0)
+    : (worker ? currentWorkerBalance + previewAmount : 0);
 
   return (
     <Modal visible={visible} animationType="slide" transparent>

@@ -154,8 +154,10 @@ describe("InstagramTabBar", () => {
       pointerEvents: "none",
     });
     const childTestIds = bar.children
-      .filter((child): child is typeof material => typeof child !== "string")
-      .map((child) => child.props.testID);
+      .filter((child: unknown): child is { props: { testID?: string } } => (
+        typeof child === "object" && child !== null && "props" in child
+      ))
+      .map((child: { props: { testID?: string } }) => child.props.testID);
     expect(childTestIds.indexOf("tab-bar-material")).toBeLessThan(
       childTestIds.indexOf("tab-bar-items"),
     );

@@ -72,7 +72,30 @@ export const useCreateTransactionMutation = () => {
           queryClient.invalidateQueries({ queryKey: queryKeys.transactions.exchangeRates() }),
         );
       }
+      if (variables.workerId) {
+        invalidations.push(
+          queryClient.invalidateQueries({ queryKey: queryKeys.workerPayments.list() }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.workerPayments.detail(variables.workerId) }),
+        );
+      }
       await Promise.all(invalidations);
+    },
+  });
+};
+
+export const useOpenPositionMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: transactionsRepository.openPosition,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.positions() }),
+        queryClient.invalidateQueries({ queryKey: ["transactions"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["reports"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.cash.balances() }),
+      ]);
     },
   });
 };

@@ -53,6 +53,9 @@ export const BankAccountsScreen: React.FC = () => {
 
   const accounts = bankAccountsQuery.data ?? [];
   const currencies = currenciesQuery.data?.currencies ?? [];
+  const primaryCurrency = currencies.find(
+    (currency) => currency.id === currenciesQuery.data?.primaryCurrencyId,
+  );
   const availableCurrencies = currencies.filter(
     (c) => c.isActive !== false,
   );
@@ -281,7 +284,9 @@ export const BankAccountsScreen: React.FC = () => {
                 ))}
               </ScrollView>
             ) : (
-              <Text style={[styles.headerAmount, { color: colors.text.primary }]}>$ 0.00</Text>
+              <Text style={[styles.headerAmount, { color: colors.text.primary }]}>
+                {primaryCurrency?.symbol || primaryCurrency?.code || ""}{primaryCurrency ? " " : ""}0.00
+              </Text>
             )}
           </View>
         </View>

@@ -7,6 +7,8 @@ import { useBankAccountsQuery } from "../../../modules/bank-accounts/application
 import { useCashBalancesQuery } from "../../../modules/cash/application/useCash";
 import { calculateTransferPreview } from "../../../types/business";
 import type { WorkerBalance } from "../../../types/worker";
+import { parseDecimalInput } from "../../../utils/numberValidation";
+import { useCurrenciesWithPrimaryQuery } from "../../../modules/currencies/application/useCurrencies";
 
 type AccountOption = { key: string; type: "CASH" | "BANK_ACCOUNT"; id?: number; label: string; currencyId: number; balance: number; active: boolean };
 
@@ -22,6 +24,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   const rates = useExchangeRatesQuery();
   const positions = usePositionsQuery();
   const currencies = useCurrenciesQuery();
+  const currenciesWithPrimary = useCurrenciesWithPrimaryQuery();
   const banks = useBankAccountsQuery();
   const cash = useCashBalancesQuery();
   const [amount, setAmount] = useState("");
@@ -40,7 +43,9 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   const createIntentKey = () => `transfer-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const intentKey = useRef(createIntentKey());
 
-  const baseCurrencyId = currencies.data?.find((item) => item.code.toUpperCase() === "CUP")?.id;
+  const primaryCurrencyId = currenciesWithPrimary.data?.primaryCurrencyId ?? undefined;
+  const primaryCurrency = currenciesWithPrimary.data?.currencies.find((item) => item.id === primaryCurrencyId)
+    ?? currencies.data?.find((item) => item.id === primaryCurrencyId);
   const currentRateByCurrencyId = useMemo(() => {
     const latestRates = new Map<number, NonNullable<typeof rates.data>[number]>();
     for (const item of rates.data ?? []) {
@@ -56,10 +61,10 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   const ratedCurrencies = useMemo(() => {
     const currencyById = new Map((currencies.data ?? []).map((item) => [item.id, item]));
     return [...currentRateByCurrencyId.values()]
-      .filter((item) => item.currencyId !== baseCurrencyId && item.buyRate > 0 && item.sellRate > 0)
+      .filter((item) => item.currencyId !== primaryCurrencyId && item.buyRate > 0 && item.sellRate > 0)
       .map((item) => currencyById.get(item.currencyId) ?? item.currency)
       .filter((item): item is NonNullable<typeof item> => Boolean(item && item.isActive !== false));
-  }, [baseCurrencyId, currencies.data, currentRateByCurrencyId]);
+  }, [primaryCurrencyId, currencies.data, currentRateByCurrencyId]);
   useEffect(() => {
     if (!ratedCurrencies.some((item) => item.id === currencyId)) {
       setCurrencyId(ratedCurrencies[0]?.id ?? 0);
@@ -102,16 +107,25 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     setWorkerCurrencyId(undefined);
     setRateInput(activeRate > 0 ? String(activeRate) : "");
   }, [activeRate, visible]);
-  const normalizedRateInput = rateInput.trim().replace(",", ".");
-  const parsedRate = Number(normalizedRateInput);
-  const isRateValid = Number.isFinite(parsedRate) && parsedRate > 0;
-  const rate = isRateValid ? parsedRate : 0;
-  const rateValidationError = rateInput.length > 0 && !isRateValid
-    ? "Ingresá una tasa de cambio válida mayor que cero."
+  const parsedAmount = parseDecimalInput(amount, { min: 0.01, max: 9999999999999.99, maxDecimalPlaces: 2 });
+  const parsedRate = parseDecimalInput(rateInput, { min: 0.0001, max: 999999.9999, maxDecimalPlaces: 4 });
+  const parsedWorkerProfit = workerProfit.trim()
+    ? parseDecimalInput(workerProfit, { min: 0, max: 9999999999999.99, maxDecimalPlaces: 2 })
+    : 0;
+  const isRateValid = parsedRate !== null;
+  const rate = parsedRate ?? 0;
+  const amountValidationError = amount.length > 0 && parsedAmount === null
+    ? "Ingresá un monto válido de hasta 2 decimales."
     : undefined;
-  const preview = calculateTransferPreview({ type, amount: Number(amount), rate, position });
-  const sourceCurrencyId = type === "COMPRA" ? baseCurrencyId : selectedCurrencyId;
-  const destinationCurrencyId = type === "COMPRA" ? selectedCurrencyId : baseCurrencyId;
+  const rateValidationError = rateInput.length > 0 && !isRateValid
+    ? "Ingresá una tasa válida entre 0.0001 y 999999.9999, con hasta 4 decimales."
+    : undefined;
+  const workerProfitValidationError = workerProfit.length > 0 && parsedWorkerProfit === null
+    ? "Ingresá una ganancia válida de hasta 2 decimales."
+    : undefined;
+  const preview = calculateTransferPreview({ type, amount: parsedAmount ?? 0, rate, position });
+  const sourceCurrencyId = type === "COMPRA" ? primaryCurrencyId : selectedCurrencyId;
+  const destinationCurrencyId = type === "COMPRA" ? selectedCurrencyId : primaryCurrencyId;
   const accounts = useMemo<AccountOption[]>(() => {
     const cashByCurrencyId = new Map((cash.data ?? []).map((item) => [item.currencyId, item]));
     const cashAccounts = (currencies.data ?? [])
@@ -123,9 +137,11 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     const bankAccounts = worker ? [] : (banks.data ?? []).map((item) => ({ key: `BANK_ACCOUNT:${item.id}`, type: "BANK_ACCOUNT" as const, id: item.id, label: `${item.bankName} · ${item.name}`, currencyId: item.currencyId, balance: Number(item.balance) || 0, active: item.isActive }));
     return [...cashAccounts, ...bankAccounts];
   }, [banks.data, cash.data, currencies.data, worker]);
-  const sourceDebit = type === "COMPRA" ? Number(amount || 0) * rate : Number(amount || 0);
+  const sourceDebit = type === "COMPRA" ? (parsedAmount ?? 0) * rate : parsedAmount ?? 0;
   const sourceOptions = sourceCurrencyId ? accounts.filter((item) => item.active && item.currencyId === sourceCurrencyId && item.balance > 0 && item.balance >= sourceDebit) : [];
-  const currencyConfigurationError = !baseCurrencyId ? "Configuración incompleta: no se encontró la moneda base CUP." : undefined;
+  const currencyConfigurationError = !primaryCurrencyId || !primaryCurrency
+    ? "Configuración incompleta: no se encontró la moneda principal configurada."
+    : undefined;
   const destinationOptions = accounts.filter((item) => item.active && item.currencyId === destinationCurrencyId);
   const source = sourceOptions.find((item) => item.key === sourceKey);
   const destination = destinationOptions.find((item) => item.key === destinationKey);
@@ -133,19 +149,20 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   useEffect(() => { if (!destinationOptions.some((item) => item.key === destinationKey)) setDestinationKey(destinationOptions[0]?.key); }, [destinationKey, destinationOptions]);
 
   const notes = worker
-    ? `Trabajador: ${worker.name} (ID: ${worker.id})${workerProfit ? `, Ganancia: $${workerProfit}` : ""}`
+    ? `Trabajador: ${worker.name} (ID: ${worker.id})${workerProfit ? `, Ganancia: ${workerCurrencyOptions.find((balance) => balance.currencyId === workerCurrencyId)?.currency?.symbol ?? workerCurrencyOptions.find((balance) => balance.currencyId === workerCurrencyId)?.currency?.code ?? ""}${workerProfit}` : ""}`
     : undefined;
 
   const workerCurrencyValidationError = worker && !workerCurrencyId
     ? "El trabajador no tiene un saldo monetario seleccionado. Agregá saldo antes de registrar la operación."
     : undefined;
-  const canSubmit = preview.isValid && Boolean(selectedCurrencyId && baseCurrencyId && source && destination)
+  const canSubmit = preview.isValid && parsedAmount !== null && parsedRate !== null && !workerProfitValidationError
+    && Boolean(selectedCurrencyId && primaryCurrencyId && source && destination)
     && (!worker || Boolean(workerCurrencyId));
   const handleSave = () => {
     if (!canSubmit || !source || !destination) return;
     setSaveStatus("idle");
     setSavedRateMessage(undefined);
-    createTx({ type, currencyId: selectedCurrencyId, amount: Number(amount), rate, operationKind, persistRate, notes, idempotencyKey: intentKey.current, sourceType: source.type, sourceBankAccountId: source.id, destinationType: destination.type, destinationBankAccountId: destination.id, ...(worker && workerCurrencyId ? { workerId: worker.id, workerProfit: workerProfit.trim() ? Number(workerProfit) : 0, workerCurrencyId } : {}) }, {
+    createTx({ type, currencyId: selectedCurrencyId, amount: parsedAmount!, rate, operationKind, persistRate, notes, idempotencyKey: intentKey.current, sourceType: source.type, sourceBankAccountId: source.id, destinationType: destination.type, destinationBankAccountId: destination.id, ...(worker && workerCurrencyId ? { workerId: worker.id, workerProfit: parsedWorkerProfit ?? 0, workerCurrencyId } : {}) }, {
         onSuccess: (response) => {
         setAmount("");
         setSaveStatus("success");
@@ -170,6 +187,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     <View accessibilityRole="tablist" style={styles.typeRow}>{(["TRANSFER", "REMITTANCE"] as const).map((option) => <TouchableOpacity key={option} accessibilityRole="tab" accessibilityLabel={option === "TRANSFER" ? "Transferencia" : "Remesas"} accessibilityState={{ selected: operationKind === option }} onPress={() => setOperationKind(option)} style={[styles.tabOption, operationKind === option && { borderBottomColor: colors.primary[500] }]}><Text style={{ color: operationKind === option ? colors.primary[500] : colors.text.primary, fontWeight: operationKind === option ? "600" : "400", fontSize: 15 }}>{option === "TRANSFER" ? "Transferencia" : "Remesas"}</Text></TouchableOpacity>)}</View>
     <View accessibilityRole="radiogroup" style={styles.typeRow}>{(["COMPRA", "VENTA"] as const).map((option) => <TouchableOpacity key={option} accessibilityRole="radio" accessibilityLabel={option === "COMPRA" ? "Compra" : "Venta"} accessibilityState={{ selected: type === option }} onPress={() => setType(option)} style={styles.radioOption}><Text style={{ color: colors.text.primary, fontSize: 15 }}>{option === "COMPRA" ? "Compra" : "Venta"}</Text></TouchableOpacity>)}</View>
     <Text style={{ color: colors.text.primary, marginBottom: 4, fontSize: 15 }}>Monto de la operación</Text><TextInput accessibilityLabel="Monto de la operación" style={[styles.input, { borderColor: colors.border, color: colors.text.primary }]} placeholder="Monto" placeholderTextColor={colors.text.secondary} keyboardType="numeric" value={amount} onChangeText={setAmount} />
+    {amountValidationError ? <Text accessibilityRole="alert" style={{ color: colors.danger, fontSize: 13 }}>{amountValidationError}</Text> : null}
     <Text style={{ color: colors.text.primary, marginBottom: 4, fontSize: 15 }}>Moneda</Text>
     <TouchableOpacity
       accessibilityRole="button"
@@ -210,8 +228,9 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     {currencyConfigurationError ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8, fontSize: 13 }}>{currencyConfigurationError}</Text> : null}
     {worker ? <><Text style={{ color: colors.text.primary, marginTop: 8, marginBottom: 4, fontSize: 15 }}>Moneda del saldo del trabajador</Text>{workerCurrencyOptions.length > 0 ? <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={{ maxHeight: 100 }} accessibilityRole="radiogroup">{workerCurrencyOptions.map((balance) => <TouchableOpacity key={balance.currencyId} accessibilityRole="radio" accessibilityLabel={`Saldo trabajador ${balance.currency?.code ?? balance.currencyId}`} accessibilityState={{ selected: balance.currencyId === workerCurrencyId }} onPress={() => setWorkerCurrencyId(balance.currencyId)} style={[styles.accountOption, { borderColor: colors.border }, balance.currencyId === workerCurrencyId && { borderColor: colors.primary[500] }]}><Text style={{ color: colors.text.primary, fontSize: 14 }}>{balance.currency?.code ?? `Moneda ${balance.currencyId}`}</Text><Text style={{ color: colors.text.secondary, fontSize: 13 }}>{Number(balance.balance).toFixed(2)}</Text></TouchableOpacity>)}</ScrollView> : <Text accessibilityRole="alert" style={{ color: colors.danger, fontSize: 14 }}>{workerCurrencyValidationError}</Text>}</> : null}
     {renderAccountPicker("Origen", sourceOptions, sourceKey, setSourceKey)}{renderAccountPicker("Destino", destinationOptions, destinationKey, setDestinationKey)}
-    {worker ? <><Text style={{ color: colors.text.primary, marginTop: 8, marginBottom: 4, fontSize: 15 }}>Ganancia del trabajador (opcional)</Text><TextInput accessibilityLabel="Ganancia del trabajador" style={[styles.input, { borderColor: colors.border, color: colors.text.primary }]} placeholder="Ganancia generada" placeholderTextColor={colors.text.secondary} keyboardType="numeric" value={workerProfit} onChangeText={setWorkerProfit} /></> : null}
-    <Text style={{ color: colors.text.secondary, fontSize: 14 }}>Total: {preview.totalBase.toFixed(2)} · Saldo proy.: {preview.projectedSaldo?.toFixed(2) ?? "—"} · Costo prom. proy.: {preview.projectedCostoPromedio?.toFixed(2) ?? "—"}</Text>
+    {worker ? <><Text style={{ color: colors.text.primary, marginTop: 8, marginBottom: 4, fontSize: 15 }}>Ganancia del trabajador (opcional)</Text><TextInput accessibilityLabel="Ganancia del trabajador" style={[styles.input, { borderColor: colors.border, color: colors.text.primary }]} placeholder="Ganancia generada" placeholderTextColor={colors.text.secondary} keyboardType="numeric" value={workerProfit} onChangeText={setWorkerProfit} />{workerProfitValidationError ? <Text accessibilityRole="alert" style={{ color: colors.danger, fontSize: 13 }}>{workerProfitValidationError}</Text> : null}</> : null}
+    <Text style={{ color: colors.text.secondary, fontSize: 14 }}>Estado actual: saldo {preview.currentSaldo?.toFixed(2) ?? "—"} · costo prom. {preview.currentCostoPromedio?.toFixed(2) ?? "—"}</Text>
+    <Text style={{ color: colors.text.secondary, fontSize: 14 }}>Proyección: total {preview.totalBase.toFixed(2)} · saldo {preview.projectedSaldo?.toFixed(2) ?? "—"} · costo prom. {preview.projectedCostoPromedio?.toFixed(2) ?? "—"}</Text>
     {preview.expectedRendimiento !== null ? <Text accessibilityRole="text" style={{ color: colors.text.secondary, marginTop: 2, fontSize: 14 }}>Ganancia estimada: {preview.expectedRendimiento.toFixed(2)}</Text> : null}
     <Text accessibilityRole="summary" style={{ color: colors.text.secondary, marginTop: 8, fontSize: 14 }}>Resumen: salen {type === "COMPRA" ? preview.totalBase.toFixed(2) : amount || "0"} de {source?.label ?? "—"} y entran {type === "COMPRA" ? amount || "0" : preview.totalBase.toFixed(2)} en {destination?.label ?? "—"}</Text>
     {saveStatus === "success" ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 6, fontSize: 14 }}>Operación guardada correctamente.</Text> : null}{savedRateMessage ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 4, fontSize: 14 }}>{savedRateMessage}</Text> : null}{saveStatus === "error" ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 6, fontSize: 14 }}>No se pudo guardar la operación. Intentá nuevamente.</Text> : null}{amount && (!preview.isValid || !source || !destination || workerCurrencyValidationError) ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 6, fontSize: 14 }}>{workerCurrencyValidationError ?? (!preview.isValid ? preview.validationMessage : "Seleccioná origen y destino compatibles")}</Text> : null}

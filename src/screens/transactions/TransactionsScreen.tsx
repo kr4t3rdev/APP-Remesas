@@ -13,6 +13,7 @@ import { Alert } from "../../utils/alert";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { FadeIn, FadeInDown, ScaleIn } from "../../components/animations";
 import { spacing, borderRadius } from "../../theme";
@@ -34,9 +35,10 @@ import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 import { TransactionModal } from "../../components/business/modals/TransactionModal";
 import { getTransactionsHeaderLayout } from "./transactionsHeaderLayout";
+import type { RootStackParamList } from "../../navigation/types";
 
 export const TransactionsScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const themeColors = useColors();
   const themeShadows = useShadows();
   const tabBarScrollBehavior = useTabBarScrollBehavior();

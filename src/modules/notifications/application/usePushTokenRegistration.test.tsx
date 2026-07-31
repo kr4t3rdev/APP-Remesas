@@ -14,13 +14,8 @@ jest.mock("../../../services/api", () => {
 function withQueryClient() {
 	const client = new QueryClient({
 		defaultOptions: {
-			queries: { retry: false },
-			mutations: { retry: false },
-		},
-		logger: {
-			log: () => undefined,
-			warn: () => undefined,
-			error: () => undefined,
+			queries: { retry: false, gcTime: 0 },
+			mutations: { retry: false, gcTime: 0 },
 		},
 	});
 	const wrapper = ({ children }: { children: React.ReactNode }) =>

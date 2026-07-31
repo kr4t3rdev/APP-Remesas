@@ -2,7 +2,7 @@ import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 import { TransactionsScreen } from "./TransactionsScreen";
 
-const mockUseTransactionsQuery = jest.fn(() => ({
+const mockUseTransactionsQuery = jest.fn((_params?: unknown) => ({
   data: [],
   isRefetching: false,
   refetch: jest.fn(),

@@ -28,8 +28,10 @@ type CapturedInvalidations = {
 
 function buildWrapper(captured: CapturedInvalidations) {
 	const client = new QueryClient({
-		defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-		logger: { log: () => undefined, warn: () => undefined, error: () => undefined },
+		defaultOptions: {
+			queries: { retry: false, gcTime: 0 },
+			mutations: { retry: false, gcTime: 0 },
+		},
 	});
 	const original = client.invalidateQueries.bind(client);
 	client.invalidateQueries = jest.fn(async (filters: any) => {

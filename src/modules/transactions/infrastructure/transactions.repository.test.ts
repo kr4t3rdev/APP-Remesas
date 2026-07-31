@@ -41,3 +41,24 @@ it("forwards remittance classification and active-rate persistence in the body",
     { headers: { "Idempotency-Key": "remittance-1" } },
   );
 });
+
+it("posts the controlled historical opening contract", async () => {
+  jest.mocked(api.post).mockResolvedValue({ data: { position: { currencyId: 2 }, movement: { id: 9 } } } as any);
+
+  await transactionsRepository.openPosition({ currencyId: 2, openingCost: 250.125 });
+
+  expect(api.post).toHaveBeenCalledWith("/fx-operations/positions/open", {
+    currencyId: 2,
+    openingCost: 250.125,
+  });
+});
+
+it("preserves position review status from the report contract", async () => {
+  jest.mocked(api.get).mockResolvedValue({
+    data: { positions: [{ currencyId: 2, currency: "USD", saldo: 50, costoPromedio: null, availableForSale: false, reviewStatus: "UNREVIEWED" }] },
+  } as any);
+
+  const positions = await transactionsRepository.getPositions();
+
+  expect(positions[0]).toEqual(expect.objectContaining({ reviewStatus: "UNREVIEWED" }));
+});

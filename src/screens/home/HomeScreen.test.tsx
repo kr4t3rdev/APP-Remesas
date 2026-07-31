@@ -159,6 +159,7 @@ const dashboardData = {
   isRefreshing: false,
   refetchAll: jest.fn(),
   summary: {
+    primaryCurrency: { id: 10, code: "CUP", symbol: "$", name: "Peso cubano", isActive: true },
     todayProfit: 2500,
     todayTransactions: 7,
     todayExpenses: 300,
@@ -246,6 +247,22 @@ describe("HomeScreen dashboard content contract", () => {
     expect(getByText("-$ 32,000.00")).toBeTruthy();
     expect(queryByText("Ver todo")).toBeNull();
     expect(queryByText(/Business|Negocio|Empresa/i)).toBeNull();
+  });
+
+  it("formats aggregate KPIs with the configured primary currency metadata", () => {
+    mockUseDashboardData.mockReturnValue({
+      ...dashboardData,
+      summary: {
+        ...dashboardData.summary,
+        primaryCurrency: { id: 20, code: "EUR", symbol: "€", name: "Euro", isActive: true },
+      },
+    });
+
+    const { getByText, queryByText } = render(<HomeScreen />);
+
+    expect(getByText("€ 2,500.00")).toBeTruthy();
+    expect(getByText("€ 406,250.00")).toBeTruthy();
+    expect(queryByText("$ 2,500.00")).toBeNull();
   });
 
   it("uses the petroleum palette in light and dark themes", () => {

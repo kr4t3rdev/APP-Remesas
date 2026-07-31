@@ -6,8 +6,16 @@ export type Position = {
   saldo: number;
   costoPromedio: number | null;
   availableForSale: boolean;
+  reviewStatus?: "UNREVIEWED" | "REVIEWED";
   reviewedAt?: string | null;
 };
+
+export const isPositionReviewable = (position: Position): boolean =>
+  position.reviewStatus === "UNREVIEWED"
+  || (position.reviewStatus === undefined
+    && position.saldo > 0
+    && position.costoPromedio === null
+    && !position.availableForSale);
 
 export type TransferRequest = {
   type: TransactionType;
@@ -17,7 +25,7 @@ export type TransferRequest = {
   operationKind?: "TRANSFER" | "REMITTANCE";
   persistRate?: boolean;
   notes?: string;
-  idempotencyKey?: string;
+  idempotencyKey: string;
   sourceType?: "CASH" | "BANK_ACCOUNT";
   sourceBankAccountId?: number;
   destinationType?: "CASH" | "BANK_ACCOUNT";
@@ -41,6 +49,16 @@ export type TransferTransaction = Transaction & {
 export type TransferResponse = {
   transaction: TransferTransaction;
   movement?: { id: number };
+};
+
+export type OpenPositionRequest = {
+  currencyId: number;
+  openingCost: number;
+};
+
+export type OpenPositionResponse = {
+  position: Position;
+  movement: { id: number };
 };
 
 export type RemittanceStatus = "PENDING" | "FAILED" | "COMPLETED";
@@ -73,6 +91,8 @@ export type FxPerformanceReport = {
 
 export type TransferPreview = {
   totalBase: number;
+  currentSaldo: number | null;
+  currentCostoPromedio: number | null;
   projectedSaldo: number | null;
   projectedCostoPromedio: number | null;
   expectedRendimiento: number | null;
@@ -92,13 +112,17 @@ export const calculateTransferPreview = ({
   position?: Position;
 }): TransferPreview => {
   const totalBase = amount > 0 && rate > 0 ? amount * rate : 0;
+  const currentSaldo = position?.saldo ?? null;
+  const currentCostoPromedio = position?.costoPromedio ?? null;
   if (!position || amount <= 0 || rate <= 0) {
-    return { totalBase, projectedSaldo: null, projectedCostoPromedio: null, expectedRendimiento: null, isValid: false, validationMessage: "Ingresa un monto y una tasa válidos" };
+    return { totalBase, currentSaldo, currentCostoPromedio, projectedSaldo: null, projectedCostoPromedio: null, expectedRendimiento: null, isValid: false, validationMessage: "Ingresa un monto y una tasa válidos" };
   }
   if (type === "VENTA") {
     const available = position.availableForSale && position.saldo >= amount;
     return {
       totalBase,
+      currentSaldo,
+      currentCostoPromedio,
       projectedSaldo: available ? position.saldo - amount : null,
       projectedCostoPromedio: available ? position.costoPromedio : null,
       expectedRendimiento: available && position.costoPromedio != null ? (rate - position.costoPromedio) * amount : null,
@@ -110,7 +134,7 @@ export const calculateTransferPreview = ({
   const projectedCostoPromedio = position.costoPromedio == null || position.saldo === 0
     ? rate
     : (position.saldo * position.costoPromedio + totalBase) / projectedSaldo;
-  return { totalBase, projectedSaldo, projectedCostoPromedio, expectedRendimiento: null, isValid: true };
+  return { totalBase, currentSaldo, currentCostoPromedio, projectedSaldo, projectedCostoPromedio, expectedRendimiento: null, isValid: true };
 };
 
 export type Worker = { id: string; name: string; currentBalance: number; accumulatedProfit: number };

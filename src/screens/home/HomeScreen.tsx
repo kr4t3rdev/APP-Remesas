@@ -82,8 +82,13 @@ export const HomeScreen: React.FC = () => {
     refetchAll();
   }, [refetchAll]);
 
-  const formatCurrency = (amount: number, currency: string = "CUP") => {
-    return `${currency === "CUP" ? "$" : currency} ${amount.toLocaleString("es-CU", { minimumFractionDigits: 2 })}`;
+  const formatCurrency = (
+    amount: number | null,
+    currency = summary.primaryCurrency,
+  ) => {
+    if (amount === null) return "—";
+    const identity = currency?.symbol || currency?.code || "";
+    return `${identity}${identity ? " " : ""}${amount.toLocaleString("es-CU", { minimumFractionDigits: 2 })}`;
   };
 
   const formatTime = (dateStr: string) => {
@@ -250,9 +255,9 @@ export const HomeScreen: React.FC = () => {
                 }
                 color={themeColors.primary[500]}
                 trend={
-                  summary.todayProfit > 0
+                  summary.todayProfit !== null && summary.todayProfit > 0
                     ? "up"
-                    : summary.todayProfit < 0
+                    : summary.todayProfit !== null && summary.todayProfit < 0
                       ? "down"
                       : "neutral"
                 }
@@ -614,12 +619,12 @@ export const HomeScreen: React.FC = () => {
                       >
                         {formatCurrency(
                           objective.currentAmount,
-                          objective.currency.code,
+                          objective.currency,
                         )}{" "}
                         /{" "}
                         {formatCurrency(
                           objective.targetAmount,
-                          objective.currency.code,
+                          objective.currency,
                         )}
                       </Text>
                     </View>

@@ -224,7 +224,7 @@ class ApiClient {
     return this.request<T>("PATCH", url, { data, ...options });
   }
 
-  delete<T = any>(url: string, options?: { headers?: Record<string, string>; params?: Record<string, string | number | boolean | undefined | null> }): Promise<ApiResponse<T>> {
+  delete<T = any>(url: string, options?: { data?: any; headers?: Record<string, string>; params?: Record<string, string | number | boolean | undefined | null> }): Promise<ApiResponse<T>> {
     return this.request<T>("DELETE", url, options);
   }
 }

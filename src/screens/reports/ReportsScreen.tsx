@@ -39,6 +39,7 @@ import {
 	useReportsPeriodQuery,
 	useReportsProfitQuery,
 } from "../../modules/reports/application/useReports";
+import { useCurrenciesWithPrimaryQuery } from "../../modules/currencies/application/useCurrencies";
 import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
 import { CashFlowCurrencyCards } from "../../components/reports/CashFlowCurrencyCards";
 import {
@@ -106,6 +107,10 @@ export const ReportsScreen: React.FC = () => {
 		cashFlowEnd,
 		isReportRangeValid(cashFlowStart, cashFlowEnd),
 	);
+	const currenciesWithPrimaryQuery = useCurrenciesWithPrimaryQuery();
+	const primaryCurrency = currenciesWithPrimaryQuery.data?.currencies.find(
+		(currency) => currency.id === currenciesWithPrimaryQuery.data?.primaryCurrencyId,
+	) ?? null;
 
 	const dailyReport = dailyReportQuery.data;
 	const periodReport = periodReportQuery.data;
@@ -135,6 +140,7 @@ export const ReportsScreen: React.FC = () => {
 			periodReportQuery.refetch(),
 			profitReportQuery.refetch(),
 			cashFlowReportQuery.refetch(),
+			currenciesWithPrimaryQuery.refetch(),
 		]);
 	};
 
@@ -171,6 +177,10 @@ export const ReportsScreen: React.FC = () => {
 	const formatNumber = (value: number | string) => {
 		const num = Number(value) || 0;
 		return num.toLocaleString("es-CU", { minimumFractionDigits: 2 });
+	};
+	const formatPrimaryAmount = (value: number | string) => {
+		const identity = primaryCurrency?.symbol || primaryCurrency?.code || "";
+		return `${identity}${identity ? " " : ""}${formatNumber(value)}`;
 	};
 
 	const handlePeriodStartChange = (date: string) => {
@@ -258,18 +268,7 @@ export const ReportsScreen: React.FC = () => {
 			)
 		: [];
 
-	const balanceChartData = cashBalances.slice(0, 4).map((b) => ({
-		label: b.currency?.code || "",
-		value: Math.abs(Number(b.balance)),
-		color:
-			b.currency?.code === "USD"
-				? themeColors.currencies.usd.primary
-				: b.currency?.code === "EUR"
-					? themeColors.currencies.eur.primary
-					: b.currency?.code === "MLC"
-						? themeColors.currencies.mlc.primary
-						: themeColors.primary[500],
-	}));
+	const balancesByCurrency = cashBalances.slice(0, 4);
 
 	// Period Report data transformation
 	const periodDailyChartData = periodReport?.dailyBreakdown
@@ -360,6 +359,7 @@ export const ReportsScreen: React.FC = () => {
 
 	const renderDailyReport = () => {
 		if (!dailyReport) return null;
+		const hasIncompleteConversions = safeDailyReport.expenses.unconvertedCount > 0;
 
 		return (
 			<>
@@ -374,7 +374,8 @@ export const ReportsScreen: React.FC = () => {
 						>
 							<StatsCard
 								title="Ganancia Neta"
-								value={`$ ${formatNumber(safeDailyReport.profit.net)}`}
+								value={hasIncompleteConversions ? "—" : formatPrimaryAmount(safeDailyReport.profit.net)}
+								subtitle={hasIncompleteConversions ? "No disponible: hay conversiones pendientes" : undefined}
 								icon={
 									<Ionicons
 										name="trending-up"
@@ -431,7 +432,7 @@ export const ReportsScreen: React.FC = () => {
 						>
 							<StatsCard
 								title="Total Compras"
-								value={`$ ${formatNumber(safeDailyReport.transactions.totalCompras)}`}
+								value={formatPrimaryAmount(safeDailyReport.transactions.totalCompras)}
 								icon={
 									<Ionicons
 										name="arrow-down-circle"
@@ -454,7 +455,7 @@ export const ReportsScreen: React.FC = () => {
 						>
 							<StatsCard
 								title="Total Ventas"
-								value={`$ ${formatNumber(safeDailyReport.transactions.totalVentas)}`}
+								value={formatPrimaryAmount(safeDailyReport.transactions.totalVentas)}
 								icon={
 									<Ionicons
 										name="arrow-up-circle"
@@ -521,7 +522,7 @@ export const ReportsScreen: React.FC = () => {
 								>
 									Total Gastos
 									{safeDailyReport.expenses.totalAmountInCup !== null
-										? " (CUP)"
+										? ` (${primaryCurrency?.code ?? "moneda principal"})`
 										: ""}
 								</Text>
 								<Text
@@ -530,12 +531,9 @@ export const ReportsScreen: React.FC = () => {
 										{ color: themeColors.text.primary },
 									]}
 								>
-									${" "}
-									{formatNumber(
-										safeDailyReport.expenses.totalAmountInCup !== null
-											? safeDailyReport.expenses.totalAmountInCup
-											: safeDailyReport.expenses.totalAmount,
-									)}
+									{safeDailyReport.expenses.totalAmountInCup !== null
+										? formatPrimaryAmount(safeDailyReport.expenses.totalAmountInCup)
+										: "—"}
 								</Text>
 								{safeDailyReport.expenses.unconvertedCount > 0 && (
 									<Text
@@ -851,11 +849,9 @@ export const ReportsScreen: React.FC = () => {
 							>
 								<StatsCard
 									title="Gastos"
-									value={`$ ${formatNumber(
-										periodReport.summary.totalExpensesInCup !== null
-											? periodReport.summary.totalExpensesInCup
-											: periodReport.summary.totalExpensesAmount,
-									)}`}
+									value={periodReport.summary.totalExpensesInCup !== null
+										? formatPrimaryAmount(periodReport.summary.totalExpensesInCup)
+										: "—"}
 									subtitle={`${periodReport.summary.totalExpensesCount} gastos${
 										periodReport.summary.unconvertedExpensesCount > 0
 											? ` · ${periodReport.summary.unconvertedExpensesCount} sin tasa`
@@ -888,8 +884,10 @@ export const ReportsScreen: React.FC = () => {
 							>
 								<StatsCard
 									title="Ganancia Neta"
-									value={`$ ${formatNumber(periodReport.summary.netProfit)}`}
-									subtitle={`Margen: $ ${formatNumber(periodReport.summary.marginProfit)}`}
+									value={periodReport.summary.unconvertedExpensesCount > 0 ? "—" : formatPrimaryAmount(periodReport.summary.netProfit)}
+									subtitle={periodReport.summary.unconvertedExpensesCount > 0
+										? "No disponible: hay conversiones pendientes"
+										: `Margen: ${formatPrimaryAmount(periodReport.summary.marginProfit)}`}
 									icon={
 										<Ionicons
 											name="trending-up"
@@ -928,7 +926,7 @@ export const ReportsScreen: React.FC = () => {
 									{ color: themeColors.text.primary },
 								]}
 							>
-								Ganancia Diaria (CUP)
+								Ganancia Diaria ({primaryCurrency?.code ?? "moneda principal"})
 							</Text>
 							<View style={styles.chartCard}>
 								<BarChart
@@ -1116,7 +1114,7 @@ export const ReportsScreen: React.FC = () => {
 									>
 										<StatsCard
 											title="Margen FX"
-											value={`$ ${formatNumber(profitReport!.totalMarginProfit)}`}
+											value={formatPrimaryAmount(profitReport!.totalMarginProfit)}
 											icon={
 												<Ionicons
 													name="cash-outline"
@@ -1137,7 +1135,7 @@ export const ReportsScreen: React.FC = () => {
 									>
 										<StatsCard
 											title="Flow neto"
-											value={`$ ${formatNumber(profitReport!.netFlow)}`}
+											value={formatPrimaryAmount(profitReport!.netFlow)}
 											icon={
 												<Ionicons
 													name="swap-vertical"
@@ -1170,8 +1168,8 @@ export const ReportsScreen: React.FC = () => {
 								>
 									<StatsCard
 										title="Compras vs Ventas"
-										value={`$ ${formatNumber(profitReport!.totalVentas)}`}
-										subtitle={`Compras: $ ${formatNumber(profitReport!.totalCompras)}`}
+										value={formatPrimaryAmount(profitReport!.totalVentas)}
+										subtitle={`Compras: ${formatPrimaryAmount(profitReport!.totalCompras)}`}
 										icon={
 											<Ionicons
 												name="trending-up"
@@ -1236,13 +1234,17 @@ export const ReportsScreen: React.FC = () => {
 							Distribución de Saldos
 						</Text>
 						<View style={styles.chartCard}>
-							{balanceChartData.length > 0 ? (
-								<BarChart
-									data={balanceChartData}
-									height={100}
-									showLabels
-									showValues
-								/>
+							{balancesByCurrency.length > 0 ? (
+								balancesByCurrency.map((balance) => (
+									<View key={balance.id} style={styles.expenseStat}>
+										<Text style={[styles.expenseLabel, { color: themeColors.text.secondary }]}>
+											{balance.currency?.code ?? "Moneda"}
+										</Text>
+										<Text style={[styles.expenseValue, { color: themeColors.text.primary }]}>
+											{balance.currency?.symbol ? `${balance.currency.symbol} ` : ""}{formatNumber(balance.balance)} {balance.currency?.code ?? ""}
+										</Text>
+									</View>
+								))
 							) : (
 								<View style={styles.emptyState}>
 									<Text

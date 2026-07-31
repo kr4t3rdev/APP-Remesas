@@ -9,6 +9,7 @@ import {
   useUpdateWorkerMutation,
   useCreateTransactionMutation,
   useAddBalanceMutation,
+  useDepositMutation,
 } from "./useWorkerPayments";
 import { workerPaymentsRepository } from "../infrastructure/workerPayments.repository";
 import { queryKeys } from "../../../shared/query/queryKeys";
@@ -22,6 +23,7 @@ jest.mock("../infrastructure/workerPayments.repository", () => ({
     deleteWorker: jest.fn(),
     createTransaction: jest.fn(),
     addBalance: jest.fn(),
+    deposit: jest.fn(),
   },
 }));
 
@@ -199,6 +201,10 @@ describe("useWorkerPayments hooks", () => {
         expect(invalidateSpy).toHaveBeenCalledWith({
           queryKey: queryKeys.workerPayments.detail(1),
         });
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.transactions.list() });
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.transactions.positions() });
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.cash.balances() });
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.bankAccounts.list() });
       });
     });
   });
@@ -225,7 +231,27 @@ describe("useWorkerPayments hooks", () => {
         expect(invalidateSpy).toHaveBeenCalledWith({
           queryKey: queryKeys.workerPayments.detail(1),
         });
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.cash.balances() });
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.bankAccounts.list() });
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.transactions.positions() });
       });
+    });
+  });
+
+  describe("useDepositMutation", () => {
+    it("invalidates worker and money-source keys after depositing a worker balance", async () => {
+      mockedRepository.deposit.mockResolvedValueOnce({ id: 1, balance: 700 } as never);
+      const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+      const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
+      const { result } = renderHook(() => useDepositMutation(), { wrapper: createWrapper(queryClient) });
+
+      await result.current.mutateAsync({ workerId: 1, amount: 100, destinationType: "CASH", currencyId: 2 });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.workerPayments.list() });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.workerPayments.detail(1) });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.cash.balances() });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.bankAccounts.list() });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.transactions.positions() });
     });
   });
 });

@@ -2,8 +2,12 @@ import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
 import { TransactionsTab } from "../tabs/TransactionsTab";
 import * as transactionQueries from "../../../modules/transactions/application/useTransactions";
+import * as cashQueries from "../../../modules/cash/application/useCash";
+import * as currencyQueries from "../../../modules/currencies/application/useCurrencies";
 
 jest.mock("../../../modules/transactions/application/useTransactions");
+jest.mock("../../../modules/cash/application/useCash");
+jest.mock("../../../modules/currencies/application/useCurrencies");
 jest.mock("../../../components/business/modals/TransactionModal", () => ({
   TransactionModal: () => null,
 }));
@@ -23,6 +27,11 @@ describe("TransactionsTab", () => {
     jest.mocked(transactionQueries.useTransactionsQuery).mockReturnValue(query() as any);
     jest.mocked(transactionQueries.usePositionsQuery).mockReturnValue(query() as any);
     jest.mocked(transactionQueries.useRemittancesQuery).mockReturnValue(query() as any);
+    jest.mocked(transactionQueries.useOpenPositionMutation).mockReturnValue({ mutateAsync: jest.fn(), isPending: false } as any);
+    jest.mocked(cashQueries.useCashBalancesQuery).mockReturnValue(query() as any);
+    jest.mocked(currencyQueries.useCurrenciesWithPrimaryQuery).mockReturnValue(query({
+      data: { currencies: [{ id: 10, code: "CUP", symbol: "$", isActive: true }], primaryCurrencyId: 10 },
+    }) as any);
   });
 
   it("renders the loading state for the combined FX resources", () => {
@@ -71,5 +80,29 @@ describe("TransactionsTab", () => {
     expect(refetchTransactions).toHaveBeenCalled();
     expect(refetchPositions).toHaveBeenCalled();
     expect(refetchRemittances).toHaveBeenCalled();
+  });
+
+  it("exposes controlled opening when a currency has historical cash", () => {
+    jest.mocked(cashQueries.useCashBalancesQuery).mockReturnValue(query({
+      data: [{ currencyId: 2, currency: { id: 2, code: "USD", name: "US Dollar", symbol: "$", isActive: true }, balance: 50 }],
+    }) as any);
+
+    const { getByRole } = render(<TransactionsTab />);
+
+    expect(getByRole("button", { name: "Abrir posición histórica" })).toBeTruthy();
+  });
+
+  it("keeps an existing UNREVIEWED position available for controlled review", () => {
+    jest.mocked(transactionQueries.usePositionsQuery).mockReturnValue(query({
+      data: [{ currencyId: 2, currency: { code: "USD" }, saldo: 50, costoPromedio: null, availableForSale: false, reviewStatus: "UNREVIEWED" }],
+    }) as any);
+    jest.mocked(cashQueries.useCashBalancesQuery).mockReturnValue(query({
+      data: [{ currencyId: 2, currency: { id: 2, code: "USD", name: "US Dollar", symbol: "$", isActive: true }, balance: 50 }],
+    }) as any);
+
+    const { getByRole, getByText } = render(<TransactionsTab />);
+
+    expect(getByText("Pendiente de revisión")).toBeTruthy();
+    expect(getByRole("button", { name: "Abrir posición histórica" })).toBeTruthy();
   });
 });

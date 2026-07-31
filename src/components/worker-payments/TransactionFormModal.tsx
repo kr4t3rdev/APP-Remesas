@@ -18,6 +18,7 @@ import { Button } from "../ui/Button";
 import { spacing, borderRadius } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
 import type { Worker } from "../../types";
+import { parseDecimalInput } from "../../utils/numberValidation";
 
 type TransactionFormModalProps = {
   visible: boolean;
@@ -58,14 +59,14 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
-    const numAmount = Number(amount);
-    const numProfit = Number(profit);
+    const numAmount = parseDecimalInput(amount, { min: 0.01, maxDecimalPlaces: 2 });
+    const numProfit = parseDecimalInput(profit, { min: 0, maxDecimalPlaces: 2 });
 
-    if (!amount || numAmount <= 0) {
-      newErrors.amount = "La cantidad debe ser mayor a 0";
+    if (numAmount === null) {
+      newErrors.amount = "Ingresá una cantidad válida de hasta 2 decimales";
     }
-    if (!profit || numProfit < 0) {
-      newErrors.profit = "La ganancia debe ser 0 o mayor";
+    if (numProfit === null) {
+      newErrors.profit = "Ingresá una ganancia válida de hasta 2 decimales";
     }
 
     setErrors(newErrors);
@@ -74,12 +75,15 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
 
   const handleSubmit = async () => {
     if (!validate()) return;
+    const normalizedAmount = parseDecimalInput(amount, { min: 0.01, maxDecimalPlaces: 2 });
+    const normalizedProfit = parseDecimalInput(profit, { min: 0, maxDecimalPlaces: 2 });
+    if (normalizedAmount === null || normalizedProfit === null) return;
 
     setIsSubmitting(true);
     try {
       await onSubmit(
-        Number(amount),
-        Number(profit),
+        normalizedAmount,
+        normalizedProfit,
         description.trim() || undefined,
       );
       onClose();
@@ -93,7 +97,8 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     }
   };
 
-  const newBalance = worker ? Number(worker.balance) - Number(amount || 0) : 0;
+  const previewAmount = parseDecimalInput(amount, { min: 0, maxDecimalPlaces: 2 }) ?? 0;
+  const newBalance = worker ? Number(worker.balance) - previewAmount : 0;
 
   return (
     <Modal visible={visible} animationType="slide" transparent>

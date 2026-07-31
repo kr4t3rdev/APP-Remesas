@@ -5,7 +5,14 @@ import type {
   Transaction,
   TransactionType,
 } from "../../../types";
-import type { Position, Remittance, TransferRequest, TransferResponse } from "../../../types/business";
+import type {
+  OpenPositionRequest,
+  OpenPositionResponse,
+  Position,
+  Remittance,
+  TransferRequest,
+  TransferResponse,
+} from "../../../types/business";
 
 type ExchangeRatesResponse = {
   rates: ExchangeRate[];
@@ -36,6 +43,12 @@ export const transactionsRepository = {
     if (!idempotencyKey) throw new Error("Idempotency-Key is required for a transfer intent");
     const response = await api.post<TransferResponse>("/fx-operations/transfers", request, { headers: { "Idempotency-Key": idempotencyKey } });
     return response.data!;
+  },
+
+  async openPosition(data: OpenPositionRequest): Promise<OpenPositionResponse> {
+    const response = await api.post<OpenPositionResponse>("/fx-operations/positions/open", data);
+    if (!response.data) throw new Error("No se pudo abrir la posición histórica");
+    return response.data;
   },
 
   async getCurrencies(): Promise<Currency[]> {

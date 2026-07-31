@@ -4,8 +4,10 @@ import { TransactionModal } from "../TransactionModal";
 import * as transactions from "../../../../modules/transactions/application/useTransactions";
 import * as banks from "../../../../modules/bank-accounts/application/useBankAccounts";
 import * as cash from "../../../../modules/cash/application/useCash";
+import * as currencyQueries from "../../../../modules/currencies/application/useCurrencies";
 jest.mock("../../../../modules/bank-accounts/application/useBankAccounts");
 jest.mock("../../../../modules/cash/application/useCash");
+jest.mock("../../../../modules/currencies/application/useCurrencies");
 
 jest.mock("../../../../modules/transactions/application/useTransactions");
 
@@ -25,6 +27,16 @@ describe("TransactionModal FX intent", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(transactions.useCreateTransactionMutation).mockReturnValue({ mutate, isPending: false } as any);
+    jest.mocked(currencyQueries.useCurrenciesWithPrimaryQuery).mockReturnValue({
+      data: {
+        currencies: [
+          { id: 10, code: "CUP", name: "Peso cubano", symbol: "$", isActive: true },
+          { id: 1, code: "USD", name: "US Dollar", symbol: "US$", isActive: true },
+          { id: 2, code: "EUR", name: "Euro", symbol: "€", isActive: true },
+        ],
+        primaryCurrencyId: 10,
+      },
+    } as any);
     jest.mocked(transactions.usePositionsQuery).mockReturnValue({ data: [
       { currencyId: 1, currency: { code: "USD" }, saldo: 100, costoPromedio: 250, availableForSale: true },
       { currencyId: 2, currency: { code: "EUR" }, saldo: 40, costoPromedio: 300, availableForSale: true },
@@ -117,7 +129,8 @@ describe("TransactionModal FX intent", () => {
     rerender(<TransactionModal visible onClose={jest.fn()} />);
 
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
-    expect(getByText(/Saldo proy\.: 110\.00/)).toBeTruthy();
+    expect(getByText(/Estado actual: saldo 100\.00/)).toBeTruthy();
+    expect(getByText(/Proyección: total 2400\.00 · saldo 110\.00/)).toBeTruthy();
   });
 
   it("shows success feedback after saving the operation", () => {
@@ -144,11 +157,41 @@ describe("TransactionModal FX intent", () => {
     expect(mutate.mock.calls[1][0].idempotencyKey).not.toBe(firstKey);
   });
 
-  it("blocks transfers when the base CUP currency is not configured", () => {
+  it("blocks transfers when the configured primary currency metadata is missing", () => {
+    jest.mocked(currencyQueries.useCurrenciesWithPrimaryQuery).mockReturnValue({
+      data: { currencies: [{ id: 2, code: "USD", name: "US Dollar", symbol: "US$", isActive: true }], primaryCurrencyId: null },
+    } as any);
     jest.mocked(transactions.useCurrenciesQuery).mockReturnValue({ data: [{ id: 2, code: "USD" }] } as any);
     const { getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
-    expect(getByText(/no se encontró la moneda base CUP/i)).toBeTruthy();
+    expect(getByText(/no se encontró la moneda principal configurada/i)).toBeTruthy();
     expect(getByText("Guardar")).toBeDisabled();
+  });
+
+  it("uses the configured primary currency instead of assuming CUP", () => {
+    jest.mocked(currencyQueries.useCurrenciesWithPrimaryQuery).mockReturnValue({
+      data: {
+        currencies: [
+          { id: 20, code: "EUR", name: "Euro", symbol: "€", isActive: true },
+          { id: 1, code: "USD", name: "US Dollar", symbol: "US$", isActive: true },
+        ],
+        primaryCurrencyId: 20,
+      },
+    } as any);
+    jest.mocked(transactions.useCurrenciesQuery).mockReturnValue({ data: [
+      { id: 20, code: "EUR", name: "Euro", symbol: "€", isActive: true },
+      { id: 1, code: "USD", name: "US Dollar", symbol: "US$", isActive: true },
+    ] } as any);
+    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [
+      { currencyId: 20, currency: { code: "EUR", symbol: "€" }, balance: 10000 },
+      { currencyId: 1, currency: { code: "USD", symbol: "US$" }, balance: 100 },
+    ] } as any);
+
+    const { getByLabelText, getByText, queryByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+
+    expect(getByLabelText("Caja · EUR")).toBeTruthy();
+    expect(getByText("Resumen: salen 2400.00 de Caja · EUR y entran 10 en Caja · USD")).toBeTruthy();
+    expect(queryByText(/moneda base CUP/i)).toBeNull();
   });
 
   it("shows error feedback when saving the operation fails", () => {
@@ -288,7 +331,7 @@ describe("TransactionModal FX intent", () => {
     expect(mutate).toHaveBeenLastCalledWith(expect.objectContaining({ rate: 245.5 }), expect.any(Object));
 
     fireEvent.changeText(getByLabelText("Tasa de cambio"), "Infinity");
-    expect(getByText("Ingresá una tasa de cambio válida mayor que cero.")).toBeTruthy();
+    expect(getByText("Ingresá una tasa válida entre 0.0001 y 999999.9999, con hasta 4 decimales.")).toBeTruthy();
     expect(getByText("Guardar")).toBeDisabled();
   });
 

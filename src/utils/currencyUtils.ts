@@ -12,15 +12,11 @@ export const getCountryCode = (currencyCode: string): string | null => {
   const code = codeMap[currencyCode.toUpperCase()];
   if (code) return code;
   
-  if (currencyCode.length === 3) {
-    return currencyCode.substring(0, 2).toUpperCase();
-  }
-  
   return null;
 };
 
 export const getCurrencySymbol = (currencyCode: string): string => {
-  if (!currencyCode) return "$";
+  if (!currencyCode) return "";
 
   const symbolMap: Record<string, string> = {
     USD: "$", EUR: "€", CUP: "CUP", MLC: "MLC", GBP: "£",
@@ -30,5 +26,5 @@ export const getCurrencySymbol = (currencyCode: string): string => {
     ZAR: "R", TRY: "₺", SEK: "kr",
   };
 
-  return symbolMap[currencyCode.toUpperCase()] || "$";
+  return symbolMap[currencyCode.toUpperCase()] || currencyCode.toUpperCase();
 };

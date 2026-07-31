@@ -92,6 +92,12 @@ export const useCreateTransactionMutation = () => {
         queryClient.invalidateQueries({
           queryKey: queryKeys.workerPayments.detail(variables.workerId),
         }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["reports"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.positions() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.cash.balances() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.list() }),
       ]);
     },
   });
@@ -122,8 +128,11 @@ export const useAddBalanceMutation = () => {
         queryClient.invalidateQueries({
           queryKey: queryKeys.workerPayments.detail(variables.workerId),
         }),
-        queryClient.invalidateQueries({ queryKey: ["cash"] }),
-        queryClient.invalidateQueries({ queryKey: ["bankAccounts"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.cash.balances() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.list() }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["reports"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.positions() }),
       ]);
     },
   });
@@ -154,8 +163,11 @@ export const useDepositMutation = () => {
         queryClient.invalidateQueries({
           queryKey: queryKeys.workerPayments.detail(variables.workerId),
         }),
-        queryClient.invalidateQueries({ queryKey: ["cash"] }),
-        queryClient.invalidateQueries({ queryKey: ["bankAccounts"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.cash.balances() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.list() }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["reports"] }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.positions() }),
       ]);
     },
   });
