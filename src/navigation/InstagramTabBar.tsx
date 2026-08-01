@@ -7,7 +7,6 @@ import {
 	Keyboard,
 	Pressable,
 	StyleSheet,
-	Text,
 	View,
 } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
@@ -15,7 +14,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { useIsDark } from "../store/themeStore";
 import { mainTabDefinitions } from "./mainTabsConfig";
-import { useUnreadNotificationsCountQuery } from "../modules/notifications/application/useNotifications";
 import { fintechTabBarColors, getFintechTabBarStyle } from "./fintechTabBar";
 import { useTabBarMotion } from "./TabBarMotionProvider";
 
@@ -56,7 +54,6 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
 	const [reduceMotion, setReduceMotion] = useState(false);
 	const [reduceTransparency, setReduceTransparency] = useState(false);
 	const [keyboardVisible, setKeyboardVisible] = useState(false);
-	const { data: unreadCount } = useUnreadNotificationsCountQuery();
 	const activeRouteName = state.routes[state.index]?.name;
 	const indicatorIndex = useRef(new Animated.Value(state.index)).current;
 	const indicatorEmphasis = useRef(
@@ -288,10 +285,6 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
 					const icon = definition?.icon ?? "ellipse";
 					const emphasized = definition?.emphasized ?? false;
 
-					// Dynamic badge: only the Notifications tab gets a live badge
-					const isNotificationsTab = route.name === "Notifications";
-					const badge = isNotificationsTab ? (unreadCount ?? 0) : 0;
-
 					const handlePress = () => {
 						const event = navigation.emit({
 							type: "tabPress",
@@ -382,13 +375,6 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
 											}
 										/>
 									</Animated.View>
-									{badge > 0 ? (
-										<View style={styles.tabBadge}>
-											<Text style={styles.tabBadgeText}>
-												{badge > 99 ? "99+" : badge}
-											</Text>
-										</View>
-									) : null}
 								</View>
 							</Pressable>
 						</Animated.View>
@@ -443,22 +429,5 @@ const styles = StyleSheet.create({
 		width: 48,
 		height: 42,
 		borderRadius: 21,
-	},
-	tabBadge: {
-		position: "absolute",
-		top: -4,
-		right: -8,
-		minWidth: 16,
-		height: 16,
-		paddingHorizontal: 3,
-		borderRadius: 8,
-		backgroundColor: "#E53E3E",
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	tabBadgeText: {
-		color: "#fff",
-		fontSize: 9,
-		fontWeight: "700",
 	},
 });

@@ -30,7 +30,6 @@ export type MainTabParamList = {
 	Transactions: undefined;
 	Cash: undefined;
 	Expenses: undefined;
-	Notifications: undefined;
 	Profile: undefined;
 };
 
@@ -39,7 +38,6 @@ export type AdminTabParamList = {
 	AdminServices: undefined;
 	AdminUsers: undefined;
 	AdminReports: undefined;
-	AdminNotifications: undefined;
 	AdminProfile: undefined;
 };
 

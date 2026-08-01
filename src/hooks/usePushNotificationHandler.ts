@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { AppState } from "react-native";
 import * as Notifications from "expo-notifications";
-import { useNavigation } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../store/authStore";
 import { getExpoPushToken } from "../services/pushNotifications";
@@ -15,7 +14,7 @@ import {
  *
  * 1. Registers the Expo push token when the user authenticates.
  * 2. Invalidates TanStack Query caches when a push arrives in foreground.
- * 3. Navigates to the Notifications screen when a push is tapped.
+ * 3. Invalidates notification queries when a push is tapped.
  * 4. Retries token registration when the app returns from background.
  * 5. Removes the registered token when the user logs out (privacy).
  *
@@ -24,7 +23,6 @@ import {
 export function usePushNotificationHandler() {
 	const { isAuthenticated, checkAuth } = useAuthStore();
 	const queryClient = useQueryClient();
-	const navigation = useNavigation();
 	const { mutate: registerToken } = usePushTokenRegistration();
 	const { mutate: unregisterToken } = useUnregisterPushTokenMutation();
 	const lastRegisteredTokenRef = useRef<string | null>(null);
@@ -75,18 +73,18 @@ export function usePushNotificationHandler() {
 		return () => subscription.remove();
 	}, [queryClient]);
 
-	// ── 3. Tapped: navigate to Notifications screen ──────────────────────
+	// ── 3. Tapped: refresh notification queries ─────────────────────────
 	useEffect(() => {
 		const subscription = Notifications.addNotificationResponseReceivedListener(
 			() => {
-				// Navigate to the Notifications tab; nested navigation is
-				// resolved by React Navigation at runtime.
-				(navigation as any).navigate("Notifications");
+				// Notifications are accessed via the bell/NotificationCenter,
+				// so tapping a push only refreshes the notification queries.
+				queryClient.invalidateQueries({ queryKey: ["notifications"] });
 			},
 		);
 
 		return () => subscription.remove();
-	}, [navigation]);
+	}, [queryClient]);
 
 	// ── 4. Retry registration when app returns from background ───────────
 	useEffect(() => {

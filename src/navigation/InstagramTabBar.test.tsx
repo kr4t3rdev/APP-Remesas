@@ -9,7 +9,6 @@ import {
 import { act, render, fireEvent, waitFor } from "@testing-library/react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { queryKeys } from "../shared/query/queryKeys";
 
 jest.mock("expo-blur", () => {
   const React = require("react");
@@ -46,7 +45,6 @@ const routeNames = [
   "Transactions",
   "Cash",
   "Expenses",
-  "Notifications",
   "Profile",
 ] as const;
 
@@ -90,9 +88,8 @@ const ScrollToTopRegistration = ({ callback }: { callback: () => void }) => {
   return null;
 };
 
-const renderTabBar = (props: BottomTabBarProps, scrollToTop?: () => void, unreadCount = 0) => {
+const renderTabBar = (props: BottomTabBarProps, scrollToTop?: () => void) => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  queryClient.setQueryData(queryKeys.notifications.unreadCount(), unreadCount);
   return render(
     <QueryClientProvider client={queryClient}>
       <TabBarMotionProvider>
@@ -123,17 +120,6 @@ describe("InstagramTabBar", () => {
     expect(getByTestId("tab-Profile").props.accessibilityHint).toBe(
       "Abre la pestaña Perfil.",
     );
-  });
-
-  it("renders the unread badge only on Notifications and caps it at 99+", () => {
-    const view = renderTabBar(createProps(), undefined, 120);
-    expect(view.getByTestId("tab-Notifications")).toBeTruthy();
-    expect(view.getAllByText("99+")).toHaveLength(1);
-  });
-
-  it("does not render a badge when unread count is zero", () => {
-    const view = renderTabBar(createProps(), undefined, 0);
-    expect(view.queryByText("0")).toBeNull();
   });
 
   it("places a clipped system blur layer behind crisp tab content", () => {

@@ -5,7 +5,6 @@ import { ProfileScreen } from "../screens/profile/ProfileScreen";
 import { TransactionsScreen } from "../screens/transactions/TransactionsScreen";
 import { ExpensesScreen } from "../screens/expenses/ExpensesScreen";
 import { CashScreen } from "../screens/cash/CashScreen";
-import { NotificationsScreen } from "../screens/notifications/NotificationsScreen";
 import type { MainTabParamList } from "./types";
 import { mainTabDefinitions } from "./mainTabsConfig";
 import { InstagramTabBar } from "./InstagramTabBar";
@@ -18,7 +17,6 @@ const tabComponents: Record<keyof MainTabParamList, React.ComponentType> = {
 	Transactions: TransactionsScreen,
 	Cash: CashScreen,
 	Expenses: ExpensesScreen,
-	Notifications: NotificationsScreen,
 	Profile: ProfileScreen,
 };
 

@@ -4,10 +4,10 @@ import { act, render, waitFor } from "@testing-library/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 let mockCapturedInvalidations: Array<readonly unknown[]> = [];
-const mockNavigate = jest.fn();
 
 let mockForegroundHandler: (() => void) | null = null;
 const mockForegroundSubscription = { remove: jest.fn() };
+let mockResponseHandler: (() => void) | null = null;
 const mockResponseSubscription = { remove: jest.fn() };
 
 let mockGetExpoPushToken: jest.Mock;
@@ -32,13 +32,10 @@ jest.mock("expo-notifications", () => ({
 		mockForegroundHandler = mockCb;
 		return mockForegroundSubscription;
 	}),
-	addNotificationResponseReceivedListener: jest.fn(
-		() => mockResponseSubscription,
-	),
-}));
-
-jest.mock("@react-navigation/native", () => ({
-	useNavigation: () => ({ navigate: mockNavigate }),
+	addNotificationResponseReceivedListener: jest.fn((mockCb: () => void) => {
+		mockResponseHandler = mockCb;
+		return mockResponseSubscription;
+	}),
 }));
 
 jest.mock("react-native", () => {
@@ -116,9 +113,9 @@ function withQueryClient(): React.ComponentType<{ children: React.ReactNode }> {
 describe("usePushNotificationHandler", () => {
 	beforeEach(() => {
 		mockCapturedInvalidations = [];
-		mockNavigate.mockReset();
 		mockForegroundHandler = null;
 		mockForegroundSubscription.remove.mockReset();
+		mockResponseHandler = null;
 		mockResponseSubscription.remove.mockReset();
 		mockAppStateSubscription.remove.mockReset();
 		mockAppStateHandler = null;
@@ -178,6 +175,26 @@ describe("usePushNotificationHandler", () => {
 		const scopes = mockCapturedInvalidations.map((k) => k[0]);
 		expect(scopes.length).toBeGreaterThan(0);
 		expect(scopes.every((s) => s === "notifications")).toBe(true);
+	});
+
+	it("invalidates notification queries when a push is tapped", async () => {
+		mockIsAuthenticated = false;
+		render(<Harness />, { wrapper: withQueryClient() });
+
+		expect(mockResponseHandler).not.toBeNull();
+		await act(async () => {
+			mockResponseHandler!();
+		});
+
+		const scopes = mockCapturedInvalidations.map((k) => k[0]);
+		expect(scopes.length).toBeGreaterThan(0);
+		expect(scopes.every((s) => s === "notifications")).toBe(true);
+	});
+
+	it("removes the response subscription on unmount", async () => {
+		const { unmount } = render(<Harness />, { wrapper: withQueryClient() });
+		unmount();
+		expect(mockResponseSubscription.remove).toHaveBeenCalled();
 	});
 
 	it("removes the foreground subscription on unmount", async () => {

@@ -8,14 +8,11 @@ import { AdminHomeScreen } from "../screens/admin/AdminHomeScreen";
 import { AdminRoutes } from "./adminRoutes";
 import { AdminUsersScreen } from "../screens/admin/AdminUsersScreen";
 import { AdminReportsScreen } from "../screens/admin/AdminReportsScreen";
-import { NotificationsScreen } from "../screens/notifications/NotificationsScreen";
-import { useUnreadNotificationsCountQuery } from "../modules/notifications/application/useNotifications";
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
 
 export const AdminTabs: React.FC = () => {
 	const colors = useColors();
-	const { data: unreadCount } = useUnreadNotificationsCountQuery();
 
 	return (
 		<Tab.Navigator
@@ -75,17 +72,6 @@ export const AdminTabs: React.FC = () => {
 					tabBarIcon: ({ color }) => (
 						<Ionicons name="bar-chart" size={24} color={color} />
 					),
-				}}
-			/>
-			<Tab.Screen
-				name="AdminNotifications"
-				component={NotificationsScreen}
-				options={{
-					tabBarLabel: "Notificaciones",
-					tabBarIcon: ({ color }) => (
-						<Ionicons name="notifications-outline" size={24} color={color} />
-					),
-					tabBarBadge: (unreadCount ?? 0) > 0 ? unreadCount : undefined,
 				}}
 			/>
 			<Tab.Screen
