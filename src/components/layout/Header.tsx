@@ -13,6 +13,7 @@ import { useColors } from "../../store/themeStore";
 import { useResponsive, BREAKPOINTS } from "../../hooks/useResponsive";
 import { spacing, header } from "../../theme";
 import { NotificationCenter } from "../notifications/NotificationCenter";
+import { AppLogo } from "../branding/AppLogo";
 
 interface HeaderProps {
   title?: string;
@@ -57,11 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
         <>
           {/* Left: Logo */}
           <View style={styles.leftSection}>
-            <View
-              style={[styles.logoIcon, { backgroundColor: colors.primary[50] }]}
-            >
-              <Ionicons name="cash" size={24} color={colors.primary[500]} />
-            </View>
+            <AppLogo size={36} style={styles.logoIcon} />
             <Text style={[styles.title, { color: colors.text.primary }]}>
               {title}
             </Text>
@@ -127,14 +124,7 @@ export const Header: React.FC<HeaderProps> = ({
       ) : (
         /* Tablet Layout: Simple centered title */
         <View style={styles.tabletHeader}>
-          <View
-            style={[
-              styles.logoIconSmall,
-              { backgroundColor: colors.primary[50] },
-            ]}
-          >
-            <Ionicons name="cash" size={20} color={colors.primary[500]} />
-          </View>
+          <AppLogo size={32} style={styles.logoIconSmall} />
           <Text style={[styles.tabletTitle, { color: colors.text.primary }]}>
             {title}
           </Text>

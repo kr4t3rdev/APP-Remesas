@@ -12,6 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "../../store/themeStore";
 import { borderRadius, spacing } from "../../theme";
+import { AppLogo } from "../branding/AppLogo";
 
 type AboutModalProps = {
   visible: boolean;
@@ -55,18 +56,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.iconWrapper}>
-              <View
-                style={[
-                  styles.iconCircle,
-                  { backgroundColor: `${colors.primary[500]}18` },
-                ]}
-              >
-                <Ionicons
-                  name="cash"
-                  size={40}
-                  color={colors.primary[500]}
-                />
-              </View>
+              <AppLogo size={80} style={styles.iconCircle} />
             </View>
 
             <Text style={[styles.appName, { color: colors.text.primary }]}>
@@ -171,9 +161,7 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 18,
   },
   appName: {
     fontSize: 24,

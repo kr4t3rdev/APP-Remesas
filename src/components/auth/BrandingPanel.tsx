@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "../../store/themeStore";
 import { spacing } from "../../theme";
+import { AppLogo } from "../branding/AppLogo";
 
 const FEATURES = [
   { icon: "swap-horizontal", colorKey: "primary", text: "Cambio de divisas" },
@@ -67,9 +68,7 @@ export const BrandingPanel: React.FC<BrandingPanelProps> = ({
         ]}
       >
         <View style={styles.logoSection}>
-          <View style={styles.logoIcon}>
-            <Ionicons name="cash" size={48} color="#FFFFFF" />
-          </View>
+          <AppLogo size={80} style={styles.logoIcon} />
           <Text style={styles.appName}>{appName}</Text>
           <Text style={styles.tagline}>{tagline}</Text>
         </View>
@@ -142,10 +141,7 @@ const styles = StyleSheet.create({
   logoIcon: {
     width: 80,
     height: 80,
-    borderRadius: 40,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 18,
     marginBottom: spacing.md,
   },
   appName: {

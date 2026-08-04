@@ -13,6 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { spacing, borderRadius } from "../../theme";
 import { useColors } from "../../store/themeStore";
+import { AppLogo } from "../../components/branding/AppLogo";
 
 interface WelcomeScreenProps {
   navigation: any;
@@ -97,9 +98,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
           },
         ]}
       >
-        <View style={styles.logoIconContainer}>
-          <Ionicons name="cash" size={64} color={themeColors.text.inverse} />
-        </View>
+        <AppLogo size={100} style={styles.logoIconContainer} />
         <Text style={styles.logoText}>XChange$ocial</Text>
       </Animated.View>
 
@@ -303,10 +302,7 @@ const createStyles = (themeColors: any) =>
     logoIconContainer: {
       width: 100,
       height: 100,
-      borderRadius: 50,
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
-      justifyContent: "center",
-      alignItems: "center",
+      borderRadius: 22,
       marginBottom: spacing.md,
     },
     logoText: {

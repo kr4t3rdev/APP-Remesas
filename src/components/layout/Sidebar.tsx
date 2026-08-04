@@ -17,6 +17,7 @@ import { useColors } from "../../store/themeStore";
 import { useResponsive, BREAKPOINTS } from "../../hooks/useResponsive";
 import { useResponsiveStore } from "../../store/responsiveStore";
 import { spacing, borderRadius, sidebar } from "../../theme";
+import { AppLogo } from "../branding/AppLogo";
 
 export interface SidebarItem {
   icon: keyof typeof Ionicons.glyphMap;
@@ -136,15 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       {/* Logo Section */}
       <View style={styles.logoContainer}>
-        <View
-          style={[styles.logoIcon, { backgroundColor: colors.primary[50] }]}
-        >
-          <Ionicons
-            name="cash"
-            size={isCollapsed ? 24 : 28}
-            color={colors.primary[500]}
-          />
-        </View>
+        <AppLogo size={isCollapsed ? 40 : 40} style={styles.logoIcon} />
         {!isCollapsed && (
           <Text
             style={[styles.logoText, { color: colors.text.primary }]}

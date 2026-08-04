@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppNavigator } from "./src/navigation/AppNavigator";
 import { ToastContainer } from "./src/components/ui";
 import { WebToaster } from "./src/components/ui/WebToaster";
+import { AppIntroAnimation } from "./src/components/branding/AppIntroAnimation";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -16,13 +17,26 @@ const queryClient = new QueryClient({
 	},
 });
 
-function AppRoot() {
+let hasCompletedIntroForProcess = false;
+
+export function AppRoot() {
+	const [showIntro, setShowIntro] = useState(
+		() => !hasCompletedIntroForProcess,
+	);
+	const completeIntro = () => {
+		hasCompletedIntroForProcess = true;
+		setShowIntro(false);
+	};
+
 	return (
 		<>
 			<StatusBar barStyle="dark-content" />
 			<ToastContainer />
 			<WebToaster />
 			<AppNavigator />
+			{showIntro ? (
+				<AppIntroAnimation onComplete={completeIntro} />
+			) : null}
 		</>
 	);
 }
