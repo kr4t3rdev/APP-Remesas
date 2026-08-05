@@ -29,6 +29,27 @@ jest.mock("../../hooks/useDashboardData", () => ({
   useDashboardData: () => mockUseDashboardData(),
 }));
 
+jest.mock("../../modules/worker-payments/application/useWorkerPayments", () => ({
+  useWorkersQuery: () => ({
+    data: [],
+    isLoading: false,
+    isFetched: true,
+    isFetching: false,
+    refetch: jest.fn(),
+  }),
+}));
+
+jest.mock("../../components/dashboard/TopWorkersCard", () => {
+  const { View, Text } = require("react-native");
+  return {
+    TopWorkersCard: () => (
+      <View testID="home-top-workers-card">
+        <Text>Rendimiento de Trabajadores</Text>
+      </View>
+    ),
+  };
+});
+
 jest.mock("../../store/authStore", () => ({
   useAuthStore: (selector: (state: object) => unknown) =>
     selector({ user: { name: "Ada" } }),

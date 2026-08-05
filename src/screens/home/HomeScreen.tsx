@@ -33,6 +33,9 @@ import {
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { NotificationCenter } from "../../components/notifications/NotificationCenter";
+import { TopWorkersCard } from "../../components/dashboard/TopWorkersCard";
+import { useWorkersQuery } from "../../modules/worker-payments/application/useWorkerPayments";
+import type { Worker } from "../../types";
 
 type EmptyStateProps = {
   icon: keyof typeof Ionicons.glyphMap;
@@ -77,6 +80,8 @@ export const HomeScreen: React.FC = () => {
     refetchAll,
     summary,
   } = useDashboardData();
+  const workersQuery = useWorkersQuery();
+  const workers: Worker[] = workersQuery.data ?? [];
 
   const onRefresh = useCallback(() => {
     refetchAll();
@@ -400,6 +405,15 @@ export const HomeScreen: React.FC = () => {
               </View>
             )}
           </View>
+        </FadeInDown>
+
+        <FadeInDown delay={425}>
+          <TopWorkersCard
+            workers={workers}
+            rates={exchangeRates ?? []}
+            primaryCurrency={summary.primaryCurrency}
+            isLoading={workersQuery.isLoading && !workersQuery.isFetched}
+          />
         </FadeInDown>
 
         <FadeInDown delay={450}>
