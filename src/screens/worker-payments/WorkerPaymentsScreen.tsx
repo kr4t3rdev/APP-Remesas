@@ -375,14 +375,14 @@ export const WorkerPaymentsScreen: React.FC = () => {
           style={[
             styles.fab,
             { backgroundColor: themeColors.primary[500] },
-            themeShadows.glow,
+            { ...themeShadows.glow, shadowColor: themeColors.primary[500] },
           ]}
           onPress={() => handleOpenWorkerModal()}
           activeOpacity={0.8}
           accessibilityRole="button"
           accessibilityLabel="Nuevo trabajador"
         >
-          <Ionicons name="add" size={28} color="#fff" />
+          <Ionicons name="add" size={28} color={themeColors.text.inverse} />
         </TouchableOpacity>
       </ScaleIn>
 

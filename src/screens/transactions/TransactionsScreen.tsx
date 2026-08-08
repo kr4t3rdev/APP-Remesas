@@ -98,7 +98,7 @@ export const TransactionsScreen: React.FC = () => {
     if (diffDays === 0) {
       return format(date, "HH:mm", { locale: es });
     } else if (diffDays === 1) {
-      return "Ayer";
+      return `Ayer ${format(date, "HH:mm")}`;
     } else if (diffDays < 7) {
       return format(date, "EEEE", { locale: es });
     }
@@ -109,7 +109,7 @@ export const TransactionsScreen: React.FC = () => {
     const isCompra = item.type === "COMPRA";
 
     return (
-      <TouchableOpacity
+      <View
         style={[
           styles.transactionCard,
           {
@@ -118,7 +118,6 @@ export const TransactionsScreen: React.FC = () => {
           },
           themeShadows.md,
         ]}
-        activeOpacity={0.85}
       >
         <View style={styles.transactionHeader}>
           <View
@@ -163,6 +162,16 @@ export const TransactionsScreen: React.FC = () => {
                 ]}
               >
                 {isCompra ? "Compra" : "Venta"} de {item.currency?.code}
+                {item.operationKind === "REMITTANCE" ? (
+                  <Text
+                    style={[
+                      styles.remittanceTag,
+                      { color: themeColors.primary[500] },
+                    ]}
+                  >
+                    {" "}· Remesa
+                  </Text>
+                ) : null}
               </Text>
             </View>
             <Text
@@ -223,7 +232,7 @@ export const TransactionsScreen: React.FC = () => {
             </Text>
           </View>
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -337,6 +346,7 @@ export const TransactionsScreen: React.FC = () => {
               refreshing={transactionsQuery.isRefetching}
               onRefresh={handleRefresh}
               tintColor={themeColors.primary[500]}
+              colors={[themeColors.primary[500]]}
             />
           }
           ListEmptyComponent={
@@ -445,7 +455,7 @@ export const TransactionsScreen: React.FC = () => {
           style={[
             styles.fab,
             { backgroundColor: themeColors.primary[500] },
-            themeShadows.glow,
+            { ...themeShadows.glow, shadowColor: themeColors.primary[500] },
           ]}
           onPress={() => setModalVisible(true)}
           accessibilityRole="button"
@@ -469,11 +479,6 @@ const styles = StyleSheet.create({
   header: {
     padding: spacing.md,
     paddingBottom: spacing.sm,
-  },
-  headerDivider: {
-    height: StyleSheet.hairlineWidth,
-    marginTop: spacing.sm,
-    opacity: 0.9,
   },
   headerTopRow: {
     flexDirection: "row",
@@ -560,6 +565,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  remittanceTag: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
   transactionDate: {
     fontSize: 12,
     marginTop: 2,
@@ -624,19 +633,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
-  historyFabWrap: {
-    position: "absolute",
-    bottom: floatingTabBarMetrics.actionBottom,
-    left: spacing.lg,
-  },
-  historyFab: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-  },
   fab: {
     position: "absolute",
     bottom: floatingTabBarMetrics.actionBottom,
@@ -646,120 +642,5 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: "transparent",
-  },
-  modalContent: {
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl,
-    maxHeight: "90%",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    overflow: "hidden",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.lg,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-  },
-  sectionLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: spacing.sm,
-  },
-  typeSelector: {
-    flexDirection: "row",
-    gap: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  typeButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    backgroundColor: "#F1F5F9",
-    gap: spacing.md,
-  },
-  typeButtonText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#0F172A",
-  },
-  typeButtonTextActive: {
-    color: "#fff",
-  },
-  currencyScroll: {
-    marginBottom: spacing.lg,
-  },
-  currencyButton: {
-    alignItems: "center",
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.lg,
-    backgroundColor: "#F1F5F9",
-    marginRight: spacing.md,
-    minWidth: 70,
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-  currencySymbol: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#0F172A",
-  },
-  currencyCode: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  inputRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  inputHalf: {
-    flex: 1,
-  },
-  previewCard: {
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-  },
-  previewRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-  },
-  previewLabel: {
-    fontSize: 14,
-  },
-  previewOperator: {
-    fontSize: 14,
-  },
-  previewValue: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  submitButton: {
-    marginTop: spacing.md,
-  },
-  validationError: {
-    color: "#B91C1C",
-    marginTop: spacing.sm,
-    textAlign: "center",
   },
 });
