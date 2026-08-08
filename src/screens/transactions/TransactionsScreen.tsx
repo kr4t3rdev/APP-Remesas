@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  ActivityIndicator,
   useWindowDimensions,
 } from "react-native";
 import { Alert } from "../../utils/alert";
@@ -104,133 +105,125 @@ export const TransactionsScreen: React.FC = () => {
     return format(date, "dd/MM/yyyy", { locale: es });
   };
 
-  const renderTransaction = ({
-    item,
-    index,
-  }: {
-    item: Transaction;
-    index: number;
-  }) => {
+  const renderTransaction = ({ item }: { item: Transaction }) => {
     const isCompra = item.type === "COMPRA";
 
     return (
-      <FadeInDown delay={index * 30}>
-        <TouchableOpacity
-          style={[
-            styles.transactionCard,
-            {
-              backgroundColor: themeColors.card,
-              borderColor: themeColors.border,
-            },
-            themeShadows.md,
-          ]}
-          activeOpacity={0.85}
-        >
-          <View style={styles.transactionHeader}>
+      <TouchableOpacity
+        style={[
+          styles.transactionCard,
+          {
+            backgroundColor: themeColors.card,
+            borderColor: themeColors.border,
+          },
+          themeShadows.md,
+        ]}
+        activeOpacity={0.85}
+      >
+        <View style={styles.transactionHeader}>
+          <View
+            style={[
+              styles.transactionIcon,
+              {
+                backgroundColor: isCompra
+                  ? themeColors.financial.compraLight
+                  : themeColors.financial.ventaLight,
+                borderColor: isCompra
+                  ? themeColors.financial.compra
+                  : themeColors.financial.venta,
+              },
+              themeShadows.sm,
+            ]}
+          >
+            <Ionicons
+              name={isCompra ? "arrow-down" : "arrow-up"}
+              size={20}
+              color={
+                isCompra
+                  ? themeColors.financial.compra
+                  : themeColors.financial.venta
+              }
+            />
+          </View>
+          <View style={styles.transactionInfo}>
             <View
-              style={[
-                styles.transactionIcon,
-                {
-                  backgroundColor: isCompra
-                    ? themeColors.financial.compraLight
-                    : themeColors.financial.ventaLight,
-                  borderColor: isCompra
-                    ? themeColors.financial.compra
-                    : themeColors.financial.venta,
-                },
-                themeShadows.sm,
-              ]}
+              style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
             >
-              <Ionicons
-                name={isCompra ? "arrow-down" : "arrow-up"}
-                size={20}
-                color={
-                  isCompra
-                    ? themeColors.financial.compra
-                    : themeColors.financial.venta
-                }
-              />
-            </View>
-            <View style={styles.transactionInfo}>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-              >
-                {item.currency?.code && getCountryCode(item.currency.code) ? (
-                  <CountryFlag
-                    isoCode={getCountryCode(item.currency.code)!}
-                    size={14}
-                    style={{ borderRadius: 2 }}
-                  />
-                ) : null}
-                <Text
-                  style={[
-                    styles.transactionTitle,
-                    { color: themeColors.text.primary },
-                  ]}
-                >
-                  {isCompra ? "Compra" : "Venta"} de {item.currency?.code}
-                </Text>
-              </View>
+              {item.currency?.code && getCountryCode(item.currency.code) ? (
+                <CountryFlag
+                  isoCode={getCountryCode(item.currency.code)!}
+                  size={14}
+                  style={{ borderRadius: 2 }}
+                />
+              ) : null}
               <Text
                 style={[
-                  styles.transactionDate,
-                  { color: themeColors.text.secondary },
-                ]}
-              >
-                {formatTime(item.createdAt)}
-              </Text>
-            </View>
-            <View style={styles.transactionAmounts}>
-              <Text
-                style={[
-                  styles.transactionAmount,
+                  styles.transactionTitle,
                   { color: themeColors.text.primary },
                 ]}
               >
-                {formatCurrency(item.amount, item.currency?.symbol || "$")}
-              </Text>
-              <Text
-                style={[
-                  styles.transactionRate,
-                  { color: themeColors.text.secondary },
-                ]}
-              >
-                @ {formatRate(item.rate)}
+                {isCompra ? "Compra" : "Venta"} de {item.currency?.code}
               </Text>
             </View>
+            <Text
+              style={[
+                styles.transactionDate,
+                { color: themeColors.text.secondary },
+              ]}
+            >
+              {formatTime(item.createdAt)}
+            </Text>
           </View>
+          <View style={styles.transactionAmounts}>
+            <Text
+              style={[
+                styles.transactionAmount,
+                { color: themeColors.text.primary },
+              ]}
+            >
+              {formatCurrency(item.amount, item.currency?.symbol || "$")}
+            </Text>
+            <Text
+              style={[
+                styles.transactionRate,
+                { color: themeColors.text.secondary },
+              ]}
+            >
+              @ {formatRate(item.rate)}
+            </Text>
+          </View>
+        </View>
 
-          <View
-            style={[
-              styles.transactionFooter,
-              { borderTopColor: themeColors.border },
-            ]}
-          >
-            <View style={styles.transactionTotal}>
-              <Text
-                style={[
-                  styles.transactionTotalLabel,
-                  { color: themeColors.text.tertiary },
-                ]}
-              >
-                Total
-              </Text>
-              <Text
-                style={[
-                  styles.transactionTotalValue,
-                  {
-                    color: isCompra
-                      ? themeColors.financial.compra
-                      : themeColors.financial.venta,
-                  },
-                ]}
-              >
-                {isCompra ? "-" : "+"}$ {formatTotalCup(item.totalCup)} CUP
-              </Text>
-            </View>
+        <View
+          style={[
+            styles.transactionFooter,
+            { borderTopColor: themeColors.border },
+          ]}
+        >
+          <View style={styles.transactionTotal}>
+            <Text
+              style={[
+                styles.transactionTotalLabel,
+                { color: themeColors.text.tertiary },
+              ]}
+            >
+              Total
+            </Text>
+            <Text
+              style={[
+                styles.transactionTotalValue,
+                {
+                  color: isCompra
+                    ? themeColors.financial.compra
+                    : themeColors.financial.venta,
+                },
+              ]}
+            >
+              {isCompra ? "-" : "+"}$ {formatTotalCup(item.totalCup)} CUP
+            </Text>
           </View>
-        </TouchableOpacity>
-      </FadeInDown>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -331,57 +324,121 @@ export const TransactionsScreen: React.FC = () => {
         onClose={() => setFilterModalVisible(false)}
       />
 
-      <FlatList
-        ref={transactionsListRef}
-        {...tabBarScrollBehavior}
-        data={transactions}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderTransaction}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={transactionsQuery.isRefetching}
-            onRefresh={handleRefresh}
-            tintColor={themeColors.primary[500]}
-          />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <View
-              style={[
-                styles.emptyStateIconWrap,
-                {
-                  backgroundColor: themeColors.surface,
-                  borderColor: themeColors.border,
-                },
-                themeShadows.sm,
-              ]}
-            >
-              <Ionicons
-                name="swap-horizontal-outline"
-                size={40}
-                color={themeColors.primary[400]}
-              />
-            </View>
-            <Text
-              style={[
-                styles.emptyStateText,
-                { color: themeColors.text.secondary },
-              ]}
-            >
-              No hay transacciones
-            </Text>
-            <Text
-              style={[
-                styles.emptyStateSubtitle,
-                { color: themeColors.text.tertiary },
-              ]}
-            >
-              Toca el botón + para registrar una nueva
-            </Text>
-          </View>
-        }
-      />
+      <FadeInDown style={{ flex: 1 }}>
+        <FlatList
+          ref={transactionsListRef}
+          {...tabBarScrollBehavior}
+          data={transactions}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderTransaction}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={transactionsQuery.isRefetching}
+              onRefresh={handleRefresh}
+              tintColor={themeColors.primary[500]}
+            />
+          }
+          ListEmptyComponent={
+            transactionsQuery.isLoading ? (
+              <View style={styles.emptyState}>
+                <ActivityIndicator
+                  color={themeColors.primary[500]}
+                  size="large"
+                />
+                <Text
+                  style={[
+                    styles.emptyStateText,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  Cargando transacciones…
+                </Text>
+              </View>
+            ) : transactionsQuery.isError ? (
+              <View style={styles.emptyState}>
+                <View
+                  style={[
+                    styles.emptyStateIconWrap,
+                    {
+                      backgroundColor: themeColors.surface,
+                      borderColor: themeColors.border,
+                    },
+                    themeShadows.sm,
+                  ]}
+                >
+                  <Ionicons
+                    name="alert-circle-outline"
+                    size={40}
+                    color={themeColors.danger}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.emptyStateText,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  No se pudieron cargar las transacciones
+                </Text>
+                <TouchableOpacity
+                  onPress={() => transactionsQuery.refetch()}
+                  style={[
+                    styles.retryButton,
+                    { backgroundColor: themeColors.primary[500] },
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel="Reintentar"
+                >
+                  <Text
+                    style={[
+                      styles.retryButtonText,
+                      { color: themeColors.text.inverse },
+                    ]}
+                  >
+                    Reintentar
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.emptyState}>
+                <View
+                  style={[
+                    styles.emptyStateIconWrap,
+                    {
+                      backgroundColor: themeColors.surface,
+                      borderColor: themeColors.border,
+                    },
+                    themeShadows.sm,
+                  ]}
+                >
+                  <Ionicons
+                    name="swap-horizontal-outline"
+                    size={40}
+                    color={themeColors.primary[400]}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.emptyStateText,
+                    { color: themeColors.text.secondary },
+                  ]}
+                >
+                  No hay transacciones
+                </Text>
+                <Text
+                  style={[
+                    styles.emptyStateSubtitle,
+                    { color: themeColors.text.tertiary },
+                  ]}
+                >
+                  Toca el botón + para registrar una nueva
+                </Text>
+              </View>
+            )
+          }
+        />
+      </FadeInDown>
 
       <ScaleIn delay={200}>
         <TouchableOpacity
@@ -398,7 +455,9 @@ export const TransactionsScreen: React.FC = () => {
         </TouchableOpacity>
       </ScaleIn>
 
-      <TransactionModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+      {modalVisible ? (
+        <TransactionModal visible onClose={() => setModalVisible(false)} />
+      ) : null}
     </SafeAreaView>
   );
 };
@@ -554,6 +613,16 @@ const styles = StyleSheet.create({
   emptyStateSubtitle: {
     fontSize: 14,
     marginTop: spacing.xs,
+  },
+  retryButton: {
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.full,
+  },
+  retryButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
   },
   historyFabWrap: {
     position: "absolute",

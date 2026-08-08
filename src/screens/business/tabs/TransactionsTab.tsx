@@ -69,7 +69,7 @@ export const TransactionsTab = () => {
       renderItem={({ item }) => <OperationRow colors={colors} item={item} />}
       ListEmptyComponent={<Text style={{ color: colors.text.secondary, padding: 16 }}>No hay operaciones todavía.</Text>}
     />
-    <TransactionModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+    {modalVisible ? <TransactionModal visible onClose={() => setModalVisible(false)} /> : null}
     <OpenPositionModal visible={openPositionVisible} positions={positions.data ?? []} onClose={() => setOpenPositionVisible(false)} />
   </View>;
 };

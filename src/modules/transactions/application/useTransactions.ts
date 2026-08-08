@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TransactionType } from "../../../types";
 import { queryKeys } from "../../../shared/query/queryKeys";
 import { transactionsRepository } from "../infrastructure/transactions.repository";
@@ -14,7 +14,7 @@ export const useTransactionsQuery = (params?: {
     queryFn: () => transactionsRepository.getTransactions(params),
     staleTime: 1000 * 60 * 2,
     throwOnError: false,
-    placeholderData: [],
+    placeholderData: keepPreviousData,
   });
 
 export const useCurrenciesQuery = () =>

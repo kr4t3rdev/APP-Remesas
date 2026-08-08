@@ -395,11 +395,13 @@ export const WorkerPaymentsScreen: React.FC = () => {
         isLoading={isLoading}
       />
 
-      <TransactionModal
-        visible={showTransactionModal}
-        onClose={handleCloseTransactionModal}
-        worker={selectedWorker}
-      />
+      {showTransactionModal ? (
+        <TransactionModal
+          visible
+          onClose={handleCloseTransactionModal}
+          worker={selectedWorker}
+        />
+      ) : null}
 
       <AddBalanceModal
         visible={showBalanceModal}
