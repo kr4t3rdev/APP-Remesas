@@ -394,7 +394,7 @@ export const TransactionsScreen: React.FC = () => {
           accessibilityRole="button"
           accessibilityLabel="Nueva transacción"
         >
-          <Ionicons name="add" size={28} color="#fff" />
+          <Ionicons name="add" size={28} color={themeColors.text.inverse} />
         </TouchableOpacity>
       </ScaleIn>
 
