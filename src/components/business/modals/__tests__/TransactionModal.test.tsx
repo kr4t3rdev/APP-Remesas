@@ -100,6 +100,11 @@ describe("TransactionModal FX intent", () => {
   });
 
   it("selects the chosen position and buy rate for COMPRA", () => {
+    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [
+      { currencyId: 10, currency: { code: "CUP" }, balance: 10000 },
+      { currencyId: 1, currency: { code: "USD" }, balance: 100 },
+      { currencyId: 2, currency: { code: "EUR" }, balance: 0 },
+    ] } as any);
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
     fireEvent.press(getByLabelText("Moneda, USD"));
     fireEvent.press(getByLabelText("EUR"));
@@ -221,6 +226,7 @@ describe("TransactionModal FX intent", () => {
     jest.mocked(transactions.usePositionsQuery).mockReturnValue({ data: [] } as any);
     jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [
       { currencyId: 10, currency: { code: "CUP" }, balance: 15000 },
+      { currencyId: 1, currency: { code: "USD" }, balance: 0 },
     ] } as any);
 
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
@@ -276,6 +282,11 @@ describe("TransactionModal FX intent", () => {
   });
 
   it("submits accounts that belong to the newly selected currency", () => {
+    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [
+      { currencyId: 10, currency: { code: "CUP" }, balance: 10000 },
+      { currencyId: 1, currency: { code: "USD" }, balance: 100 },
+      { currencyId: 2, currency: { code: "EUR" }, balance: 0 },
+    ] } as any);
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
     fireEvent.press(getByLabelText("Moneda, USD"));
     fireEvent.press(getByLabelText("EUR"));
@@ -398,6 +409,13 @@ describe("TransactionModal FX intent", () => {
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     fireEvent.press(getByText("Guardar"));
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ sourceType: "CASH", destinationType: "CASH", sourceBankAccountId: undefined, destinationBankAccountId: undefined }), expect.any(Object));
+  });
+
+  it("does not offer cash accounts that do not exist in the backend", () => {
+    const { getByLabelText, queryByLabelText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.press(getByLabelText("Moneda, USD"));
+    fireEvent.press(getByLabelText("EUR"));
+    expect(queryByLabelText("Caja · EUR")).toBeNull();
   });
 
   it("blocks worker FX without an explicit worker currency balance", () => {

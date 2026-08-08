@@ -130,11 +130,15 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   const destinationCurrencyId = type === "COMPRA" ? selectedCurrencyId : primaryCurrencyId;
   const accounts = useMemo<AccountOption[]>(() => {
     const cashByCurrencyId = new Map((cash.data ?? []).map((item) => [item.currencyId, item]));
+    // Solo mostrar cajas que existan realmente en el backend. Si mostramos una
+    // caja "fantasma" (sin registro), el backend la rechaza con "Caja no
+    // encontrada" aunque el usuario la vea en la lista.
     const cashAccounts = (currencies.data ?? [])
       .filter((item) => item.isActive !== false)
+      .filter((item) => cashByCurrencyId.has(item.id))
       .map((currency) => {
-        const cashBalance = cashByCurrencyId.get(currency.id);
-        return { key: `CASH:${currency.id}`, type: "CASH" as const, label: `Caja · ${currency.code}`, currencyId: currency.id, balance: cashBalance?.balance ?? 0, active: true };
+        const cashBalance = cashByCurrencyId.get(currency.id)!;
+        return { key: `CASH:${currency.id}`, type: "CASH" as const, label: `Caja · ${currency.code}`, currencyId: currency.id, balance: Number(cashBalance.balance) || 0, active: true };
       });
     const bankAccounts = worker ? [] : (banks.data ?? []).map((item) => ({ key: `BANK_ACCOUNT:${item.id}`, type: "BANK_ACCOUNT" as const, id: item.id, label: `${item.bankName} · ${item.name}`, currencyId: item.currencyId, balance: Number(item.balance) || 0, active: item.isActive }));
     return [...cashAccounts, ...bankAccounts];
