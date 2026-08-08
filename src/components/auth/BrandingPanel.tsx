@@ -26,7 +26,7 @@ const FEATURE_COLORS: Record<string, { bg: string; icon: string }> = {
 };
 
 export const BrandingPanel: React.FC<BrandingPanelProps> = ({
-  appName = "XChange$ocial",
+  appName = "CashFlows",
   tagline = "Tu gestor de finanzas personales",
 }) => {
   const colors = useColors();

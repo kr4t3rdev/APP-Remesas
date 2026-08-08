@@ -143,7 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             style={[styles.logoText, { color: colors.text.primary }]}
             numberOfLines={1}
           >
-            XChange$ocial
+            CashFlows
           </Text>
         )}
       </View>

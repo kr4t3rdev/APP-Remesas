@@ -22,7 +22,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  title = "XChange$ocial",
+  title = "CashFlows",
   showSearch = true,
   testID = "header",
 }) => {

@@ -99,7 +99,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
         ]}
       >
         <AppLogo size={100} style={styles.logoIconContainer} />
-        <Text style={styles.logoText}>XChange$ocial</Text>
+        <Text style={styles.logoText}>CashFlows</Text>
       </Animated.View>
 
       <Animated.Text style={[styles.tagline, { opacity: taglineAnim }]}>
@@ -211,7 +211,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
   const footer = (
     <Text style={[styles.footerText, { color: themeColors.text.tertiary }]}>
-      © 2026 XChange$ocial
+      © 2026 CashFlows
     </Text>
   );
 
