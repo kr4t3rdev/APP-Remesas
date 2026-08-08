@@ -3,8 +3,6 @@ import type {
   Worker,
   CreateWorkerInput,
   UpdateWorkerInput,
-  CreateTransactionInput,
-  AddBalanceInput,
 } from "../../../types";
 
 export const workerPaymentsRepository = {
@@ -30,17 +28,6 @@ export const workerPaymentsRepository = {
 
   async deleteWorker(id: number): Promise<void> {
     await api.delete(`/worker-payments/${id}`);
-  },
-
-  async createTransaction(
-    workerId: number,
-    input: Omit<CreateTransactionInput, "workerId">,
-  ): Promise<Worker> {
-    const response = await api.post<{ worker?: Worker; workerBalance?: Worker }>(
-      `/worker-payments/${workerId}/transaction`,
-      input,
-    );
-    return response.data!.worker ?? response.data!.workerBalance!;
   },
 
   async addBalance(

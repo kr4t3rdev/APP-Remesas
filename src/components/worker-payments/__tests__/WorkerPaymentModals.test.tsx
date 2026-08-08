@@ -1,7 +1,6 @@
 import React from "react";
 import { act, fireEvent, render } from "@testing-library/react-native";
 import { AddBalanceModal } from "../AddBalanceModal";
-import { TransactionFormModal } from "../TransactionFormModal";
 import * as banks from "../../../modules/bank-accounts/application/useBankAccounts";
 import * as cash from "../../../modules/cash/application/useCash";
 import * as currencies from "../../../modules/currencies/application/useCurrencies";
@@ -79,32 +78,6 @@ describe("worker payment modal submissions", () => {
     await act(async () => fireEvent.press(getByTestId("balance-submit-button")));
 
     expect(getByText(/supera el saldo disponible del trabajador/)).toBeTruthy();
-    expect(onSubmit).not.toHaveBeenCalled();
-  });
-
-  it("submits normalized comma decimals from TransactionFormModal", async () => {
-    const onSubmit = jest.fn().mockResolvedValue(undefined);
-    const { getByTestId } = render(
-      <TransactionFormModal visible worker={null} onClose={jest.fn()} onSubmit={onSubmit} />,
-    );
-
-    fireEvent.changeText(getByTestId("transaction-amount-input"), "10,25");
-    fireEvent.changeText(getByTestId("transaction-profit-input"), "2,50");
-    await act(async () => fireEvent.press(getByTestId("transaction-submit-button")));
-
-    expect(onSubmit).toHaveBeenCalledWith(10.25, 2.5, undefined);
-  });
-
-  it("does not submit invalid TransactionFormModal values as NaN", async () => {
-    const onSubmit = jest.fn().mockResolvedValue(undefined);
-    const { getByTestId } = render(
-      <TransactionFormModal visible worker={null} onClose={jest.fn()} onSubmit={onSubmit} />,
-    );
-
-    fireEvent.changeText(getByTestId("transaction-amount-input"), "NaN");
-    fireEvent.changeText(getByTestId("transaction-profit-input"), "2,50");
-    await act(async () => fireEvent.press(getByTestId("transaction-submit-button")));
-
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });

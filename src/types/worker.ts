@@ -46,16 +46,6 @@ export type CreateWorkerInput = {
 
 export type UpdateWorkerInput = Partial<CreateWorkerInput>;
 
-export type CreateTransactionInput = {
-  workerId: number;
-  amount: number;
-  profit?: number;
-  description?: string;
-  currencyId?: number;
-  destinationType?: "CASH" | "BANK_ACCOUNT";
-  destinationId?: number;
-};
-
 export type AddBalanceInput = {
   workerId: number;
   amount: number;

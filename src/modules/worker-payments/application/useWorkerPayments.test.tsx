@@ -7,7 +7,6 @@ import {
   useWorkerDetailQuery,
   useWorkersQuery,
   useUpdateWorkerMutation,
-  useCreateTransactionMutation,
   useAddBalanceMutation,
   useDepositMutation,
 } from "./useWorkerPayments";
@@ -21,7 +20,6 @@ jest.mock("../infrastructure/workerPayments.repository", () => ({
     createWorker: jest.fn(),
     updateWorker: jest.fn(),
     deleteWorker: jest.fn(),
-    createTransaction: jest.fn(),
     addBalance: jest.fn(),
     deposit: jest.fn(),
   },
@@ -168,43 +166,6 @@ describe("useWorkerPayments hooks", () => {
         expect(invalidateSpy).toHaveBeenCalledWith({
           queryKey: queryKeys.workerPayments.list(),
         });
-      });
-    });
-  });
-
-  describe("useCreateTransactionMutation", () => {
-    it("creates transaction and invalidates queries", async () => {
-      const mockWorker = {
-        id: 1,
-        balance: 800,
-        accumulatedProfit: 50,
-      } as never;
-      mockedRepository.createTransaction.mockResolvedValueOnce(mockWorker);
-      const queryClient = new QueryClient({
-        defaultOptions: { mutations: { retry: false } },
-      });
-      const invalidateSpy = jest.spyOn(queryClient, "invalidateQueries");
-
-      const { result } = renderHook(() => useCreateTransactionMutation(), {
-        wrapper: createWrapper(queryClient),
-      });
-
-      await result.current.mutateAsync({
-        workerId: 1,
-        input: { amount: 200, profit: 50 },
-      });
-
-      await waitFor(() => {
-        expect(invalidateSpy).toHaveBeenCalledWith({
-          queryKey: queryKeys.workerPayments.list(),
-        });
-        expect(invalidateSpy).toHaveBeenCalledWith({
-          queryKey: queryKeys.workerPayments.detail(1),
-        });
-        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.transactions.list() });
-        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.transactions.positions() });
-        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.cash.balances() });
-        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: queryKeys.bankAccounts.list() });
       });
     });
   });

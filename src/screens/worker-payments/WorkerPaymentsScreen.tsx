@@ -28,7 +28,6 @@ import {
   useCreateWorkerMutation,
   useUpdateWorkerMutation,
   useDeleteWorkerMutation,
-  useCreateTransactionMutation,
   useAddBalanceMutation,
   useDepositMutation,
 } from "../../modules/worker-payments/application/useWorkerPayments";
@@ -66,7 +65,6 @@ export const WorkerPaymentsScreen: React.FC = () => {
   const createMutation = useCreateWorkerMutation();
   const updateMutation = useUpdateWorkerMutation();
   const deleteMutation = useDeleteWorkerMutation();
-  const transactionMutation = useCreateTransactionMutation();
   const balanceMutation = useAddBalanceMutation();
   const depositMutation = useDepositMutation();
   const workerDetailQuery = useWorkerDetailQuery(expandedWorkerId ?? 0);
@@ -166,19 +164,6 @@ export const WorkerPaymentsScreen: React.FC = () => {
     setSelectedWorker(null);
   }, []);
 
-  const handleCreateTransaction = async (
-    amount: number,
-    profit: number,
-    description?: string,
-  ) => {
-    if (!selectedWorker) return;
-    await transactionMutation.mutateAsync({
-      workerId: selectedWorker.id,
-      input: { amount, profit, description, currencyId: selectedWorker.balances?.[0]?.currencyId ?? 0 },
-    });
-    Alert.alert("Éxito", "Transacción registrada correctamente");
-  };
-
   const handleOpenBalanceModal = useCallback(
     (worker: Worker) => {
       setSelectedWorker(worker);
@@ -264,7 +249,6 @@ export const WorkerPaymentsScreen: React.FC = () => {
     createMutation.isPending ||
     updateMutation.isPending ||
     deleteMutation.isPending;
-  const isTransactionLoading = transactionMutation.isPending;
   const isBalanceLoading = balanceMutation.isPending;
   const isDepositLoading = depositMutation.isPending;
 

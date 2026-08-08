@@ -5,8 +5,6 @@ import type {
   Worker,
   CreateWorkerInput,
   UpdateWorkerInput,
-  CreateTransactionInput,
-  AddBalanceInput,
 } from "../../../types";
 
 export const useWorkersQuery = () =>
@@ -69,36 +67,6 @@ export const useDeleteWorkerMutation = () => {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.workerPayments.list(),
       });
-    },
-  });
-};
-
-export const useCreateTransactionMutation = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      workerId,
-      input,
-    }: {
-      workerId: number;
-      input: Omit<CreateTransactionInput, "workerId">;
-    }) => workerPaymentsRepository.createTransaction(workerId, input),
-    onSuccess: async (_data, variables) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.workerPayments.list(),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.workerPayments.detail(variables.workerId),
-        }),
-        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
-        queryClient.invalidateQueries({ queryKey: ["reports"] }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.list() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.transactions.positions() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.cash.balances() }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.bankAccounts.list() }),
-      ]);
     },
   });
 };

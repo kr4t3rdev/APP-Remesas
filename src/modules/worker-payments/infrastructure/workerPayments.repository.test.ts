@@ -76,24 +76,6 @@ describe("workerPaymentsRepository", () => {
     });
   });
 
-  describe("createTransaction", () => {
-    it("creates a transaction for a worker", async () => {
-      const payload = { amount: 200, profit: 50 };
-      mockedApi.post.mockResolvedValueOnce({ data: { worker: { id: 1 } }, status: 200, statusText: 'OK', headers: new Headers() });
-
-      const result = await workerPaymentsRepository.createTransaction(
-        1,
-        payload,
-      );
-
-      expect(mockedApi.post).toHaveBeenCalledWith(
-        "/worker-payments/1/transaction",
-        payload,
-      );
-      expect(result).toEqual({ id: 1 });
-    });
-  });
-
   describe("addBalance", () => {
     it("adds balance to a worker", async () => {
       mockedApi.post.mockResolvedValueOnce({
