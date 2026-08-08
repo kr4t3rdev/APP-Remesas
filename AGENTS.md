@@ -17,28 +17,28 @@ Contexto para siguientes sesiones de opencode/Claude.
 
 ## Codebase Knowledge Graph (codebase-memory-mcp)
 
-Ambos proyectos (APP y API) están indexados con codebase-memory-mcp. Los agentes DEBEN usar las herramientas del grafo para explorar el código antes de recurrir a grep/glob.
+codebase-memory-mcp es la fuente primaria para descubrir código en APP y API. Los agentes DEBEN usar sus herramientas antes de recurrir a `rg`/`fd`; estos últimos quedan como fallback para literales, configuración y archivos no-code.
 
-### Prioridad de búsqueda
-1. `search_graph` — encontrar funciones, clases, rutas, variables por nombre/patrón
-2. `trace_path` — trazar quién llama a una función o qué llama ella
-3. `get_code_snippet` — leer código fuente de una función/clase específica (usar `qualified_name` de `search_graph`)
-4. `query_graph` — consultas Cypher para patrones complejos (N+1, alto acoplamiento, etc.)
-5. `get_architecture` — vista general del proyecto (paquetes, servicios, dependencias, clusters)
-6. Fallback a grep/glob cuando se busquen strings literales, mensajes de error, configs, o archivos no-code
+### Flujo de descubrimiento
+1. `search_graph` — encontrar funciones, clases, rutas y variables por nombre o patrón.
+2. `trace_path` — seguir callers, callees, dependencias o flujo de datos.
+3. `get_code_snippet` — leer una función o clase usando el `qualified_name` obtenido con `search_graph`; no usarlo como búsqueda inicial.
+4. `query_graph` — consultar patrones complejos mediante Cypher.
+5. `get_architecture` — consultar la arquitectura, dependencias, rutas, capas y clusters.
 
-### Ambos proyectos indexados
-- **APP** (`search_graph project="app-remesas"`) — 17k+ nodos
-- **API** (`search_graph project="API-Remesas"`) — 7k+ nodos
-- **Cross-repo**: usar `trace_path mode="cross_service"` para seguir llamadas HTTP entre APP y API
-- **Indexar cambios**: correr `codebase-memory-mcp_index_repository` después de modificaciones significativas
+### Proyectos, actualización y cross-repo
+- **APP**: `search_graph project="app-remesas"` — 18,253 nodos / 20,942 edges.
+- **API**: `search_graph project="API-Remesas"` — 7,452 nodos / 10,220 edges.
+- Después de cambios significativos, refrescar el repositorio afectado con `index_repository` en modo `moderate`.
+- Para seguir contratos entre APP y API, usar `trace_path mode="cross_service"`.
+- Ejecutar inteligencia cross-repo solo después de que ambos índices estén frescos. La coincidencia automática actual devolvió 0 edges HTTP/async/channel; por eso los contratos APP↔API todavía requieren validar explícitamente la ruta y el trace.
 
 ### graphify
-El proyecto también tiene un grafo AST local en `graphify-out/`. Usar para:
-- Preguntas generales: `graphify query "<pregunta>"`
+Graphify es un mapa AST local complementario en `graphify-out/`. Usar los comandos válidos:
 - Relaciones: `graphify path "<A>" "<B>"`
 - Conceptos enfocados: `graphify explain "<concepto>"`
-- Después de modificar: `graphify update .`
+- Diagnóstico: `graphify diagnose multigraph`
+- Después de cambios de código: `graphify update .`
 
 ## Hooks git importantes
 

@@ -37,6 +37,7 @@ yarn-error.*
 credentials.json
 .credentials/
 output/apk/
+relases/
 
 # typescript
 *.tsbuildinfo
