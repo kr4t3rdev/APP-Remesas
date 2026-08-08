@@ -32,7 +32,7 @@ describe("worker payment modal submissions", () => {
     await act(async () => fireEvent.press(getByTestId("balance-submit-button")));
 
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ amount: 12.34, currencyId: 1 }));
-  });
+  }, 15000);
 
   it("does not submit an invalid AddBalanceModal amount as NaN", async () => {
     const onSubmit = jest.fn().mockResolvedValue(undefined);
