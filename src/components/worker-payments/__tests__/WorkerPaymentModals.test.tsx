@@ -47,6 +47,41 @@ describe("worker payment modal submissions", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it("offers empty cash and bank accounts as destinations in deposit mode", () => {
+    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({
+      data: [{ currencyId: 1, balance: 0, currency: { id: 1, code: "EUR", symbol: "€", name: "Euro", isActive: true } }],
+    } as any);
+    jest.mocked(banks.useBankAccountsQuery).mockReturnValue({
+      data: [{ id: 9, bankName: "Banco", name: "Cuenta Vacía", currencyId: 1, currency: { id: 1, code: "EUR", symbol: "€", name: "Euro", isActive: true }, balance: 0, isActive: true }],
+    } as any);
+
+    const { getByText } = render(
+      <AddBalanceModal visible worker={null} onClose={jest.fn()} onSubmit={jest.fn()} mode="deposit" />,
+    );
+
+    expect(getByText("Caja · EUR")).toBeTruthy();
+    expect(getByText("Banco · Cuenta Vacía")).toBeTruthy();
+  });
+
+  it("blocks depositing more than the worker balance in deposit mode", async () => {
+    const onSubmit = jest.fn().mockResolvedValue(undefined);
+    const { getByTestId, getByText } = render(
+      <AddBalanceModal
+        visible
+        worker={{ id: 1, name: "Ana", initials: "AN", balances: [{ id: 7, workerId: 1, currencyId: 1, balance: 50, accumulatedProfit: 0, totalDelivered: 0 }] } as any}
+        onClose={jest.fn()}
+        onSubmit={onSubmit}
+        mode="deposit"
+      />,
+    );
+
+    fireEvent.changeText(getByTestId("balance-amount-input"), "100");
+    await act(async () => fireEvent.press(getByTestId("balance-submit-button")));
+
+    expect(getByText(/supera el saldo disponible del trabajador/)).toBeTruthy();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it("submits normalized comma decimals from TransactionFormModal", async () => {
     const onSubmit = jest.fn().mockResolvedValue(undefined);
     const { getByTestId } = render(
