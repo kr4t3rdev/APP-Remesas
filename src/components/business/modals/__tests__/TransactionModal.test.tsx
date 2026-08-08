@@ -194,13 +194,25 @@ describe("TransactionModal FX intent", () => {
     expect(queryByText(/moneda base CUP/i)).toBeNull();
   });
 
-  it("shows error feedback when saving the operation fails", () => {
+  it("shows the real backend message when saving the operation fails", () => {
+    const { getByLabelText, getByText, queryByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+
+    const options = mutate.mock.calls[0][1];
+    act(() => options.onError({ response: { data: { message: "Saldo insuficiente en caja" } } }));
+
+    expect(getByText("Saldo insuficiente en caja")).toBeTruthy();
+    expect(queryByText("No se pudo guardar la operación. Intentá nuevamente.")).toBeNull();
+  });
+
+  it("falls back to the generic message when the backend error has no message", () => {
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     fireEvent.press(getByText("Guardar"));
 
     const options = mutate.mock.calls[0][1];
-    act(() => options.onError(new Error("offline")));
+    act(() => options.onError({}));
 
     expect(getByText("No se pudo guardar la operación. Intentá nuevamente.")).toBeTruthy();
   });

@@ -37,6 +37,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   const [sourceKey, setSourceKey] = useState<string>();
   const [destinationKey, setDestinationKey] = useState<string>();
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string | undefined>();
   const [savedRateMessage, setSavedRateMessage] = useState<string>();
   const [workerProfit, setWorkerProfit] = useState("");
   const [workerCurrencyId, setWorkerCurrencyId] = useState<number>();
@@ -103,6 +104,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     setPersistRate(false);
     setSavedRateMessage(undefined);
     setSaveStatus("idle");
+    setSaveErrorMessage(undefined);
     setWorkerProfit("");
     setWorkerCurrencyId(undefined);
     setRateInput(activeRate > 0 ? String(activeRate) : "");
@@ -161,6 +163,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   const handleSave = () => {
     if (!canSubmit || !source || !destination) return;
     setSaveStatus("idle");
+    setSaveErrorMessage(undefined);
     setSavedRateMessage(undefined);
     createTx({ type, currencyId: selectedCurrencyId, amount: parsedAmount!, rate, operationKind, persistRate, notes, idempotencyKey: intentKey.current, sourceType: source.type, sourceBankAccountId: source.id, destinationType: destination.type, destinationBankAccountId: destination.id, ...(worker && workerCurrencyId ? { workerId: worker.id, workerProfit: parsedWorkerProfit ?? 0, workerCurrencyId } : {}) }, {
         onSuccess: (response) => {
@@ -175,7 +178,10 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
         }
         setPersistRate(false);
         setOperationKind("TRANSFER");
-      }, onError: () => setSaveStatus("error"),
+      }, onError: (error: any) => {
+        setSaveStatus("error");
+        setSaveErrorMessage(error?.response?.data?.message || error?.message);
+      },
     });
   };
   const renderAccountPicker = (title: "Origen" | "Destino", options: AccountOption[], selected: string | undefined, onSelect: (key: string) => void) => <View><Text style={{ color: colors.text.primary, marginTop: 8, fontSize: 15 }}>{title}</Text>{options.length === 0 ? <Text style={{ color: colors.danger, fontSize: 14 }}>{title === "Origen" ? "No hay fondos suficientes en Caja o cuentas bancarias para esta operación." : "No hay destinos activos para la moneda seleccionada."}</Text> : <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={{ maxHeight: 130 }}>{options.map((item) => <TouchableOpacity key={item.key} accessibilityRole="radio" accessibilityLabel={item.label} accessibilityState={{ selected: item.key === selected }} onPress={() => onSelect(item.key)} style={[styles.accountOption, { borderColor: colors.border }]}><Text style={{ color: colors.text.primary, fontSize: 14 }}>{item.label}</Text><Text style={{ color: colors.text.secondary, fontSize: 13 }}>{(Number(item.balance) || 0).toFixed(2)}</Text></TouchableOpacity>)}</ScrollView>}</View>;
@@ -233,8 +239,8 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     <Text style={{ color: colors.text.secondary, fontSize: 14 }}>Proyección: total {preview.totalBase.toFixed(2)} · saldo {preview.projectedSaldo?.toFixed(2) ?? "—"} · costo prom. {preview.projectedCostoPromedio?.toFixed(2) ?? "—"}</Text>
     {preview.expectedRendimiento !== null ? <Text accessibilityRole="text" style={{ color: colors.text.secondary, marginTop: 2, fontSize: 14 }}>Ganancia estimada: {preview.expectedRendimiento.toFixed(2)}</Text> : null}
     <Text accessibilityRole="summary" style={{ color: colors.text.secondary, marginTop: 8, fontSize: 14 }}>Resumen: salen {type === "COMPRA" ? preview.totalBase.toFixed(2) : amount || "0"} de {source?.label ?? "—"} y entran {type === "COMPRA" ? amount || "0" : preview.totalBase.toFixed(2)} en {destination?.label ?? "—"}</Text>
-    {saveStatus === "success" ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 6, fontSize: 14 }}>Operación guardada correctamente.</Text> : null}{savedRateMessage ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 4, fontSize: 14 }}>{savedRateMessage}</Text> : null}{saveStatus === "error" ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 6, fontSize: 14 }}>No se pudo guardar la operación. Intentá nuevamente.</Text> : null}{amount && (!preview.isValid || !source || !destination || workerCurrencyValidationError) ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 6, fontSize: 14 }}>{workerCurrencyValidationError ?? (!preview.isValid ? preview.validationMessage : "Seleccioná origen y destino compatibles")}</Text> : null}
-    <View style={styles.actions}><TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancelar" onPress={() => { setPersistRate(false); setOperationKind("TRANSFER"); setSavedRateMessage(undefined); setSaveStatus("idle"); setAmount(""); setWorkerProfit(""); setRateInput(activeRate > 0 ? String(activeRate) : ""); onClose(); }} style={[styles.button, { backgroundColor: colors.border }]}><Text style={{ color: colors.text.primary, fontSize: 15 }}>Cancelar</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={isPending ? "Guardando" : "Guardar"} onPress={handleSave} disabled={isPending || !canSubmit} style={[styles.button, { backgroundColor: colors.primary[500], opacity: isPending || !canSubmit ? 0.5 : 1 }]}><Text style={{ color: colors.text.inverse, fontSize: 15 }}>{isPending ? "Guardando..." : "Guardar"}</Text></TouchableOpacity></View>
+    {saveStatus === "success" ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 6, fontSize: 14 }}>Operación guardada correctamente.</Text> : null}{savedRateMessage ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 4, fontSize: 14 }}>{savedRateMessage}</Text> : null}{saveStatus === "error" ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 6, fontSize: 14 }}>{saveErrorMessage || "No se pudo guardar la operación. Intentá nuevamente."}</Text> : null}{amount && (!preview.isValid || !source || !destination || workerCurrencyValidationError) ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 6, fontSize: 14 }}>{workerCurrencyValidationError ?? (!preview.isValid ? preview.validationMessage : "Seleccioná origen y destino compatibles")}</Text> : null}
+    <View style={styles.actions}><TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancelar" onPress={() => { setPersistRate(false); setOperationKind("TRANSFER"); setSavedRateMessage(undefined); setSaveStatus("idle"); setSaveErrorMessage(undefined); setAmount(""); setWorkerProfit(""); setRateInput(activeRate > 0 ? String(activeRate) : ""); onClose(); }} style={[styles.button, { backgroundColor: colors.border }]}><Text style={{ color: colors.text.primary, fontSize: 15 }}>Cancelar</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={isPending ? "Guardando" : "Guardar"} onPress={handleSave} disabled={isPending || !canSubmit} style={[styles.button, { backgroundColor: colors.primary[500], opacity: isPending || !canSubmit ? 0.5 : 1 }]}><Text style={{ color: colors.text.inverse, fontSize: 15 }}>{isPending ? "Guardando..." : "Guardar"}</Text></TouchableOpacity></View>
   </ScrollView></View></Modal>;
 };
 const styles = StyleSheet.create({ overlay: { flex: 1, justifyContent: "flex-end" }, container: { maxHeight: "90%", borderTopLeftRadius: 16, borderTopRightRadius: 16, elevation: 5 }, containerContent: { padding: 16, paddingBottom: 4 }, dragHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(0,0,0,0.15)", alignSelf: "center", marginBottom: 8 }, title: { fontSize: 18, fontWeight: "bold", marginBottom: 14 }, input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 8, minHeight: 44, fontSize: 15 }, typeRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 12 }, tabOption: { minHeight: 44, flex: 1, justifyContent: "center", alignItems: "center", borderBottomWidth: 2, borderBottomColor: "transparent" }, radioOption: { minHeight: 44, minWidth: 80, justifyContent: "center", alignItems: "center" }, checkboxRow: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: 8 }, checkbox: { width: 22, height: 22, borderWidth: 2, borderRadius: 4, alignItems: "center", justifyContent: "center" }, currencyTrigger: { minHeight: 44, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, currencyMenu: { maxHeight: 180, borderWidth: 1, borderRadius: 8, marginTop: 4 }, currencyOption: { minHeight: 44, paddingHorizontal: 12, justifyContent: "center" }, accountOption: { borderWidth: 1, borderRadius: 8, padding: 10, marginTop: 6, flexDirection: "row", justifyContent: "space-between" }, actions: { flexDirection: "row", justifyContent: "flex-end", gap: 10, marginTop: 14 }, button: { paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: 8 } });
