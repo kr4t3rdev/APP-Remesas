@@ -67,7 +67,10 @@ export const TransactionFilterModal: React.FC<Props> = ({
             themeShadows.lg,
           ]}
         >
-          <Text style={[styles.title, { color: themeColors.text.primary }]}>
+          <Text
+            accessibilityRole="header"
+            style={[styles.title, { color: themeColors.text.primary }]}
+          >
             Filtrar transacciones
           </Text>
           <View accessibilityRole="radiogroup" accessibilityLabel="Tipo de transacción">
@@ -97,6 +100,8 @@ export const TransactionFilterModal: React.FC<Props> = ({
                     name="checkmark"
                     size={20}
                     color={themeColors.primary[500]}
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
                   />
                 ) : null}
               </TouchableOpacity>

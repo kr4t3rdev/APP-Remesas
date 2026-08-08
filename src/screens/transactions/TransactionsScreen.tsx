@@ -100,7 +100,8 @@ export const TransactionsScreen: React.FC = () => {
     } else if (diffDays === 1) {
       return `Ayer ${format(date, "HH:mm")}`;
     } else if (diffDays < 7) {
-      return format(date, "EEEE", { locale: es });
+      const weekday = format(date, "EEEE", { locale: es });
+      return weekday.charAt(0).toUpperCase() + weekday.slice(1);
     }
     return format(date, "dd/MM/yyyy", { locale: es });
   };
