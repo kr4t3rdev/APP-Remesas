@@ -144,7 +144,23 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     return [...cashAccounts, ...bankAccounts];
   }, [banks.data, cash.data, currencies.data, worker]);
   const sourceDebit = type === "COMPRA" ? (parsedAmount ?? 0) * rate : parsedAmount ?? 0;
-  const sourceOptions = sourceCurrencyId ? accounts.filter((item) => item.active && item.currencyId === sourceCurrencyId && item.balance > 0 && item.balance >= sourceDebit) : [];
+  const workerSaleBalance = worker && type === "VENTA"
+    ? workerCurrencyOptions.find((balance) => balance.currencyId === selectedCurrencyId)
+    : undefined;
+  const sourceOptions = worker && type === "VENTA"
+    ? workerSaleBalance && Number(workerSaleBalance.balance) >= sourceDebit
+      ? [{
+          key: `WORKER_BALANCE:${worker.id}:${workerSaleBalance.currencyId}`,
+          type: "CASH" as const,
+          label: `Saldo trabajador · ${workerSaleBalance.currency?.code ?? workerSaleBalance.currencyId}`,
+          currencyId: workerSaleBalance.currencyId,
+          balance: Number(workerSaleBalance.balance) || 0,
+          active: true,
+        }]
+      : []
+    : sourceCurrencyId
+      ? accounts.filter((item) => item.active && item.currencyId === sourceCurrencyId && item.balance > 0 && item.balance >= sourceDebit)
+      : [];
   const currencyConfigurationError = !primaryCurrencyId || !primaryCurrency
     ? "Configuración incompleta: no se encontró la moneda principal configurada."
     : undefined;
@@ -188,7 +204,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
       },
     });
   };
-  const renderAccountPicker = (title: "Origen" | "Destino", options: AccountOption[], selected: string | undefined, onSelect: (key: string) => void) => <View><Text style={{ color: colors.text.primary, marginTop: 8, fontSize: 15 }}>{title}</Text>{options.length === 0 ? <Text style={{ color: colors.danger, fontSize: 14 }}>{title === "Origen" ? "No hay fondos suficientes en Caja o cuentas bancarias para esta operación." : "No hay destinos activos para la moneda seleccionada."}</Text> : <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={{ maxHeight: 130 }}>{options.map((item) => <TouchableOpacity key={item.key} accessibilityRole="radio" accessibilityLabel={item.label} accessibilityState={{ selected: item.key === selected }} onPress={() => onSelect(item.key)} style={[styles.accountOption, { borderColor: colors.border }]}><Text style={{ color: colors.text.primary, fontSize: 14 }}>{item.label}</Text><Text style={{ color: colors.text.secondary, fontSize: 13 }}>{(Number(item.balance) || 0).toFixed(2)}</Text></TouchableOpacity>)}</ScrollView>}</View>;
+  const renderAccountPicker = (title: "Origen" | "Destino", options: AccountOption[], selected: string | undefined, onSelect: (key: string) => void) => <View><Text style={{ color: colors.text.primary, marginTop: 8, fontSize: 15 }}>{title}</Text>{options.length === 0 ? <Text style={{ color: colors.danger, fontSize: 14 }}>{title === "Origen" ? worker && type === "VENTA" ? "El trabajador no tiene saldo suficiente en la moneda seleccionada." : "No hay fondos suficientes en Caja o cuentas bancarias para esta operación." : "No hay destinos activos para la moneda seleccionada."}</Text> : <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={{ maxHeight: 130 }}>{options.map((item) => <TouchableOpacity key={item.key} accessibilityRole="radio" accessibilityLabel={item.label} accessibilityState={{ selected: item.key === selected }} onPress={() => onSelect(item.key)} style={[styles.accountOption, { borderColor: colors.border }]}><Text style={{ color: colors.text.primary, fontSize: 14 }}>{item.label}</Text><Text style={{ color: colors.text.secondary, fontSize: 13 }}>{(Number(item.balance) || 0).toFixed(2)}</Text></TouchableOpacity>)}</ScrollView>}</View>;
 
   return <Modal visible={visible} transparent animationType="slide" accessibilityViewIsModal onRequestClose={onClose}><View style={styles.overlay}><FadeInOverlay targetOpacity={0.25} /><ScrollView accessibilityLabel="Nueva operación" automaticallyAdjustKeyboardInsets nestedScrollEnabled keyboardShouldPersistTaps="handled" contentContainerStyle={styles.containerContent} style={[styles.container, { backgroundColor: colors.card }]}>
     <View style={styles.dragHandle} />
@@ -223,7 +239,13 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
         accessibilityRole="radio"
         accessibilityLabel={item.code}
         accessibilityState={{ selected: item.id === selectedCurrencyId }}
-        onPress={() => { setCurrencyId(item.id); setIsCurrencyPickerOpen(false); }}
+        onPress={() => {
+          setCurrencyId(item.id);
+          if (worker && type === "VENTA" && workerCurrencyOptions.some((balance) => balance.currencyId === item.id)) {
+            setWorkerCurrencyId(item.id);
+          }
+          setIsCurrencyPickerOpen(false);
+        }}
         style={[styles.currencyOption, item.id === selectedCurrencyId && { backgroundColor: colors.primary[100] }]}
       ><Text style={{ color: colors.text.primary }}>{item.code}</Text></TouchableOpacity>)}
     </ScrollView> : null}
@@ -236,7 +258,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
       <Text style={{ color: colors.text.primary, fontSize: 14 }}>Guardar como tasa actual</Text>
     </TouchableOpacity>
     {currencyConfigurationError ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8, fontSize: 13 }}>{currencyConfigurationError}</Text> : null}
-    {worker ? <><Text style={{ color: colors.text.primary, marginTop: 8, marginBottom: 4, fontSize: 15 }}>Moneda del saldo del trabajador</Text>{workerCurrencyOptions.length > 0 ? <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={{ maxHeight: 100 }} accessibilityRole="radiogroup">{workerCurrencyOptions.map((balance) => <TouchableOpacity key={balance.currencyId} accessibilityRole="radio" accessibilityLabel={`Saldo trabajador ${balance.currency?.code ?? balance.currencyId}`} accessibilityState={{ selected: balance.currencyId === workerCurrencyId }} onPress={() => setWorkerCurrencyId(balance.currencyId)} style={[styles.accountOption, { borderColor: colors.border }, balance.currencyId === workerCurrencyId && { borderColor: colors.primary[500] }]}><Text style={{ color: colors.text.primary, fontSize: 14 }}>{balance.currency?.code ?? `Moneda ${balance.currencyId}`}</Text><Text style={{ color: colors.text.secondary, fontSize: 13 }}>{Number(balance.balance).toFixed(2)}</Text></TouchableOpacity>)}</ScrollView> : <Text accessibilityRole="alert" style={{ color: colors.danger, fontSize: 14 }}>{workerCurrencyValidationError}</Text>}</> : null}
+     {worker ? <><Text style={{ color: colors.text.primary, marginTop: 8, marginBottom: 4, fontSize: 15 }}>Moneda del saldo del trabajador</Text>{workerCurrencyOptions.length > 0 ? <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={{ maxHeight: 100 }} accessibilityRole="radiogroup">{workerCurrencyOptions.map((balance) => <TouchableOpacity key={balance.currencyId} accessibilityRole="radio" accessibilityLabel={`Saldo trabajador ${balance.currency?.code ?? balance.currencyId}`} accessibilityState={{ selected: balance.currencyId === workerCurrencyId }} onPress={() => { setWorkerCurrencyId(balance.currencyId); if (type === "VENTA") setCurrencyId(balance.currencyId); }} style={[styles.accountOption, { borderColor: colors.border }, balance.currencyId === workerCurrencyId && { borderColor: colors.primary[500] }]}><Text style={{ color: colors.text.primary, fontSize: 14 }}>{balance.currency?.code ?? `Moneda ${balance.currencyId}`}</Text><Text style={{ color: colors.text.secondary, fontSize: 13 }}>{Number(balance.balance).toFixed(2)}</Text></TouchableOpacity>)}</ScrollView> : <Text accessibilityRole="alert" style={{ color: colors.danger, fontSize: 14 }}>{workerCurrencyValidationError}</Text>}</> : null}
     {renderAccountPicker("Origen", sourceOptions, sourceKey, setSourceKey)}{renderAccountPicker("Destino", destinationOptions, destinationKey, setDestinationKey)}
     {worker ? <><Text style={{ color: colors.text.primary, marginTop: 8, marginBottom: 4, fontSize: 15 }}>Ganancia del trabajador (opcional)</Text><TextInput accessibilityLabel="Ganancia del trabajador" style={[styles.input, { borderColor: colors.border, color: colors.text.primary }]} placeholder="Ganancia generada" placeholderTextColor={colors.text.secondary} keyboardType="decimal-pad" value={workerProfit} onChangeText={setWorkerProfit} />{workerProfitValidationError ? <Text accessibilityRole="alert" style={{ color: colors.danger, fontSize: 13 }}>{workerProfitValidationError}</Text> : null}</> : null}
     <Text style={{ color: colors.text.secondary, fontSize: 14 }}>Estado actual: saldo {preview.currentSaldo?.toFixed(2) ?? "—"} · costo prom. {preview.currentCostoPromedio?.toFixed(2) ?? "—"}</Text>
