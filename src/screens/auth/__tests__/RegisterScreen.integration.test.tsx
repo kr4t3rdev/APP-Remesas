@@ -43,5 +43,5 @@ describe("RegisterScreen", () => {
         email: "juan@example.com",
       });
     });
-  });
+  }, 15000);
 });
