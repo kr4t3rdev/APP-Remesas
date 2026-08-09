@@ -82,6 +82,16 @@ describe("TransactionsTab", () => {
     expect(refetchRemittances).toHaveBeenCalled();
   });
 
+  it("renders manual remittances with the API's nullable provider and string id", () => {
+    jest.mocked(transactionQueries.useRemittancesQuery).mockReturnValue(query({
+      data: [{ id: "transaction:9", provider: null, sourceId: null, status: "COMPLETED", origin: "MANUAL" }],
+    }) as any);
+
+    const { getByText } = render(<TransactionsTab />);
+
+    expect(getByText("Manual · COMPLETED")).toBeTruthy();
+  });
+
   it("exposes controlled opening when a currency has historical cash", () => {
     jest.mocked(cashQueries.useCashBalancesQuery).mockReturnValue(query({
       data: [{ currencyId: 2, currency: { id: 2, code: "USD", name: "US Dollar", symbol: "$", isActive: true }, balance: 50 }],

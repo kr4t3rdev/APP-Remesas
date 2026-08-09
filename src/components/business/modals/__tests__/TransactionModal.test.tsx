@@ -24,6 +24,14 @@ describe("TransactionModal FX intent", () => {
     name: "Ana",
     balances: [{ id: 7, workerId: 42, currencyId: 1, currency: { id: 1, code: "USD", name: "US Dollar", symbol: "$", isActive: true }, balance: 100, accumulatedProfit: 0, totalDelivered: 0 }],
   };
+  const workerWithMultiCurrencyBalance = {
+    id: 43,
+    name: "Ana",
+    balances: [
+      { id: 8, workerId: 43, currencyId: 10, currency: { id: 10, code: "CUP", name: "Peso cubano", symbol: "$", isActive: true }, balance: 10000, accumulatedProfit: 0, totalDelivered: 0 },
+      { id: 9, workerId: 43, currencyId: 1, currency: { id: 1, code: "USD", name: "US Dollar", symbol: "US$", isActive: true }, balance: 0, accumulatedProfit: 0, totalDelivered: 0 },
+    ],
+  };
   beforeEach(() => {
     jest.clearAllMocks();
     jest.mocked(transactions.useCreateTransactionMutation).mockReturnValue({ mutate, isPending: false } as any);
@@ -324,8 +332,8 @@ describe("TransactionModal FX intent", () => {
       { currencyId: 1, buyRate: 240, sellRate: 533.0210000000001 },
       { currencyId: 2, buyRate: 280, sellRate: 320 },
     ] } as any);
-    const { getByLabelText, getByText } = render(
-      <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
+    const { getByLabelText, getByText, queryByLabelText } = render(
+      <TransactionModal visible onClose={jest.fn()} worker={workerWithMultiCurrencyBalance} />,
     );
 
     fireEvent.press(getByText("Venta"));
@@ -397,20 +405,32 @@ describe("TransactionModal FX intent", () => {
     expect(getByLabelText("Guardar como tasa actual").props.accessibilityState).toEqual({ checked: false });
   });
 
-  it("sends worker profit as FX context in the same request", () => {
-    const { getByLabelText, getByText } = render(
+  it("does not ask for manual worker profit", () => {
+    const { queryByLabelText } = render(
       <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
     );
 
-    expect(getByText(/opcional/)).toBeTruthy();
+    expect(queryByLabelText("Ganancia del trabajador")).toBeNull();
+  });
+
+  it("uses the worker balance as the destination for a worker purchase", () => {
+    const { getByLabelText, getByText, queryByLabelText } = render(
+      <TransactionModal visible onClose={jest.fn()} worker={workerWithMultiCurrencyBalance} />,
+    );
+
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
-    fireEvent.changeText(getByLabelText("Ganancia del trabajador"), "3.5");
+
+    expect(getByLabelText("Saldo trabajador · CUP")).toBeTruthy();
+    expect(getByLabelText("Saldo trabajador · USD")).toBeTruthy();
+    expect(queryByLabelText("Caja · USD")).toBeNull();
     fireEvent.press(getByText("Guardar"));
 
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
-      workerId: 42,
-      workerProfit: 3.5,
-      workerCurrencyId: 1,
+      type: "COMPRA",
+      workerId: 43,
+      workerCurrencyId: 10,
+      sourceType: "CASH",
+      destinationType: "CASH",
     }), expect.any(Object));
   });
 
@@ -419,7 +439,7 @@ describe("TransactionModal FX intent", () => {
       { id: 9, bankName: "Banco", name: "Cuenta USD", currencyId: 1, balance: 1000, isActive: true },
     ] } as any);
     const { getByLabelText, getByText, queryByLabelText } = render(
-      <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
+      <TransactionModal visible onClose={jest.fn()} worker={workerWithMultiCurrencyBalance} />,
     );
     expect(queryByLabelText("Banco · Cuenta USD")).toBeNull();
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
@@ -428,12 +448,13 @@ describe("TransactionModal FX intent", () => {
   });
 
   it("uses the selected worker balance instead of the real cash account", () => {
-    const { getByLabelText, getByText, queryByLabelText } = render(
+    const { getAllByLabelText, getByLabelText, getByText, queryByLabelText } = render(
       <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
     );
 
-    expect(getByLabelText("Saldo trabajador · USD")).toBeTruthy();
+    expect(getAllByLabelText("Saldo trabajador · USD").length).toBeGreaterThan(0);
     expect(queryByLabelText("Caja · CUP")).toBeNull();
+    fireEvent.press(getByText("Venta"));
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     fireEvent.press(getByText("Guardar"));
 

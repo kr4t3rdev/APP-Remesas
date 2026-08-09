@@ -64,10 +64,16 @@ export type OpenPositionResponse = {
 export type RemittanceStatus = "PENDING" | "FAILED" | "COMPLETED";
 
 export type Remittance = {
-  id: number;
-  provider: string;
-  sourceId: string;
+  id: number | string;
+  provider: string | null;
+  sourceId: string | null;
   status: RemittanceStatus;
+  origin?: "PROVIDER" | "MANUAL";
+  operationKind?: "TRANSFER" | "REMITTANCE";
+  type?: TransactionType;
+  amount?: number;
+  rate?: number;
+  totalCup?: number;
   createdAt?: string;
   movements?: Array<{ id: number; currencyId: number; amount: number; rendimiento?: number | null }>;
   duplicate?: boolean;

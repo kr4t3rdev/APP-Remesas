@@ -5,7 +5,7 @@ import { usePositionsQuery, useRemittancesQuery, useTransactionsQuery } from "..
 import { TransactionModal } from "../../../components/business/modals/TransactionModal";
 import { OpenPositionModal } from "../../../components/business/modals/OpenPositionModal";
 import { useCashBalancesQuery } from "../../../modules/cash/application/useCash";
-import type { Position } from "../../../types/business";
+import type { Position, Remittance } from "../../../types/business";
 import { isPositionReviewable } from "../../../types/business";
 import { useCurrenciesWithPrimaryQuery } from "../../../modules/currencies/application/useCurrencies";
 
@@ -20,10 +20,10 @@ const PositionsSection = ({ colors, positions, hasHistoricalCash, onCreateOperat
   </>
 );
 
-const RemittancesSection = ({ colors, remittances }: { colors: TransactionsTabColors; remittances: Array<{ id: number; provider: string; status: string; duplicate?: boolean }> }) => (
+const RemittancesSection = ({ colors, remittances }: { colors: TransactionsTabColors; remittances: Remittance[] }) => (
   <>
     <Text accessibilityRole="header" style={{ color: colors.text.secondary, fontSize: 13, marginTop: 18 }}>Remesas</Text>
-    {remittances.length === 0 ? <Text style={{ color: colors.text.secondary, marginTop: 8 }}>No hay remesas para mostrar.</Text> : remittances.map((remittance) => <Text key={remittance.id} accessibilityLabel={`Remesa ${remittance.provider} ${remittance.status}`} style={{ color: colors.text.primary, paddingVertical: 8 }}>{remittance.provider} · {remittance.status}{remittance.duplicate ? " · duplicada segura" : ""}</Text>)}
+    {remittances.length === 0 ? <Text style={{ color: colors.text.secondary, marginTop: 8 }}>No hay remesas para mostrar.</Text> : remittances.map((remittance) => { const label = remittance.provider ?? "Manual"; return <Text key={String(remittance.id)} accessibilityLabel={`Remesa ${label} ${remittance.status}`} style={{ color: colors.text.primary, paddingVertical: 8 }}>{label} · {remittance.status}{remittance.duplicate ? " · duplicada segura" : ""}</Text>; })}
   </>
 );
 

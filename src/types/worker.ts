@@ -2,7 +2,7 @@ export type WorkerTransaction = {
   id: number;
   workerId: number;
   amount: number | string;
-  type: "TRANSACTION" | "BALANCE_ADD";
+  type: "TRANSACTION" | "BALANCE_ADD" | "FX_CONVERSION" | "DEPOSIT";
   profit?: number | string;
   balanceBefore: number | string;
   balanceAfter: number | string;
@@ -18,6 +18,8 @@ export type WorkerBalance = {
   currencyId: number;
   currency?: import("./index").Currency;
   balance: number | string;
+  /** Cost of the held foreign balance expressed in the user's primary currency. */
+  costBasisPrimary?: number | string;
   accumulatedProfit: number | string;
   totalDelivered: number | string;
 };
