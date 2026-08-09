@@ -433,6 +433,27 @@ describe("TransactionModal FX intent", () => {
     }), expect.any(Object));
   });
 
+  it("allows a worker sale to create the missing primary cash destination", () => {
+    jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [
+      { currencyId: 1, currency: { code: "USD" }, balance: 0 },
+    ] } as any);
+    const { getByLabelText, getByText } = render(
+      <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
+    );
+
+    fireEvent.press(getByText("Venta"));
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+
+    expect(getByLabelText("Caja · CUP")).toBeTruthy();
+    fireEvent.press(getByText("Guardar"));
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
+      type: "VENTA",
+      workerId: 42,
+      destinationType: "CASH",
+      destinationBankAccountId: undefined,
+    }), expect.any(Object));
+  });
+
   it("does not offer cash accounts that do not exist in the backend", () => {
     const { getByLabelText, queryByLabelText } = render(<TransactionModal visible onClose={jest.fn()} />);
     fireEvent.press(getByLabelText("Moneda, USD"));
