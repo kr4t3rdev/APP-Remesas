@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Modal, View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { useColors } from "../../../store/themeStore";
-import { FadeInOverlay } from "../../animations";
 import { useCreateTransactionMutation, useCurrenciesQuery, useExchangeRatesQuery, usePositionsQuery } from "../../../modules/transactions/application/useTransactions";
 import { useBankAccountsQuery } from "../../../modules/bank-accounts/application/useBankAccounts";
 import { useCashBalancesQuery } from "../../../modules/cash/application/useCash";
@@ -216,7 +215,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   };
   const renderAccountPicker = (title: "Origen" | "Destino", options: AccountOption[], selected: string | undefined, onSelect: (key: string) => void) => <View><Text style={{ color: colors.text.primary, marginTop: 8, fontSize: 15 }}>{title}</Text>{options.length === 0 ? <Text style={{ color: colors.danger, fontSize: 14 }}>{title === "Origen" ? worker && type === "VENTA" ? "El trabajador no tiene saldo suficiente en la moneda seleccionada." : "No hay fondos suficientes en Caja o cuentas bancarias para esta operación." : "No hay destinos activos para la moneda seleccionada."}</Text> : <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={{ maxHeight: 130 }}>{options.map((item) => <TouchableOpacity key={item.key} accessibilityRole="radio" accessibilityLabel={item.label} accessibilityState={{ selected: item.key === selected }} onPress={() => onSelect(item.key)} style={[styles.accountOption, { borderColor: colors.border }]}><Text style={{ color: colors.text.primary, fontSize: 14 }}>{item.label}</Text><Text style={{ color: colors.text.secondary, fontSize: 13 }}>{(Number(item.balance) || 0).toFixed(2)}</Text></TouchableOpacity>)}</ScrollView>}</View>;
 
-  return <Modal visible={visible} transparent animationType="slide" accessibilityViewIsModal onRequestClose={onClose}><View style={styles.overlay}><FadeInOverlay targetOpacity={0.25} /><ScrollView accessibilityLabel="Nueva operación" automaticallyAdjustKeyboardInsets nestedScrollEnabled keyboardShouldPersistTaps="handled" contentContainerStyle={styles.containerContent} style={[styles.container, { backgroundColor: colors.card }]}>
+  return <Modal visible={visible} transparent animationType="slide" accessibilityViewIsModal onRequestClose={onClose}><View style={styles.overlay}><ScrollView accessibilityLabel="Nueva operación" automaticallyAdjustKeyboardInsets nestedScrollEnabled keyboardShouldPersistTaps="handled" contentContainerStyle={styles.containerContent} style={[styles.container, { backgroundColor: colors.card }]}> 
     <View style={styles.dragHandle} />
     <Text accessibilityRole="header" style={[styles.title, { color: colors.text.primary }]}>Nueva operación</Text>
     {worker ? <View style={{ backgroundColor: colors.primary[100] + "40", padding: 8, borderRadius: 8, marginBottom: 10 }}><Text style={{ color: colors.primary[500], fontWeight: "600", fontSize: 14 }}>Trabajador: {worker.name}</Text></View> : null}
