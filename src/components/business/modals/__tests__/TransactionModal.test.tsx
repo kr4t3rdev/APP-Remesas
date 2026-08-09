@@ -507,7 +507,7 @@ describe("TransactionModal FX intent", () => {
     }), expect.any(Object));
   });
 
-  it("allows a worker sale to create the missing primary cash destination", () => {
+  it("uses the worker primary balance as the destination for a sale", () => {
     jest.mocked(cash.useCashBalancesQuery).mockReturnValue({ data: [
       { currencyId: 1, currency: { code: "USD" }, balance: 0 },
     ] } as any);
@@ -518,7 +518,7 @@ describe("TransactionModal FX intent", () => {
     fireEvent.press(getByText("Venta"));
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
 
-    expect(getByLabelText("Caja · CUP")).toBeTruthy();
+    expect(getByLabelText("Saldo trabajador · CUP")).toBeTruthy();
     fireEvent.press(getByText("Guardar"));
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
       type: "VENTA",

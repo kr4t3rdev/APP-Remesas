@@ -175,13 +175,13 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
         active: true,
       }]
     : [];
-  const workerSaleDestinationOptions = worker && type === "VENTA" && destinationOptions.length === 0 && primaryCurrency
+  const workerSaleDestinationOptions = worker && type === "VENTA" && primaryCurrency
     ? [{
-        key: `CASH:${primaryCurrency.id}`,
+        key: `WORKER_BALANCE:${worker.id}:${primaryCurrency.id}`,
         type: "CASH" as const,
-        label: `Caja · ${primaryCurrency.code}`,
+        label: `Saldo trabajador · ${primaryCurrency.code}`,
         currencyId: primaryCurrency.id,
-        balance: 0,
+        balance: Number(workerCurrencyOptions.find((balance) => balance.currencyId === primaryCurrency.id)?.balance) || 0,
         active: true,
       }]
     : destinationOptions;
