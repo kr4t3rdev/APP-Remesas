@@ -17,6 +17,8 @@ type TransactionModalProps = {
   worker?: { id: number; name: string; balances?: WorkerBalance[] } | null;
 };
 
+const formatRateInput = (value: number) => Number(value.toFixed(4)).toString();
+
 export const TransactionModal = ({ visible, onClose, worker }: TransactionModalProps) => {
   const colors = useColors();
   const { mutate: createTx, isPending } = useCreateTransactionMutation();
@@ -94,7 +96,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   const rateItem = currentRateByCurrencyId.get(selectedCurrencyId);
   const activeRate = type === "COMPRA" ? rateItem?.buyRate ?? 0 : rateItem?.sellRate ?? 0;
   useEffect(() => {
-    setRateInput(activeRate > 0 ? String(activeRate) : "");
+    setRateInput(activeRate > 0 ? formatRateInput(activeRate) : "");
   }, [activeRate, selectedCurrencyId, type]);
   useEffect(() => {
     if (visible) return;
@@ -106,7 +108,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     setSaveErrorMessage(undefined);
     setWorkerProfit("");
     setWorkerCurrencyId(undefined);
-    setRateInput(activeRate > 0 ? String(activeRate) : "");
+    setRateInput(activeRate > 0 ? formatRateInput(activeRate) : "");
   }, [activeRate, visible]);
   const parsedAmount = parseDecimalInput(amount, { min: 0.01, max: 9999999999999.99, maxDecimalPlaces: 2 });
   const parsedRate = parseDecimalInput(rateInput, { min: 0.0001, max: 999999.9999, maxDecimalPlaces: 4 });
@@ -143,17 +145,17 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     return [...cashAccounts, ...bankAccounts];
   }, [banks.data, cash.data, currencies.data, worker]);
   const sourceDebit = type === "COMPRA" ? (parsedAmount ?? 0) * rate : parsedAmount ?? 0;
-  const workerSaleBalance = worker && type === "VENTA"
-    ? workerCurrencyOptions.find((balance) => balance.currencyId === selectedCurrencyId)
+  const workerSourceBalance = worker && workerCurrencyId !== undefined
+    ? workerCurrencyOptions.find((balance) => balance.currencyId === workerCurrencyId)
     : undefined;
-  const sourceOptions = worker && type === "VENTA"
-    ? workerSaleBalance && Number(workerSaleBalance.balance) >= sourceDebit
+  const sourceOptions = worker
+    ? workerSourceBalance && Number(workerSourceBalance.balance) >= (parsedAmount ?? 0)
       ? [{
-          key: `WORKER_BALANCE:${worker.id}:${workerSaleBalance.currencyId}`,
+          key: `WORKER_BALANCE:${worker.id}:${workerSourceBalance.currencyId}`,
           type: "CASH" as const,
-          label: `Saldo trabajador · ${workerSaleBalance.currency?.code ?? workerSaleBalance.currencyId}`,
-          currencyId: workerSaleBalance.currencyId,
-          balance: Number(workerSaleBalance.balance) || 0,
+          label: `Saldo trabajador · ${workerSourceBalance.currency?.code ?? workerSourceBalance.currencyId}`,
+          currencyId: workerSourceBalance.currencyId,
+          balance: Number(workerSourceBalance.balance) || 0,
           active: true,
         }]
       : []
@@ -203,7 +205,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
         if (persistRate) {
           const effectiveRate = Number(response?.transaction?.rate ?? response?.transaction?.appliedRate ?? rate);
           setSavedRateMessage(`Tasa actual guardada: ${effectiveRate}`);
-          setRateInput(String(effectiveRate));
+          setRateInput(formatRateInput(effectiveRate));
         }
         setPersistRate(false);
         setOperationKind("TRANSFER");

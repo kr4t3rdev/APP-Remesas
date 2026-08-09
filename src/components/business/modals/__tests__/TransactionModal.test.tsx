@@ -319,6 +319,22 @@ describe("TransactionModal FX intent", () => {
     expect(getByLabelText("Tasa de cambio").props.value).toBe("320");
   });
 
+  it("normalizes floating-point active rates before validating them", () => {
+    jest.mocked(transactions.useExchangeRatesQuery).mockReturnValue({ data: [
+      { currencyId: 1, buyRate: 240, sellRate: 533.0210000000001 },
+      { currencyId: 2, buyRate: 280, sellRate: 320 },
+    ] } as any);
+    const { getByLabelText, getByText } = render(
+      <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
+    );
+
+    fireEvent.press(getByText("Venta"));
+    expect(getByLabelText("Tasa de cambio").props.value).toBe("533.021");
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+
+    expect(getByLabelText("Guardar")).not.toBeDisabled();
+  });
+
   it("submits a remittance with a momentary custom rate", () => {
     const { getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
     fireEvent.press(getByLabelText("Remesas"));
@@ -409,6 +425,43 @@ describe("TransactionModal FX intent", () => {
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
     fireEvent.press(getByText("Guardar"));
     expect(mutate).toHaveBeenCalledWith(expect.objectContaining({ sourceType: "CASH", destinationType: "CASH", sourceBankAccountId: undefined, destinationBankAccountId: undefined }), expect.any(Object));
+  });
+
+  it("uses the selected worker balance instead of the real cash account", () => {
+    const { getByLabelText, getByText, queryByLabelText } = render(
+      <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
+    );
+
+    expect(getByLabelText("Saldo trabajador · USD")).toBeTruthy();
+    expect(queryByLabelText("Caja · CUP")).toBeNull();
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
+      workerId: 42,
+      workerCurrencyId: 1,
+      sourceType: "CASH",
+    }), expect.any(Object));
+  });
+
+  it("keeps the worker account as source when the traded currency differs", () => {
+    const { getByLabelText, getByText } = render(
+      <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
+    );
+
+    fireEvent.press(getByLabelText("Moneda, USD"));
+    fireEvent.press(getByLabelText("EUR"));
+    fireEvent.press(getByText("Venta"));
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+
+    expect(getByLabelText("Saldo trabajador · USD")).toBeTruthy();
+    fireEvent.press(getByText("Guardar"));
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
+      type: "VENTA",
+      currencyId: 2,
+      workerCurrencyId: 1,
+      sourceType: "CASH",
+    }), expect.any(Object));
   });
 
   it("uses the worker balance as the source for a worker sale", () => {
