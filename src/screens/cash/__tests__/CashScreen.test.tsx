@@ -191,11 +191,12 @@ describe("CashScreen", () => {
   it("falls back to overview currencies when currency queries return placeholder arrays", () => {
     mockCurrencyList = [];
     mockCurrenciesWithPrimary = { primaryCurrencyId: 1, currencies: [] };
-    const { getByText, getAllByText } = render(<CashScreen />);
+    const { getByText } = render(<CashScreen />);
 
     fireEvent.press(getByText("Ajuste Manual"));
 
-    expect(getAllByText("USD").length).toBeGreaterThan(1);
+    expect(getByText("USD")).toBeTruthy();
+    expect(getByText("CUP")).toBeTruthy();
   });
 
   it("shows an error state and retries the overview query", () => {

@@ -1,9 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -17,7 +14,6 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Alert } from "../../../utils/alert";
 import { Button } from "../../../components/ui/Button";
-import { Input } from "../../../components/ui/Input";
 import { useColors } from "../../../store/themeStore";
 import { floatingTabBarMetrics } from "../../../navigation/fintechTabBar";
 import {
@@ -31,9 +27,9 @@ import {
 } from "../../../modules/currencies/application/useCurrencies";
 import { CashAuditCard } from "../components/CashAuditCard";
 import { CashMovementCard } from "../components/CashMovementCard";
+import { CashAdjustmentSheet } from "../../../components/business/modals/CashAdjustmentSheet";
 
 type CashAction = "AUDIT" | "ADJUSTMENT" | null;
-type AdjustmentType = "INGRESO" | "EGRESO";
 
 export const CashRegisterTab = () => {
   const colors = useColors();
@@ -58,7 +54,7 @@ export const CashRegisterTab = () => {
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
   const [reason, setReason] = useState("");
-  const [adjustmentType, setAdjustmentType] = useState<AdjustmentType>("INGRESO");
+  const [adjustmentType, setAdjustmentType] = useState<"INGRESO" | "EGRESO">("INGRESO");
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -251,59 +247,24 @@ export const CashRegisterTab = () => {
         )}
       </ScrollView>
 
-      <Modal visible={activeAction !== null} transparent animationType="slide" onRequestClose={closeAction}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
-                {activeAction === "AUDIT" ? "Registrar arqueo" : "Registrar ajuste"}
-              </Text>
-              <TouchableOpacity onPress={closeAction} accessibilityLabel="Cerrar">
-                <Ionicons name="close" size={24} color={colors.text.secondary} />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={[styles.fieldLabel, { color: colors.text.primary }]}>Moneda</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyOptions}>
-              {availableCurrencies.map((currency) => (
-                <TouchableOpacity
-                  key={currency.id}
-                  onPress={() => setSelectedCurrencyId(currency.id)}
-                  style={[styles.currencyOption, { borderColor: selectedCurrencyId === currency.id ? colors.primary[500] : colors.border, backgroundColor: selectedCurrencyId === currency.id ? colors.primary[50] : colors.card }]}
-                >
-                  <Text style={{ color: selectedCurrencyId === currency.id ? colors.primary[700] : colors.text.secondary, fontWeight: "700" }}>{currency.code}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <Input label={activeAction === "AUDIT" ? "Saldo real" : "Monto"} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" />
-
-            {activeAction === "ADJUSTMENT" ? (
-              <>
-                <Text style={[styles.fieldLabel, { color: colors.text.primary }]}>Tipo</Text>
-                <View style={styles.typeRow}>
-                  {(["INGRESO", "EGRESO"] as AdjustmentType[]).map((type) => (
-                    <TouchableOpacity key={type} onPress={() => setAdjustmentType(type)} style={[styles.typeOption, { borderColor: adjustmentType === type ? colors.primary[500] : colors.border, backgroundColor: adjustmentType === type ? colors.primary[50] : colors.card }]}>
-                      <Text style={{ color: adjustmentType === type ? colors.primary[700] : colors.text.secondary, fontWeight: "700" }}>{type === "INGRESO" ? "Ingreso" : "Egreso"}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                <Input label="Motivo" value={reason} onChangeText={setReason} placeholder="Motivo del ajuste" />
-              </>
-            ) : (
-              <Input label="Notas (opcional)" value={notes} onChangeText={setNotes} placeholder="Observaciones" multiline numberOfLines={3} />
-            )}
-
-            <Button
-              title={activeAction === "AUDIT" ? "Guardar arqueo" : "Guardar ajuste"}
-              onPress={activeAction === "AUDIT" ? handleAudit : handleAdjustment}
-              loading={createAuditMutation.isPending || createAdjustmentMutation.isPending}
-              disabled={selectedCurrencyId === null}
-              style={styles.submitButton}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <CashAdjustmentSheet
+        visible={activeAction !== null}
+        action={activeAction ?? "ADJUSTMENT"}
+        currencies={availableCurrencies}
+        selectedCurrencyId={selectedCurrencyId}
+        onSelectCurrency={setSelectedCurrencyId}
+        amount={amount}
+        onChangeAmount={setAmount}
+        notes={notes}
+        onChangeNotes={setNotes}
+        reason={reason}
+        onChangeReason={setReason}
+        adjustmentType={adjustmentType}
+        onChangeAdjustmentType={setAdjustmentType}
+        isSaving={createAuditMutation.isPending || createAdjustmentMutation.isPending}
+        onSave={activeAction === "AUDIT" ? handleAudit : handleAdjustment}
+        onClose={closeAction}
+      />
     </>
   );
 };
@@ -331,14 +292,4 @@ const styles = StyleSheet.create({
   stateCard: { alignItems: "center", borderRadius: 14, padding: 24, gap: 8 },
   stateTitle: { fontSize: 17, fontWeight: "700", textAlign: "center" },
   stateText: { fontSize: 14, textAlign: "center", marginBottom: 8 },
-  modalOverlay: { flex: 1, justifyContent: "flex-end" },
-  modalCard: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, gap: 12 },
-  modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
-  modalTitle: { fontSize: 20, fontWeight: "800" },
-  fieldLabel: { fontSize: 14, fontWeight: "600" },
-  currencyOptions: { gap: 8, paddingBottom: 4 },
-  currencyOption: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 },
-  typeRow: { flexDirection: "row", gap: 8 },
-  typeOption: { flex: 1, borderWidth: 1, borderRadius: 10, alignItems: "center", paddingVertical: 11 },
-  submitButton: { marginTop: 4 },
 });

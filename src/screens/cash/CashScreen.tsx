@@ -1,9 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -20,9 +17,9 @@ import { es } from "date-fns/locale";
 import { BarChart, DonutChart } from "../../components/charts/Charts";
 import { FadeIn, FadeInDown, PressableScale, ScaleIn } from "../../components/animations";
 import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
 import { CashMovementCard } from "../business/components/CashMovementCard";
 import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
+import { CashAdjustmentSheet } from "../../components/business/modals/CashAdjustmentSheet";
 import type { RootStackParamList } from "../../navigation/types";
 import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 import {
@@ -37,16 +34,14 @@ import {
 import { useCurrentExchangeRatesQuery } from "../../modules/exchange-rates/application/useExchangeRates";
 import { useObjectivesQuery } from "../../modules/objectives/application/useObjectives";
 import { useBankAccountsQuery } from "../../modules/bank-accounts/application/useBankAccounts";
-import { useColors, useIsDark, useShadows } from "../../store/themeStore";
+import { useColors, useShadows } from "../../store/themeStore";
 import { Alert } from "../../utils/alert";
 
 type CashAction = "AUDIT" | "ADJUSTMENT" | null;
-type AdjustmentType = "INGRESO" | "EGRESO";
 
 export const CashScreen: React.FC = () => {
   const colors = useColors();
   const shadows = useShadows();
-  const isDark = useIsDark();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const overviewQuery = useCashOverviewQuery();
   const currenciesListQuery = useCurrenciesQuery();
@@ -78,7 +73,7 @@ export const CashScreen: React.FC = () => {
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
   const [reason, setReason] = useState("");
-  const [adjustmentType, setAdjustmentType] = useState<AdjustmentType>("INGRESO");
+  const [adjustmentType, setAdjustmentType] = useState<"INGRESO" | "EGRESO">("INGRESO");
 
   const scrollToTop = useCallback(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
@@ -382,39 +377,24 @@ export const CashScreen: React.FC = () => {
         )}
       </ScrollView>
 
-      <Modal visible={activeAction !== null} transparent animationType="slide" onRequestClose={closeAction}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.text.primary }]}>{activeAction === "AUDIT" ? "Registrar arqueo" : "Registrar ajuste"}</Text>
-              <TouchableOpacity onPress={closeAction} accessibilityLabel="Cerrar"><Ionicons name="close" size={24} color={colors.text.secondary} /></TouchableOpacity>
-            </View>
-            <Text style={[styles.fieldLabel, { color: colors.text.primary }]}>Moneda</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.currencyOptions}>
-              {availableCurrencies.map((currency) => {
-                const selected = selectedCurrencyId === currency.id;
-                return (
-                  <TouchableOpacity key={currency.id} onPress={() => setSelectedCurrencyId(currency.id)} accessibilityRole="button" accessibilityState={{ selected }} style={[styles.currencyOption, { borderColor: selected ? colors.primary[500] : colors.border, backgroundColor: selected ? (isDark ? `${colors.primary[500]}25` : colors.primary[50]) : colors.card }]}>
-                    <Text style={[styles.optionText, { color: selected ? colors.primary[500] : colors.text.secondary }]}>{currency.code}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-            <Input label={activeAction === "AUDIT" ? "Saldo real" : "Monto"} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="0.00" />
-            {activeAction === "ADJUSTMENT" ? (
-              <>
-                <Text style={[styles.fieldLabel, { color: colors.text.primary }]}>Tipo</Text>
-                <View style={styles.typeRow}>{(["INGRESO", "EGRESO"] as AdjustmentType[]).map((type) => {
-                  const selected = adjustmentType === type;
-                  return <TouchableOpacity key={type} onPress={() => setAdjustmentType(type)} style={[styles.typeOption, { borderColor: selected ? colors.primary[500] : colors.border, backgroundColor: selected ? colors.primary[50] : colors.card }]}><Text style={[styles.optionText, { color: selected ? colors.primary[500] : colors.text.secondary }]}>{type === "INGRESO" ? "Ingreso" : "Egreso"}</Text></TouchableOpacity>;
-                })}</View>
-                <Input label="Motivo" value={reason} onChangeText={setReason} placeholder="Motivo del ajuste" />
-              </>
-            ) : <Input label="Notas (opcional)" value={notes} onChangeText={setNotes} placeholder="Observaciones" multiline numberOfLines={3} />}
-            <Button title={activeAction === "AUDIT" ? "Guardar arqueo" : "Guardar ajuste"} onPress={activeAction === "AUDIT" ? handleAudit : handleAdjustment} loading={createAuditMutation.isPending || createAdjustmentMutation.isPending} disabled={selectedCurrencyId === null} />
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <CashAdjustmentSheet
+        visible={activeAction !== null}
+        action={activeAction ?? "ADJUSTMENT"}
+        currencies={availableCurrencies}
+        selectedCurrencyId={selectedCurrencyId}
+        onSelectCurrency={setSelectedCurrencyId}
+        amount={amount}
+        onChangeAmount={setAmount}
+        notes={notes}
+        onChangeNotes={setNotes}
+        reason={reason}
+        onChangeReason={setReason}
+        adjustmentType={adjustmentType}
+        onChangeAdjustmentType={setAdjustmentType}
+        isSaving={createAuditMutation.isPending || createAdjustmentMutation.isPending}
+        onSave={activeAction === "AUDIT" ? handleAudit : handleAdjustment}
+        onClose={closeAction}
+      />
     </SafeAreaView>
   );
 };
@@ -444,5 +424,4 @@ const styles = StyleSheet.create({
   legendDot: { width: 8, height: 8, borderRadius: 4 },
   legendText: { flex: 1, fontSize: 13, fontWeight: "600" },
   legendAmount: { fontSize: 13, fontWeight: "700" }, auditCard: { borderRadius: 16, padding: 18, marginBottom: 12 }, auditHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, auditDate: { fontSize: 12 }, statusBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, statusText: { fontSize: 11, fontWeight: "800" }, auditCurrency: { fontSize: 16, fontWeight: "800", marginTop: 12 }, auditAmounts: { flexDirection: "row", marginTop: 14 }, auditAmount: { flex: 1 }, auditLabel: { fontSize: 11, marginBottom: 4 }, auditValue: { fontSize: 16, fontWeight: "800" }, auditDifference: { fontSize: 13, fontWeight: "700", marginTop: 14 }, auditNotes: { fontSize: 12, marginTop: 8 },
-  modalOverlay: { flex: 1, justifyContent: "flex-end" }, modalCard: { borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 20, gap: 12 }, modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, modalTitle: { fontSize: 20, fontWeight: "800" }, fieldLabel: { fontSize: 14, fontWeight: "600" }, currencyOptions: { gap: 8, paddingBottom: 4 }, currencyOption: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 }, optionText: { fontWeight: "700" }, typeRow: { flexDirection: "row", gap: 8 }, typeOption: { flex: 1, borderWidth: 1, borderRadius: 10, alignItems: "center", paddingVertical: 11 },
 });
