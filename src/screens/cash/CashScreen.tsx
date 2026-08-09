@@ -18,7 +18,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { BarChart, DonutChart } from "../../components/charts/Charts";
-import { FadeIn, FadeInDown, FadeInOverlay, PressableScale, ScaleIn } from "../../components/animations";
+import { FadeIn, FadeInDown, PressableScale, ScaleIn } from "../../components/animations";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { CashMovementCard } from "../business/components/CashMovementCard";
@@ -384,8 +384,6 @@ export const CashScreen: React.FC = () => {
 
       <Modal visible={activeAction !== null} transparent animationType="slide" onRequestClose={closeAction}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.modalOverlay}>
-          <FadeInOverlay targetOpacity={0.4} />
-          <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={closeAction} accessibilityLabel="Cerrar modal" />
           <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text.primary }]}>{activeAction === "AUDIT" ? "Registrar arqueo" : "Registrar ajuste"}</Text>
@@ -446,5 +444,5 @@ const styles = StyleSheet.create({
   legendDot: { width: 8, height: 8, borderRadius: 4 },
   legendText: { flex: 1, fontSize: 13, fontWeight: "600" },
   legendAmount: { fontSize: 13, fontWeight: "700" }, auditCard: { borderRadius: 16, padding: 18, marginBottom: 12 }, auditHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, auditDate: { fontSize: 12 }, statusBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, statusText: { fontSize: 11, fontWeight: "800" }, auditCurrency: { fontSize: 16, fontWeight: "800", marginTop: 12 }, auditAmounts: { flexDirection: "row", marginTop: 14 }, auditAmount: { flex: 1 }, auditLabel: { fontSize: 11, marginBottom: 4 }, auditValue: { fontSize: 16, fontWeight: "800" }, auditDifference: { fontSize: 13, fontWeight: "700", marginTop: 14 }, auditNotes: { fontSize: 12, marginTop: 8 },
-  modalOverlay: { flex: 1, justifyContent: "flex-end" }, modalBackdrop: { ...StyleSheet.absoluteFillObject }, modalCard: { borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 20, gap: 12 }, modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, modalTitle: { fontSize: 20, fontWeight: "800" }, fieldLabel: { fontSize: 14, fontWeight: "600" }, currencyOptions: { gap: 8, paddingBottom: 4 }, currencyOption: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 }, optionText: { fontWeight: "700" }, typeRow: { flexDirection: "row", gap: 8 }, typeOption: { flex: 1, borderWidth: 1, borderRadius: 10, alignItems: "center", paddingVertical: 11 },
+  modalOverlay: { flex: 1, justifyContent: "flex-end" }, modalCard: { borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 20, gap: 12 }, modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, modalTitle: { fontSize: 20, fontWeight: "800" }, fieldLabel: { fontSize: 14, fontWeight: "600" }, currencyOptions: { gap: 8, paddingBottom: 4 }, currencyOption: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 }, optionText: { fontWeight: "700" }, typeRow: { flexDirection: "row", gap: 8 }, typeOption: { flex: 1, borderWidth: 1, borderRadius: 10, alignItems: "center", paddingVertical: 11 },
 });

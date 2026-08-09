@@ -253,7 +253,6 @@ export const CashRegisterTab = () => {
 
       <Modal visible={activeAction !== null} transparent animationType="slide" onRequestClose={closeAction}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.modalOverlay}>
-          <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={closeAction} />
           <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
@@ -333,7 +332,6 @@ const styles = StyleSheet.create({
   stateTitle: { fontSize: 17, fontWeight: "700", textAlign: "center" },
   stateText: { fontSize: 14, textAlign: "center", marginBottom: 8 },
   modalOverlay: { flex: 1, justifyContent: "flex-end" },
-  modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(15, 23, 42, 0.35)" },
   modalCard: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, gap: 12 },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
   modalTitle: { fontSize: 20, fontWeight: "800" },
