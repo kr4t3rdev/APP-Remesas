@@ -3,6 +3,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -66,6 +67,7 @@ export const CashAdjustmentSheet: React.FC<Props> = ({
   return (
     <Modal visible={visible} transparent animationType="slide" accessibilityViewIsModal onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.modalOverlay}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Cerrar" />
         <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} style={[styles.modalCard, { backgroundColor: colors.card }]} contentContainerStyle={styles.modalCardContent}>
           <View style={styles.modalHeader}>
             <Text style={[styles.modalTitle, { color: colors.text.primary }]}>{isAudit ? "Registrar arqueo" : "Registrar ajuste"}</Text>
@@ -133,7 +135,7 @@ export const CashAdjustmentSheet: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   modalOverlay: { flex: 1, justifyContent: "flex-end" },
-  modalCard: { maxHeight: "90%", borderTopLeftRadius: 22, borderTopRightRadius: 22 },
+  modalCard: { flexGrow: 0, maxHeight: "90%", borderTopLeftRadius: 22, borderTopRightRadius: 22 },
   modalCardContent: { padding: 20, gap: 12, paddingBottom: 28 },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   modalTitle: { fontSize: 20, fontWeight: "800" },
