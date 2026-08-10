@@ -20,6 +20,7 @@ jest.mock('./src/store/themeStore', () => {
   const themeColors = {
     background: '#FFFFFF',
     card: '#F9FAFB',
+    surface: '#F3F4F6',
     text: { primary: '#1F2937', secondary: '#6B7280' },
     primary: { 500: '#3B82F6' },
     secondary: { 500: '#22C55E' },
@@ -27,6 +28,14 @@ jest.mock('./src/store/themeStore', () => {
     warning: '#F59E0B',
     danger: '#EF4444',
     border: '#E5E7EB',
+    financial: {
+      compraLight: '#FEF3C7',
+      compraForeground: '#92400E',
+      ventaLight: '#D1FAE5',
+      ventaForeground: '#166534',
+      profit: '#0E7490',
+      profitLight: '#CFFAFE',
+    },
   };
   const themeShadows = { sm: {}, md: {} };
   const themeGradients = {};

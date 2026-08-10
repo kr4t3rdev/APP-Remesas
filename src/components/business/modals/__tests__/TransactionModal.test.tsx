@@ -29,7 +29,8 @@ describe("TransactionModal FX intent", () => {
     name: "Ana",
     balances: [
       { id: 8, workerId: 43, currencyId: 10, currency: { id: 10, code: "CUP", name: "Peso cubano", symbol: "$", isActive: true }, balance: 10000, accumulatedProfit: 0, totalDelivered: 0 },
-      { id: 9, workerId: 43, currencyId: 1, currency: { id: 1, code: "USD", name: "US Dollar", symbol: "US$", isActive: true }, balance: 0, accumulatedProfit: 0, totalDelivered: 0 },
+      { id: 9, workerId: 43, currencyId: 1, currency: { id: 1, code: "USD", name: "US Dollar", symbol: "US$", isActive: true }, balance: 100, accumulatedProfit: 0, totalDelivered: 0 },
+      { id: 10, workerId: 43, currencyId: 2, currency: { id: 2, code: "EUR", name: "Euro", symbol: "€", isActive: true }, balance: 40, accumulatedProfit: 0, totalDelivered: 0 },
     ],
   };
   beforeEach(() => {
@@ -134,7 +135,7 @@ describe("TransactionModal FX intent", () => {
 
   it("selects the first loaded position when positions arrive after the initial render", () => {
     jest.mocked(transactions.usePositionsQuery).mockReturnValue({ data: [] } as any);
-    const { rerender, getByLabelText, getByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    const { rerender, getByLabelText, getByText, getAllByText } = render(<TransactionModal visible onClose={jest.fn()} />);
 
     jest.mocked(transactions.usePositionsQuery).mockReturnValue({ data: [
       { currencyId: 1, currency: { code: "USD" }, saldo: 100, costoPromedio: 250, availableForSale: true },
@@ -142,8 +143,28 @@ describe("TransactionModal FX intent", () => {
     rerender(<TransactionModal visible onClose={jest.fn()} />);
 
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
-    expect(getByText(/Estado actual: saldo 100\.00/)).toBeTruthy();
-    expect(getByText(/Proyección: total 2400\.00 · saldo 110\.00/)).toBeTruthy();
+    expect(getByText("Estado actual")).toBeTruthy();
+    expect(getByText("Saldo")).toBeTruthy();
+    expect(getByText("100.00 USD")).toBeTruthy();
+    expect(getByText("Costo promedio")).toBeTruthy();
+    expect(getByText("250.00 CUP/USD")).toBeTruthy();
+    expect(getByText("Proyección total")).toBeTruthy();
+    expect(getByText("110.00 USD")).toBeTruthy();
+  });
+
+  it("highlights estimated profit from average cost and latest published rate", () => {
+    const { getByLabelText, getByText, getAllByText } = render(<TransactionModal visible onClose={jest.fn()} />);
+    fireEvent.press(getByText("Venta"));
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.changeText(getByLabelText("Tasa de cambio"), "270");
+
+    expect(getByText("Última tasa")).toBeTruthy();
+    expect(getByText("270.00 CUP/USD")).toBeTruthy();
+    expect(getAllByText("250.00 CUP/USD")).toHaveLength(2);
+    expect(getByText("Ganancia estimada")).toBeTruthy();
+    expect(getByText("200.00 CUP")).toBeTruthy();
+    expect(getByText("A última tasa publicada")).toBeTruthy();
+    expect(getByText("100.00 CUP")).toBeTruthy();
   });
 
   it("shows success feedback after saving the operation", () => {
@@ -355,7 +376,7 @@ describe("TransactionModal FX intent", () => {
       persistRate: false,
       rate: 245.5,
     }), expect.any(Object));
-    expect(getByText(/245\.5/)).toBeTruthy();
+    expect(getByLabelText("Tasa de cambio").props.value).toBe("245.5");
   });
 
   it("allows persisting the entered rate and reports an effective rounded rate", () => {
@@ -465,8 +486,8 @@ describe("TransactionModal FX intent", () => {
     }), expect.any(Object));
   });
 
-  it("keeps the worker account as source when the traded currency differs", () => {
-    const { getByLabelText, getByText } = render(
+  it("does not keep a stale worker source when the traded currency has no balance", () => {
+    const { getByLabelText, getByText, queryByLabelText } = render(
       <TransactionModal visible onClose={jest.fn()} worker={workerWithBalance} />,
     );
 
@@ -475,14 +496,10 @@ describe("TransactionModal FX intent", () => {
     fireEvent.press(getByText("Venta"));
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
 
-    expect(getByLabelText("Saldo trabajador · USD")).toBeTruthy();
-    fireEvent.press(getByText("Guardar"));
-    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
-      type: "VENTA",
-      currencyId: 2,
-      workerCurrencyId: 1,
-      sourceType: "CASH",
-    }), expect.any(Object));
+    expect(queryByLabelText("Saldo trabajador · USD")).toBeNull();
+    expect(getByText("El trabajador no tiene saldo suficiente en la moneda seleccionada.")).toBeTruthy();
+    expect(getByLabelText("Guardar")).toBeDisabled();
+    expect(mutate).not.toHaveBeenCalled();
   });
 
   it("uses the worker balance as the source for a worker sale", () => {
@@ -504,6 +521,29 @@ describe("TransactionModal FX intent", () => {
       workerCurrencyId: 1,
       sourceType: "CASH",
       destinationType: "CASH",
+    }), expect.any(Object));
+  });
+
+  it("switches the worker sale source balance with the traded currency", () => {
+    const { getByLabelText, getByText, queryByLabelText } = render(
+      <TransactionModal visible onClose={jest.fn()} worker={workerWithMultiCurrencyBalance} />,
+    );
+
+    fireEvent.press(getByText("Venta"));
+    expect(getByLabelText("Saldo trabajador · USD")).toBeTruthy();
+    expect(getByLabelText("Saldo trabajador · USD").props.accessibilityState).toEqual({ selected: true });
+    expect(queryByLabelText("Saldo trabajador CUP")).toBeNull();
+
+    fireEvent.press(getByLabelText("Moneda, USD"));
+    fireEvent.press(getByLabelText("EUR"));
+
+    expect(getByLabelText("Saldo trabajador · EUR")).toBeTruthy();
+    fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
+    fireEvent.press(getByText("Guardar"));
+    expect(mutate).toHaveBeenCalledWith(expect.objectContaining({
+      type: "VENTA",
+      currencyId: 2,
+      workerCurrencyId: 2,
     }), expect.any(Object));
   });
 
@@ -535,12 +575,12 @@ describe("TransactionModal FX intent", () => {
     expect(queryByLabelText("Caja · EUR")).toBeNull();
   });
 
-  it("blocks worker FX without an explicit worker currency balance", () => {
+  it("blocks worker FX without a balance for the operation currency", () => {
     const { getByLabelText, getAllByText } = render(
       <TransactionModal visible onClose={jest.fn()} worker={{ id: 42, name: "Ana", balances: [] }} />,
     );
     fireEvent.changeText(getByLabelText("Monto de la operación"), "10");
-    expect(getAllByText(/no tiene un saldo monetario seleccionado/i).length).toBeGreaterThan(0);
+    expect(getAllByText(/no hay fondos suficientes en caja o cuentas bancarias/i).length).toBeGreaterThan(0);
     expect(getByLabelText("Guardar").props.accessibilityState?.disabled ?? getByLabelText("Guardar").props.disabled).toBe(true);
     expect(mutate).not.toHaveBeenCalled();
   });

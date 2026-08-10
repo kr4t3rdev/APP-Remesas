@@ -18,6 +18,14 @@ type TransactionModalProps = {
 };
 
 const formatRateInput = (value: number) => Number(value.toFixed(4)).toString();
+const formatSummaryNumber = (value: number | null | undefined) => value == null ? "—" : value.toFixed(2);
+
+const SummaryMetric = ({ label, value, colors }: { label: string; value: string; colors: ReturnType<typeof useColors> }) => (
+  <View style={styles.summaryMetric}>
+    <Text style={[styles.summaryMetricLabel, { color: colors.text.secondary }]}>{label}</Text>
+    <Text style={[styles.summaryMetricValue, { color: colors.text.primary }]}>{value}</Text>
+  </View>
+);
 
 export const TransactionModal = ({ visible, onClose, worker }: TransactionModalProps) => {
   const colors = useColors();
@@ -82,18 +90,21 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   const workerSourceCurrencyOptions = useMemo(
     () => type === "COMPRA" && primaryCurrencyId
       ? workerCurrencyOptions.filter((balance) => balance.currencyId === primaryCurrencyId)
-      : workerCurrencyOptions,
-    [primaryCurrencyId, type, workerCurrencyOptions],
+      : type === "VENTA"
+        ? workerCurrencyOptions.filter((balance) => ratedCurrencies.some((currency) => currency.id === balance.currencyId))
+        : workerCurrencyOptions,
+    [primaryCurrencyId, ratedCurrencies, type, workerCurrencyOptions],
   );
   useEffect(() => {
     if (!worker) {
       setWorkerCurrencyId(undefined);
       return;
     }
-    if (!workerSourceCurrencyOptions.some((balance) => balance.currencyId === workerCurrencyId)) {
-      setWorkerCurrencyId(workerSourceCurrencyOptions[0]?.currencyId);
+    const expectedCurrencyId = type === "COMPRA" ? primaryCurrencyId : selectedCurrencyId;
+    if (expectedCurrencyId !== undefined && workerCurrencyId !== expectedCurrencyId) {
+      setWorkerCurrencyId(expectedCurrencyId);
     }
-  }, [worker, workerCurrencyId, workerSourceCurrencyOptions]);
+  }, [primaryCurrencyId, selectedCurrencyId, type, worker, workerCurrencyId]);
   const existingPosition = positions.data?.find((item) => item.currencyId === selectedCurrencyId);
   const position = type === "COMPRA" && selectedCurrencyId
     ? existingPosition ?? { currencyId: selectedCurrencyId, saldo: 0, costoPromedio: null, availableForSale: false }
@@ -125,6 +136,16 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     ? "Ingresá una tasa válida entre 0.0001 y 999999.9999, con hasta 4 decimales."
     : undefined;
   const preview = calculateTransferPreview({ type, amount: parsedAmount ?? 0, rate, position });
+  const currencyCode = selectedCurrency?.code ?? "—";
+  const primaryCode = primaryCurrency?.code ?? "—";
+  const rateLabel = `${formatSummaryNumber(rate)} ${primaryCode}/${currencyCode}`;
+  const averageCostLabel = (value: number | null) => `${formatSummaryNumber(value)} ${primaryCode}/${currencyCode}`;
+  const latestRateProfit = type === "VENTA"
+    && preview.currentCostoPromedio != null
+    && activeRate > 0
+    && parsedAmount != null
+    ? (activeRate - preview.currentCostoPromedio) * parsedAmount
+    : null;
   const sourceCurrencyId = type === "COMPRA" ? primaryCurrencyId : selectedCurrencyId;
   const destinationCurrencyId = type === "COMPRA" ? selectedCurrencyId : primaryCurrencyId;
   const accounts = useMemo<AccountOption[]>(() => {
@@ -264,9 +285,6 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
         accessibilityState={{ selected: item.id === selectedCurrencyId }}
         onPress={() => {
           setCurrencyId(item.id);
-          if (worker && type === "VENTA" && workerCurrencyOptions.some((balance) => balance.currencyId === item.id)) {
-            setWorkerCurrencyId(item.id);
-          }
           setIsCurrencyPickerOpen(false);
         }}
         style={[styles.currencyOption, item.id === selectedCurrencyId && { backgroundColor: colors.primary[100] }]}
@@ -283,12 +301,53 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     {currencyConfigurationError ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 8, fontSize: 13 }}>{currencyConfigurationError}</Text> : null}
     {worker ? <><Text style={{ color: colors.text.primary, marginTop: 8, marginBottom: 4, fontSize: 15 }}>Moneda del saldo del trabajador</Text>{workerSourceCurrencyOptions.length > 0 ? <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={{ maxHeight: 100 }} accessibilityRole="radiogroup">{workerSourceCurrencyOptions.map((balance) => <TouchableOpacity key={balance.currencyId} accessibilityRole="radio" accessibilityLabel={`Saldo trabajador ${balance.currency?.code ?? balance.currencyId}`} accessibilityState={{ selected: balance.currencyId === workerCurrencyId }} onPress={() => { setWorkerCurrencyId(balance.currencyId); if (type === "VENTA") setCurrencyId(balance.currencyId); }} style={[styles.accountOption, { borderColor: colors.border }, balance.currencyId === workerCurrencyId && { borderColor: colors.primary[500] }]}><Text style={{ color: colors.text.primary, fontSize: 14 }}>{balance.currency?.code ?? `Moneda ${balance.currencyId}`}</Text><Text style={{ color: colors.text.secondary, fontSize: 13 }}>{Number(balance.balance).toFixed(2)}</Text></TouchableOpacity>)}</ScrollView> : <Text accessibilityRole="alert" style={{ color: colors.danger, fontSize: 14 }}>{workerCurrencyValidationError}</Text>}</> : null}
     {renderAccountPicker("Origen", sourceOptions, sourceKey, setSourceKey)}{renderAccountPicker("Destino", workerDestinationOptions, destinationKey, setDestinationKey)}
-    <Text style={{ color: colors.text.secondary, fontSize: 14 }}>Estado actual: saldo {preview.currentSaldo?.toFixed(2) ?? "—"} · costo prom. {preview.currentCostoPromedio?.toFixed(2) ?? "—"}</Text>
-    <Text style={{ color: colors.text.secondary, fontSize: 14 }}>Proyección: total {preview.totalBase.toFixed(2)} · saldo {preview.projectedSaldo?.toFixed(2) ?? "—"} · costo prom. {preview.projectedCostoPromedio?.toFixed(2) ?? "—"}</Text>
-    {preview.expectedRendimiento !== null ? <Text accessibilityRole="text" style={{ color: colors.text.secondary, marginTop: 2, fontSize: 14 }}>Ganancia estimada: {preview.expectedRendimiento.toFixed(2)}</Text> : null}
-    <Text accessibilityRole="summary" style={{ color: colors.text.secondary, marginTop: 8, fontSize: 14 }}>Resumen: salen {type === "COMPRA" ? preview.totalBase.toFixed(2) : amount || "0"} de {source?.label ?? "—"} y entran {type === "COMPRA" ? amount || "0" : preview.totalBase.toFixed(2)} en {destination?.label ?? "—"}</Text>
+    <View testID="transaction-summary" accessibilityLabel="Resumen de la operación" style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={styles.summaryHeader}>
+        <View>
+          <Text style={[styles.summaryTitle, { color: colors.text.primary }]}>Resumen de la operación</Text>
+          <Text style={[styles.summarySubtitle, { color: colors.text.secondary }]}>Valores en {primaryCode}</Text>
+        </View>
+        <View style={[styles.summaryTypeBadge, { backgroundColor: type === "COMPRA" ? colors.financial.compraLight : colors.financial.ventaLight }]}>
+          <Text style={{ color: type === "COMPRA" ? colors.financial.compraForeground : colors.financial.ventaForeground, fontSize: 12, fontWeight: "700" }}>{type}</Text>
+        </View>
+      </View>
+
+      <View style={styles.summarySection}>
+        <Text style={[styles.summarySectionTitle, { color: colors.text.primary }]}>Estado actual</Text>
+        <View style={styles.summaryGrid}>
+          <SummaryMetric label="Saldo" value={`${formatSummaryNumber(preview.currentSaldo)} ${currencyCode}`} colors={colors} />
+          <SummaryMetric label="Última tasa" value={rateLabel} colors={colors} />
+          <SummaryMetric label="Costo promedio" value={averageCostLabel(preview.currentCostoPromedio)} colors={colors} />
+        </View>
+      </View>
+
+      <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
+
+      <View style={styles.summarySection}>
+        <Text style={[styles.summarySectionTitle, { color: colors.text.primary }]}>Proyección total</Text>
+        <View style={styles.summaryGrid}>
+          <SummaryMetric label="Total operación" value={`${formatSummaryNumber(preview.totalBase)} ${primaryCode}`} colors={colors} />
+          <SummaryMetric label="Saldo proyectado" value={`${formatSummaryNumber(preview.projectedSaldo)} ${currencyCode}`} colors={colors} />
+          <SummaryMetric label="Costo promedio proyectado" value={averageCostLabel(preview.projectedCostoPromedio)} colors={colors} />
+        </View>
+      </View>
+
+      <View style={[styles.profitPanel, { backgroundColor: colors.financial.profitLight, borderColor: colors.success }]}>
+        <View style={styles.profitContent}>
+          <Text style={[styles.profitLabel, { color: colors.text.primary }]}>Ganancia estimada</Text>
+          {preview.expectedRendimiento !== null ? <Text style={[styles.profitValue, { color: colors.financial.profit }]}>{formatSummaryNumber(preview.expectedRendimiento)} {primaryCode}</Text> : <Text style={[styles.profitHint, { color: colors.text.secondary }]}>Se calcula al registrar una venta</Text>}
+          {preview.expectedRendimiento !== null ? <Text style={[styles.profitHint, { color: colors.text.secondary }]}>Calculada sobre el costo promedio</Text> : null}
+        </View>
+        {latestRateProfit !== null ? <View style={[styles.latestRateBadge, { backgroundColor: colors.card, borderColor: colors.success }]}>
+          <Text style={[styles.latestRateBadgeLabel, { color: colors.text.secondary }]}>A última tasa publicada</Text>
+          <Text style={[styles.latestRateBadgeValue, { color: colors.financial.profit }]}>{formatSummaryNumber(latestRateProfit)} {primaryCode}</Text>
+        </View> : null}
+      </View>
+      <Text style={[styles.summaryMovementLabel, { color: colors.text.secondary }]}>Movimiento de fondos</Text>
+      <Text accessibilityRole="summary" style={[styles.summaryMovement, { color: colors.text.secondary }]}>Resumen: salen {type === "COMPRA" ? preview.totalBase.toFixed(2) : amount || "0"} de {source?.label ?? "—"} y entran {type === "COMPRA" ? amount || "0" : preview.totalBase.toFixed(2)} en {destination?.label ?? "—"}</Text>
+    </View>
     {saveStatus === "success" ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 6, fontSize: 14 }}>Operación guardada correctamente.</Text> : null}{savedRateMessage ? <Text accessibilityRole="alert" style={{ color: colors.success, marginTop: 4, fontSize: 14 }}>{savedRateMessage}</Text> : null}{saveStatus === "error" ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 6, fontSize: 14 }}>{saveErrorMessage || "No se pudo guardar la operación. Intentá nuevamente."}</Text> : null}{amount && (!preview.isValid || !source || !destination || workerCurrencyValidationError) ? <Text accessibilityRole="alert" style={{ color: colors.danger, marginTop: 6, fontSize: 14 }}>{workerCurrencyValidationError ?? (!preview.isValid ? preview.validationMessage : "Seleccioná origen y destino compatibles")}</Text> : null}
     <View style={styles.actions}><TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancelar" onPress={() => { setPersistRate(false); setOperationKind("TRANSFER"); setSavedRateMessage(undefined); setSaveStatus("idle"); setSaveErrorMessage(undefined); setAmount(""); setRateInput(activeRate > 0 ? String(activeRate) : ""); onClose(); }} style={[styles.button, { backgroundColor: colors.border }]}><Text style={{ color: colors.text.primary, fontSize: 15 }}>Cancelar</Text></TouchableOpacity><TouchableOpacity accessibilityRole="button" accessibilityLabel={isPending ? "Guardando" : "Guardar"} onPress={handleSave} disabled={isPending || !canSubmit} style={[styles.button, { backgroundColor: colors.primary[500], opacity: isPending || !canSubmit ? 0.5 : 1 }]}><Text style={{ color: colors.text.inverse, fontSize: 15 }}>{isPending ? "Guardando..." : "Guardar"}</Text></TouchableOpacity></View>
   </ScrollView></View></Modal>;
 };
-const styles = StyleSheet.create({ overlay: { flex: 1, justifyContent: "flex-end" }, container: { maxHeight: "90%", borderTopLeftRadius: 16, borderTopRightRadius: 16, elevation: 5 }, containerContent: { padding: 16, paddingBottom: 4 }, dragHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(0,0,0,0.15)", alignSelf: "center", marginBottom: 8 }, title: { fontSize: 18, fontWeight: "bold", marginBottom: 14 }, input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 8, minHeight: 44, fontSize: 15 }, typeRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 12 }, tabOption: { minHeight: 44, flex: 1, justifyContent: "center", alignItems: "center", borderBottomWidth: 2, borderBottomColor: "transparent" }, radioOption: { minHeight: 44, minWidth: 80, justifyContent: "center", alignItems: "center" }, checkboxRow: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: 8 }, checkbox: { width: 22, height: 22, borderWidth: 2, borderRadius: 4, alignItems: "center", justifyContent: "center" }, currencyTrigger: { minHeight: 44, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, currencyMenu: { maxHeight: 180, borderWidth: 1, borderRadius: 8, marginTop: 4 }, currencyOption: { minHeight: 44, paddingHorizontal: 12, justifyContent: "center" }, accountOption: { borderWidth: 1, borderRadius: 8, padding: 10, marginTop: 6, flexDirection: "row", justifyContent: "space-between" }, actions: { flexDirection: "row", justifyContent: "flex-end", gap: 10, marginTop: 14 }, button: { paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: 8 } });
+const styles = StyleSheet.create({ overlay: { flex: 1, justifyContent: "flex-end" }, container: { maxHeight: "90%", borderTopLeftRadius: 16, borderTopRightRadius: 16, elevation: 5 }, containerContent: { padding: 16, paddingBottom: 4 }, dragHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: "rgba(0,0,0,0.15)", alignSelf: "center", marginBottom: 8 }, title: { fontSize: 18, fontWeight: "bold", marginBottom: 14 }, input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 8, minHeight: 44, fontSize: 15 }, typeRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 12 }, tabOption: { minHeight: 44, flex: 1, justifyContent: "center", alignItems: "center", borderBottomWidth: 2, borderBottomColor: "transparent" }, radioOption: { minHeight: 44, minWidth: 80, justifyContent: "center", alignItems: "center" }, checkboxRow: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: 8 }, checkbox: { width: 22, height: 22, borderWidth: 2, borderRadius: 4, alignItems: "center", justifyContent: "center" }, currencyTrigger: { minHeight: 44, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, currencyMenu: { maxHeight: 180, borderWidth: 1, borderRadius: 8, marginTop: 4 }, currencyOption: { minHeight: 44, paddingHorizontal: 12, justifyContent: "center" }, accountOption: { borderWidth: 1, borderRadius: 8, padding: 10, marginTop: 6, flexDirection: "row", justifyContent: "space-between" }, summaryCard: { borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 16 }, summaryHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }, summaryTitle: { fontSize: 16, fontWeight: "700" }, summarySubtitle: { fontSize: 12, marginTop: 2 }, summaryTypeBadge: { borderRadius: 9999, paddingHorizontal: 9, paddingVertical: 5 }, summarySection: { marginTop: 14 }, summarySectionTitle: { fontSize: 14, fontWeight: "700", marginBottom: 8 }, summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 }, summaryMetric: { flexGrow: 1, flexBasis: "30%", minWidth: 96 }, summaryMetricLabel: { fontSize: 12, marginBottom: 3 }, summaryMetricValue: { fontSize: 14, fontWeight: "700" }, summaryDivider: { height: 1, marginTop: 14 }, profitPanel: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, borderWidth: 1, borderRadius: 10, padding: 12, marginTop: 14 }, profitContent: { flex: 1 }, profitLabel: { fontSize: 14, fontWeight: "700" }, profitValue: { fontSize: 22, fontWeight: "800", marginTop: 3 }, profitHint: { fontSize: 12, marginTop: 3 }, latestRateBadge: { borderWidth: 1, borderRadius: 9, paddingHorizontal: 9, paddingVertical: 7, alignItems: "flex-end", maxWidth: 150 }, latestRateBadgeLabel: { fontSize: 11, textAlign: "right" }, latestRateBadgeValue: { fontSize: 15, fontWeight: "800", marginTop: 2 }, summaryMovementLabel: { fontSize: 12, fontWeight: "700", marginTop: 14 }, summaryMovement: { fontSize: 13, lineHeight: 18, marginTop: 4 }, actions: { flexDirection: "row", justifyContent: "flex-end", gap: 10, marginTop: 14 }, button: { paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: 8 } });
