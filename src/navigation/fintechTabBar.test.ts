@@ -1,12 +1,19 @@
 import {
-  fintechTabBarColors,
+  hexToRgba,
+  getFintechTabBarColors,
   floatingTabBarMetrics,
   getFintechTabBarStyle,
 } from "./fintechTabBar";
+import { THEMES, THEME_LIST } from "../theme";
+
+const ocean = THEMES.ocean;
 
 describe("fintech tab bar styling", () => {
+  const lightColors = getFintechTabBarColors(ocean.colors, false);
+  const darkColors = getFintechTabBarColors(ocean.darkColors, true);
+
   it("keeps the tab bar above the home indicator", () => {
-    expect(getFintechTabBarStyle(34, false)).toMatchObject({
+    expect(getFintechTabBarStyle(34, lightColors, false)).toMatchObject({
       height: floatingTabBarMetrics.height,
       left: 44,
       right: 44,
@@ -15,47 +22,56 @@ describe("fintech tab bar styling", () => {
     });
   });
 
-  it("uses separate light and dark fintech surfaces", () => {
-    expect(getFintechTabBarStyle(0, false)).toMatchObject({
+  it("uses separate light and dark surfaces derived from the theme", () => {
+    expect(getFintechTabBarStyle(0, lightColors, false)).toMatchObject({
       backgroundColor: "transparent",
-      borderColor: "rgba(148, 163, 184, 0.42)",
+      borderColor: hexToRgba(ocean.colors.text.secondary, 0.32),
     });
-    expect(getFintechTabBarStyle(0, true)).toMatchObject({
+    expect(getFintechTabBarStyle(0, darkColors, true)).toMatchObject({
       backgroundColor: "transparent",
-      borderColor: "rgba(79, 143, 154, 0.7)",
+      borderColor: hexToRgba(ocean.darkColors.border, 0.7),
     });
   });
 
   it("uses fully opaque surfaces when transparency is reduced", () => {
-    expect(getFintechTabBarStyle(0, false, true)).toMatchObject({
-      backgroundColor: "#FFFFFF",
-      borderColor: "#94A3B8",
+    expect(getFintechTabBarStyle(0, lightColors, false, true)).toMatchObject({
+      backgroundColor: ocean.colors.card,
+      borderColor: ocean.colors.text.secondary,
     });
-    expect(getFintechTabBarStyle(0, true, true)).toMatchObject({
-      backgroundColor: "#10272C",
-      borderColor: "#4F8F9A",
+    expect(getFintechTabBarStyle(0, darkColors, true, true)).toMatchObject({
+      backgroundColor: ocean.darkColors.card,
+      borderColor: ocean.darkColors.text.secondary,
     });
   });
 
-  it("keeps the configured surfaces", () => {
-    expect(fintechTabBarColors.light.background).toBe("rgba(255, 255, 255, 0.32)");
-    expect(fintechTabBarColors.dark.background).toBe("rgba(8, 26, 30, 0.38)");
+  it("keeps the configured translucent surfaces", () => {
+    expect(lightColors.background).toBe("rgba(255, 255, 255, 0.32)");
+    expect(darkColors.background).toBe(hexToRgba(ocean.darkColors.background, 0.38));
+    expect(darkColors.opaqueBackground).toBe(ocean.darkColors.card);
   });
 
-  it("keeps readable inactive and selected colors in both appearances", () => {
-    expect(fintechTabBarColors.light).toMatchObject({
-      active: "#4338CA",
-      inactive: "#475569",
+  it("follows the active theme primary for selected and inactive colors", () => {
+    expect(lightColors).toMatchObject({
+      active: ocean.colors.primary[500],
+      activeBackground: hexToRgba(ocean.colors.primary[500], 0.12),
+      inactive: ocean.colors.text.secondary,
     });
-    expect(fintechTabBarColors.dark).toMatchObject({
-      background: "rgba(8, 26, 30, 0.38)",
-      opaqueBackground: "#10272C",
-      border: "rgba(79, 143, 154, 0.7)",
-      opaqueBorder: "#4F8F9A",
-      active: "#67E8F9",
-      activeBackground: "rgba(36, 71, 78, 0.7)",
-      inactive: "#A3C0C5",
+    expect(darkColors).toMatchObject({
+      active: ocean.darkColors.primary[500],
+      activeBackground: hexToRgba(ocean.darkColors.border, 0.7),
+      inactive: ocean.darkColors.text.secondary,
     });
+  });
+
+  it("recolors the selected accent for every registered theme", () => {
+    for (const theme of THEME_LIST) {
+      const light = getFintechTabBarColors(theme.colors, false);
+      const dark = getFintechTabBarColors(theme.darkColors, true);
+      expect(light.active).toBe(theme.colors.primary[500]);
+      expect(light.inactive).toBe(theme.colors.text.secondary);
+      expect(dark.active).toBe(theme.darkColors.primary[500]);
+      expect(dark.inactive).toBe(theme.darkColors.text.secondary);
+    }
   });
 
   it("keeps dark borders at or above 3:1 contrast against the opaque surface", () => {
@@ -78,6 +94,9 @@ describe("fintech tab bar styling", () => {
       return (lighter + 0.05) / (darker + 0.05);
     };
 
-    expect(contrast(fintechTabBarColors.dark.opaqueBorder, fintechTabBarColors.dark.opaqueBackground)).toBeGreaterThanOrEqual(3);
+    for (const theme of THEME_LIST) {
+      const dark = getFintechTabBarColors(theme.darkColors, true);
+      expect(contrast(dark.opaqueBorder, dark.opaqueBackground)).toBeGreaterThanOrEqual(3);
+    }
   });
 });

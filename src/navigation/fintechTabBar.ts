@@ -1,4 +1,5 @@
 import type { ViewStyle } from "react-native";
+import type { ThemePalette } from "../theme";
 
 export type FintechTabBarColors = {
   background: string;
@@ -18,41 +19,49 @@ export const floatingTabBarMetrics = {
   contentBottomPadding: 180,
 } as const;
 
-export const fintechTabBarColors: Record<"light" | "dark", FintechTabBarColors> = {
-  light: {
-    background: "rgba(255, 255, 255, 0.32)",
-    opaqueBackground: "#FFFFFF",
-    border: "rgba(148, 163, 184, 0.42)",
-    opaqueBorder: "#94A3B8",
-    active: "#4338CA",
-    activeBackground: "rgba(67, 56, 202, 0.12)",
-    inactive: "#475569",
-  },
-  dark: {
-    background: "rgba(8, 26, 30, 0.38)",
-    opaqueBackground: "#10272C",
-    border: "rgba(79, 143, 154, 0.7)",
-    opaqueBorder: "#4F8F9A",
-    active: "#67E8F9",
-    activeBackground: "rgba(36, 71, 78, 0.7)",
-    inactive: "#A3C0C5",
-  },
+export const hexToRgba = (hex: string, alpha: number): string => {
+  const value = hex.replace("#", "");
+  const r = Number.parseInt(value.slice(0, 2), 16);
+  const g = Number.parseInt(value.slice(2, 4), 16);
+  const b = Number.parseInt(value.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+export const getFintechTabBarColors = (
+  themeColors: ThemePalette["colors"],
+  isDark: boolean,
+): FintechTabBarColors => {
+  const { card, background, border, text, primary } = themeColors;
+  return {
+    background: isDark
+      ? hexToRgba(background, 0.38)
+      : "rgba(255, 255, 255, 0.32)",
+    opaqueBackground: card,
+    border: isDark
+      ? hexToRgba(border, 0.7)
+      : hexToRgba(text.secondary, 0.32),
+    opaqueBorder: text.secondary,
+    active: primary[500],
+    activeBackground: isDark
+      ? hexToRgba(border, 0.7)
+      : hexToRgba(primary[500], 0.12),
+    inactive: text.secondary,
+  };
 };
 
 export const getFintechTabBarStyle = (
   bottomInset: number,
+  colors: FintechTabBarColors,
   isDark: boolean,
   reduceTransparency = false,
 ): ViewStyle => {
-  const theme = fintechTabBarColors[isDark ? "dark" : "light"];
-
   return {
     position: "absolute",
     left: 44,
     right: 44,
     bottom: bottomInset + floatingTabBarMetrics.bottom,
-    backgroundColor: reduceTransparency ? theme.opaqueBackground : "transparent",
-    borderColor: reduceTransparency ? theme.opaqueBorder : theme.border,
+    backgroundColor: reduceTransparency ? colors.opaqueBackground : "transparent",
+    borderColor: reduceTransparency ? colors.opaqueBorder : colors.border,
     borderWidth: 1,
     borderRadius: 28,
     height: floatingTabBarMetrics.height,

@@ -18,17 +18,19 @@ import { floatingTabBarMetrics } from "../../navigation/fintechTabBar";
 import { useAuthStore } from "../../store/authStore";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
 import {
-  useThemeStore,
   useColors,
   useIsDark,
   useShadows,
+  useThemeId,
 } from "../../store/themeStore";
+import { THEMES } from "../../theme";
 import type { RootStackScreenProps } from "../../navigation/types";
 import { useNavigation } from "@react-navigation/native";
 
 import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 import { ChangePasswordModal } from "../../components/profile/ChangePasswordModal";
 import { AboutModal } from "../../components/profile/AboutModal";
+import { ThemePickerModal } from "../../components/profile/ThemePickerModal";
 
 type MenuItem = {
   id: string;
@@ -65,10 +67,11 @@ export const ProfileScreen: React.FC = () => {
   const navigation =
     useNavigation<RootStackScreenProps<"Main">["navigation"]>();
 
-  const toggleTheme = useThemeStore((state) => state.toggleTheme);
   const themeColors = useColors();
   const themeShadows = useShadows();
   const isDarkMode = useIsDark();
+  const themeId = useThemeId();
+  const activeTheme = THEMES[themeId];
   const styles = useMemo(
     () => createStyles(themeColors, themeShadows),
     [themeColors, themeShadows],
@@ -76,6 +79,7 @@ export const ProfileScreen: React.FC = () => {
 
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [showThemePicker, setShowThemePicker] = useState(false);
   const isAdmin = user?.role === "ADMIN";
 
   const handleRefresh = async () => {
@@ -110,11 +114,11 @@ export const ProfileScreen: React.FC = () => {
   const menuItems: MenuItem[] = [
     {
       id: "theme",
-      title: isDarkMode ? "Modo Claro" : "Modo Oscuro",
-      subtitle: isDarkMode ? "Cambiar a tema claro" : "Cambiar a tema oscuro",
-      icon: isDarkMode ? "sunny-outline" : "moon-outline",
-      color: isDarkMode ? "#F59E0B" : "#6366F1",
-      onPress: toggleTheme,
+      title: "Tema visual",
+      subtitle: `${activeTheme.name} · ${isDarkMode ? "Oscuro" : "Claro"}`,
+      icon: "color-palette-outline",
+      color: themeColors.primary[500],
+      onPress: () => setShowThemePicker(true),
     },
     {
       id: "password",
@@ -244,6 +248,11 @@ export const ProfileScreen: React.FC = () => {
       <AboutModal
         visible={showAboutModal}
         onClose={() => setShowAboutModal(false)}
+      />
+
+      <ThemePickerModal
+        visible={showThemePicker}
+        onClose={() => setShowThemePicker(false)}
       />
 
       <ConfirmModal

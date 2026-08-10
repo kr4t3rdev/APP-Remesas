@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	Animated,
 	AccessibilityInfo,
@@ -12,9 +12,9 @@ import {
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import { useIsDark } from "../store/themeStore";
+import { useIsDark, useColors } from "../store/themeStore";
 import { mainTabDefinitions } from "./mainTabsConfig";
-import { fintechTabBarColors, getFintechTabBarStyle } from "./fintechTabBar";
+import { getFintechTabBarColors, getFintechTabBarStyle } from "./fintechTabBar";
 import { useTabBarMotion } from "./TabBarMotionProvider";
 
 export const TAB_BAR_EMPHASIS_MOTION = {
@@ -48,7 +48,11 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
 	insets,
 }) => {
 	const isDark = useIsDark();
-	const colors = fintechTabBarColors[isDark ? "dark" : "light"];
+	const themeColors = useColors();
+	const colors = useMemo(
+		() => getFintechTabBarColors(themeColors, isDark),
+		[themeColors, isDark],
+	);
 	const { progress, requestScrollToTop, expand } = useTabBarMotion();
 	const [barWidth, setBarWidth] = useState(0);
 	const [reduceMotion, setReduceMotion] = useState(false);
@@ -182,7 +186,7 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
 		<Animated.View
 			testID="floating-tab-bar"
 			style={[
-				getFintechTabBarStyle(insets.bottom, isDark, reduceTransparency),
+				getFintechTabBarStyle(insets.bottom, colors, isDark, reduceTransparency),
 				{
 					transform: [
 						{

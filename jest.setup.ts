@@ -45,7 +45,9 @@ jest.mock('./src/store/themeStore', () => {
     gradients: themeGradients,
     isDark: false,
     toggleTheme: jest.fn(),
+    setThemeId: jest.fn(),
     setTheme: jest.fn(),
+    setMode: jest.fn(),
   };
 
   return {
@@ -54,5 +56,7 @@ jest.mock('./src/store/themeStore', () => {
     useShadows: () => themeShadows,
     useIsDark: () => false,
     useGradients: () => themeGradients,
+    useThemeId: () => 'ocean',
+    useMode: () => 'light',
   };
 });

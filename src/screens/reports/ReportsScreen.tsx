@@ -202,7 +202,7 @@ export const ReportsScreen: React.FC = () => {
 					: reportType === "cash-flow"
 						? "cashFlow"
 						: "daily";
-		return isDark ? gradients[gradientKey].dark : gradients[gradientKey].light;
+		return [...(isDark ? gradients[gradientKey].dark : gradients[gradientKey].light)];
 	};
 
 	const reports: ReportCardData[] = [

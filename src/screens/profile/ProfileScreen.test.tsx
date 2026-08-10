@@ -21,7 +21,12 @@ jest.mock("../../store/authStore", () => ({
 
 jest.mock("../../store/themeStore", () => ({
   useThemeStore: (selector: (state: object) => unknown) =>
-    selector({ toggleTheme: jest.fn() }),
+    selector({
+      setThemeId: jest.fn(),
+      setTheme: jest.fn(),
+      setMode: jest.fn(),
+      toggleTheme: jest.fn(),
+    }),
   useColors: () => ({
     primary: { 500: "#2563EB", 100: "#DBEAFE" },
     secondary: { 500: "#7C3AED" },
@@ -35,6 +40,8 @@ jest.mock("../../store/themeStore", () => ({
   }),
   useShadows: () => ({ sm: {}, md: {} }),
   useIsDark: () => false,
+  useThemeId: () => "ocean",
+  useMode: () => "light",
 }));
 
 jest.mock("../../navigation/TabBarMotionProvider", () => ({
@@ -59,7 +66,7 @@ describe("ProfileScreen", () => {
     expect(getByText("Test User")).toBeTruthy();
     expect(getByText("test@example.com")).toBeTruthy();
     expect(getByText("Configuración")).toBeTruthy();
-    expect(getByText("Modo Oscuro")).toBeTruthy();
+    expect(getByText("Tema visual")).toBeTruthy();
   });
 
   it("keeps financial objectives out of the settings-only profile screen", () => {

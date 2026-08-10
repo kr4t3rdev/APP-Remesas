@@ -18,6 +18,13 @@ jest.mock("expo-blur", () => {
 
 jest.mock("../store/themeStore", () => ({
   useIsDark: () => false,
+  useColors: () => ({
+    card: "#FFFFFF",
+    background: "#F6FAFA",
+    border: "#D8E7E9",
+    text: { secondary: "#526C72" },
+    primary: { 500: "#0E7490" },
+  }),
 }));
 
 jest.mock("@expo/vector-icons", () => {
