@@ -1,4 +1,5 @@
 import type React from "react";
+import { Platform } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { HomeScreen } from "../screens/home/HomeScreen";
 import { ProfileScreen } from "../screens/profile/ProfileScreen";
@@ -9,6 +10,7 @@ import type { MainTabParamList } from "./types";
 import { mainTabDefinitions } from "./mainTabsConfig";
 import { ResponsiveTabBar } from "./responsiveShell";
 import { TabBarMotionProvider } from "./TabBarMotionProvider";
+import { useResponsive, BREAKPOINTS } from "../hooks/useResponsive";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -21,6 +23,10 @@ const tabComponents: Record<keyof MainTabParamList, React.ComponentType> = {
 };
 
 export const MainTabs: React.FC = () => {
+	const { width } = useResponsive();
+	const isWebDesktop =
+		Platform.OS === "web" && width >= BREAKPOINTS.tablet;
+
 	return (
 		<TabBarMotionProvider>
 			<Tab.Navigator
@@ -28,6 +34,7 @@ export const MainTabs: React.FC = () => {
 				screenOptions={{
 					headerShown: false,
 					tabBarHideOnKeyboard: true,
+					tabBarPosition: isWebDesktop ? "left" : "bottom",
 				}}
 			>
 				{mainTabDefinitions.map(({ route, label }) => (

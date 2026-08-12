@@ -10,9 +10,11 @@ import { Ionicons } from "@expo/vector-icons";
 import {
   useNavigation,
   CommonActions,
-  NavigationContainer,
+  type NavigationHelpers,
+  type NavigationProp,
+  type ParamListBase,
 } from "@react-navigation/native";
-import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useColors } from "../../store/themeStore";
 import { useResponsive, BREAKPOINTS } from "../../hooks/useResponsive";
 import { useResponsiveStore } from "../../store/responsiveStore";
@@ -57,17 +59,27 @@ interface SidebarProps {
   isAdmin?: boolean;
   testID?: string;
   hideHeaderLogo?: boolean;
+  navigation?: NavigationHelpers<ParamListBase> | NavigationProp<ParamListBase>;
+  state?: BottomTabBarProps["state"];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isAdmin = false,
   testID = "sidebar",
   hideHeaderLogo = false,
+  navigation: navigationProp,
+  state: stateProp,
 }) => {
-  const navigation = useNavigation<BottomTabNavigationProp<any>>();
+  const hookNavigation =
+    useNavigation<NavigationProp<ParamListBase>>();
   const colors = useColors();
   const { sidebarMode, width } = useResponsive();
   const { isSidebarCollapsed, toggleSidebar } = useResponsiveStore();
+
+  // Prefer the tab bar's explicit navigation/state when provided (ResponsiveTabBar);
+  // fall back to the navigation context otherwise (standalone MainLayout usage).
+  const navigation = navigationProp ?? hookNavigation;
+  const state = stateProp ?? navigation.getState();
 
   // Determine if sidebar should be collapsed
   const isCollapsed = useMemo(() => {
@@ -83,17 +95,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // Get current route name from navigation state
   const currentRoute = useMemo(() => {
-    const state = navigation.getState();
     if (state?.routes?.length) {
       const currentTab = state.routes[state.index || 0];
       return currentTab?.name || (isAdmin ? "AdminHome" : "Home");
     }
     return isAdmin ? "AdminHome" : "Home";
-  }, [navigation, isAdmin]);
+  }, [state, isAdmin]);
 
   const navigate = useCallback(
     (routeName: string) => {
       try {
+        // Prefer jumpTo when the navigation belongs to a tab navigator
+        // (Sidebar rendered as a tab bar); fall back to a generic action.
+        const tabNavigation = navigation as NavigationProp<ParamListBase> & {
+          jumpTo?: (name: string) => void;
+        };
+        if (typeof tabNavigation.jumpTo === "function") {
+          tabNavigation.jumpTo(routeName);
+          return;
+        }
+
         navigation.dispatch(
           CommonActions.navigate({
             name: routeName,

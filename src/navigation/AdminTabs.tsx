@@ -1,4 +1,5 @@
 import type React from "react";
+import { Platform } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import type { AdminTabParamList } from "./types";
@@ -9,16 +10,22 @@ import { AdminUsersScreen } from "../screens/admin/AdminUsersScreen";
 import { AdminReportsScreen } from "../screens/admin/AdminReportsScreen";
 import { ResponsiveTabBar } from "./responsiveShell";
 import { TabBarMotionProvider } from "./TabBarMotionProvider";
+import { useResponsive, BREAKPOINTS } from "../hooks/useResponsive";
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
 
 export const AdminTabs: React.FC = () => {
+	const { width } = useResponsive();
+	const isWebDesktop =
+		Platform.OS === "web" && width >= BREAKPOINTS.tablet;
+
 	return (
 		<TabBarMotionProvider>
 			<Tab.Navigator
 				tabBar={(props) => <ResponsiveTabBar isAdmin {...props} />}
 				screenOptions={{
 					headerShown: false,
+					tabBarPosition: isWebDesktop ? "left" : "bottom",
 				}}
 			>
 			<Tab.Screen

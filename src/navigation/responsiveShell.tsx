@@ -21,7 +21,14 @@ export const ResponsiveTabBar: React.FC<ResponsiveTabBarProps> = ({
 		Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
 	if (isWebDesktop) {
-		return <Sidebar isAdmin={isAdmin} hideHeaderLogo={hideHeaderLogo} />;
+		return (
+			<Sidebar
+				isAdmin={isAdmin}
+				hideHeaderLogo={hideHeaderLogo}
+				navigation={tabBarProps.navigation}
+				state={tabBarProps.state}
+			/>
+		);
 	}
 
 	return <InstagramTabBar {...tabBarProps} />;
