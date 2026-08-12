@@ -285,7 +285,11 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
 					);
 					const options = descriptors[route.key]?.options ?? {};
 					const focused = state.index === index;
-					const label = definition?.label ?? route.name;
+					const label =
+						definition?.label ??
+						(typeof options.tabBarLabel === "string"
+							? options.tabBarLabel
+							: route.name);
 					const icon = definition?.icon ?? "ellipse";
 					const emphasized = definition?.emphasized ?? false;
 
@@ -371,13 +375,35 @@ export const InstagramTabBar: React.FC<BottomTabBarProps> = ({
 											],
 										}}
 									>
+										{definition ? (
 										<Ionicons
 											name={icon}
 											size={emphasized ? 36 : 22}
 											color={
-												focused || emphasized ? colors.active : colors.inactive
+												focused || emphasized
+													? colors.active
+													: colors.inactive
 											}
 										/>
+									) : typeof options.tabBarIcon === "function" ? (
+										options.tabBarIcon({
+											focused,
+											color: focused
+												? colors.active
+												: colors.inactive,
+											size: 22,
+										})
+									) : (
+										<Ionicons
+											name={icon}
+											size={emphasized ? 36 : 22}
+											color={
+												focused || emphasized
+													? colors.active
+													: colors.inactive
+											}
+										/>
+									)}
 									</Animated.View>
 								</View>
 							</Pressable>

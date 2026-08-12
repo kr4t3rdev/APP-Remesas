@@ -7,7 +7,7 @@ import { ExpensesScreen } from "../screens/expenses/ExpensesScreen";
 import { CashScreen } from "../screens/cash/CashScreen";
 import type { MainTabParamList } from "./types";
 import { mainTabDefinitions } from "./mainTabsConfig";
-import { InstagramTabBar } from "./InstagramTabBar";
+import { ResponsiveTabBar } from "./responsiveShell";
 import { TabBarMotionProvider } from "./TabBarMotionProvider";
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -24,7 +24,7 @@ export const MainTabs: React.FC = () => {
 	return (
 		<TabBarMotionProvider>
 			<Tab.Navigator
-				tabBar={(props) => <InstagramTabBar {...props} />}
+				tabBar={(props) => <ResponsiveTabBar {...props} />}
 				screenOptions={{
 					headerShown: false,
 					tabBarHideOnKeyboard: true,

@@ -2,38 +2,25 @@ import type React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import type { AdminTabParamList } from "./types";
-import { useColors } from "../store/themeStore";
 import { AdminScreenPerfil } from "../screens/admin/AdminScreenPerfil";
 import { AdminHomeScreen } from "../screens/admin/AdminHomeScreen";
 import { AdminRoutes } from "./adminRoutes";
 import { AdminUsersScreen } from "../screens/admin/AdminUsersScreen";
 import { AdminReportsScreen } from "../screens/admin/AdminReportsScreen";
+import { ResponsiveTabBar } from "./responsiveShell";
+import { TabBarMotionProvider } from "./TabBarMotionProvider";
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
 
 export const AdminTabs: React.FC = () => {
-	const colors = useColors();
-
 	return (
-		<Tab.Navigator
-			screenOptions={{
-				headerShown: false,
-				tabBarStyle: {
-					backgroundColor: colors.card,
-					borderTopColor: colors.border,
-					borderTopWidth: 0.5,
-					paddingTop: 8,
-					paddingBottom: 8,
-					height: 80,
-				},
-				tabBarActiveTintColor: colors.primary[500],
-				tabBarInactiveTintColor: colors.text.secondary,
-				tabBarLabelStyle: {
-					fontSize: 11,
-					fontWeight: "500",
-				},
-			}}
-		>
+		<TabBarMotionProvider>
+			<Tab.Navigator
+				tabBar={(props) => <ResponsiveTabBar isAdmin {...props} />}
+				screenOptions={{
+					headerShown: false,
+				}}
+			>
 			<Tab.Screen
 				name="AdminHome"
 				component={AdminHomeScreen}
@@ -85,5 +72,6 @@ export const AdminTabs: React.FC = () => {
 				}}
 			/>
 		</Tab.Navigator>
+		</TabBarMotionProvider>
 	);
 };

@@ -30,6 +30,7 @@ const DEFAULT_ITEMS: SidebarItem[] = [
   { icon: "home", label: "Inicio", route: "Home" },
   { icon: "swap-horizontal", label: "Transacciones", route: "Transactions" },
   { icon: "wallet", label: "Caja", route: "Cash" },
+  { icon: "receipt", label: "Gastos", route: "Expenses" },
   { icon: "bar-chart", label: "Reportes", route: "Reports" },
   { icon: "person", label: "Perfil", route: "Profile" },
 ];
@@ -55,11 +56,13 @@ const ADMIN_ITEMS: SidebarItem[] = [
 interface SidebarProps {
   isAdmin?: boolean;
   testID?: string;
+  hideHeaderLogo?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isAdmin = false,
   testID = "sidebar",
+  hideHeaderLogo = false,
 }) => {
   const navigation = useNavigation<BottomTabNavigationProp<any>>();
   const colors = useColors();
@@ -136,17 +139,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ]}
     >
       {/* Logo Section */}
-      <View style={styles.logoContainer}>
-        <AppLogo size={isCollapsed ? 40 : 40} style={styles.logoIcon} />
-        {!isCollapsed && (
-          <Text
-            style={[styles.logoText, { color: colors.text.primary }]}
-            numberOfLines={1}
-          >
-            CashFlows
-          </Text>
-        )}
-      </View>
+      {!hideHeaderLogo && (
+        <View style={styles.logoContainer}>
+          <AppLogo size={isCollapsed ? 40 : 40} style={styles.logoIcon} />
+          {!isCollapsed && (
+            <Text
+              style={[styles.logoText, { color: colors.text.primary }]}
+              numberOfLines={1}
+            >
+              CashFlows
+            </Text>
+          )}
+        </View>
+      )}
 
       {/* Navigation Items */}
       <View style={styles.navContainer}>

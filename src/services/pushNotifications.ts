@@ -35,6 +35,13 @@ if (Platform.OS === "android") {
  * Returns `null` when the user denies permission (silent fallback).
  */
 export async function getExpoPushToken(): Promise<string | null> {
+	if (Platform.OS === "web") {
+		// Web push requires a VAPID public key (app.json `notification.vapidPublicKey`
+		// + service worker). It's not configured in this app, so skip web token
+		// registration instead of letting getExpoPushTokenAsync throw.
+		return null;
+	}
+
 	const { status: existingStatus } = await Notifications.getPermissionsAsync();
 	let finalStatus = existingStatus;
 
