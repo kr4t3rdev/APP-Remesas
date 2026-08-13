@@ -24,7 +24,7 @@ test.describe('FX transfer account routes', () => {
     await mockTransferApi(page);
     await seedAuthenticatedSession(page);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByTestId('tab-Home')).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Inicio' })).toBeVisible();
     await openTransactions(page);
 
     await page.getByRole('button', { name: 'Nueva transacción' }).click();
@@ -47,7 +47,7 @@ test.describe('FX transfer account routes', () => {
         localStorage.setItem('user_data', JSON.stringify({ id: 1, name: 'Transfer E2E', email: 'user@cambios.com', role: 'USER' }));
       });
       await page.reload({ waitUntil: 'domcontentloaded' });
-      await expect(page.getByTestId('tab-Home')).toBeVisible();
+      await expect(page.getByRole('menuitem', { name: 'Inicio' })).toBeVisible();
       await openTransactions(page);
 
       await page.getByRole('button', { name: 'Nueva transacción' }).click();
@@ -122,7 +122,7 @@ test.describe('FX transfer account routes', () => {
       localStorage.setItem('user_data', JSON.stringify({ id: 1, name: 'Transfer E2E', email: 'user@cambios.com', role: 'USER' }));
     });
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await expect(page.getByTestId('tab-Home')).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Inicio' })).toBeVisible();
     await openTransactions(page);
     await page.getByRole('button', { name: 'Nueva transacción' }).click();
     await page.getByLabel('Venta', { exact: true }).click();
@@ -146,7 +146,7 @@ test.describe('FX transfer account routes', () => {
     await mockTransferApi(page);
     await seedAuthenticatedSession(page);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByTestId('tab-Home')).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Inicio' })).toBeVisible();
     await openTransactions(page);
     await page.getByRole('button', { name: 'Nueva transacción' }).click();
 
@@ -168,7 +168,7 @@ test.describe('FX transfer account routes', () => {
 });
 
 async function openTransactions(page: Page): Promise<void> {
-  await page.getByText('Transacciones', { exact: true }).last().click();
+  await page.getByRole('menuitem', { name: 'Transacciones' }).click();
   // TransactionsScreen exposes the FAB as "Nueva transacción".  The
   // account-aware TransactionModal is opened from this real production entry
   // point; waiting for a currency label here was coupled to the retired
@@ -195,6 +195,8 @@ async function mockTransferApi(page: Page) {
     const request = route.request();
     const url = request.url();
     if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type, authorization, idempotency-key', 'access-control-allow-methods': 'GET,POST,OPTIONS' } });
+    if (url.includes('/currencies/with-primary')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ currencies, primaryCurrencyId: 2 }) });
+    if (url.includes('/cash/overview')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ asOf: new Date().toISOString(), primaryCurrency: currencies[1], currencies, balances: cashBalances, recentMovements: [], latestAudits: [] }) });
     if (url.includes('/currencies')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(currencies) });
     if (url.includes('/exchange-rates')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ rates: [
       { id: 1, currencyId: 1, buyRate: 370, sellRate: 375, currency: currencies[0] },

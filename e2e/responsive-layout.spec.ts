@@ -6,18 +6,20 @@ test.describe('Responsive Layout', () => {
   // Helper to login
   async function login(page: Page): Promise<void> {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    
-    const emailInput = page.getByPlaceholder('correo@ejemplo.com');
-    if ((await emailInput.count()) > 0) {
-      await emailInput.fill('user@test.com');
-      await page.getByPlaceholder('••••••••').fill('password123');
-      await page.getByText('Iniciar Sesión').click();
-      return;
-    }
 
-    // Already logged in
+    const emailInput = page.getByPlaceholder('admin@cambios.com');
+    if ((await emailInput.count()) === 0) {
+      const loginCta = page.getByText('Iniciar Sesión').first();
+      await loginCta.click();
+      await expect(page.getByPlaceholder('admin@cambios.com')).toBeVisible({ timeout: 10_000 });
+    }
+    await page.getByPlaceholder('admin@cambios.com').fill('user@test.com');
+    await page.getByPlaceholder('••••••••').fill('password123');
+    await page.getByText('Iniciar Sesión').last().click();
+
+    // Already logged in (mobile uses floating tab bar, desktop/tablet uses sidebar)
     await Promise.race([
-      page.getByText('Inicio').waitFor({ timeout: 10_000 }),
+      page.getByTestId('floating-tab-bar').waitFor({ timeout: 10_000 }),
       page.getByTestId('sidebar').waitFor({ timeout: 10_000 }),
     ]);
   }
@@ -58,6 +60,48 @@ test.describe('Responsive Layout', () => {
         return;
       }
 
+      const cup = { id: 1, code: 'CUP', name: 'Peso cubano', symbol: '$', isActive: true };
+      const usd = { id: 2, code: 'USD', name: 'Dólar estadounidense', symbol: 'US$', isActive: true };
+
+      if (url.includes('/auth/me/primary-currency')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '1' });
+        return;
+      }
+
+      if (url.includes('/currencies/with-primary')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ currencies: [cup, usd], primaryCurrencyId: 1 }),
+        });
+        return;
+      }
+
+      if (url.includes('/currencies')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([cup, usd]),
+        });
+        return;
+      }
+
+      if (url.includes('/cash/overview')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            asOf: new Date().toISOString(),
+            primaryCurrency: cup,
+            currencies: [cup, usd],
+            balances: [{ id: 10, currencyId: 1, balance: 1500.5, currency: cup }],
+            recentMovements: [],
+            latestAudits: [],
+          }),
+        });
+        return;
+      }
+
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
     });
   }
@@ -75,16 +119,16 @@ test.describe('Responsive Layout', () => {
       await login(page);
 
       // Bottom tabs should be visible
-      const bottomTabs = page.locator('[role="tablist"]').first();
+      const bottomTabs = page.getByTestId('floating-tab-bar');
       await expect(bottomTabs).toBeVisible();
 
       // Sidebar should NOT be visible
       const sidebar = page.locator('[data-testid="sidebar"]');
       await expect(sidebar).not.toBeVisible();
 
-      // Tab items should be visible
-      await expect(page.getByText('Inicio')).toBeVisible();
-      await expect(page.getByText('Transacciones')).toBeVisible();
+      // Tab items should be visible (aria labels, icon-only rendering)
+      await expect(page.getByRole('tab', { name: 'Inicio' })).toBeVisible();
+      await expect(page.getByRole('tab', { name: 'Transacciones' })).toBeVisible();
     });
 
     test('bottom tabs are tappable on mobile', async ({ page }) => {
@@ -93,7 +137,7 @@ test.describe('Responsive Layout', () => {
       await login(page);
 
       // Tap on Transactions tab
-      await page.getByText('Transacciones').click();
+      await page.getByRole('tab', { name: 'Transacciones' }).click();
 
       // Should navigate (verify by checking URL or content change)
       await page.waitForTimeout(500);
@@ -115,7 +159,7 @@ test.describe('Responsive Layout', () => {
       expect(sidebarWidth).toBeLessThan(100);
 
       // Bottom tabs should NOT be visible
-      const bottomTabs = page.locator('[role="tablist"]').first();
+      const bottomTabs = page.getByTestId('floating-tab-bar');
       await expect(bottomTabs).not.toBeVisible();
     });
 
@@ -147,7 +191,7 @@ test.describe('Responsive Layout', () => {
       expect(sidebarWidth).toBeGreaterThan(200);
 
       // Bottom tabs should NOT be visible
-      const bottomTabs = page.locator('[role="tablist"]').first();
+      const bottomTabs = page.getByTestId('floating-tab-bar');
       await expect(bottomTabs).not.toBeVisible();
     });
 
@@ -189,12 +233,16 @@ test.describe('Responsive Layout', () => {
       await page.goto('/');
       await login(page);
 
-      // Header should be visible
-      const header = page.locator('[data-testid="header"]');
-      await expect(header).toBeVisible();
+      // Navigate to a feature screen that renders its own header
+      await page.getByLabel('Transacciones').click();
 
-      // Search input should be visible
-      await expect(page.getByPlaceholder('Buscar...')).toBeVisible();
+      // Feature screen header should be visible
+      await expect(
+        page.getByRole('heading', { name: 'Transacciones' }).first(),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: 'Nueva transacción' }),
+      ).toBeVisible();
     });
   });
 
@@ -206,7 +254,7 @@ test.describe('Responsive Layout', () => {
       await login(page);
 
       // Verify mobile layout
-      const bottomTabs = page.locator('[role="tablist"]').first();
+      const bottomTabs = page.getByTestId('floating-tab-bar');
       await expect(bottomTabs).toBeVisible();
 
       // Resize to tablet

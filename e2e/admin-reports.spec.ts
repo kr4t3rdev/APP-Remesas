@@ -9,9 +9,9 @@ test.describe('Admin reports dashboard', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await login(page, process.env.E2E_ADMIN_EMAIL || 'admin@cambios.com', process.env.E2E_ADMIN_PASSWORD || 'admin1234');
 
-    await page.getByRole('tab', { name: 'Reportes' }).click();
+    await page.getByRole('menuitem', { name: 'Reportes' }).click();
 
-    await expect(page.getByTestId('admin-reports-title')).toBeVisible();
+    await expect(page.getByText('Reportes').filter({ visible: true }).first()).toBeVisible();
     await expect(page.getByTestId('admin-reports-period-segment')).toBeVisible();
     await expect(page.getByTestId('admin-reports-cashflow-card')).toBeVisible();
     await expect(page.getByTestId('admin-reports-growth-card')).toBeVisible();
@@ -24,14 +24,18 @@ async function login(page: Page, email: string, password: string): Promise<void>
   if ((await emailInput.count()) > 0) {
     await emailInput.fill(email);
     await page.getByPlaceholder('••••••••').fill(password);
-    await page.getByText('Iniciar Sesión').click();
+    await page.getByText('Iniciar Sesión').last().click();
     return;
   }
 
-  await Promise.race([
-    page.getByText('Inicio').waitFor({ timeout: 10_000 }),
-    page.getByText('Inicio Admin').waitFor({ timeout: 10_000 }),
-  ]);
+  const loginCta = page.getByText('Iniciar Sesión').first();
+  await loginCta.click();
+  await expect(page.getByPlaceholder('admin@cambios.com')).toBeVisible({ timeout: 10_000 });
+  await page.getByPlaceholder('admin@cambios.com').fill(email);
+  await page.getByPlaceholder('••••••••').fill(password);
+  await page.getByText('Iniciar Sesión').last().click();
+
+  await expect(page.getByText('Centro de operaciones').first()).toBeVisible({ timeout: 15_000 });
 }
 
 async function mockAdminReportsApi(page: Page): Promise<void> {
@@ -134,6 +138,26 @@ async function mockAdminReportsApi(page: Page): Promise<void> {
           { id: 2, actorUserId: 1, action: 'USER_CREATED', createdAt: '2026-02-03T12:00:00.000Z' },
           { id: 3, actorUserId: 1, action: 'LICENSE_EXTENDED', createdAt: '2026-03-05T12:00:00.000Z' },
         ]),
+      });
+      return;
+    }
+
+    if (url.includes('/admin/reports/platform-series')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          monthsBack: 6,
+          series: [0, 1, 2, 3, 4, 5].map((i) => ({
+            year: 2026,
+            month: i + 1,
+            label: `M${i + 1}`,
+            billingCup: 1000 * (i + 1),
+            newUsers: i,
+            churn: 0,
+          })),
+          totals: { billingCup: 21000, newUsers: 15, churn: 0 },
+        }),
       });
       return;
     }
