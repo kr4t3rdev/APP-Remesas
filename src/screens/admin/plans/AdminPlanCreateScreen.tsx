@@ -8,6 +8,8 @@ import {
   TextInput,
   Switch,
   useColorScheme,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Alert } from "../../../utils/alert";
 
@@ -20,6 +22,7 @@ import { Input } from "../../../components/ui/Input";
 import { Button } from "../../../components/ui/Button";
 import { AdminHeader } from "../../../components/admin/layout/AdminHeader";
 import { useThemeStore, useColors } from "../../../store/themeStore";
+import { BREAKPOINTS } from "../../../hooks/useResponsive";
 
 const ICONS: PlanIconType[] = ["star", "diamond", "rocket", "flash"];
 const THEME_COLORS = [
@@ -138,6 +141,8 @@ export const AdminPlanCreateScreen: React.FC = () => {
   // Dynamic Styles
   const containerBg = colors.background;
   const textColor = colors.text.primary;
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
   const cardBg = isDark ? "#1e293b" : "#fff";
   const borderColor = isDark ? "#334155" : "#e5e7eb";
   const inputBg = isDark ? "#1e293b" : "#fff";
@@ -154,6 +159,7 @@ export const AdminPlanCreateScreen: React.FC = () => {
       <ScrollView
         contentContainerStyle={[
           styles.container,
+          isWebDesktop && styles.webContainer,
           { backgroundColor: containerBg },
         ]}
       >
@@ -378,6 +384,13 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#f9fafb",
     paddingBottom: 40,
+  },
+  webContainer: {
+    width: "100%",
+    maxWidth: 720,
+    alignSelf: "center",
+    padding: 32,
+    paddingBottom: 48,
   },
   sectionTitle: {
     fontSize: 16,

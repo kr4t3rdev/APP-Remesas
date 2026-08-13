@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  useWindowDimensions,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 import { getCurrencyInfo } from "../../utils/currencyFlags";
@@ -32,12 +33,15 @@ import {
 } from "../../modules/bank-accounts/application/useBankAccounts";
 import { useCurrenciesWithPrimaryQuery } from "../../modules/currencies/application/useCurrencies";
 import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
+import { BREAKPOINTS } from "../../hooks/useResponsive";
 
 type ConfirmAction = () => Promise<void>;
 
 export const BankAccountsScreen: React.FC = () => {
   const colors = useColors();
   const shadows = useShadows();
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
   const confirmAction = useRef<ConfirmAction>(async () => {});
 
   const [confirmVisible, setConfirmVisible] = useState(false);
@@ -266,29 +270,45 @@ export const BankAccountsScreen: React.FC = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ProfileFeatureBackButton />
       <FadeIn>
-        <View style={styles.header}>
-          <Text style={[styles.headerLabel, { color: colors.text.tertiary }]}>TOTAL NET CASH</Text>
-          <View style={styles.headerAmountRow}>
-            {Object.values(totalsByCurrency).length > 0 ? (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {Object.values(totalsByCurrency).map(({ symbol, code, balance }) => (
-                  <View key={code} style={styles.headerCurrencyGroup}>
-                    <Text style={[styles.headerAmount, { color: colors.text.primary }]}>
-                      {symbol}
-                      {balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                    </Text>
-                    <Text style={[styles.headerCurrencyLabel, { color: colors.text.secondary }]}>
-                      {code}
-                    </Text>
-                  </View>
-                ))}
-              </ScrollView>
-            ) : (
-              <Text style={[styles.headerAmount, { color: colors.text.primary }]}>
-                {primaryCurrency?.symbol || primaryCurrency?.code || ""}{primaryCurrency ? " " : ""}0.00
-              </Text>
-            )}
+        <View style={[styles.header, isWebDesktop && styles.webHeader]}>
+          <View style={isWebDesktop ? styles.webHeaderGroup : undefined}>
+            <Text style={[styles.headerLabel, { color: colors.text.tertiary }]}>TOTAL NET CASH</Text>
+            <View style={styles.headerAmountRow}>
+              {Object.values(totalsByCurrency).length > 0 ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {Object.values(totalsByCurrency).map(({ symbol, code, balance }) => (
+                    <View key={code} style={styles.headerCurrencyGroup}>
+                      <Text style={[styles.headerAmount, { color: colors.text.primary }]}>
+                        {symbol}
+                        {balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                      </Text>
+                      <Text style={[styles.headerCurrencyLabel, { color: colors.text.secondary }]}>
+                        {code}
+                      </Text>
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : (
+                <Text style={[styles.headerAmount, { color: colors.text.primary }]}>
+                  {primaryCurrency?.symbol || primaryCurrency?.code || ""}{primaryCurrency ? " " : ""}0.00
+                </Text>
+              )}
+            </View>
           </View>
+          {isWebDesktop ? (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Nueva cuenta"
+              onPress={openCreateModal}
+              style={[
+                styles.headerAction,
+                { backgroundColor: colors.primary[500] },
+              ]}
+            >
+              <Ionicons name="add" size={20} color="#fff" />
+              <Text style={styles.headerActionText}>Nueva cuenta</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
       </FadeIn>
 
@@ -301,7 +321,7 @@ export const BankAccountsScreen: React.FC = () => {
           data={accounts}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderAccount}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, isWebDesktop && styles.webListContent]}
           refreshControl={
             <RefreshControl
               refreshing={bankAccountsQuery.isRefetching}
@@ -328,13 +348,15 @@ export const BankAccountsScreen: React.FC = () => {
       )}
 
       <ScaleIn delay={200}>
-        <TouchableOpacity
-          style={[styles.fab, shadows.lg, { backgroundColor: colors.primary[500] }]}
-          onPress={openCreateModal}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="add" size={28} color="#fff" />
-        </TouchableOpacity>
+        {!isWebDesktop ? (
+          <TouchableOpacity
+            style={[styles.fab, shadows.lg, { backgroundColor: colors.primary[500] }]}
+            onPress={openCreateModal}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add" size={28} color="#fff" />
+          </TouchableOpacity>
+        ) : null}
       </ScaleIn>
 
       <Modal
@@ -493,6 +515,33 @@ export const BankAccountsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { padding: spacing.xl, paddingBottom: spacing.md },
+  webHeader: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    gap: spacing.lg,
+    paddingHorizontal: spacing.xl,
+  },
+  webHeaderGroup: {
+    flex: 1,
+    alignItems: "flex-start",
+  },
+  headerAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.full,
+  },
+  headerActionText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
   headerLabel: {
     fontSize: 12,
     fontWeight: "600",
@@ -525,6 +574,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   listContent: { paddingHorizontal: spacing.md, paddingBottom: 120 },
+  webListContent: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xl,
+  },
   accountCard: {
     borderRadius: borderRadius.xl,
     padding: spacing.lg,

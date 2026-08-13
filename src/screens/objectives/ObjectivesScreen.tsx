@@ -6,6 +6,8 @@ import {
   RefreshControl,
   TouchableOpacity,
   StyleSheet,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 
@@ -31,6 +33,7 @@ import {
   useDeleteObjectiveMutation,
 } from "../../modules/objectives/application/useObjectives";
 import { useCurrenciesWithPrimaryQuery } from "../../modules/currencies/application/useCurrencies";
+import { BREAKPOINTS } from "../../hooks/useResponsive";
 
 const FILTERS = [
   { key: "all", label: "Todos" },
@@ -42,6 +45,8 @@ const FILTERS = [
 export const ObjectivesScreen: React.FC = () => {
   const themeColors = useColors();
   const themeShadows = useShadows();
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
   const [filter, setFilter] = useState<string>("all");
   const [showModal, setShowModal] = useState(false);
@@ -154,24 +159,41 @@ export const ObjectivesScreen: React.FC = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, isWebDesktop && styles.webHeader]}>
         <ProfileFeatureBackButton />
         <FadeInDown delay={0}>
-          <View>
-            <Text style={[styles.title, { color: themeColors.text.primary }]}>
-              Objetivos
-            </Text>
-            <Text
-              style={[styles.subtitle, { color: themeColors.text.secondary }]}
-            >
-              Metas y progreso del negocio
-            </Text>
+          <View style={[styles.headerMain, isWebDesktop && styles.webHeaderMain]}>
+            <View style={isWebDesktop ? styles.webHeaderText : undefined}>
+              <Text style={[styles.title, { color: themeColors.text.primary }]}>
+                Objetivos
+              </Text>
+              <Text
+                style={[styles.subtitle, { color: themeColors.text.secondary }]}
+              >
+                Metas y progreso del negocio
+              </Text>
+            </View>
+            {isWebDesktop ? (
+              <TouchableOpacity
+                testID="add-objective-header"
+                accessibilityRole="button"
+                accessibilityLabel="Nuevo objetivo"
+                onPress={handleOpenModal}
+                style={[
+                  styles.headerAction,
+                  { backgroundColor: themeColors.primary[500] },
+                ]}
+              >
+                <Ionicons name="add" size={20} color="#fff" />
+                <Text style={styles.headerActionText}>Nuevo objetivo</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         </FadeInDown>
       </View>
 
       <FadeInDown delay={50}>
-        <View style={styles.statsRow}>
+        <View style={[styles.statsRow, isWebDesktop && styles.webSectionRow]}>
           <View
             style={[
               styles.statCard,
@@ -253,7 +275,10 @@ export const ObjectivesScreen: React.FC = () => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filtersScroll}
+          contentContainerStyle={[
+            styles.filtersScroll,
+            isWebDesktop && styles.webSectionRow,
+          ]}
         >
           {FILTERS.map((f) => {
             const isSelected = filter === f.key;
@@ -286,7 +311,10 @@ export const ObjectivesScreen: React.FC = () => {
       </FadeInDown>
 
       <ScrollView
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          isWebDesktop && styles.webListContent,
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={objectivesQuery.isRefetching}
@@ -330,18 +358,20 @@ export const ObjectivesScreen: React.FC = () => {
         )}
       </ScrollView>
 
-      <TouchableOpacity
-        testID="add-objective-fab"
-        style={[
-          styles.fab,
-          { backgroundColor: themeColors.primary[500] },
-          themeShadows.lg,
-        ]}
-        onPress={handleOpenModal}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
+      {!isWebDesktop ? (
+        <TouchableOpacity
+          testID="add-objective-fab"
+          style={[
+            styles.fab,
+            { backgroundColor: themeColors.primary[500] },
+            themeShadows.lg,
+          ]}
+          onPress={handleOpenModal}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="add" size={28} color="#fff" />
+        </TouchableOpacity>
+      ) : null}
 
       <ObjectiveFormModal
         visible={showModal}
@@ -364,6 +394,40 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingBottom: spacing.sm,
   },
+  webHeader: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.md,
+  },
+  headerMain: {
+    paddingHorizontal: spacing.md,
+  },
+  webHeaderMain: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.md,
+    paddingHorizontal: 0,
+  },
+  webHeaderText: {
+    flex: 1,
+  },
+  headerAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.full,
+  },
+  headerActionText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
   title: {
     fontSize: 24,
     fontWeight: "700",
@@ -377,6 +441,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     gap: spacing.sm,
     marginBottom: spacing.md,
+  },
+  webSectionRow: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
   },
   statCard: {
     flex: 1,
@@ -421,6 +491,13 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: spacing.md,
     paddingBottom: 100,
+  },
+  webListContent: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xl,
   },
   emptyState: {
     alignItems: "center",

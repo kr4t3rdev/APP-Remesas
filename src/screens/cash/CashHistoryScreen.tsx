@@ -7,11 +7,14 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { colors, spacing, borderRadius, shadows } from "../../theme";
+import { BREAKPOINTS } from "../../hooks/useResponsive";
 import type { CashAudit, CashAdjustment } from "../../types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -26,6 +29,8 @@ type HistoryItem =
 
 export const CashHistoryScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
   const auditsQuery = useCashAuditsQuery();
   const adjustmentsQuery = useCashAdjustmentsQuery();
 
@@ -112,14 +117,19 @@ export const CashHistoryScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, isWebDesktop && styles.webHeader]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
           <Ionicons name="arrow-back" size={24} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Historial de Caja</Text>
+        <View style={styles.headerTitleSection}>
+          <Text style={styles.headerTitle}>Historial de Caja</Text>
+          {isWebDesktop ? (
+            <Text style={styles.headerSubtitle}>Arqueos y ajustes de caja</Text>
+          ) : null}
+        </View>
         <View style={{ width: 24 }} />
       </View>
 
@@ -132,7 +142,7 @@ export const CashHistoryScreen: React.FC = () => {
           data={items}
           renderItem={renderItem}
           keyExtractor={(item) => `${item.itemType}-${item.id}`}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, isWebDesktop && styles.webListContent]}
           refreshControl={
             <RefreshControl
               refreshing={
@@ -174,13 +184,32 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  webHeader: {
+    justifyContent: "flex-start",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+  },
   backButton: {
     padding: spacing.xs,
+  },
+  headerTitleSection: {
+    flex: 1,
+    alignItems: "flex-start",
+    marginLeft: spacing.sm,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: colors.text.primary,
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    color: colors.text.tertiary,
+    marginTop: 2,
   },
   loadingContainer: {
     flex: 1,
@@ -189,6 +218,13 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: spacing.md,
+  },
+  webListContent: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
   },
   itemContainer: {
     flexDirection: "row",

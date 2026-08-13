@@ -7,6 +7,8 @@ import {
   RefreshControl,
   TouchableOpacity,
   StyleSheet,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 
@@ -32,10 +34,13 @@ import {
   useDepositMutation,
 } from "../../modules/worker-payments/application/useWorkerPayments";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
+import { BREAKPOINTS } from "../../hooks/useResponsive";
 
 export const WorkerPaymentsScreen: React.FC = () => {
   const themeColors = useColors();
   const themeShadows = useShadows();
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
   const [confirmModal, setConfirmModal] = useState<{
     visible: boolean;
@@ -286,7 +291,32 @@ export const WorkerPaymentsScreen: React.FC = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
-      <ProfileFeatureBackButton />
+      {isWebDesktop ? (
+        <View style={styles.webTopBar}>
+          <ProfileFeatureBackButton />
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Nuevo trabajador"
+            onPress={() => handleOpenWorkerModal()}
+            style={[
+              styles.headerAction,
+              { backgroundColor: themeColors.primary[500] },
+            ]}
+          >
+            <Ionicons name="add" size={20} color={themeColors.text.inverse} />
+            <Text
+              style={[
+                styles.headerActionText,
+                { color: themeColors.text.inverse },
+              ]}
+            >
+              Nuevo trabajador
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ProfileFeatureBackButton />
+      )}
       <View style={styles.header}>
         <FadeInDown delay={0}>
           <View>
@@ -298,7 +328,12 @@ export const WorkerPaymentsScreen: React.FC = () => {
       </View>
 
       <FadeInDown delay={50}>
-        <View style={styles.contentSection}>
+        <View
+          style={[
+            styles.contentSection,
+            isWebDesktop && styles.webContentSection,
+          ]}
+        >
           <View
             style={[styles.searchBar, { backgroundColor: themeColors.card }]}
           >
@@ -322,7 +357,10 @@ export const WorkerPaymentsScreen: React.FC = () => {
         data={workersBySearch}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderWorkerItem}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          isWebDesktop && styles.webListContent,
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={workersQuery.isRefetching}
@@ -355,19 +393,21 @@ export const WorkerPaymentsScreen: React.FC = () => {
       />
 
       <ScaleIn delay={200}>
-        <TouchableOpacity
-          style={[
-            styles.fab,
-            { backgroundColor: themeColors.primary[500] },
-            { ...themeShadows.glow, shadowColor: themeColors.primary[500] },
-          ]}
-          onPress={() => handleOpenWorkerModal()}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="Nuevo trabajador"
-        >
-          <Ionicons name="add" size={28} color={themeColors.text.inverse} />
-        </TouchableOpacity>
+        {!isWebDesktop ? (
+          <TouchableOpacity
+            style={[
+              styles.fab,
+              { backgroundColor: themeColors.primary[500] },
+              { ...themeShadows.glow, shadowColor: themeColors.primary[500] },
+            ]}
+            onPress={() => handleOpenWorkerModal()}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Nuevo trabajador"
+          >
+            <Ionicons name="add" size={28} color={themeColors.text.inverse} />
+          </TouchableOpacity>
+        ) : null}
       </ScaleIn>
 
       <WorkerFormModal
@@ -423,6 +463,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  webTopBar: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+  },
+  headerAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.full,
+  },
+  headerActionText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
   header: {
     padding: spacing.md,
     paddingBottom: spacing.sm,
@@ -434,6 +497,13 @@ const styles = StyleSheet.create({
   contentSection: {
     paddingHorizontal: spacing.md,
     marginBottom: spacing.sm,
+  },
+  webContentSection: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.md,
   },
   searchBar: {
     flexDirection: "row",
@@ -475,6 +545,13 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: spacing.md,
     paddingBottom: 120,
+  },
+  webListContent: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xl,
   },
   emptyState: {
     alignItems: "center",

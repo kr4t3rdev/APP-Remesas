@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   useColorScheme,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +19,7 @@ import { LicenseUserRow } from "../../../components/admin/licenses/LicenseUserRo
 import { licensesApi } from "../../../api/licensesApi";
 import { LicenseDetail } from "../../../types/licenses";
 import { useThemeStore, useColors } from "../../../store/themeStore";
+import { BREAKPOINTS } from "../../../hooks/useResponsive";
 
 export const AdminLicenseDetailScreen: React.FC = () => {
   const route = useRoute<any>();
@@ -27,6 +30,8 @@ export const AdminLicenseDetailScreen: React.FC = () => {
   const setTheme = useThemeStore((state) => state.setTheme);
   const colors = useColors();
   const isDark = colorScheme === "dark";
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
   useEffect(() => {
     if (colorScheme) {
@@ -91,7 +96,12 @@ export const AdminLicenseDetailScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          isWebDesktop && styles.webContent,
+        ]}
+      >
         <LicenseSummaryCard license={detail} />
 
         <View style={styles.usersList}>
@@ -118,6 +128,13 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingBottom: 100,
+  },
+  webContent: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: 32,
+    paddingBottom: 40,
   },
   listHeader: {
     flexDirection: "row",

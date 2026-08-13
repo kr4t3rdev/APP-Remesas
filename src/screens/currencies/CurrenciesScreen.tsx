@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 
@@ -35,11 +36,14 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { getCountryCode, getCurrencySymbol } from "../../utils/currencyUtils";
 import { CURRENCY_CONFIG } from "../../config/constants";
+import { BREAKPOINTS } from "../../hooks/useResponsive";
 
 export const CurrenciesScreen: React.FC = () => {
   const themeColors = useColors();
   const themeShadows = useShadows();
   const isDarkMode = useIsDark();
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
   const styles = useMemo(
     () => createStyles(themeColors, themeShadows, isDarkMode),
@@ -258,7 +262,25 @@ export const CurrenciesScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <ProfileFeatureBackButton />
+      {isWebDesktop ? (
+        <View style={styles.webTopBar}>
+          <ProfileFeatureBackButton />
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Nueva moneda"
+            onPress={() => openModal()}
+            style={[
+              styles.headerAction,
+              { backgroundColor: themeColors.primary[500] },
+            ]}
+          >
+            <Ionicons name="add" size={20} color="#FFFFFF" />
+            <Text style={styles.headerActionText}>Nueva moneda</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ProfileFeatureBackButton />
+      )}
       {currenciesQuery.isLoading ? (
         <View style={styles.loadingContainer}>
           <View style={styles.skeletonPrimary} />
@@ -273,7 +295,10 @@ export const CurrenciesScreen: React.FC = () => {
       ) : (
         <>
           <ScrollView
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[
+              styles.scrollContent,
+              isWebDesktop && styles.webScrollContent,
+            ]}
             refreshControl={
               <RefreshControl
                 refreshing={currenciesQuery.isRefetching}
@@ -416,13 +441,15 @@ export const CurrenciesScreen: React.FC = () => {
       )}
 
       <ScaleIn delay={200}>
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() => openModal()}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="add" size={28} color="#FFFFFF" />
-        </TouchableOpacity>
+        {!isWebDesktop ? (
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => openModal()}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add" size={28} color="#FFFFFF" />
+          </TouchableOpacity>
+        ) : null}
       </ScaleIn>
 
       {/* Modal Nueva/Editar Moneda */}
@@ -536,6 +563,29 @@ const createStyles = (
   isDark: boolean,
 ) => StyleSheet.create({
   container: { flex: 1, backgroundColor: c.background },
+  webTopBar: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+  },
+  headerAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.full,
+  },
+  headerActionText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
+  },
   fab: {
     position: "absolute",
     bottom: spacing.lg,
@@ -551,6 +601,13 @@ const createStyles = (
   scrollContent: {
     padding: spacing.md,
     paddingBottom: 100,
+  },
+  webScrollContent: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
   },
   sectionHeader: {
     flexDirection: "row",

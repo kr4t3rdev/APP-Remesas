@@ -10,6 +10,8 @@ import {
   Dimensions,
   TextInput,
   Switch,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -39,6 +41,7 @@ import { AdminResetPasswordModal } from "../../components/admin/AdminResetPasswo
 import { AdminResetPasswordSuccessModal } from "../../components/admin/AdminResetPasswordSuccessModal";
 import { Input } from "../../components/ui/Input";
 import { DeleteButton } from "../../components/ui/DeleteButton";
+import { BREAKPOINTS } from "../../hooks/useResponsive";
 
 const AVATAR_MOCK = "https://i.pravatar.cc/150";
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -54,6 +57,8 @@ export const AdminUserDetailScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = route.params;
   const colors = useColors();
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
   const theme = {
     background: colors.background,
@@ -324,7 +329,11 @@ export const AdminUserDetailScreen: React.FC = () => {
     actionType: AdminUserControlActionType | "MANAGE_LICENSE",
   ) => (
     <TouchableOpacity
-      style={[styles.actionCard, { backgroundColor: theme.card }]}
+      style={[
+        styles.actionCard,
+        isWebDesktop && styles.webActionCard,
+        { backgroundColor: theme.card },
+      ]}
       onPress={() =>
         handleActionPress(
           actionType === "MANAGE_LICENSE"
@@ -376,7 +385,12 @@ export const AdminUserDetailScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          isWebDesktop && styles.webScrollContent,
+        ]}
+      >
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
@@ -561,7 +575,9 @@ export const AdminUserDetailScreen: React.FC = () => {
         </View>
 
         {/* Operational Actions Grid */}
-        <View style={styles.gridSection}>
+        <View
+        style={[styles.gridSection, isWebDesktop && styles.webGridSection]}
+      >
           <View style={styles.gridHeader}>
             <Text style={styles.gridTitle}>Acciones Operativas</Text>
             <Text style={styles.gridSubtitle}>ADMIN CONTROL</Text>
@@ -641,7 +657,9 @@ export const AdminUserDetailScreen: React.FC = () => {
         </View>
 
         {/* Danger Zone */}
-        <View style={styles.gridSection}>
+        <View
+        style={[styles.gridSection, isWebDesktop && styles.webGridSection]}
+      >
           <View style={styles.gridHeader}>
             <Text style={[styles.gridTitle, { color: theme.danger }]}>
               Danger Zone
@@ -828,6 +846,13 @@ const createStyles = (theme: any) =>
     scrollContent: {
       paddingBottom: spacing.xl,
     },
+    webScrollContent: {
+      width: "100%",
+      maxWidth: 1440,
+      alignSelf: "center",
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.xl,
+    },
     profileSection: {
       alignItems: "center",
       paddingVertical: spacing.xl,
@@ -934,6 +959,10 @@ const createStyles = (theme: any) =>
     gridSection: {
       padding: spacing.lg,
     },
+    webGridSection: {
+      padding: spacing.lg,
+      paddingHorizontal: 0,
+    },
     gridHeader: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -962,6 +991,10 @@ const createStyles = (theme: any) =>
       borderRadius: 20,
       gap: spacing.md,
       minHeight: 160,
+    },
+    webActionCard: {
+      width: "48%",
+      minWidth: 280,
     },
     iconContainer: {
       width: 48,

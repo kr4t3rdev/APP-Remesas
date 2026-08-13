@@ -7,6 +7,8 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,6 +19,8 @@ import { AssignLicenseModal } from "../../../components/admin/licenses/AssignLic
 import { licensesApi } from "../../../api/licensesApi";
 import { License } from "../../../types/licenses";
 import { useColors, useIsDark } from "../../../store/themeStore";
+import { borderRadius } from "../../../theme";
+import { BREAKPOINTS } from "../../../hooks/useResponsive";
 
 const TABS: { id: string; label: string }[] = [
   { id: "all", label: "Todas" },
@@ -35,6 +39,8 @@ export const AdminLicensesListScreen: React.FC = () => {
 
   const colors = useColors();
   const isDark = useIsDark();
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
   useEffect(() => {
     loadLicenses();
@@ -83,7 +89,7 @@ export const AdminLicensesListScreen: React.FC = () => {
         // Assuming AdminHeader supports right action or we add it manually below if needed
       />
 
-      <View style={styles.container}>
+      <View style={[styles.container, isWebDesktop && styles.webContainer]}>
         {/* Search Bar */}
         <View
           style={[styles.searchContainer, { backgroundColor: colors.card }]}
@@ -139,9 +145,25 @@ export const AdminLicensesListScreen: React.FC = () => {
           ))}
         </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-          Licencias Recientes
-        </Text>
+        <View style={styles.sectionTitleRow}>
+          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+            Licencias Recientes
+          </Text>
+          {isWebDesktop ? (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Asignar licencia"
+              onPress={() => setAssignModalVisible(true)}
+              style={[
+                styles.headerAction,
+                { backgroundColor: colors.primary[500] },
+              ]}
+            >
+              <Ionicons name="add" size={20} color="#fff" />
+              <Text style={styles.headerActionText}>Asignar licencia</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
 
         {loading ? (
           <View style={styles.center}>
@@ -174,18 +196,20 @@ export const AdminLicensesListScreen: React.FC = () => {
       </View>
 
       {/* FAB */}
-      <TouchableOpacity
-        style={[
-          styles.fab,
-          {
-            backgroundColor: colors.primary[500],
-            shadowColor: colors.primary[500],
-          },
-        ]}
-        onPress={() => setAssignModalVisible(true)}
-      >
-        <Ionicons name="add" size={30} color="#fff" />
-      </TouchableOpacity>
+      {!isWebDesktop ? (
+        <TouchableOpacity
+          style={[
+            styles.fab,
+            {
+              backgroundColor: colors.primary[500],
+              shadowColor: colors.primary[500],
+            },
+          ]}
+          onPress={() => setAssignModalVisible(true)}
+        >
+          <Ionicons name="add" size={30} color="#fff" />
+        </TouchableOpacity>
+      ) : null}
 
       <AssignLicenseModal
         visible={assignModalVisible}
@@ -207,6 +231,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  webContainer: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: 32,
+  },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  headerAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: borderRadius.full,
+  },
+  headerActionText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
   searchContainer: {
     flexDirection: "row",
@@ -262,7 +311,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 16,
   },
   center: {
     flex: 1,

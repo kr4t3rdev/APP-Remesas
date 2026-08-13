@@ -7,6 +7,8 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   useColorScheme,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Alert } from "../../../utils/alert";
 
@@ -17,6 +19,7 @@ import { plansApi } from "../../../api/plansApi";
 import { Plan } from "../../../types/plans";
 import { AdminHeader } from "../../../components/admin/layout/AdminHeader";
 import { useThemeStore } from "../../../store/themeStore";
+import { BREAKPOINTS } from "../../../hooks/useResponsive";
 
 export const AdminPlansListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -25,6 +28,8 @@ export const AdminPlansListScreen: React.FC = () => {
   const colorScheme = useColorScheme();
   const setTheme = useThemeStore((state) => state.setTheme);
   const isDark = colorScheme === "dark";
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
   useEffect(() => {
     if (colorScheme) {
@@ -143,7 +148,7 @@ export const AdminPlansListScreen: React.FC = () => {
         onBack={() => navigation.goBack()}
       />
 
-      <View style={styles.container}>
+      <View style={[styles.container, isWebDesktop && styles.webContainer]}>
         <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
           <Ionicons
             name="add"
@@ -201,6 +206,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  webContainer: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: 32,
   },
   createButton: {
     backgroundColor: "#3b82f6",

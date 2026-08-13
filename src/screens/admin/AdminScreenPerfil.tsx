@@ -14,6 +14,8 @@ import {
   StyleSheet,
   Image,
   ActivityIndicator,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -29,6 +31,7 @@ import { AdminLogoutModal } from "../../components/admin/AdminLogoutModal";
 import { AdminChangePasswordSuccessModal } from "../../components/admin/AdminChangePasswordSuccessModal";
 import { ErrorModal } from "../../components/admin/ErrorModal";
 import { AboutModal } from "../../components/profile/AboutModal";
+import { BREAKPOINTS } from "../../hooks/useResponsive";
 
 export const AdminScreenPerfil: React.FC = () => {
   const {
@@ -59,6 +62,9 @@ export const AdminScreenPerfil: React.FC = () => {
     modalState,
   } = useAdminProfile();
 
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
+
   const styles = createStyles(themeColors, themeShadows);
 
   // Helper to construct full avatar URL
@@ -80,7 +86,10 @@ export const AdminScreenPerfil: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isWebDesktop && styles.webScrollContent,
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -368,6 +377,13 @@ const createStyles = (themeColors: any, themeShadows: any) =>
     },
     scrollContent: {
       padding: spacing.md,
+    },
+    webScrollContent: {
+      width: "100%",
+      maxWidth: 1440,
+      alignSelf: "center",
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.xl,
     },
     header: {
       marginBottom: spacing.lg,

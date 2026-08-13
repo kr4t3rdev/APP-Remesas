@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  useWindowDimensions,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 
@@ -42,12 +43,15 @@ import CountryFlag from "react-native-country-flag";
 import { getCountryCode } from "../../utils/currencyUtils";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
 import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
+import { BREAKPOINTS } from "../../hooks/useResponsive";
 
 type TabType = "current" | "history" | "manual";
 
 export const ExchangeRatesScreen: React.FC = () => {
   const themeColors = useColors();
   const themeShadows = useShadows();
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
   const currenciesQuery = useCurrenciesWithPrimaryQuery();
   const currentRatesQuery = useCurrentExchangeRatesQuery();
@@ -676,7 +680,36 @@ export const ExchangeRatesScreen: React.FC = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
-      <ProfileFeatureBackButton />
+      {isWebDesktop ? (
+        <View style={styles.webTopBar}>
+          <ProfileFeatureBackButton />
+          {activeTab === "current" ? (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Nueva tasa"
+              onPress={() =>
+                canCreateRate
+                  ? openEditModal()
+                  : Alert.alert(
+                      "Error",
+                      "Para crear una tasa de cambio debe tener una moneda principal configurada y al menos una moneda secundaria.",
+                    )
+              }
+              disabled={!canCreateRate}
+              style={[
+                styles.headerAction,
+                { backgroundColor: themeColors.primary[500] },
+                !canCreateRate && { opacity: 0.5 },
+              ]}
+            >
+              <Ionicons name="add" size={20} color="#fff" />
+              <Text style={styles.headerActionText}>Nueva tasa</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      ) : (
+        <ProfileFeatureBackButton />
+      )}
       <FadeIn>
         <View style={styles.header}>
           {/* <Text style={[styles.title, { color: themeColors.text.primary }]}>Tasas de Cambio</Text>
@@ -723,7 +756,10 @@ export const ExchangeRatesScreen: React.FC = () => {
           data={rates}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderCurrentRate}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            isWebDesktop && styles.webListContent,
+          ]}
           refreshControl={
             <RefreshControl
               refreshing={
@@ -777,7 +813,10 @@ export const ExchangeRatesScreen: React.FC = () => {
           data={history}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderHistoryItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            isWebDesktop && styles.webListContent,
+          ]}
           refreshControl={
             <RefreshControl
               refreshing={
@@ -814,7 +853,10 @@ export const ExchangeRatesScreen: React.FC = () => {
           data={manualEntries}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderHistoryItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            isWebDesktop && styles.webListContent,
+          ]}
           refreshControl={
             <RefreshControl
               refreshing={
@@ -856,19 +898,21 @@ export const ExchangeRatesScreen: React.FC = () => {
 
       {activeTab === "current" && (
         <ScaleIn delay={200}>
-          <TouchableOpacity
-            style={[
-              styles.fab,
-              { backgroundColor: themeColors.primary[500] },
-              !canCreateRate && { opacity: 0.5 },
-              themeShadows.lg,
-            ]}
-            onPress={() => canCreateRate ? openEditModal() : Alert.alert("Error", "Para crear una tasa de cambio debe tener una moneda principal configurada y al menos una moneda secundaria.")}
-            activeOpacity={0.8}
-            disabled={!canCreateRate}
-          >
-            <Ionicons name="add" size={28} color="#fff" />
-          </TouchableOpacity>
+          {!isWebDesktop ? (
+            <TouchableOpacity
+              style={[
+                styles.fab,
+                { backgroundColor: themeColors.primary[500] },
+                !canCreateRate && { opacity: 0.5 },
+                themeShadows.lg,
+              ]}
+              onPress={() => canCreateRate ? openEditModal() : Alert.alert("Error", "Para crear una tasa de cambio debe tener una moneda principal configurada y al menos una moneda secundaria.")}
+              activeOpacity={0.8}
+              disabled={!canCreateRate}
+            >
+              <Ionicons name="add" size={28} color="#fff" />
+            </TouchableOpacity>
+          ) : null}
         </ScaleIn>
       )}
 
@@ -1239,6 +1283,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  webTopBar: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+  },
+  headerAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.full,
+  },
+  headerActionText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
   header: {
     padding: spacing.md,
     paddingBottom: spacing.sm,
@@ -1277,6 +1344,13 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: spacing.md,
     paddingBottom: 120,
+  },
+  webListContent: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xl,
   },
   rateCard: {
     borderRadius: borderRadius.lg,
