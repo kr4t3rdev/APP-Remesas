@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   TouchableOpacity,
   useColorScheme,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -26,6 +27,7 @@ export const AdminServicesScreen: React.FC = () => {
   const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const { width } = useWindowDimensions();
   const isWide = width >= 600;
+  const isWebDesktop = Platform.OS === "web" && width >= 640;
   const colorScheme = useColorScheme();
   const setTheme = useThemeStore((state) => state.setTheme);
   const isDark = colorScheme === "dark";
@@ -80,7 +82,7 @@ export const AdminServicesScreen: React.FC = () => {
       edges={["top"]}
     >
       <AdminHeader title="Servicios" onRefresh={fetchMetrics} />
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={[styles.container, isWebDesktop && styles.webContainer]}>
         {metrics ? (
           <View style={styles.metricsRow}>
             <InfoCard
@@ -181,6 +183,7 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 100,
   },
+  webContainer: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: 32, paddingTop: 24 },
   topBar: {
     flexDirection: "row",
     alignItems: "center",

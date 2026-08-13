@@ -6,6 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -97,6 +99,8 @@ const groupLogsByDate = (logs: AdminAuditLog[]) => {
 };
 
 export const AdminAuditLogScreen: React.FC = () => {
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= 640;
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const navigation = useNavigation<AdminAuditLogNavigation>();
@@ -119,7 +123,7 @@ export const AdminAuditLogScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, isWebDesktop && styles.webHeader]}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
@@ -136,7 +140,7 @@ export const AdminAuditLogScreen: React.FC = () => {
       </View>
 
       {/* Categories Filter */}
-      <View style={styles.categoriesContainer}>
+      <View style={[styles.categoriesContainer, isWebDesktop && styles.webContent]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -169,7 +173,7 @@ export const AdminAuditLogScreen: React.FC = () => {
 
       {/* Timeline */}
       <ScrollView
-        contentContainerStyle={styles.timelineContent}
+        contentContainerStyle={[styles.timelineContent, isWebDesktop && styles.webTimeline]}
         showsVerticalScrollIndicator={false}
       >
         {isLoading ? (
@@ -280,6 +284,9 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       paddingTop: spacing.sm,
       paddingBottom: spacing.md,
     },
+    webHeader: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: spacing.xl, paddingTop: spacing.lg },
+    webContent: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: spacing.xl },
+    webTimeline: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: spacing.xl },
     backButton: {
       width: 40,
       height: 40,

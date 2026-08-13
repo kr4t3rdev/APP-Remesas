@@ -5,6 +5,8 @@ import {
   StyleSheet,
   Text,
   View,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -31,6 +33,8 @@ type AdminReportsNavigation = BottomTabNavigationProp<
 >;
 
 export const AdminReportsScreen: React.FC = () => {
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= 640;
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const navigation = useNavigation<AdminReportsNavigation>();
@@ -59,7 +63,7 @@ export const AdminReportsScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, isWebDesktop && styles.webContent]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -131,6 +135,7 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       paddingTop: spacing.sm,
       paddingBottom: spacing.xl,
     },
+    webContent: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: spacing.xl, paddingTop: spacing.lg },
     warningRow: {
       marginBottom: spacing.sm,
       borderRadius: borderRadius.md,
