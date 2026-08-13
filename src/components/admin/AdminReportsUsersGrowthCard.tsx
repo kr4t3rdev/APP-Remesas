@@ -6,9 +6,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { FadeInDown } from "../animations";
 import { useColors } from "../../store/themeStore";
-import { borderRadius, spacing } from "../../theme";
+import { spacing } from "../../theme";
 import type { DashboardGrowthPoint } from "../../modules/admin/application/useAdminReportsDashboard";
 
 type AdminReportsUsersGrowthCardProps = {
@@ -49,15 +48,15 @@ function buildCoordinates(
 
 export const AdminReportsUsersGrowthCard: React.FC<
   AdminReportsUsersGrowthCardProps
-> = ({ points, peakLabel, isEmpty = false, onPressSeeAll, delay = 120 }) => {
+> = ({ points, peakLabel, isEmpty = false, onPressSeeAll }) => {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [chartWidth, setChartWidth] = useState(0);
-  const chartHeight = 190;
+  const chartHeight = 160;
 
   const coordinates = useMemo(
-    () => buildCoordinates(points, chartWidth, chartHeight - 44),
+    () => buildCoordinates(points, chartWidth, chartHeight - 36),
     [points, chartWidth],
   );
 
@@ -72,10 +71,10 @@ export const AdminReportsUsersGrowthCard: React.FC<
   };
 
   return (
-    <FadeInDown delay={delay} duration={280}>
-      <View style={styles.card} testID="admin-reports-growth-card">
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>Crecimiento de Usuarios</Text>
+    <View style={styles.card} testID="admin-reports-growth-card">
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Crecimiento de Usuarios</Text>
+        {!!onPressSeeAll ? (
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel="Ver todos los reportes de crecimiento"
@@ -85,83 +84,83 @@ export const AdminReportsUsersGrowthCard: React.FC<
           >
             <Text style={styles.seeAllText}>Ver todos</Text>
           </TouchableOpacity>
+        ) : null}
+      </View>
+
+      {isEmpty ? (
+        <View style={styles.emptyWrap}>
+          <Text style={styles.emptyText}>
+            Sin actividad de usuarios para este período
+          </Text>
         </View>
+      ) : (
+        <View style={styles.chartWrap} onLayout={handleChartLayout}>
+          <View style={styles.linesArea}>
+            {coordinates.map((point, index) => {
+              if (index === coordinates.length - 1) return null;
 
-        {isEmpty ? (
-          <View style={styles.emptyWrap}>
-            <Text style={styles.emptyText}>
-              Sin actividad de usuarios para este período
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.chartWrap} onLayout={handleChartLayout}>
-            <View style={styles.linesArea}>
-              {coordinates.map((point, index) => {
-                if (index === coordinates.length - 1) return null;
+              const next = coordinates[index + 1];
+              const dx = next.x - point.x;
+              const dy = next.y - point.y;
+              const length = Math.sqrt(dx * dx + dy * dy);
+              const angle = Math.atan2(dy, dx);
 
-                const next = coordinates[index + 1];
-                const dx = next.x - point.x;
-                const dy = next.y - point.y;
-                const length = Math.sqrt(dx * dx + dy * dy);
-                const angle = Math.atan2(dy, dx);
-
-                return (
-                  <View
-                    key={`line-${index}`}
-                    style={[
-                      styles.segment,
-                      {
-                        width: length,
-                        left: point.x,
-                        top: point.y,
-                        transform: [{ rotateZ: `${angle}rad` }],
-                      },
-                    ]}
-                  />
-                );
-              })}
-
-              {coordinates.map((point, index) => (
+              return (
                 <View
-                  key={`point-${index}`}
+                  key={`line-${index}`}
                   style={[
-                    styles.point,
+                    styles.segment,
                     {
-                      left: point.x - 5,
-                      top: point.y - 5,
-                      backgroundColor:
-                        index === peakIndex ? "#4DB1FF" : "#1D8FFF",
+                      width: length,
+                      left: point.x,
+                      top: point.y,
+                      transform: [{ rotateZ: `${angle}rad` }],
                     },
                   ]}
                 />
-              ))}
+              );
+            })}
 
-              {!!peakLabel && peakIndex >= 0 && coordinates[peakIndex] ? (
-                <View
-                  style={[
-                    styles.peakTag,
-                    {
-                      left: Math.max(8, coordinates[peakIndex].x - 4),
-                      top: Math.max(8, coordinates[peakIndex].y - 42),
-                    },
-                  ]}
-                >
-                  <Text style={styles.peakText}>{peakLabel}</Text>
-                </View>
-              ) : null}
-            </View>
+            {coordinates.map((point, index) => (
+              <View
+                key={`point-${index}`}
+                style={[
+                  styles.point,
+                  {
+                    left: point.x - 4,
+                    top: point.y - 4,
+                    backgroundColor:
+                      index === peakIndex ? "#4DB1FF" : "#1D8FFF",
+                  },
+                ]}
+              />
+            ))}
 
-            <View style={styles.labelsRow}>
-              {points.map((point) => (
-                <Text key={point.label} style={styles.labelText}>
-                  {point.label}
-                </Text>
-              ))}
-            </View>
+            {!!peakLabel && peakIndex >= 0 && coordinates[peakIndex] ? (
+              <View
+                style={[
+                  styles.peakTag,
+                  {
+                    left: Math.max(8, coordinates[peakIndex].x - 4),
+                    top: Math.max(8, coordinates[peakIndex].y - 36),
+                  },
+                ]}
+              >
+                <Text style={styles.peakText}>{peakLabel}</Text>
+              </View>
+            ) : null}
           </View>
-        )}
-      </View>
-    </FadeInDown>
+
+          <View style={styles.labelsRow}>
+            {points.map((point) => (
+              <Text key={point.label} style={styles.labelText}>
+                {point.label}
+              </Text>
+            ))}
+          </View>
+        </View>
+      )}
+    </View>
   );
 };
 
@@ -171,92 +170,95 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       backgroundColor: colors.card,
       borderColor: colors.border,
       borderWidth: 1,
-      borderRadius: borderRadius.xl,
+      borderRadius: 10,
       padding: spacing.md,
-      marginBottom: spacing.md,
-      minHeight: 240,
+      marginBottom: spacing.sm,
     },
     headerRow: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
+      paddingBottom: spacing.xs,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
       marginBottom: spacing.sm,
     },
     title: {
-      color: colors.text.primary,
-      fontSize: 22,
-      fontWeight: "700",
+      color: colors.text.secondary,
+      fontSize: 10,
+      fontWeight: "800",
+      letterSpacing: 1.2,
     },
     seeAllButton: {
-      minHeight: 44,
-      justifyContent: "center",
       paddingHorizontal: spacing.xs,
+      paddingVertical: 2,
     },
     seeAllText: {
       color: "#1D8FFF",
       fontWeight: "700",
-      fontSize: 18,
+      fontSize: 11,
+      letterSpacing: 0.5,
     },
     chartWrap: {
-      borderRadius: borderRadius.lg,
-      backgroundColor: "transparent",
-      paddingTop: spacing.sm,
-      minHeight: 240,
+      paddingTop: spacing.xs,
     },
     linesArea: {
-      height: 190,
+      height: 124,
       position: "relative",
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
     segment: {
       position: "absolute",
-      height: 2,
+      height: 1.5,
       backgroundColor: "#1D8FFF",
     },
     point: {
       position: "absolute",
-      width: 10,
-      height: 10,
-      borderRadius: borderRadius.full,
+      width: 8,
+      height: 8,
+      borderRadius: 4,
       borderWidth: 1,
       borderColor: "#E4F2FF",
     },
     peakTag: {
       position: "absolute",
-      minHeight: 30,
-      paddingHorizontal: spacing.sm,
-      borderRadius: borderRadius.full,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 4,
       backgroundColor: "#1D8FFF",
-      justifyContent: "center",
     },
     peakText: {
       color: "#EAF5FF",
       fontWeight: "700",
-      fontSize: 13,
+      fontSize: 10,
+      letterSpacing: 0.5,
+      fontVariant: ["tabular-nums"],
     },
     labelsRow: {
       flexDirection: "row",
       justifyContent: "space-between",
-      marginTop: spacing.sm,
-      paddingHorizontal: spacing.xs,
+      marginTop: 6,
+      paddingHorizontal: 2,
     },
     labelText: {
       color: colors.text.secondary,
-      fontSize: 13,
-      fontWeight: "700",
+      fontSize: 9,
+      fontWeight: "800",
+      letterSpacing: 0.8,
+      fontVariant: ["tabular-nums"],
     },
     emptyWrap: {
-      borderRadius: borderRadius.md,
+      borderRadius: 6,
       borderWidth: 1,
-      borderColor: "#15385B",
-      paddingVertical: spacing.lg,
+      borderColor: colors.border,
+      paddingVertical: spacing.md,
       alignItems: "center",
       justifyContent: "center",
     },
     emptyText: {
       color: colors.text.secondary,
-      fontSize: 14,
+      fontSize: 12,
       fontWeight: "500",
       textAlign: "center",
     },

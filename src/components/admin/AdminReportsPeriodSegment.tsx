@@ -1,8 +1,7 @@
 import React, { useMemo } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { FadeInDown } from "../animations";
 import { useColors } from "../../store/themeStore";
-import { borderRadius, spacing } from "../../theme";
+import { spacing } from "../../theme";
 import type { AdminReportsPeriod } from "../../modules/admin/application/useAdminReportsDashboard";
 
 type AdminReportsPeriodSegmentProps = {
@@ -19,14 +18,15 @@ const OPTIONS: Array<{ id: AdminReportsPeriod; label: string }> = [
 
 export const AdminReportsPeriodSegment: React.FC<
   AdminReportsPeriodSegmentProps
-> = ({ value, onChange, delay = 30 }) => {
+> = ({ value, onChange }) => {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
-    <FadeInDown delay={delay} duration={260}>
-      <View style={styles.container} testID="admin-reports-period-segment">
-        {OPTIONS.map((option) => {
+    <View style={styles.container} testID="admin-reports-period-segment">
+      <Text style={styles.label}>PERÍODO</Text>
+      <View style={styles.segments}>
+        {OPTIONS.map((option, index) => {
           const isActive = option.id === value;
           return (
             <TouchableOpacity
@@ -35,7 +35,11 @@ export const AdminReportsPeriodSegment: React.FC<
               accessibilityLabel={`Período ${option.label}`}
               accessibilityState={{ selected: isActive }}
               testID={`admin-reports-period-${option.id}`}
-              style={[styles.item, isActive && styles.itemActive]}
+              style={[
+                styles.item,
+                isActive && styles.itemActive,
+                index > 0 && { borderLeftWidth: 1, borderLeftColor: colors.border },
+              ]}
               onPress={() => onChange(option.id)}
             >
               <Text
@@ -47,39 +51,49 @@ export const AdminReportsPeriodSegment: React.FC<
           );
         })}
       </View>
-    </FadeInDown>
+    </View>
   );
 };
 
 const createStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
     container: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    label: {
+      fontSize: 9,
+      fontWeight: "800",
+      letterSpacing: 1.2,
+      color: colors.text.secondary,
+    },
+    segments: {
+      flexDirection: "row",
       backgroundColor: colors.card,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: borderRadius.full,
-      padding: 6,
-      marginBottom: spacing.md,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.xs,
+      borderRadius: 6,
+      overflow: "hidden",
+      flex: 1,
     },
     item: {
       flex: 1,
-      minHeight: 44,
-      borderRadius: borderRadius.full,
+      paddingVertical: 8,
       alignItems: "center",
       justifyContent: "center",
     },
     itemActive: {
-      backgroundColor: colors.surface,
+      backgroundColor: colors.primary[500],
     },
     itemText: {
       color: colors.text.secondary,
-      fontSize: 14,
+      fontSize: 12,
       fontWeight: "700",
+      letterSpacing: 0.3,
     },
     itemTextActive: {
-      color: colors.text.primary,
+      color: "#fff",
     },
   });

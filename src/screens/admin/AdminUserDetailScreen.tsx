@@ -74,21 +74,17 @@ export const AdminUserDetailScreen: React.FC = () => {
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
-  // Mutations
   const userControlActionMutation = useAdminUserControlActionMutation();
   const updateUserBasicMutation = useAdminUpdateUserBasicMutation();
   const deleteUserMutation = useAdminDeleteUserMutation();
 
-  // Query full user details (including license info)
   const { data: fullUser, isLoading: isLoadingUser } = useAdminUserDetailQuery(
     user.id,
   );
 
-  // Use full user data if available, otherwise fallback to route params
   const displayUser = fullUser || user;
   const safeLicense = (displayUser as AdminUserDetail).license ?? null;
 
-  // Edit Mode State
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -97,7 +93,6 @@ export const AdminUserDetailScreen: React.FC = () => {
     isActive: user.isActive,
   });
 
-  // State for Modals
   const [confirmModalState, setConfirmModalState] = useState<{
     visible: boolean;
     actionType: AdminUserControlActionType | null;
@@ -122,7 +117,6 @@ export const AdminUserDetailScreen: React.FC = () => {
     message: "",
   });
 
-  // Specialized Modals State
   const [isTempBlockModalVisible, setIsTempBlockModalVisible] = useState(false);
   const [isTempBlockSuccessVisible, setIsTempBlockSuccessVisible] =
     useState(false);
@@ -229,13 +223,10 @@ export const AdminUserDetailScreen: React.FC = () => {
         break;
       case "EXTEND_LICENSE":
         if (safeLicense?.id) {
-          // Navigate to license detail if user has a license
           navigation.navigate("AdminLicenseDetail", {
             licenseId: safeLicense.id,
           });
         } else {
-          // Navigate to licenses list if no license assigned
-          // Ideally pre-filter for this user or open "Assign License" flow
           navigation.navigate("AdminLicensesList");
         }
         break;
@@ -249,16 +240,13 @@ export const AdminUserDetailScreen: React.FC = () => {
     additionalData?: any,
   ) => {
     try {
-      // Construct the correct payload structure for AdminUserControlRequest
       const requestPayload: any = {};
 
-      // Map specific fields based on action type
       if (actionType === "CHANGE_ROLE" && additionalData?.role) {
         requestPayload.newRole = additionalData.role;
       }
 
       if (actionType === "TEMP_BLOCK" && additionalData?.duration) {
-        // Calculate blockUntil based on duration (hours)
         const blockUntilDate = new Date();
         blockUntilDate.setHours(
           blockUntilDate.getHours() + additionalData.duration,
@@ -270,7 +258,6 @@ export const AdminUserDetailScreen: React.FC = () => {
         requestPayload.newPassword = additionalData.newPassword;
       }
 
-      // Default reason if not provided
       const reason =
         additionalData?.reason || "Action triggered from Admin User Detail";
 
@@ -286,7 +273,6 @@ export const AdminUserDetailScreen: React.FC = () => {
 
       await userControlActionMutation.mutateAsync(mutationInput);
 
-      // Handle specific success modals based on action
       if (actionType === "TEMP_BLOCK" || actionType === "UNBLOCK") {
         setIsTempBlockModalVisible(false);
         setIsTempBlockSuccessVisible(true);
@@ -321,40 +307,6 @@ export const AdminUserDetailScreen: React.FC = () => {
     }
   };
 
-  const renderActionCard = (
-    title: string,
-    subtitle: string,
-    icon: keyof typeof Ionicons.glyphMap,
-    color: string,
-    actionType: AdminUserControlActionType | "MANAGE_LICENSE",
-  ) => (
-    <TouchableOpacity
-      style={[
-        styles.actionCard,
-        isWebDesktop && styles.webActionCard,
-        { backgroundColor: theme.card },
-      ]}
-      onPress={() =>
-        handleActionPress(
-          actionType === "MANAGE_LICENSE"
-            ? ("EXTEND_LICENSE" as AdminUserControlActionType)
-            : (actionType as AdminUserControlActionType),
-        )
-      }
-    >
-      <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
-        <Ionicons name={icon} size={24} color={color} />
-      </View>
-      <View style={styles.actionContent}>
-        <Text style={[styles.actionTitle, { color: theme.text }]}>{title}</Text>
-        <Text style={[styles.actionSubtitle, { color: theme.textSecondary }]}>
-          {subtitle}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  // Determine dynamic action states
   const isTempBlocked =
     displayUser.blockedUntil && new Date(displayUser.blockedUntil) > new Date();
   const isSuspended = !displayUser.isActive;
@@ -365,6 +317,45 @@ export const AdminUserDetailScreen: React.FC = () => {
     return displayUser.isActive ? theme.success : theme.textSecondary;
   };
 
+  const renderActionRow = (
+    title: string,
+    subtitle: string,
+    icon: keyof typeof Ionicons.glyphMap,
+    color: string,
+    actionType: AdminUserControlActionType | "MANAGE_LICENSE",
+    code: string,
+  ) => (
+    <TouchableOpacity
+      style={styles.actionRow}
+      onPress={() =>
+        handleActionPress(
+          actionType === "MANAGE_LICENSE"
+            ? ("EXTEND_LICENSE" as AdminUserControlActionType)
+            : (actionType as AdminUserControlActionType),
+        )
+      }
+      activeOpacity={0.6}
+    >
+      <View style={[styles.actionIcon, { backgroundColor: `${color}22` }]}>
+        <Ionicons name={icon} size={16} color={color} />
+      </View>
+      <View style={styles.actionText}>
+        <Text style={styles.actionTitle}>{title}</Text>
+        <Text style={styles.actionSubtitle}>{subtitle}</Text>
+      </View>
+      <Text style={styles.actionCode}>{code}</Text>
+      <Feather name="chevron-right" size={16} color={theme.textSecondary} />
+    </TouchableOpacity>
+  );
+
+  const lastSeenLabel = isTempBlocked
+    ? "BLOCKED"
+    : isSuspended
+      ? "SUSPENDED"
+      : displayUser.isActive
+        ? "ACTIVE"
+        : "INACTIVE";
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar
@@ -374,14 +365,60 @@ export const AdminUserDetailScreen: React.FC = () => {
         backgroundColor={theme.background}
       />
 
-      {/* Header */}
+      {/* Compact header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={theme.text} />
+          <Ionicons name="arrow-back" size={20} color={theme.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>User Details</Text>
+        <View style={styles.headerMain}>
+          <Text style={styles.headerTitle}>User Profile</Text>
+          <Text style={styles.headerMeta}>
+            ADMIN · USER DETAIL · #{displayUser.id}
+          </Text>
+        </View>
+        {!isEditing ? (
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.headerActionBtn}
+              onPress={() => setIsEditing(true)}
+            >
+              <Feather name="edit-2" size={14} color={theme.text} />
+              <Text style={styles.headerActionText}>Edit Profile</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.headerActionBtn, styles.headerActionBtnPrimary]}>
+              <Feather name="mail" size={14} color="#FFFFFF" />
+              <Text style={[styles.headerActionText, { color: "#FFFFFF" }]}>
+                Message
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.headerActionBtn}
+              onPress={() => setIsEditing(false)}
+            >
+              <Text style={styles.headerActionText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.headerActionBtn, styles.headerActionBtnPrimary]}
+              onPress={handleSaveProfile}
+              disabled={updateUserBasicMutation.isPending}
+            >
+              <Text
+                style={[styles.headerActionText, { color: "#FFFFFF" }]}
+              >
+                {updateUserBasicMutation.isPending ? "Saving…" : "Save"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
         <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="ellipsis-vertical" size={24} color={theme.text} />
+          <Ionicons
+            name="ellipsis-vertical"
+            size={18}
+            color={theme.textSecondary}
+          />
         </TouchableOpacity>
       </View>
 
@@ -391,16 +428,16 @@ export const AdminUserDetailScreen: React.FC = () => {
           isWebDesktop && styles.webScrollContent,
         ]}
       >
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
+        {/* Identity row — compact, console-style */}
+        <View style={styles.identityRow}>
+          <View style={styles.identityAvatar}>
             <Image
               source={{ uri: `${AVATAR_MOCK}?u=${displayUser.id}` }}
-              style={styles.avatar}
+              style={styles.identityAvatarImg}
             />
             <View
               style={[
-                styles.statusIndicator,
+                styles.identityStatusDot,
                 {
                   backgroundColor: getStatusColor(),
                   borderColor: theme.background,
@@ -408,271 +445,273 @@ export const AdminUserDetailScreen: React.FC = () => {
               ]}
             />
           </View>
-
-          <Text style={styles.userName}>{displayUser.name}</Text>
-          <Text style={styles.userRole}>
-            {displayUser.role === "ADMIN" ? "Administrator" : "User"}
-          </Text>
-
-          <View style={styles.badgesContainer}>
-            <View style={[styles.badge, { backgroundColor: "#3B82F620" }]}>
-              <Text style={[styles.badgeText, { color: "#60A5FA" }]}>
-                ID: {displayUser.id}
+          <View style={styles.identityMain}>
+            <View style={styles.identityTitleRow}>
+              <Text style={styles.identityName}>{displayUser.name}</Text>
+              <Text style={styles.identityRole}>
+                {displayUser.role === "ADMIN" ? "Administrator" : "User"}
               </Text>
             </View>
-
-            {/* Status Badge with Priority: Suspended > Blocked > Active/Inactive */}
-            {!displayUser.isActive ? (
-              <View style={[styles.badge, { backgroundColor: "#EF444420" }]}>
-                <Text style={[styles.badgeText, { color: "#F87171" }]}>
-                  SUSPENDED
+            <Text style={styles.identityEmail}>{displayUser.email}</Text>
+            <View style={styles.identityBadges}>
+              <View style={[styles.badge, { backgroundColor: "#3B82F620" }]}>
+                <Text style={[styles.badgeText, { color: "#60A5FA" }]}>
+                  ID: {displayUser.id}
                 </Text>
               </View>
-            ) : isTempBlocked ? (
-              <View style={[styles.badge, { backgroundColor: "#F59E0B20" }]}>
-                <Text style={[styles.badgeText, { color: "#FBBF24" }]}>
-                  BLOCKED
-                </Text>
-              </View>
-            ) : (
-              <View style={[styles.badge, { backgroundColor: "#10B98120" }]}>
-                <Text style={[styles.badgeText, { color: "#34D399" }]}>
-                  ACTIVE
-                </Text>
-              </View>
-            )}
-
-            {/* License Status Badge */}
-            {safeLicense && (
-              <View
-                style={[
-                  styles.badge,
-                  {
-                    backgroundColor:
-                      safeLicense.state === "ACTIVE"
-                        ? "#10B98120"
-                        : "#F59E0B20",
-                  },
-                ]}
-              >
-                <Text
+              {!displayUser.isActive ? (
+                <View style={[styles.badge, { backgroundColor: "#EF444420" }]}>
+                  <Text style={[styles.badgeText, { color: "#F87171" }]}>
+                    SUSPENDED
+                  </Text>
+                </View>
+              ) : isTempBlocked ? (
+                <View style={[styles.badge, { backgroundColor: "#F59E0B20" }]}>
+                  <Text style={[styles.badgeText, { color: "#FBBF24" }]}>
+                    BLOCKED
+                  </Text>
+                </View>
+              ) : (
+                <View style={[styles.badge, { backgroundColor: "#10B98120" }]}>
+                  <Text style={[styles.badgeText, { color: "#34D399" }]}>
+                    ACTIVE
+                  </Text>
+                </View>
+              )}
+              {safeLicense && (
+                <View
                   style={[
-                    styles.badgeText,
+                    styles.badge,
                     {
-                      color:
+                      backgroundColor:
                         safeLicense.state === "ACTIVE"
-                          ? "#34D399"
-                          : "#F59E0B",
+                          ? "#10B98120"
+                          : "#F59E0B20",
                     },
                   ]}
                 >
-                  {safeLicense.state === "ACTIVE"
-                    ? "LICENSED"
-                    : safeLicense.state}
-                </Text>
-              </View>
-            )}
+                  <Text
+                    style={[
+                      styles.badgeText,
+                      {
+                        color:
+                          safeLicense.state === "ACTIVE"
+                            ? "#34D399"
+                            : "#F59E0B",
+                      },
+                    ]}
+                  >
+                    {safeLicense.state === "ACTIVE"
+                      ? "LICENSED"
+                      : safeLicense.state}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
-
-          {/* Edit Form */}
-          {isEditing && (
-            <View style={styles.editFormContainer}>
-              <Input
-                label="Name"
-                value={editForm.name}
-                onChangeText={(text) =>
-                  setEditForm({ ...editForm, name: text })
-                }
-                placeholder="User Name"
-                containerStyle={styles.inputContainer}
-              />
-              <Input
-                label="Email"
-                value={editForm.email}
-                onChangeText={(text) =>
-                  setEditForm({ ...editForm, email: text })
-                }
-                placeholder="User Email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                containerStyle={styles.inputContainer}
-              />
-
-              <View style={styles.switchContainer}>
-                <Text style={[styles.switchLabel, { color: theme.text }]}>
-                  Active Status
-                </Text>
-                <Switch
-                  value={editForm.isActive}
-                  onValueChange={(value) =>
-                    setEditForm({ ...editForm, isActive: value })
-                  }
-                  trackColor={{ false: theme.card, true: theme.success }}
-                  thumbColor="#fff"
-                />
-              </View>
-
-              <View style={styles.editActions}>
-                <TouchableOpacity
-                  style={[
-                    styles.editButton,
-                    {
-                      backgroundColor: theme.card,
-                      borderWidth: 1,
-                      borderColor: theme.border,
-                    },
-                  ]}
-                  onPress={() => setIsEditing(false)}
-                >
-                  <Text style={[styles.editButtonText, { color: theme.text }]}>
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.editButton,
-                    { backgroundColor: theme.primary },
-                  ]}
-                  onPress={handleSaveProfile}
-                  disabled={updateUserBasicMutation.isPending}
-                >
-                  <Text style={[styles.editButtonText, { color: "#fff" }]}>
-                    {updateUserBasicMutation.isPending
-                      ? "Saving..."
-                      : "Save Changes"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {/* Primary Actions */}
-          {!isEditing && (
-            <View style={styles.primaryActions}>
-              <TouchableOpacity
-                style={[styles.primaryButton, { backgroundColor: theme.card }]}
-                onPress={() => setIsEditing(true)}
-              >
-                <Feather name="edit-2" size={20} color={theme.text} />
-                <Text style={[styles.primaryButtonText, { color: theme.text }]}>
-                  Edit Profile
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.primaryButton,
-                  { backgroundColor: theme.primary },
-                ]}
-              >
-                <Feather name="mail" size={20} color="#FFFFFF" />
-                <Text style={[styles.primaryButtonText, { color: "#FFFFFF" }]}>
-                  Message
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
 
-        {/* Operational Actions Grid */}
-        <View
-        style={[styles.gridSection, isWebDesktop && styles.webGridSection]}
-      >
-          <View style={styles.gridHeader}>
-            <Text style={styles.gridTitle}>Acciones Operativas</Text>
-            <Text style={styles.gridSubtitle}>ADMIN CONTROL</Text>
+        {/* Edit form (inline) */}
+        {isEditing && (
+          <View style={styles.editPanel}>
+            <Text style={styles.sectionMeta}>EDIT PROFILE</Text>
+            <Input
+              label="Name"
+              value={editForm.name}
+              onChangeText={(text) =>
+                setEditForm({ ...editForm, name: text })
+              }
+              placeholder="User Name"
+              containerStyle={styles.inputContainer}
+            />
+            <Input
+              label="Email"
+              value={editForm.email}
+              onChangeText={(text) =>
+                setEditForm({ ...editForm, email: text })
+              }
+              placeholder="User Email"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              containerStyle={styles.inputContainer}
+            />
+            <View style={styles.switchContainer}>
+              <Text style={[styles.switchLabel, { color: theme.text }]}>
+                Active Status
+              </Text>
+              <Switch
+                value={editForm.isActive}
+                onValueChange={(value) =>
+                  setEditForm({ ...editForm, isActive: value })
+                }
+                trackColor={{ false: theme.border, true: theme.success }}
+                thumbColor="#fff"
+              />
+            </View>
           </View>
+        )}
 
-          <View style={styles.grid}>
-            {/* Dynamic Block/Unblock Card */}
+        {/* KPI strip — console density */}
+        <View style={styles.kpiStrip}>
+          <View style={styles.kpiCell}>
+            <Text style={styles.kpiLabel}>ID</Text>
+            <Text style={styles.kpiValue}>#{displayUser.id}</Text>
+          </View>
+          <View style={styles.kpiCell}>
+            <Text style={styles.kpiLabel}>STATUS</Text>
+            <Text
+              style={[
+                styles.kpiValue,
+                { color: getStatusColor(), fontVariant: ["tabular-nums"] },
+              ]}
+            >
+              {lastSeenLabel}
+            </Text>
+          </View>
+          <View style={styles.kpiCell}>
+            <Text style={styles.kpiLabel}>ROLE</Text>
+            <Text style={styles.kpiValue}>
+              {displayUser.role === "ADMIN" ? "ADMIN" : "USER"}
+            </Text>
+          </View>
+          <View style={styles.kpiCell}>
+            <Text style={styles.kpiLabel}>LICENSE</Text>
+            <Text style={styles.kpiValue}>
+              {safeLicense ? safeLicense.state : "NONE"}
+            </Text>
+          </View>
+          <View style={[styles.kpiCell, { borderRightWidth: 0 }]}>
+            <Text style={styles.kpiLabel}>VERIFIED</Text>
+            <Text style={styles.kpiValue}>
+              {(displayUser as any).isVerified ? "YES" : "NO"}
+            </Text>
+          </View>
+        </View>
+
+        {/* Operational controls — dense rows */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionLabel}>OPERATIONAL CONTROLS</Text>
+            <Text style={styles.sectionCount}>8 ACTIONS</Text>
+          </View>
+          <View style={styles.rows}>
             {isTempBlocked
-              ? renderActionCard(
+              ? renderActionRow(
                   "Unblock User",
                   "Restore access immediately",
                   "lock-open",
                   theme.success,
                   "UNBLOCK",
+                  "UNBLOCK",
                 )
-              : renderActionCard(
+              : renderActionRow(
                   "Temporary Block",
                   "Suspend access temporarily",
                   "ban",
                   "#F59E0B",
                   "TEMP_BLOCK",
+                  "TEMP_BLOCK",
                 )}
 
-            {/* Dynamic Suspend/Activate Card */}
             {isSuspended
-              ? renderActionCard(
+              ? renderActionRow(
                   "Activate Account",
                   "Restore full access",
                   "checkmark-circle",
                   theme.success,
                   "REACTIVATE_ACCOUNT",
+                  "ACTIVATE",
                 )
-              : renderActionCard(
+              : renderActionRow(
                   "Suspend Account",
                   "Deactivate profile access",
                   "close-circle",
                   "#EF4444",
                   "SUSPEND_ACCOUNT",
+                  "SUSPEND",
                 )}
 
-            {renderActionCard(
+            {renderActionRow(
               "Force Password Reset",
               "Trigger security reset",
               "refresh",
               "#3B82F6",
               "FORCE_PASSWORD_RESET",
+              "FORCE_PWD",
             )}
-            {renderActionCard(
+            {renderActionRow(
               "Reset Password",
               "Change user password immediately",
               "key",
               "#3B82F6",
               "RESET_PASSWORD",
+              "RESET_PWD",
             )}
-            {renderActionCard(
+            {renderActionRow(
               "Revoke Sessions",
               "Log out everywhere",
               "log-out",
               "#94A3B8",
               "REVOKE_ALL_SESSIONS",
+              "REVOKE",
             )}
-            {renderActionCard(
+            {renderActionRow(
               "Change Role",
               "Update permissions",
               "person-circle",
               "#8B5CF6",
               "CHANGE_ROLE",
+              "ROLE",
             )}
-            {renderActionCard(
+            {renderActionRow(
               "Manage License",
               "Edit billing & seats",
               "card",
               "#3B82F6",
               "MANAGE_LICENSE",
+              "LICENSE",
             )}
           </View>
         </View>
 
-        {/* Danger Zone */}
-        <View
-        style={[styles.gridSection, isWebDesktop && styles.webGridSection]}
-      >
-          <View style={styles.gridHeader}>
-            <Text style={[styles.gridTitle, { color: theme.danger }]}>
-              Danger Zone
+        {/* Danger zone — dense row, danger accent */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionLabel, { color: theme.danger }]}>
+              DANGER ZONE
             </Text>
-            <Text style={styles.gridSubtitle}>PERMANENT ACTIONS</Text>
+            <Text style={styles.sectionCount}>PERMANENT</Text>
           </View>
-          <View style={{ marginTop: 16, alignItems: "center" }}>
-            <DeleteButton
-              label="Delete User"
-              onPress={() => setIsDeleteModalVisible(true)}
-              style={{ width: "100%" }}
+          <TouchableOpacity
+            style={[styles.actionRow, styles.dangerRow]}
+            onPress={() => setIsDeleteModalVisible(true)}
+            activeOpacity={0.6}
+          >
+            <View
+              style={[
+                styles.actionIcon,
+                { backgroundColor: `${theme.danger}22` },
+              ]}
+            >
+              <Feather name="trash-2" size={16} color={theme.danger} />
+            </View>
+            <View style={styles.actionText}>
+              <Text style={[styles.actionTitle, { color: theme.danger }]}>
+                Delete User
+              </Text>
+              <Text style={styles.actionSubtitle}>
+                Permanently remove this user and all associated data
+              </Text>
+            </View>
+            <Text style={[styles.actionCode, { color: theme.danger }]}>
+              DELETE
+            </Text>
+            <Feather
+              name="chevron-right"
+              size={16}
+              color={theme.textSecondary}
             />
-          </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -828,15 +867,51 @@ const createStyles = (theme: any) =>
     header: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      gap: spacing.sm,
     },
     backButton: {
       padding: spacing.xs,
     },
+    headerMain: {
+      flex: 1,
+    },
     headerTitle: {
-      fontSize: 18,
+      fontSize: 15,
+      fontWeight: "700",
+      color: theme.text,
+    },
+    headerMeta: {
+      fontSize: 10,
+      fontWeight: "800",
+      color: theme.textSecondary,
+      letterSpacing: 1,
+      marginTop: 2,
+    },
+    headerActions: {
+      flexDirection: "row",
+      gap: 6,
+    },
+    headerActionBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.card,
+    },
+    headerActionBtnPrimary: {
+      backgroundColor: theme.primary,
+      borderColor: theme.primary,
+    },
+    headerActionText: {
+      fontSize: 12,
       fontWeight: "600",
       color: theme.text,
     },
@@ -851,80 +926,90 @@ const createStyles = (theme: any) =>
       maxWidth: 1440,
       alignSelf: "center",
       paddingHorizontal: spacing.xl,
+      paddingTop: spacing.md,
       paddingBottom: spacing.xl,
     },
-    profileSection: {
-      alignItems: "center",
-      paddingVertical: spacing.xl,
-    },
-    avatarContainer: {
-      position: "relative",
-      marginBottom: spacing.md,
-    },
-    avatar: {
-      width: 100,
-      height: 100,
-      borderRadius: 50,
-      borderWidth: 4,
-      borderColor: theme.card,
-    },
-    statusIndicator: {
-      position: "absolute",
-      bottom: 5,
-      right: 5,
-      width: 20,
-      height: 20,
-      borderRadius: 10,
-      borderWidth: 3,
-    },
-    userName: {
-      fontSize: 24,
-      fontWeight: "bold",
-      color: theme.text,
-      marginBottom: spacing.xs,
-    },
-    userRole: {
-      fontSize: 16,
-      color: theme.textSecondary,
-      marginBottom: spacing.md,
-    },
-    badgesContainer: {
+    identityRow: {
       flexDirection: "row",
+      alignItems: "flex-start",
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      gap: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+    },
+    identityAvatar: {
+      position: "relative",
+    },
+    identityAvatarImg: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      borderWidth: 2,
+      borderColor: theme.border,
+    },
+    identityStatusDot: {
+      position: "absolute",
+      bottom: -2,
+      right: -2,
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      borderWidth: 2,
+    },
+    identityMain: {
+      flex: 1,
+    },
+    identityTitleRow: {
+      flexDirection: "row",
+      alignItems: "baseline",
       gap: spacing.sm,
-      marginBottom: spacing.xl,
+    },
+    identityName: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: theme.text,
+    },
+    identityRole: {
+      fontSize: 11,
+      fontWeight: "700",
+      letterSpacing: 1,
+      color: theme.textSecondary,
+    },
+    identityEmail: {
+      fontSize: 12,
+      color: theme.textSecondary,
+      marginTop: 2,
+    },
+    identityBadges: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 6,
+      marginTop: spacing.sm,
     },
     badge: {
-      paddingHorizontal: spacing.md,
-      paddingVertical: 4,
-      borderRadius: 12,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 6,
     },
     badgeText: {
-      fontSize: 12,
-      fontWeight: "600",
+      fontSize: 10,
+      fontWeight: "700",
+      letterSpacing: 0.5,
     },
-    primaryActions: {
-      flexDirection: "row",
-      gap: spacing.md,
-      paddingHorizontal: spacing.xl,
-      width: "100%",
+    editPanel: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      gap: spacing.xs,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
     },
-    primaryButton: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 12,
-      borderRadius: 24,
-      gap: spacing.sm,
-    },
-    primaryButtonText: {
-      fontSize: 14,
-      fontWeight: "600",
-    },
-    editFormContainer: {
-      width: "100%",
-      paddingHorizontal: spacing.lg,
-      gap: spacing.md,
+    sectionMeta: {
+      fontSize: 10,
+      fontWeight: "800",
+      letterSpacing: 1,
+      color: theme.textSecondary,
+      marginBottom: spacing.xs,
     },
     inputContainer: {
       marginBottom: spacing.xs,
@@ -933,85 +1018,107 @@ const createStyles = (theme: any) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingVertical: spacing.sm,
-      marginBottom: spacing.md,
+      paddingVertical: spacing.xs,
+      marginTop: spacing.xs,
     },
     switchLabel: {
-      fontSize: 16,
+      fontSize: 13,
       fontWeight: "500",
     },
-    editActions: {
+    kpiStrip: {
       flexDirection: "row",
-      gap: spacing.md,
-      marginTop: spacing.sm,
+      backgroundColor: theme.card,
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: theme.border,
+      marginTop: spacing.md,
+      marginHorizontal: 0,
     },
-    editButton: {
+    kpiCell: {
       flex: 1,
-      paddingVertical: 12,
-      borderRadius: 24,
-      alignItems: "center",
-      justifyContent: "center",
+      paddingVertical: 10,
+      paddingHorizontal: spacing.sm,
+      borderRightWidth: 1,
+      borderRightColor: theme.border,
+      gap: 4,
     },
-    editButtonText: {
-      fontSize: 14,
-      fontWeight: "600",
+    kpiLabel: {
+      fontSize: 9,
+      fontWeight: "800",
+      letterSpacing: 1,
+      color: theme.textSecondary,
     },
-    gridSection: {
-      padding: spacing.lg,
+    kpiValue: {
+      fontSize: 13,
+      fontWeight: "800",
+      color: theme.text,
+      fontVariant: ["tabular-nums"],
     },
-    webGridSection: {
-      padding: spacing.lg,
-      paddingHorizontal: 0,
+    section: {
+      paddingHorizontal: spacing.md,
+      paddingTop: spacing.md,
     },
-    gridHeader: {
+    sectionHeader: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: spacing.lg,
+      paddingBottom: spacing.xs,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
     },
-    gridTitle: {
-      fontSize: 18,
+    sectionLabel: {
+      fontSize: 10,
+      fontWeight: "800",
+      letterSpacing: 1.2,
+      color: theme.textSecondary,
+    },
+    sectionCount: {
+      fontSize: 10,
+      fontWeight: "700",
+      letterSpacing: 1,
+      color: theme.textSecondary,
+    },
+    rows: {
+      marginTop: 2,
+    },
+    actionRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 12,
+      paddingHorizontal: spacing.xs,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      gap: spacing.sm,
+    },
+    dangerRow: {
+      backgroundColor: "transparent",
+    },
+    actionIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    actionText: {
+      flex: 1,
+    },
+    actionTitle: {
+      fontSize: 13,
       fontWeight: "600",
       color: theme.text,
     },
-    gridSubtitle: {
-      fontSize: 12,
-      fontWeight: "600",
-      color: theme.textSecondary,
-      letterSpacing: 1,
-    },
-    grid: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: spacing.md,
-    },
-    actionCard: {
-      width: (SCREEN_WIDTH - spacing.lg * 2 - spacing.md) / 2,
-      padding: spacing.lg,
-      borderRadius: 20,
-      gap: spacing.md,
-      minHeight: 160,
-    },
-    webActionCard: {
-      width: "48%",
-      minWidth: 280,
-    },
-    iconContainer: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: spacing.xs,
-    },
-    actionContent: {
-      gap: 4,
-    },
-    actionTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-    },
     actionSubtitle: {
-      fontSize: 12,
+      fontSize: 11,
+      color: theme.textSecondary,
+      marginTop: 1,
+    },
+    actionCode: {
+      fontSize: 10,
+      fontWeight: "800",
+      letterSpacing: 1,
+      color: theme.textSecondary,
+      minWidth: 64,
+      textAlign: "right",
     },
   });

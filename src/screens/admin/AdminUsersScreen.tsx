@@ -11,11 +11,10 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { AdminHeader } from "../../components/admin/layout/AdminHeader";
-import { FadeInDown } from "../../components/animations";
 import { AddUserFormModal } from "../../components/admin/AddUserFormModal";
 import { SuccessModal } from "../../components/admin/SuccessModal";
 import { ErrorModal } from "../../components/admin/ErrorModal";
@@ -37,7 +36,6 @@ import type {
 import { getApiErrorMessage } from "../../utils/apiError";
 import { BREAKPOINTS, useResponsive } from "../../hooks/useResponsive";
 
-// Mock avatar images for demo purposes (replace with real user avatars if available)
 const AVATAR_MOCK = "https://i.pravatar.cc/150";
 
 export const AdminUsersScreen: React.FC = () => {
@@ -83,8 +81,18 @@ export const AdminUsersScreen: React.FC = () => {
     message: "",
   });
 
+  const allUsers = usersQuery.data ?? [];
+
+  const directoryStats = useMemo(() => {
+    const total = allUsers.length;
+    const active = allUsers.filter((u) => u.isActive && !u.isBanned).length;
+    const admins = allUsers.filter((u) => u.role === "ADMIN").length;
+    const blocked = allUsers.filter((u) => u.isBanned || !u.isActive).length;
+    return { total, active, admins, blocked };
+  }, [allUsers]);
+
   const filteredUsers = useMemo(() => {
-    const base = (usersQuery.data ?? []).filter((user) => {
+    const base = allUsers.filter((user) => {
       const text = `${user.name} ${user.email}`.toLowerCase();
       const matchesSearch = text.includes(search.trim().toLowerCase());
       if (!matchesSearch) return false;
@@ -94,7 +102,7 @@ export const AdminUsersScreen: React.FC = () => {
       return true;
     });
     return base;
-  }, [usersQuery.data, search, filter]);
+  }, [allUsers, search, filter]);
 
   const handleCreateUser = async (input: AdminCreateUserRequest) => {
     try {
@@ -132,77 +140,94 @@ export const AdminUsersScreen: React.FC = () => {
     }
   };
 
-  const renderUserItem = ({ item, index }: { item: User; index: number }) => {
-    // Determine status color
+  const renderUserItem = ({ item }: { item: User }) => {
     const isOnline = item.isActive && !item.isBanned;
     const statusColor = item.isBanned
       ? theme.danger
       : isOnline
         ? theme.success
         : theme.textSecondary;
+    const statusLabel = item.isBanned
+      ? "BANNED"
+      : !item.isActive
+        ? "INACTIVE"
+        : "ACTIVE";
 
-    // Determine role badge style
-    let roleBadgeStyle = styles.roleBadgeDefault;
-    let roleTextStyle = styles.roleTextDefault;
-    let roleLabel = item.role as string;
-
-    if (item.role === "ADMIN") {
-      roleBadgeStyle = styles.roleBadgeAdmin;
-      roleTextStyle = styles.roleTextAdmin;
-      roleLabel = "ADMINISTRADOR";
-    } else if (!item.isActive) {
-      roleBadgeStyle = styles.roleBadgeInactive;
-      roleTextStyle = styles.roleTextInactive;
-      roleLabel = "INACTIVO";
-    } else {
-      roleLabel = item.role === "USER" ? "VISUALIZADOR" : item.role;
-    }
+    const roleLabel =
+      item.role === "ADMIN"
+        ? "ADMIN"
+        : item.role === "USER"
+          ? "USER"
+          : (item.role as string);
 
     return (
-      <FadeInDown delay={index * 50} duration={400}>
-        <TouchableOpacity
-          testID={`admin-user-row-${item.id}`}
-          style={styles.userCard}
-          onPress={() => navigation.navigate("AdminUserDetail", { user: item })}
-          activeOpacity={0.7}
-        >
-          <View style={styles.userInfoRow}>
-            {/* Avatar Section */}
-            <View style={styles.avatarContainer}>
-              <Image
-                source={{ uri: `${AVATAR_MOCK}?u=${item.id}` }}
-                style={styles.avatarImage}
-              />
-              <View
-                style={[styles.statusDot, { backgroundColor: statusColor }]}
-              />
-            </View>
-
-            {/* Info Section */}
-            <View style={styles.userDetails}>
-              <Text style={styles.userName}>{item.name}</Text>
-              <Text style={styles.userEmail}>{item.email}</Text>
-
-              <View style={styles.badgesRow}>
-                <View style={[styles.roleBadge, roleBadgeStyle]}>
-                  <Text style={[styles.roleText, roleTextStyle]}>
-                    {roleLabel}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Action Menu - Now Chevron */}
-            <View style={styles.menuButton}>
-              <Ionicons
-                name="chevron-forward"
-                size={24}
-                color={theme.textSecondary}
-              />
-            </View>
+      <TouchableOpacity
+        testID={`admin-user-row-${item.id}`}
+        style={styles.row}
+        onPress={() => navigation.navigate("AdminUserDetail", { user: item })}
+        activeOpacity={0.6}
+      >
+        <Text style={styles.rowId}>#{item.id}</Text>
+        <View style={styles.rowUserCell}>
+          <View style={styles.rowAvatarCell}>
+            <Image
+              source={{ uri: `${AVATAR_MOCK}?u=${item.id}` }}
+              style={styles.rowAvatar}
+            />
+            <View
+              style={[
+                styles.rowStatusDot,
+                { backgroundColor: statusColor },
+              ]}
+            />
           </View>
-        </TouchableOpacity>
-      </FadeInDown>
+          <View style={styles.rowTextCell}>
+            <Text style={styles.rowName} numberOfLines={1}>
+              {item.name}
+            </Text>
+            <Text style={styles.rowEmail} numberOfLines={1}>
+              {item.email}
+            </Text>
+          </View>
+        </View>
+        <View
+          style={[
+            styles.rowRoleBadge,
+            item.role === "ADMIN"
+              ? { backgroundColor: `${theme.primary}22` }
+              : { backgroundColor: `${theme.textSecondary}22` },
+          ]}
+        >
+          <Text
+            style={[
+              styles.rowRoleText,
+              {
+                color:
+                  item.role === "ADMIN" ? theme.primary : theme.textSecondary,
+              },
+            ]}
+          >
+            {roleLabel}
+          </Text>
+        </View>
+        <View style={styles.rowStatusCell}>
+          <View
+            style={[
+              styles.rowStatusPill,
+              { borderColor: statusColor },
+            ]}
+          >
+            <Text style={[styles.rowStatusText, { color: statusColor }]}>
+              {statusLabel}
+            </Text>
+          </View>
+        </View>
+        <Feather
+          name="chevron-right"
+          size={16}
+          color={theme.textSecondary}
+        />
+      </TouchableOpacity>
     );
   };
 
@@ -215,113 +240,111 @@ export const AdminUsersScreen: React.FC = () => {
         backgroundColor={theme.background}
       />
 
-      {/* Header */}
       <AdminHeader
         title="Gestión de Usuarios"
         onRefresh={() => usersQuery.refetch()}
       />
 
-      {/* Floating Action Button for Add User - Replacing Header Button */}
-      <TouchableOpacity
-        testID="admin-add-user-bottom-cta"
-        accessibilityLabel="Add user"
-        style={styles.floatingAddButton}
-        onPress={() => setIsAddUserModalVisible(true)}
-      >
-        <Ionicons name="add" size={24} color="#fff" />
-      </TouchableOpacity>
-
       <View style={[styles.content, isWebDesktop && styles.webContent]}>
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <Feather
-            name="search"
-            size={20}
-            color={theme.textSecondary}
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar por nombre o correo"
-            placeholderTextColor={theme.textSecondary}
-            value={search}
-            onChangeText={setSearch}
-          />
+        {/* KPI strip — console directory metrics */}
+        <View style={styles.kpiStrip}>
+          <View style={styles.kpiCell}>
+            <Text style={styles.kpiLabel}>TOTAL</Text>
+            <Text style={styles.kpiValue}>{directoryStats.total}</Text>
+          </View>
+          <View style={styles.kpiCell}>
+            <Text style={styles.kpiLabel}>ACTIVOS</Text>
+            <Text style={[styles.kpiValue, { color: theme.success }]}>
+              {directoryStats.active}
+            </Text>
+          </View>
+          <View style={styles.kpiCell}>
+            <Text style={styles.kpiLabel}>ADMINS</Text>
+            <Text style={styles.kpiValue}>{directoryStats.admins}</Text>
+          </View>
+          <View style={[styles.kpiCell, { borderRightWidth: 0 }]}>
+            <Text style={styles.kpiLabel}>BLOQUEADOS</Text>
+            <Text style={[styles.kpiValue, { color: theme.danger }]}>
+              {directoryStats.blocked}
+            </Text>
+          </View>
         </View>
 
-        {/* Filters */}
-        <View style={styles.filtersContainer}>
-          <TouchableOpacity
-            style={[
-              styles.filterPill,
-              filter === "all" && styles.filterPillActive,
-            ]}
-            onPress={() => setFilter("all")}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                filter === "all" && styles.filterTextActive,
-              ]}
-            >
-              Todos
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.filterPill,
-              filter === "admin" && styles.filterPillActive,
-            ]}
-            onPress={() => setFilter("admin")}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                filter === "admin" && styles.filterTextActive,
-              ]}
-            >
-              Admin
-            </Text>
-            <Ionicons
-              name="chevron-down"
+        {/* Toolbar: search + segments + add user */}
+        <View style={styles.toolbar}>
+          <View style={styles.searchField}>
+            <Feather
+              name="search"
               size={16}
-              color={filter === "admin" ? "#fff" : theme.textSecondary}
-              style={{ marginLeft: 4 }}
+              color={theme.textSecondary}
+              style={styles.searchIcon}
             />
-          </TouchableOpacity>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar por nombre o correo"
+              placeholderTextColor={theme.textSecondary}
+              value={search}
+              onChangeText={setSearch}
+            />
+          </View>
+          <View style={styles.segments}>
+            {(["all", "admin", "active"] as const).map((key) => {
+              const label =
+                key === "all"
+                  ? "Todos"
+                  : key === "admin"
+                    ? "Admin"
+                    : "Activos";
+              const active = filter === key;
+              return (
+                <TouchableOpacity
+                  key={key}
+                  style={[styles.segment, active && styles.segmentActive]}
+                  onPress={() => setFilter(key)}
+                >
+                  <Text
+                    style={[
+                      styles.segmentText,
+                      active && styles.segmentTextActive,
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
 
-          <TouchableOpacity
-            style={[
-              styles.filterPill,
-              filter === "active" && styles.filterPillActive,
-            ]}
-            onPress={() => setFilter("active")}
+        {/* Table header — column labels */}
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableHeaderCell, styles.tableHeaderId]}>
+            ID
+          </Text>
+          <Text
+            style={[styles.tableHeaderCell, styles.tableHeaderUser]}
           >
-            <Text
-              style={[
-                styles.filterText,
-                filter === "active" && styles.filterTextActive,
-              ]}
-            >
-              Activos
-            </Text>
-            <Ionicons
-              name="chevron-down"
-              size={16}
-              color={filter === "active" ? "#fff" : theme.textSecondary}
-              style={{ marginLeft: 4 }}
-            />
-          </TouchableOpacity>
+            USUARIO
+          </Text>
+          <Text style={[styles.tableHeaderCell, styles.tableHeaderRole]}>
+            ROL
+          </Text>
+          <Text style={[styles.tableHeaderCell, styles.tableHeaderStatus]}>
+            ESTADO
+          </Text>
+          <View style={styles.tableHeaderChevron} />
         </View>
 
-        {/* List Header */}
-        <View style={[styles.listHeader, isWebDesktop && styles.webListHeader]}>
-          <Text style={styles.listTitle}>Usuarios Registrados</Text>
-          <Text style={styles.listCount}>{filteredUsers.length} USUARIOS</Text>
+        <View style={styles.tableHeaderMeta}>
+          <Text style={styles.tableHeaderMetaText}>
+            USUARIOS REGISTRADOS
+          </Text>
+          <Text style={styles.tableHeaderMetaCount}>
+            {filteredUsers.length} MOSTRADOS · {directoryStats.total} TOTAL
+          </Text>
         </View>
 
-        {/* Users List */}
+        {/* Users list — dense rows */}
         <FlatList
           data={filteredUsers}
           renderItem={renderUserItem}
@@ -336,6 +359,18 @@ export const AdminUsersScreen: React.FC = () => {
         />
       </View>
 
+      {/* Bottom CTA — compact pill (console) */}
+      <TouchableOpacity
+        testID="admin-add-user-bottom-cta"
+        accessibilityLabel="Add user"
+        style={styles.bottomCta}
+        onPress={() => setIsAddUserModalVisible(true)}
+        activeOpacity={0.8}
+      >
+        <Feather name="user-plus" size={14} color="#fff" />
+        <Text style={styles.bottomCtaText}>Add user</Text>
+      </TouchableOpacity>
+
       {/* Add User Modal */}
       <AddUserFormModal
         visible={isAddUserModalVisible}
@@ -344,7 +379,6 @@ export const AdminUsersScreen: React.FC = () => {
         onSubmit={handleCreateUser}
       />
 
-      {/* Success Modal */}
       <SuccessModal
         visible={successModalState.visible}
         title={successModalState.title}
@@ -354,7 +388,6 @@ export const AdminUsersScreen: React.FC = () => {
         }
       />
 
-      {/* Error Modal */}
       <ErrorModal
         visible={errorModalState.visible}
         title={errorModalState.title}
@@ -364,7 +397,6 @@ export const AdminUsersScreen: React.FC = () => {
         }
       />
 
-      {/* Suspend User Modal */}
       <AdminSuspendAccountModal
         visible={suspendModalVisible}
         user={selectedUser}
@@ -373,7 +405,6 @@ export const AdminUsersScreen: React.FC = () => {
         onConfirm={handleSuspendUser}
       />
 
-      {/* Suspend Success Modal */}
       <AdminSuspendSuccessModal
         visible={suspendSuccessModalVisible}
         user={selectedUser}
@@ -391,7 +422,7 @@ export const AdminUsersScreen: React.FC = () => {
   );
 };
 
-  const createStyles = (theme: any) =>
+const createStyles = (theme: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -408,195 +439,223 @@ export const AdminUsersScreen: React.FC = () => {
       paddingHorizontal: spacing.xl,
       paddingTop: spacing.md,
     },
-    floatingAddButton: {
-      position: "absolute",
-      bottom: spacing.xl,
-      right: spacing.xl,
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: theme.primary,
-      justifyContent: "center",
-      alignItems: "center",
-      shadowColor: theme.primary,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 12,
-      elevation: 8,
-      zIndex: 100,
-    },
-    header: {
+    kpiStrip: {
       flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.md,
-      marginBottom: spacing.sm,
-    },
-    headerTitle: {
-      fontSize: 20,
-      fontWeight: "700",
-      color: theme.text,
-    },
-    iconButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
       backgroundColor: theme.card,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    addButton: {
-      backgroundColor: `${theme.primary}20`,
-    },
-    searchContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: theme.card,
-      borderRadius: borderRadius.lg,
-      paddingHorizontal: spacing.md,
-      height: 50,
+      borderTopWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: theme.border,
       marginBottom: spacing.md,
     },
+    kpiCell: {
+      flex: 1,
+      paddingVertical: 10,
+      paddingHorizontal: spacing.sm,
+      borderRightWidth: 1,
+      borderRightColor: theme.border,
+      gap: 4,
+    },
+    kpiLabel: {
+      fontSize: 9,
+      fontWeight: "800",
+      letterSpacing: 1,
+      color: theme.textSecondary,
+    },
+    kpiValue: {
+      fontSize: 14,
+      fontWeight: "800",
+      color: theme.text,
+      fontVariant: ["tabular-nums"],
+    },
+    toolbar: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    searchField: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      paddingHorizontal: spacing.sm,
+      height: 36,
+      flex: 1,
+    },
     searchIcon: {
-      marginRight: spacing.sm,
+      marginRight: 6,
     },
     searchInput: {
       flex: 1,
       color: theme.text,
-      fontSize: 16,
+      fontSize: 13,
       height: "100%",
+      paddingVertical: 0,
     },
-    filtersContainer: {
+    segments: {
       flexDirection: "row",
-      marginBottom: spacing.lg,
-      gap: spacing.sm,
-    },
-    filterPill: {
-      flexDirection: "row",
-      alignItems: "center",
       backgroundColor: theme.card,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      overflow: "hidden",
+    },
+    segment: {
       paddingHorizontal: spacing.md,
       paddingVertical: 8,
-      borderRadius: borderRadius.full,
-      borderWidth: 1,
-      borderColor: "transparent",
+      borderRightWidth: 1,
+      borderRightColor: theme.border,
     },
-    filterPillActive: {
+    segmentActive: {
       backgroundColor: theme.primary,
     },
-    filterText: {
+    segmentText: {
+      fontSize: 12,
+      fontWeight: "700",
       color: theme.textSecondary,
-      fontWeight: "600",
-      fontSize: 14,
     },
-    filterTextActive: {
+    segmentTextActive: {
       color: "#fff",
     },
-    listHeader: {
+    tableHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 6,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      gap: spacing.sm,
+    },
+    tableHeaderCell: {
+      fontSize: 9,
+      fontWeight: "800",
+      letterSpacing: 1,
+      color: theme.textSecondary,
+    },
+    tableHeaderId: {
+      width: 48,
+      fontVariant: ["tabular-nums"],
+    },
+    tableHeaderUser: {
+      flex: 1,
+    },
+    tableHeaderRole: {
+      width: 72,
+      textAlign: "center",
+    },
+    tableHeaderStatus: {
+      width: 92,
+      textAlign: "center",
+    },
+    tableHeaderChevron: {
+      width: 16,
+    },
+    tableHeaderMeta: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: spacing.md,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 4,
     },
-    webListHeader: { marginTop: spacing.sm, marginBottom: spacing.lg },
-    listTitle: {
-      fontSize: 18,
-      fontWeight: "700",
-      color: theme.text,
-    },
-    listCount: {
-      fontSize: 12,
-      fontWeight: "600",
+    tableHeaderMetaText: {
+      fontSize: 9,
+      fontWeight: "800",
+      letterSpacing: 1,
       color: theme.textSecondary,
-      textTransform: "uppercase",
+    },
+    tableHeaderMetaCount: {
+      fontSize: 9,
+      fontWeight: "700",
+      letterSpacing: 1,
+      color: theme.textSecondary,
+      fontVariant: ["tabular-nums"],
     },
     listContent: {
-      paddingBottom: spacing.xl,
+      paddingBottom: spacing.xxl,
     },
-    userCard: {
-      backgroundColor: theme.card,
-      borderRadius: 24,
-      padding: spacing.md,
-      marginBottom: spacing.md,
-    },
-    userInfoRow: {
+    row: {
       flexDirection: "row",
       alignItems: "center",
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.border,
+      gap: spacing.sm,
     },
-    avatarContainer: {
+    rowId: {
+      width: 48,
+      fontSize: 12,
+      fontWeight: "700",
+      color: theme.textSecondary,
+      fontVariant: ["tabular-nums"],
+    },
+    rowUserCell: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    rowAvatarCell: {
       position: "relative",
-      marginRight: spacing.md,
     },
-    avatarImage: {
-      width: 56,
-      height: 56,
-      borderRadius: 28,
+    rowAvatar: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
       backgroundColor: theme.border,
     },
-    statusDot: {
+    rowStatusDot: {
       position: "absolute",
-      bottom: 2,
-      right: 2,
-      width: 14,
-      height: 14,
-      borderRadius: 7,
+      bottom: -1,
+      right: -1,
+      width: 8,
+      height: 8,
+      borderRadius: 4,
       borderWidth: 2,
       borderColor: theme.card,
     },
-    userDetails: {
+    rowTextCell: {
       flex: 1,
-      justifyContent: "center",
     },
-    userName: {
-      fontSize: 16,
-      fontWeight: "700",
-      color: theme.text,
-      marginBottom: 2,
-    },
-    userEmail: {
+    rowName: {
       fontSize: 13,
-      color: theme.textSecondary,
-      marginBottom: 8,
+      fontWeight: "600",
+      color: theme.text,
     },
-    badgesRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
-    },
-    roleBadge: {
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-      borderRadius: 8,
-      alignSelf: "flex-start",
-      borderWidth: 1,
-      borderColor: "transparent",
-    },
-    roleBadgeAdmin: {
-      backgroundColor: `${theme.primary}20`,
-    },
-    roleBadgeInactive: {
-      backgroundColor: `${theme.danger}20`,
-    },
-    roleBadgeDefault: {
-      backgroundColor: `${theme.textSecondary}20`,
-    },
-    roleText: {
+    rowEmail: {
       fontSize: 11,
-      fontWeight: "700",
-      textTransform: "uppercase",
-    },
-    roleTextAdmin: {
-      color: theme.primary,
-    },
-    roleTextInactive: {
-      color: theme.danger,
-    },
-    roleTextDefault: {
       color: theme.textSecondary,
+      marginTop: 1,
     },
-    menuButton: {
-      padding: 4,
+    rowRoleBadge: {
+      width: 64,
+      paddingVertical: 3,
+      paddingHorizontal: 6,
+      borderRadius: 4,
+      alignItems: "center",
+    },
+    rowRoleText: {
+      fontSize: 10,
+      fontWeight: "800",
+      letterSpacing: 0.5,
+    },
+    rowStatusCell: {
+      width: 92,
+      alignItems: "center",
+    },
+    rowStatusPill: {
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 4,
+      borderWidth: 1,
+    },
+    rowStatusText: {
+      fontSize: 10,
+      fontWeight: "800",
+      letterSpacing: 0.5,
+      fontVariant: ["tabular-nums"],
     },
     emptyContainer: {
       padding: spacing.xl,
@@ -604,6 +663,29 @@ export const AdminUsersScreen: React.FC = () => {
     },
     emptyText: {
       color: theme.textSecondary,
-      fontSize: 16,
+      fontSize: 13,
+    },
+    bottomCta: {
+      position: "absolute",
+      bottom: spacing.lg,
+      right: spacing.lg,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+      borderRadius: 10,
+      backgroundColor: theme.primary,
+      shadowColor: theme.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 6,
+      zIndex: 100,
+    },
+    bottomCtaText: {
+      color: "#fff",
+      fontSize: 13,
+      fontWeight: "700",
     },
   });

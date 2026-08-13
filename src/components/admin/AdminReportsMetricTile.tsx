@@ -1,9 +1,8 @@
 import React, { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ScaleIn } from "../animations";
 import { useColors } from "../../store/themeStore";
-import { borderRadius, spacing } from "../../theme";
+import { spacing } from "../../theme";
 import type { DashboardMetricTile } from "../../modules/admin/application/useAdminReportsDashboard";
 
 type AdminReportsMetricTileProps = {
@@ -13,7 +12,6 @@ type AdminReportsMetricTileProps = {
 
 export const AdminReportsMetricTile: React.FC<AdminReportsMetricTileProps> = ({
   metric,
-  delay = 60,
 }) => {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -25,13 +23,6 @@ export const AdminReportsMetricTile: React.FC<AdminReportsMetricTileProps> = ({
         ? "#FF3F7D"
         : colors.text.secondary;
 
-  const trendBg =
-    metric.trend.direction === "up"
-      ? "rgba(0, 208, 140, 0.16)"
-      : metric.trend.direction === "down"
-        ? "rgba(255, 63, 125, 0.16)"
-        : `${colors.text.secondary}20`;
-
   const trendIcon =
     metric.trend.direction === "up"
       ? "trending-up"
@@ -40,72 +31,52 @@ export const AdminReportsMetricTile: React.FC<AdminReportsMetricTileProps> = ({
         : "remove";
 
   return (
-    <ScaleIn delay={delay}>
-      <View style={styles.card} testID={`admin-reports-metric-${metric.id}`}>
-        <View style={styles.titleRow}>
-          <Ionicons
-            name={metric.icon}
-            size={16}
-            color={colors.text.secondary}
-          />
-          <Text style={styles.title}>{metric.title.toUpperCase()}</Text>
-        </View>
-
-        <Text style={styles.value}>{metric.valueLabel}</Text>
-
-        <View style={[styles.trendBadge, { backgroundColor: trendBg }]}>
-          <Ionicons name={trendIcon} size={12} color={trendColor} />
-          <Text style={[styles.trendText, { color: trendColor }]}>
-            {metric.trend.valueLabel}
-          </Text>
-        </View>
+    <View style={styles.cell} testID={`admin-reports-metric-${metric.id}`}>
+      <Text style={styles.label}>{metric.title.toUpperCase()}</Text>
+      <Text style={styles.value}>{metric.valueLabel}</Text>
+      <View style={styles.trendRow}>
+        <Ionicons name={trendIcon} size={11} color={trendColor} />
+        <Text style={[styles.trendText, { color: trendColor }]}>
+          {metric.trend.valueLabel}
+        </Text>
       </View>
-    </ScaleIn>
+    </View>
   );
 };
 
 const createStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
-    card: {
+    cell: {
       flex: 1,
-      backgroundColor: colors.card,
-      borderColor: colors.border,
-      borderWidth: 1,
-      borderRadius: borderRadius.xl,
-      padding: spacing.md,
-      minHeight: 160,
-      justifyContent: "space-between",
+      paddingVertical: 10,
+      paddingHorizontal: spacing.sm,
+      borderRightWidth: 1,
+      borderRightColor: colors.border,
+      gap: 4,
+      minWidth: 0,
     },
-    titleRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.xs,
-    },
-    title: {
+    label: {
       color: colors.text.secondary,
-      fontWeight: "700",
+      fontSize: 9,
+      fontWeight: "800",
       letterSpacing: 1,
-      fontSize: 15,
     },
     value: {
       color: colors.text.primary,
-      fontSize: 28,
+      fontSize: 16,
       fontWeight: "800",
-      marginTop: spacing.md,
-      marginBottom: spacing.sm,
+      fontVariant: ["tabular-nums"],
     },
-    trendBadge: {
-      minHeight: 28,
-      alignSelf: "flex-start",
-      borderRadius: borderRadius.full,
-      paddingHorizontal: spacing.sm,
+    trendRow: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "center",
       gap: 3,
+      marginTop: 2,
     },
     trendText: {
       fontWeight: "700",
-      fontSize: 13,
+      fontSize: 11,
+      fontVariant: ["tabular-nums"],
+      letterSpacing: 0.3,
     },
   });

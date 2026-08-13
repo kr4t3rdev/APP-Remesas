@@ -24,7 +24,7 @@ import {
   type DashboardSystemUsageRow,
 } from "../../modules/admin/application/useAdminReportsDashboard";
 import { useColors } from "../../store/themeStore";
-import { borderRadius, spacing } from "../../theme";
+import { spacing } from "../../theme";
 import type { AdminTabParamList } from "../../navigation/types";
 
 type AdminReportsNavigation = BottomTabNavigationProp<
@@ -138,11 +138,11 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     webContent: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: spacing.xl, paddingTop: spacing.lg },
     warningRow: {
       marginBottom: spacing.sm,
-      borderRadius: borderRadius.md,
+      borderRadius: 6,
       borderWidth: 1,
       borderColor: `${colors.warning}55`,
       backgroundColor: `${colors.warning}1A`,
-      paddingVertical: spacing.xs + 2,
+      paddingVertical: 6,
       paddingHorizontal: spacing.sm,
       flexDirection: "row",
       alignItems: "center",
@@ -150,13 +150,18 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     },
     warningText: {
       color: colors.text.secondary,
-      fontSize: 12,
-      fontWeight: "500",
+      fontSize: 11,
+      fontWeight: "700",
+      letterSpacing: 0.3,
       flex: 1,
     },
     metricsRow: {
       flexDirection: "row",
-      gap: spacing.sm,
-      marginBottom: spacing.md,
+      backgroundColor: colors.card,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 10,
+      overflow: "hidden",
+      marginBottom: spacing.sm,
     },
   });
