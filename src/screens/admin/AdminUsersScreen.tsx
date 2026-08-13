@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
   StatusBar,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
@@ -34,12 +35,15 @@ import type {
   UserRole,
 } from "../../types";
 import { getApiErrorMessage } from "../../utils/apiError";
+import { BREAKPOINTS, useResponsive } from "../../hooks/useResponsive";
 
 // Mock avatar images for demo purposes (replace with real user avatars if available)
 const AVATAR_MOCK = "https://i.pravatar.cc/150";
 
 export const AdminUsersScreen: React.FC = () => {
   const colors = useColors();
+  const { width } = useResponsive();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const theme = {
     background: colors.background,
@@ -227,7 +231,7 @@ export const AdminUsersScreen: React.FC = () => {
         <Ionicons name="add" size={24} color="#fff" />
       </TouchableOpacity>
 
-      <View style={styles.content}>
+      <View style={[styles.content, isWebDesktop && styles.webContent]}>
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <Feather
@@ -312,7 +316,7 @@ export const AdminUsersScreen: React.FC = () => {
         </View>
 
         {/* List Header */}
-        <View style={styles.listHeader}>
+        <View style={[styles.listHeader, isWebDesktop && styles.webListHeader]}>
           <Text style={styles.listTitle}>Usuarios Registrados</Text>
           <Text style={styles.listCount}>{filteredUsers.length} USUARIOS</Text>
         </View>
@@ -387,7 +391,7 @@ export const AdminUsersScreen: React.FC = () => {
   );
 };
 
-const createStyles = (theme: any) =>
+  const createStyles = (theme: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -396,6 +400,13 @@ const createStyles = (theme: any) =>
     content: {
       flex: 1,
       paddingHorizontal: spacing.md,
+    },
+    webContent: {
+      width: "100%",
+      maxWidth: 1440,
+      alignSelf: "center",
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.md,
     },
     floatingAddButton: {
       position: "absolute",
@@ -488,6 +499,7 @@ const createStyles = (theme: any) =>
       alignItems: "center",
       marginBottom: spacing.md,
     },
+    webListHeader: { marginTop: spacing.sm, marginBottom: spacing.lg },
     listTitle: {
       fontSize: 18,
       fontWeight: "700",
