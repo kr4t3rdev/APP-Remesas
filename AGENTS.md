@@ -42,11 +42,11 @@ Graphify es un mapa AST local complementario en `graphify-out/`. Usar los comand
 
 ## Hooks git importantes
 
-- **APP tiene pre-push hook (ECC)** que corre `jest` sin filtros. Actualmente **38 tests preexistentes rotos** (NO son del flujo worker-payments):
-  - `TransactionModal.test.tsx` → importa `FadeInOverlay` que no existe en `src/components/animations`
-  - `CashScreen.test.tsx` → "No QueryClient set" — tests no envuelven con QueryClientProvider
-  - `AddUserFormModal.test.tsx` → timeout 5s en un test
-- Mientras esos tests estén rotos, **push debe ir con `--no-verify`** o arreglar los tests primero.
+- **APP tiene pre-push hook (ECC)** que corre `jest` sin filtros. Desde 2026-08-13 la suite jest está sana: **85 suites / 489 tests, todos pasan** → el pre-push pasa sin `--no-verify`.
+  - Histórico: los 38 tests rotos preexistentes se arreglaron. Los últimos 19 fueron 2 suites:
+    - `usePushNotificationHandler.test.tsx` (13) → el mock de `react-native` no incluía `Platform`; `Platform.OS` lanzaba TypeError dentro de los effects (React 19 lo envuelve en AggregateError). Se agregó `Platform: { OS: "ios", select }` al mock.
+    - `AdminHomeScreen.test.tsx` (6) → React 19 hace doble render y `mockReturnValueOnce` se consume en el primer render; los tests fallaban usando el default. Se reemplazó por `mockReturnValue`.
+  - **Gotcha React 19 + RNTL**: `mockReturnValueOnce` es inestable bajo doble render — preferir `mockReturnValue`.
 - **API tiene pre-push hook** con `lint` (warning only, OK) + `jest` (puede pasar timeout 120s por la cantidad).
 
 ## Bug resuelto 2026-07-21 — "No se pudo agregar saldo al trabajador"
@@ -88,7 +88,6 @@ Cuando veas "No se pudo agregar X. Intente de nuevo." — el frontend está ocul
 
 ## Pendientes (no urgentes)
 
-- Arreglar los 38 tests preexistentes rotos en APP (TransactionModal, CashScreen, AddUserFormModal) — para que el pre-push hook vuelva a funcionar sin `--no-verify`.
 - Verificar migraciones de Prisma si los campos multicurrency se agregaron a la DB de Railway. Si nuevos campos no migrados → deploy Railway fallaría o queries rompen en runtime.
 
 ## Reportes — fix completo 2026-07-22 (rama master, 12 commits)

@@ -49,6 +49,7 @@ jest.mock("react-native", () => {
 		AppState: {
 			addEventListener: mockFakeAddEventListener,
 		},
+		Platform: { OS: "ios", select: (obj: any) => obj.ios },
 		Text: ({ children }: any) => children,
 	};
 });

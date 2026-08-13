@@ -108,7 +108,7 @@ describe("AdminHomeScreen", () => {
   });
 
   it("shows empty state when no events are available", () => {
-    mockUseAdminHomeData.mockReturnValueOnce({
+    mockUseAdminHomeData.mockReturnValue({
       ...createBaseViewModel(),
       recentEvents: [],
     });
@@ -119,7 +119,7 @@ describe("AdminHomeScreen", () => {
   });
 
   it('shows "Sin datos esta semana" when weekly progress is empty', () => {
-    mockUseAdminHomeData.mockReturnValueOnce({
+    mockUseAdminHomeData.mockReturnValue({
       ...createBaseViewModel(),
       recentEvents: [],
     });
@@ -131,7 +131,7 @@ describe("AdminHomeScreen", () => {
 
   it("triggers refresh when header icon is pressed", () => {
     const refetchAll = jest.fn().mockResolvedValue(undefined);
-    mockUseAdminHomeData.mockReturnValueOnce({
+    mockUseAdminHomeData.mockReturnValue({
       ...createBaseViewModel(),
       refetchAll,
     });
@@ -144,7 +144,7 @@ describe("AdminHomeScreen", () => {
   });
 
   it("shows warning indicator when KPIs have partial failure", () => {
-    mockUseAdminHomeData.mockReturnValueOnce({
+    mockUseAdminHomeData.mockReturnValue({
       ...createBaseViewModel(),
       blockErrors: { kpis: true, licenseState: false, events: false },
       hasPartialFailure: true,
@@ -159,7 +159,7 @@ describe("AdminHomeScreen", () => {
   });
 
   it("shows warning indicator when events have partial failure", () => {
-    mockUseAdminHomeData.mockReturnValueOnce({
+    mockUseAdminHomeData.mockReturnValue({
       ...createBaseViewModel(),
       blockErrors: { kpis: false, licenseState: false, events: true },
       hasPartialFailure: true,
@@ -174,7 +174,7 @@ describe("AdminHomeScreen", () => {
   });
 
   it("caps recent events at 8 items", () => {
-    mockUseAdminHomeData.mockReturnValueOnce({
+    mockUseAdminHomeData.mockReturnValue({
       ...createBaseViewModel(),
       recentEvents: buildEvents(12),
     });
