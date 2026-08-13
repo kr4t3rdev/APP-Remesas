@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { FadeInDown } from "../animations";
 import { spacing, borderRadius } from "../../theme";
-import { useColors, useShadows } from "../../store/themeStore";
+import { useColors } from "../../store/themeStore";
 import type { Worker } from "../../types";
 
 type WorkerCardProps = {
@@ -30,7 +30,6 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({
   isExpanded = false,
 }) => {
   const themeColors = useColors();
-  const themeShadows = useShadows();
 
   const workerSubtitle = worker.phone?.trim() ? worker.phone : "Trabajador";
   const balances = worker.balances ?? [];
@@ -49,8 +48,7 @@ export const WorkerCard: React.FC<WorkerCardProps> = ({
       <View
         style={[
           styles.card,
-          { backgroundColor: themeColors.card },
-          themeShadows.sm,
+          { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: 1 },
         ]}
       >
         <View style={styles.mainContent}>

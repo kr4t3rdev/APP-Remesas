@@ -197,8 +197,7 @@ export const ObjectivesScreen: React.FC = () => {
           <View
             style={[
               styles.statCard,
-              { backgroundColor: themeColors.card },
-              themeShadows.sm,
+              { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: 1 },
             ]}
           >
             <View style={[styles.statIcon, { backgroundColor: "#10B98115" }]}>
@@ -222,8 +221,7 @@ export const ObjectivesScreen: React.FC = () => {
           <View
             style={[
               styles.statCard,
-              { backgroundColor: themeColors.card },
-              themeShadows.sm,
+              { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: 1 },
             ]}
           >
             <View style={[styles.statIcon, { backgroundColor: "#6366F115" }]}>
@@ -247,8 +245,7 @@ export const ObjectivesScreen: React.FC = () => {
           <View
             style={[
               styles.statCard,
-              { backgroundColor: themeColors.card },
-              themeShadows.sm,
+              { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: 1 },
             ]}
           >
             <View style={[styles.statIcon, { backgroundColor: "#F59E0B15" }]}>
@@ -454,6 +451,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: spacing.sm,
     borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: "transparent",
     gap: spacing.xs,
   },
   statIcon: {

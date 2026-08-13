@@ -367,8 +367,7 @@ export const ExchangeRatesScreen: React.FC = () => {
         <TouchableOpacity
           style={[
             styles.rateCard,
-            { backgroundColor: themeColors.card },
-            themeShadows.sm,
+            { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: 1 },
           ]}
           onPress={() => openEditModal(item)}
           activeOpacity={0.7}
@@ -561,8 +560,7 @@ export const ExchangeRatesScreen: React.FC = () => {
               styles.historyCardManual,
               { borderLeftColor: themeColors.warning },
             ],
-            { backgroundColor: themeColors.card },
-            themeShadows.sm,
+            { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: 1 },
           ]}
         >
           <View style={styles.historyRow}>

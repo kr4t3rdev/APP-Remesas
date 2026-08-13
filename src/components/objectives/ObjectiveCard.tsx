@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { PressableScale, FadeInDown } from "../animations";
 import { Badge } from "../ui/Badge";
 import { spacing, borderRadius } from "../../theme";
-import { useColors, useShadows } from "../../store/themeStore";
+import { useColors } from "../../store/themeStore";
 import type { Objective } from "../../types";
 
 type ObjectiveCardProps = {
@@ -36,7 +36,6 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
   onStatusChange,
 }) => {
   const themeColors = useColors();
-  const themeShadows = useShadows();
 
   const progress = Math.min(objective.percentage || 0, 100);
   const progressColor = progress >= 100 ? "#10B981" : themeColors.primary[500];
@@ -92,8 +91,7 @@ export const ObjectiveCard: React.FC<ObjectiveCardProps> = ({
         <View
           style={[
             styles.card,
-            { backgroundColor: themeColors.card },
-            themeShadows.sm,
+            { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: 1 },
           ]}
         >
           <View style={styles.header}>

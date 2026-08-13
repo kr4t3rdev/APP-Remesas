@@ -335,7 +335,7 @@ export const WorkerPaymentsScreen: React.FC = () => {
           ]}
         >
           <View
-            style={[styles.searchBar, { backgroundColor: themeColors.card }]}
+            style={[styles.searchBar, { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: 1 }]}
           >
             <Ionicons
               name="search-outline"
