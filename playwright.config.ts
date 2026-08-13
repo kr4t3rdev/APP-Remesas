@@ -12,7 +12,7 @@ export default defineConfig({
     headless: true,
   },
   webServer: {
-    command: 'pnpm build:web && python3 -m http.server 4173 --directory dist --bind localhost',
+    command: 'pnpm build:web && node e2e/serve-spa.mjs dist 4173',
     url: process.env.E2E_BASE_URL || 'http://localhost:4173',
     reuseExistingServer: true,
     timeout: 240_000,
