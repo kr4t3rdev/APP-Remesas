@@ -22,7 +22,7 @@ import { FadeIn, FadeInDown, ScaleIn } from "../../components/animations";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
-import { spacing, borderRadius } from "../../theme";
+import { spacing } from "../../theme";
 import { useColors, useShadows } from "../../store/themeStore";
 import type { BankAccount, Currency } from "../../types";
 import {
@@ -191,7 +191,7 @@ export const BankAccountsScreen: React.FC = () => {
     return (
       <FadeInDown delay={index * 50}>
         <TouchableOpacity
-          style={[styles.accountCard, { backgroundColor: colors.card }, shadows.sm]}
+          style={[styles.accountCard, { backgroundColor: colors.card, borderColor: colors.border }]}
           onPress={() => openEditModal(item)}
           activeOpacity={0.7}
         >
@@ -200,13 +200,13 @@ export const BankAccountsScreen: React.FC = () => {
               <View style={[styles.accountIcon, { backgroundColor: colors.primary[50] }]}>
                 <Ionicons
                   name="business"
-                  size={24}
+                  size={20}
                   color={colors.primary[600]}
                 />
               </View>
               <View style={styles.accountInfo}>
-                <Text style={[styles.accountName, { color: colors.text.primary }]}>{item.name}</Text>
-                <Text style={[styles.accountBank, { color: colors.text.secondary }]}>{item.bankName}</Text>
+                <Text style={[styles.accountName, { color: colors.text.primary }]} numberOfLines={1}>{item.name}</Text>
+                <Text style={[styles.accountBank, { color: colors.text.secondary }]} numberOfLines={1}>{item.bankName}</Text>
               </View>
             </View>
             <View
@@ -228,7 +228,7 @@ export const BankAccountsScreen: React.FC = () => {
 
           <View style={styles.cardBottomRow}>
             <View style={styles.balanceContainer}>
-              <Text style={[styles.balanceLabel, { color: colors.text.tertiary }]}>AVAILABLE BALANCE</Text>
+              <Text style={[styles.balanceLabel, { color: colors.text.tertiary }]}>DISPONIBLE</Text>
               <Text style={[styles.balanceValue, { color: colors.text.primary }]}>
                 {item.currency.symbol}
                 {item.balance.toLocaleString("en-US", {
@@ -272,7 +272,7 @@ export const BankAccountsScreen: React.FC = () => {
       <FadeIn>
         <View style={[styles.header, isWebDesktop && styles.webHeader]}>
           <View style={isWebDesktop ? styles.webHeaderGroup : undefined}>
-            <Text style={[styles.headerLabel, { color: colors.text.tertiary }]}>TOTAL NET CASH</Text>
+            <Text style={[styles.headerLabel, { color: colors.text.tertiary }]}>Net Cash</Text>
             <View style={styles.headerAmountRow}>
               {Object.values(totalsByCurrency).length > 0 ? (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -514,7 +514,7 @@ export const BankAccountsScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: spacing.xl, paddingBottom: spacing.md },
+  header: { padding: spacing.lg, paddingBottom: spacing.md },
   webHeader: {
     width: "100%",
     maxWidth: 1440,
@@ -535,23 +535,23 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.full,
+    borderRadius: 999,
   },
   headerActionText: {
     color: "#fff",
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "600",
   },
   headerLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 1,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.2,
     textTransform: "uppercase",
   },
   headerAmountRow: {
     flexDirection: "row",
     alignItems: "baseline",
-    marginTop: spacing.xs,
+    marginTop: 4,
   },
   headerCurrencyGroup: {
     flexDirection: "row",
@@ -559,12 +559,12 @@ const styles = StyleSheet.create({
     marginRight: spacing.lg,
   },
   headerAmount: {
-    fontSize: 40,
-    fontWeight: "800",
-    letterSpacing: -1,
+    fontSize: 32,
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
   },
   headerCurrencyLabel: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "600",
     marginLeft: spacing.xs,
   },
@@ -582,7 +582,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   accountCard: {
-    borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    borderRadius: 14,
     padding: spacing.lg,
     marginBottom: spacing.md,
   },
@@ -590,27 +591,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
   },
   cardHeaderLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
   accountIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },
   accountInfo: { flex: 1, marginLeft: spacing.sm },
-  accountName: { fontSize: 16, fontWeight: "700" },
-  accountBank: { fontSize: 13, marginTop: 2 },
+  accountName: { fontSize: 15, fontWeight: "700" },
+  accountBank: { fontSize: 12, marginTop: 2 },
   currencyBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: borderRadius.full,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
     marginLeft: spacing.sm,
   },
   currencyBadgeText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "700",
   },
   cardBottomRow: {
@@ -620,13 +621,14 @@ const styles = StyleSheet.create({
   },
   balanceContainer: { flex: 1 },
   balanceLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 0.5,
+    fontSize: 9,
+    fontWeight: "700",
+    letterSpacing: 1,
   },
   balanceValue: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
+    fontVariant: ["tabular-nums"],
     marginTop: 4,
   },
   accountFooter: {
@@ -634,12 +636,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: spacing.md,
-    paddingTop: spacing.md,
+    paddingTop: spacing.sm,
     borderTopWidth: 1,
   },
   accountNumber: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "500",
+    letterSpacing: 0.5,
   },
   deleteButton: { padding: spacing.xs },
   emptyState: { alignItems: "center", paddingVertical: spacing.xxl * 2 },
@@ -665,8 +668,8 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, justifyContent: "flex-end" },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.01)" },
   modalContent: {
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: spacing.lg,
     paddingBottom: spacing.xxl,
     maxHeight: "90%",
@@ -688,7 +691,7 @@ const styles = StyleSheet.create({
   currencyButton: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.lg,
+    borderRadius: 10,
     marginRight: spacing.sm,
   },
   currencyButtonText: {

@@ -35,7 +35,7 @@ import {
 import { useCurrentExchangeRatesQuery } from "../../modules/exchange-rates/application/useExchangeRates";
 import { useObjectivesQuery } from "../../modules/objectives/application/useObjectives";
 import { useBankAccountsQuery } from "../../modules/bank-accounts/application/useBankAccounts";
-import { useColors, useShadows } from "../../store/themeStore";
+import { useColors } from "../../store/themeStore";
 import { Alert } from "../../utils/alert";
 import { BREAKPOINTS, useResponsive } from "../../hooks/useResponsive";
 
@@ -45,7 +45,6 @@ export const CashScreen: React.FC = () => {
   const { width } = useResponsive();
   const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
   const colors = useColors();
-  const shadows = useShadows();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const overviewQuery = useCashOverviewQuery();
   const currenciesListQuery = useCurrenciesQuery();
@@ -186,7 +185,7 @@ export const CashScreen: React.FC = () => {
         </FadeIn>
 
         {overviewQuery.isError ? (
-          <View style={[styles.stateCard, { backgroundColor: colors.card }, shadows.sm]}>
+          <View style={[styles.stateCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Ionicons name="cloud-offline-outline" size={30} color={colors.danger} />
             <Text style={[styles.stateTitle, { color: colors.text.primary }]}>No se pudo cargar Caja</Text>
             <Text style={[styles.stateText, { color: colors.text.secondary }]}>Revisa tu conexión e intenta nuevamente.</Text>
@@ -203,7 +202,7 @@ export const CashScreen: React.FC = () => {
                       const accent = currencyColor(balance.currency.code);
                       return (
                         <ScaleIn key={balance.id} delay={150 + index * 50}>
-                          <View style={[styles.balanceCard, { backgroundColor: colors.card, borderLeftColor: accent }, shadows.sm]}>
+                          <View style={[styles.balanceCard, { backgroundColor: colors.card, borderColor: colors.border, borderLeftColor: accent }]}>
                           <View style={[styles.currencyIcon, { backgroundColor: currencyBackground(balance.currency.code) }]}>
                               <Text style={[styles.currencySymbol, { color: colors.text.primary }]}>{balance.currency.symbol}</Text>
                           </View>
@@ -217,7 +216,7 @@ export const CashScreen: React.FC = () => {
                 </View>
               </FadeInDown>
             ) : (
-              <View style={[styles.stateCard, { backgroundColor: colors.card }, shadows.sm]}>
+              <View style={[styles.stateCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <Ionicons name="wallet-outline" size={30} color={colors.text.secondary} />
                 <Text style={[styles.stateTitle, { color: colors.text.primary }]}>Caja sin saldos</Text>
                 <Text style={[styles.stateText, { color: colors.text.secondary }]}>Registra un ajuste inicial para comenzar a operar.</Text>
@@ -233,7 +232,7 @@ export const CashScreen: React.FC = () => {
                       const accent = currencyColor(account.currency.code);
                       return (
                         <ScaleIn key={account.id} delay={200 + index * 50}>
-                          <View style={[styles.bankCard, { backgroundColor: colors.card, borderLeftColor: accent }, shadows.sm]}>
+                          <View style={[styles.bankCard, { backgroundColor: colors.card, borderColor: colors.border, borderLeftColor: accent }]}>
                             <View style={[styles.currencyIcon, { backgroundColor: currencyBackground(account.currency.code) }]}>
                               <Text style={[styles.currencySymbol, { color: colors.text.primary }]}>{account.currency.symbol}</Text>
                             </View>
@@ -252,13 +251,13 @@ export const CashScreen: React.FC = () => {
             <FadeInDown delay={250}>
               <View style={styles.section}>
                 <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Acciones rápidas</Text>
-                <QuickAction title="Arqueo de Caja" subtitle="Verificar saldo real" icon="checkmark-done" color={colors.primary[500]} onPress={() => setActiveAction("AUDIT")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
-                <QuickAction title="Ajuste Manual" subtitle="Registrar ingreso o egreso" icon="settings-outline" color={colors.warning} onPress={() => setActiveAction("ADJUSTMENT")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
-                <QuickAction title="Cuentas Bancarias" subtitle="Administrar cuentas bancarias" icon="business-outline" color={colors.warning} onPress={() => navigation.navigate("BankAccounts")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
-                <QuickAction title="Monedas" subtitle="Gestionar monedas y principal" icon="cash-outline" color={colors.secondary[500]} onPress={() => navigation.navigate("Currencies")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
-                <QuickAction title="Tasa de Cambio" subtitle="Configurar tasas de referencia" icon="swap-horizontal-outline" color={colors.success} onPress={() => navigation.navigate("ExchangeRates")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
-                <QuickAction title="Objetivos" subtitle="Metas financieras y seguimiento" icon="flag-outline" color={colors.secondary[500]} onPress={() => navigation.navigate("Objectives")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
-                <QuickAction title="Reportes" subtitle="Informes y análisis financieros" icon="bar-chart-outline" color={colors.primary[500]} onPress={() => navigation.navigate("Reports")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} shadow={shadows.sm} />
+                <QuickAction title="Arqueo de Caja" subtitle="Verificar saldo real" icon="checkmark-done" color={colors.primary[500]} onPress={() => setActiveAction("AUDIT")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} />
+                <QuickAction title="Ajuste Manual" subtitle="Registrar ingreso o egreso" icon="settings-outline" color={colors.warning} onPress={() => setActiveAction("ADJUSTMENT")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} />
+                <QuickAction title="Cuentas Bancarias" subtitle="Administrar cuentas bancarias" icon="business-outline" color={colors.warning} onPress={() => navigation.navigate("BankAccounts")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} />
+                <QuickAction title="Monedas" subtitle="Gestionar monedas y principal" icon="cash-outline" color={colors.secondary[500]} onPress={() => navigation.navigate("Currencies")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} />
+                <QuickAction title="Tasa de Cambio" subtitle="Configurar tasas de referencia" icon="swap-horizontal-outline" color={colors.success} onPress={() => navigation.navigate("ExchangeRates")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} />
+                <QuickAction title="Objetivos" subtitle="Metas financieras y seguimiento" icon="flag-outline" color={colors.secondary[500]} onPress={() => navigation.navigate("Objectives")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} />
+                <QuickAction title="Reportes" subtitle="Informes y análisis financieros" icon="bar-chart-outline" color={colors.primary[500]} onPress={() => navigation.navigate("Reports")} cardColor={colors.card} textColor={colors.text.primary} secondaryColor={colors.text.secondary} />
               </View>
             </FadeInDown>
 
@@ -294,7 +293,7 @@ export const CashScreen: React.FC = () => {
                     const status = audit.difference === 0 ? "Cuadrado" : audit.difference < 0 ? "Faltante" : "Sobrante";
                     const statusColor = audit.difference === 0 ? colors.success : audit.difference < 0 ? colors.danger : colors.warning;
                     return (
-                      <View key={audit.id} style={[styles.auditCard, { backgroundColor: colors.card }, shadows.sm]}>
+                      <View key={audit.id} style={[styles.auditCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <View style={styles.auditHeader}>
                           <Text style={[styles.auditDate, { color: colors.text.secondary }]}>{format(new Date(audit.createdAt), "d MMM, yyyy · HH:mm", { locale: es })}</Text>
                           <View style={[styles.statusBadge, { backgroundColor: `${statusColor}20` }]}><Text style={[styles.statusText, { color: statusColor }]}>{status}</Text></View>
@@ -403,8 +402,8 @@ export const CashScreen: React.FC = () => {
   );
 };
 
-const QuickAction = ({ title, subtitle, icon, color, onPress, cardColor, textColor, secondaryColor, shadow }: { title: string; subtitle: string; icon: keyof typeof Ionicons.glyphMap; color: string; onPress: () => void; cardColor: string; textColor: string; secondaryColor: string; shadow: object }) => (
-  <ScaleIn><PressableScale onPress={onPress} style={styles.actionWrapper}><View style={[styles.actionCard, { backgroundColor: cardColor }, shadow]}><View style={[styles.actionIcon, { backgroundColor: `${color}20` }]}><Ionicons name={icon} size={22} color={color} /></View><View style={styles.actionInfo}><Text style={[styles.actionTitle, { color: textColor }]}>{title}</Text><Text style={[styles.actionSubtitle, { color: secondaryColor }]}>{subtitle}</Text></View><Ionicons name="chevron-forward" size={20} color={secondaryColor} /></View></PressableScale></ScaleIn>
+const QuickAction = ({ title, subtitle, icon, color, onPress, cardColor, textColor, secondaryColor }: { title: string; subtitle: string; icon: keyof typeof Ionicons.glyphMap; color: string; onPress: () => void; cardColor: string; textColor: string; secondaryColor: string }) => (
+  <ScaleIn><PressableScale onPress={onPress} style={styles.actionWrapper}><View style={[styles.actionCard, { backgroundColor: cardColor, borderColor: secondaryColor }]}><View style={[styles.actionIcon, { backgroundColor: `${color}20` }]}><Ionicons name={icon} size={22} color={color} /></View><View style={styles.actionInfo}><Text style={[styles.actionTitle, { color: textColor }]}>{title}</Text><Text style={[styles.actionSubtitle, { color: secondaryColor }]}>{subtitle}</Text></View><Ionicons name="chevron-forward" size={20} color={secondaryColor} /></View></PressableScale></ScaleIn>
 );
 
 const AuditAmount = ({ label, value, color, labelColor }: { label: string; value: string; color: string; labelColor: string }) => <View style={styles.auditAmount}><Text style={[styles.auditLabel, { color: labelColor }]}>{label}</Text><Text style={[styles.auditValue, { color }]}>{value}</Text></View>;
@@ -413,16 +412,16 @@ const styles = StyleSheet.create({
   container: { flex: 1 }, loading: { flex: 1, alignItems: "center", justifyContent: "center" },
   content: { padding: 20, paddingBottom: floatingTabBarMetrics.contentBottomPadding },
   webContent: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: 32, paddingTop: 32 },
-  header: { marginBottom: 24 },
-  webHeader: { marginBottom: 32 },
+  header: { marginBottom: 20 },
+  webHeader: { marginBottom: 28 },
   headerTitles: { flex: 1, minWidth: 0 },
-  title: { fontSize: 30, fontWeight: "800", marginBottom: 4 }, subtitle: { fontSize: 14 }, section: { marginBottom: 26 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 12 }, sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  balanceRow: { gap: 12, paddingBottom: 4 }, balanceCard: { width: 130, borderRadius: 16, padding: 16 }, bankCard: { width: 160, borderRadius: 16, padding: 16 }, bankName: { fontSize: 11, marginBottom: 4 },
+  title: { fontSize: 28, fontWeight: "700", marginBottom: 4 }, subtitle: { fontSize: 14 }, section: { marginBottom: 24 },
+  sectionTitle: { fontSize: 16, fontWeight: "700", marginBottom: 12 }, sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  balanceRow: { gap: 12, paddingBottom: 4 }, balanceCard: { width: 150, borderWidth: 1, borderRadius: 14, padding: 16 }, bankCard: { width: 170, borderWidth: 1, borderRadius: 14, padding: 16 }, bankName: { fontSize: 11, marginBottom: 4 },
   currencyIcon: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", marginBottom: 8 }, currencySymbol: { fontSize: 16, fontWeight: "700" },
-  currencyCode: { fontSize: 13, marginBottom: 4 }, balanceValue: { fontSize: 18, fontWeight: "700" },
-  stateCard: { alignItems: "center", borderRadius: 16, padding: 24, gap: 8, marginBottom: 26 }, stateTitle: { fontSize: 17, fontWeight: "700", textAlign: "center" }, stateText: { fontSize: 14, textAlign: "center", marginBottom: 8 },
-  actionWrapper: { marginBottom: 10 }, actionCard: { flexDirection: "row", alignItems: "center", borderRadius: 14, padding: 14 }, actionIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12 }, actionInfo: { flex: 1 }, actionTitle: { fontSize: 15, fontWeight: "700" }, actionSubtitle: { fontSize: 12, marginTop: 2 },
+  currencyCode: { fontSize: 13, marginBottom: 4 }, balanceValue: { fontSize: 18, fontWeight: "700", fontVariant: ["tabular-nums"] },
+  stateCard: { alignItems: "center", borderWidth: 1, borderRadius: 14, padding: 24, gap: 8, marginBottom: 24 }, stateTitle: { fontSize: 17, fontWeight: "700", textAlign: "center" }, stateText: { fontSize: 14, textAlign: "center", marginBottom: 8 },
+  actionWrapper: { marginBottom: 10 }, actionCard: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 12, padding: 14 }, actionIcon: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center", marginRight: 12 }, actionInfo: { flex: 1 }, actionTitle: { fontSize: 15, fontWeight: "700" }, actionSubtitle: { fontSize: 12, marginTop: 2 },
   link: { fontSize: 14, fontWeight: "700", marginBottom: 12 }, emptyText: { fontSize: 14 }, chartCard: { marginTop: 12, marginBottom: 4 },
   containerDonut: { alignItems: "center", paddingVertical: 8 },
   donutCenterText: { fontSize: 22, fontWeight: "800" },
@@ -431,5 +430,5 @@ const styles = StyleSheet.create({
   legendItem: { flexDirection: "row", alignItems: "center", gap: 8 },
   legendDot: { width: 8, height: 8, borderRadius: 4 },
   legendText: { flex: 1, fontSize: 13, fontWeight: "600" },
-  legendAmount: { fontSize: 13, fontWeight: "700" }, auditCard: { borderRadius: 16, padding: 18, marginBottom: 12 }, auditHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, auditDate: { fontSize: 12 }, statusBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, statusText: { fontSize: 11, fontWeight: "800" }, auditCurrency: { fontSize: 16, fontWeight: "800", marginTop: 12 }, auditAmounts: { flexDirection: "row", marginTop: 14 }, auditAmount: { flex: 1 }, auditLabel: { fontSize: 11, marginBottom: 4 }, auditValue: { fontSize: 16, fontWeight: "800" }, auditDifference: { fontSize: 13, fontWeight: "700", marginTop: 14 }, auditNotes: { fontSize: 12, marginTop: 8 },
+  legendAmount: { fontSize: 13, fontWeight: "700", fontVariant: ["tabular-nums"] }, auditCard: { borderWidth: 1, borderRadius: 14, padding: 16, marginBottom: 12 }, auditHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, auditDate: { fontSize: 12 }, statusBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }, statusText: { fontSize: 11, fontWeight: "800" }, auditCurrency: { fontSize: 16, fontWeight: "800", marginTop: 12 }, auditAmounts: { flexDirection: "row", marginTop: 14 }, auditAmount: { flex: 1 }, auditLabel: { fontSize: 11, marginBottom: 4 }, auditValue: { fontSize: 16, fontWeight: "800", fontVariant: ["tabular-nums"] }, auditDifference: { fontSize: 13, fontWeight: "700", marginTop: 14 }, auditNotes: { fontSize: 12, marginTop: 8 },
 });
