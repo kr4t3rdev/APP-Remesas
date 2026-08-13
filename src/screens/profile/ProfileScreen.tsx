@@ -6,6 +6,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 
@@ -26,6 +27,7 @@ import {
 import { THEMES } from "../../theme";
 import type { RootStackScreenProps } from "../../navigation/types";
 import { useNavigation } from "@react-navigation/native";
+import { BREAKPOINTS, useResponsive } from "../../hooks/useResponsive";
 
 import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/TabBarMotionProvider";
 import { ChangePasswordModal } from "../../components/profile/ChangePasswordModal";
@@ -42,6 +44,8 @@ type MenuItem = {
 };
 
 export const ProfileScreen: React.FC = () => {
+  const { width } = useResponsive();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
   const tabBarScrollBehavior = useTabBarScrollBehavior();
   const profileScrollRef = useRef<ScrollView>(null);
   const scrollToTop = useCallback(() => {
@@ -143,7 +147,7 @@ export const ProfileScreen: React.FC = () => {
       <ScrollView
         ref={profileScrollRef}
         {...tabBarScrollBehavior}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, isWebDesktop && styles.webScrollContent]}
         refreshControl={
           <RefreshControl
             refreshing={false}
@@ -153,7 +157,7 @@ export const ProfileScreen: React.FC = () => {
         }
       >
         <FadeIn>
-          <View style={styles.header}>
+          <View style={[styles.header, isWebDesktop && styles.webHeader]}>
             <Text style={styles.title}>Perfil</Text>
             <Text style={styles.subtitle}>
               {isAdmin
@@ -278,10 +282,12 @@ const createStyles = (
       flex: 1,
       backgroundColor: themeColors.background,
     },
-    scrollContent: {
+  scrollContent: {
       padding: spacing.md,
       paddingBottom: floatingTabBarMetrics.contentBottomPadding,
-    },
+  },
+  webScrollContent: { width: "100%", maxWidth: 1100, alignSelf: "center", paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
+  webHeader: { marginBottom: spacing.xl },
     header: {
       marginBottom: spacing.lg,
     },

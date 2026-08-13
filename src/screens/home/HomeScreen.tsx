@@ -5,6 +5,7 @@ import {
   Text,
   StyleSheet,
   RefreshControl,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -60,6 +61,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description, color
 
 export const HomeScreen: React.FC = () => {
   const { width } = useResponsive();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
   const user = useAuthStore((state) => state.user);
   const themeColors = useColors();
   const tabBarScrollBehavior = useTabBarScrollBehavior();
@@ -174,7 +176,10 @@ export const HomeScreen: React.FC = () => {
       <ScrollView
         ref={scrollViewRef}
         {...tabBarScrollBehavior}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isWebDesktop && styles.webScrollContent,
+        ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -199,6 +204,11 @@ export const HomeScreen: React.FC = () => {
               >
                 {user?.name || "Usuario"}
               </Text>
+              {isWebDesktop && (
+                <Text style={[styles.headerMeta, { color: themeColors.text.tertiary }]}>
+                  OPERADOR · SESIÓN ACTIVA · {summary.primaryCurrency?.code ?? "CUP"}
+                </Text>
+              )}
             </View>
             {width < BREAKPOINTS.tablet ? (
               <View testID="home-notification-indicator" style={styles.notificationIndicator}>
@@ -213,6 +223,7 @@ export const HomeScreen: React.FC = () => {
             style={[
               styles.dateCard,
               { backgroundColor: themeColors.card },
+              isWebDesktop && styles.webDateCard,
             ]}
           >
             <View
@@ -246,7 +257,7 @@ export const HomeScreen: React.FC = () => {
         </FadeIn>
 
         <View testID="home-kpi-grid" style={styles.statsGrid}>
-          <ScaleIn delay={150} style={styles.statGridItem}>
+            <ScaleIn delay={150} style={[styles.statGridItem, isWebDesktop && styles.webStatGridItem]}>
             <View style={styles.statCardWrapper}>
               <StatsCard
                 title="Ganancia Hoy"
@@ -270,7 +281,7 @@ export const HomeScreen: React.FC = () => {
               />
             </View>
           </ScaleIn>
-          <ScaleIn delay={200} style={styles.statGridItem}>
+            <ScaleIn delay={200} style={[styles.statGridItem, isWebDesktop && styles.webStatGridItem]}>
             <View style={styles.statCardWrapper}>
               <StatsCard
                 title="Transacciones"
@@ -288,7 +299,7 @@ export const HomeScreen: React.FC = () => {
               />
             </View>
           </ScaleIn>
-          <ScaleIn delay={250} style={styles.statGridItem}>
+            <ScaleIn delay={250} style={[styles.statGridItem, isWebDesktop && styles.webStatGridItem]}>
             <View style={styles.statCardWrapper}>
               <StatsCard
                 title="Gastos Hoy"
@@ -305,7 +316,7 @@ export const HomeScreen: React.FC = () => {
               />
             </View>
           </ScaleIn>
-          <ScaleIn delay={300} style={styles.statGridItem}>
+            <ScaleIn delay={300} style={[styles.statGridItem, isWebDesktop && styles.webStatGridItem]}>
             <View style={styles.statCardWrapper}>
               <StatsCard
                 title="Balance Caja"
@@ -810,6 +821,13 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingBottom: floatingTabBarMetrics.contentBottomPadding,
   },
+  webScrollContent: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -830,6 +848,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: -0.4,
   },
+  headerMeta: { fontSize: 10, fontWeight: "800", letterSpacing: 1, marginTop: spacing.xs },
   notificationIndicator: {
     width: 32,
     height: 32,
@@ -856,6 +875,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     gap: spacing.md,
   },
+  webDateCard: { borderWidth: 1, borderColor: "rgba(148, 163, 184, 0.22)", paddingVertical: spacing.md },
   dateIconContainer: {
     width: 40,
     height: 40,
@@ -883,6 +903,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     minHeight: 136,
   },
+  webStatGridItem: { flexBasis: "23%", minHeight: 148 },
   statCardWrapper: {
     flex: 1,
   },

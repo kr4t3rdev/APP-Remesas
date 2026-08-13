@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Animated, Easing } from "react-native";
+import { View, Text, StyleSheet, Animated, Easing, Platform } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useColors } from "../../store/themeStore";
@@ -30,6 +30,7 @@ export const BrandingPanel: React.FC<BrandingPanelProps> = ({
   tagline = "Tu gestor de finanzas personales",
 }) => {
   const colors = useColors();
+  const isWeb = Platform.OS === "web";
 
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const translateYAnim = useRef(new Animated.Value(20)).current;
@@ -67,13 +68,23 @@ export const BrandingPanel: React.FC<BrandingPanelProps> = ({
           { opacity: opacityAnim, transform: [{ translateY: translateYAnim }] },
         ]}
       >
-        <View style={styles.logoSection}>
+        <View style={[styles.logoSection, isWeb && styles.webLogoSection]}>
           <AppLogo size={80} style={styles.logoIcon} />
-          <Text style={styles.appName}>{appName}</Text>
-          <Text style={styles.tagline}>{tagline}</Text>
+          <View style={styles.brandCopy}>
+            <Text style={styles.appName}>{appName}</Text>
+            <Text style={styles.tagline}>{isWeb ? "Mesa de operaciones FX" : tagline}</Text>
+          </View>
         </View>
 
-        <View style={styles.featuresContainer}>
+        {isWeb && (
+          <View style={styles.webStatusBar}>
+            <View style={styles.statusDot} />
+            <Text style={styles.statusText}>SISTEMA OPERATIVO</Text>
+            <Text style={styles.statusTime}>08:42:16</Text>
+          </View>
+        )}
+
+        <View style={[styles.featuresContainer, isWeb && styles.webFeaturesContainer]}>
           {FEATURES.map((feature, index) => {
             const featureColor = FEATURE_COLORS[feature.colorKey];
             return (
@@ -90,7 +101,10 @@ export const BrandingPanel: React.FC<BrandingPanelProps> = ({
                     color={featureColor.icon}
                   />
                 </View>
-                <Text style={styles.featureText}>{feature.text}</Text>
+                <View style={styles.featureCopy}>
+                  <Text style={styles.featureText}>{feature.text}</Text>
+                  {isWeb && <Text style={styles.featureMeta}>{["TASAS EN VIVO", "AUDITORÍA", "MULTIMONEDA", "MARGEN REAL"][index]}</Text>}
+                </View>
               </View>
             );
           })}
@@ -138,6 +152,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: spacing.xxl,
   },
+  webLogoSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  brandCopy: { flex: 1 },
   logoIcon: {
     width: 80,
     height: 80,
@@ -156,8 +178,24 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: spacing.sm,
   },
+  webStatusBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#7CFFB2" },
+  statusText: { color: "rgba(255,255,255,0.72)", fontSize: 11, fontWeight: "700", letterSpacing: 1.2 },
+  statusTime: { marginLeft: "auto", color: "rgba(255,255,255,0.55)", fontSize: 11, fontVariant: ["tabular-nums"] },
   featuresContainer: {
     gap: spacing.md,
+  },
+  webFeaturesContainer: {
+    gap: spacing.sm,
   },
   featureItem: {
     flexDirection: "row",
@@ -181,6 +219,8 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     flex: 1,
   },
+  featureCopy: { flex: 1, gap: 3 },
+  featureMeta: { color: "rgba(255,255,255,0.55)", fontSize: 10, fontWeight: "700", letterSpacing: 1 },
   footer: {
     marginTop: spacing.xxl,
     alignItems: "center",

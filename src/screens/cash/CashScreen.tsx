@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,10 +37,13 @@ import { useObjectivesQuery } from "../../modules/objectives/application/useObje
 import { useBankAccountsQuery } from "../../modules/bank-accounts/application/useBankAccounts";
 import { useColors, useShadows } from "../../store/themeStore";
 import { Alert } from "../../utils/alert";
+import { BREAKPOINTS, useResponsive } from "../../hooks/useResponsive";
 
 type CashAction = "AUDIT" | "ADJUSTMENT" | null;
 
 export const CashScreen: React.FC = () => {
+  const { width } = useResponsive();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
   const colors = useColors();
   const shadows = useShadows();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -163,7 +167,7 @@ export const CashScreen: React.FC = () => {
         ref={scrollRef}
         {...tabBarScrollBehavior}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, isWebDesktop && styles.webContent]}
         refreshControl={
           <RefreshControl
             refreshing={overviewQuery.isRefetching}
@@ -173,7 +177,7 @@ export const CashScreen: React.FC = () => {
         }
       >
         <FadeIn>
-          <View style={styles.header}>
+            <View style={[styles.header, isWebDesktop && styles.webHeader]}>
             <View style={styles.headerTitles}>
               <Text accessibilityRole="header" style={[styles.title, { color: colors.text.primary }]}>Cash</Text>
               <Text style={[styles.subtitle, { color: colors.text.secondary }]}>Saldos y control de efectivo por moneda</Text>
@@ -407,7 +411,11 @@ const AuditAmount = ({ label, value, color, labelColor }: { label: string; value
 
 const styles = StyleSheet.create({
   container: { flex: 1 }, loading: { flex: 1, alignItems: "center", justifyContent: "center" },
-  content: { padding: 20, paddingBottom: floatingTabBarMetrics.contentBottomPadding }, header: { marginBottom: 24 }, headerTitles: { flex: 1, minWidth: 0 },
+  content: { padding: 20, paddingBottom: floatingTabBarMetrics.contentBottomPadding },
+  webContent: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: 32, paddingTop: 32 },
+  header: { marginBottom: 24 },
+  webHeader: { marginBottom: 32 },
+  headerTitles: { flex: 1, minWidth: 0 },
   title: { fontSize: 30, fontWeight: "800", marginBottom: 4 }, subtitle: { fontSize: 14 }, section: { marginBottom: 26 },
   sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 12 }, sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   balanceRow: { gap: 12, paddingBottom: 4 }, balanceCard: { width: 130, borderRadius: 16, padding: 16 }, bankCard: { width: 160, borderRadius: 16, padding: 16 }, bankName: { fontSize: 11, marginBottom: 4 },

@@ -8,6 +8,7 @@ import {
 	TouchableOpacity,
 	StyleSheet,
 	Dimensions,
+	Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -41,6 +42,7 @@ import {
 } from "../../modules/reports/application/useReports";
 import { useCurrenciesWithPrimaryQuery } from "../../modules/currencies/application/useCurrencies";
 import { ProfileFeatureBackButton } from "../profile/ProfileFeatureBackButton";
+import { BREAKPOINTS, useResponsive } from "../../hooks/useResponsive";
 import { CashFlowCurrencyCards } from "../../components/reports/CashFlowCurrencyCards";
 import {
 	getReportRangeError,
@@ -61,6 +63,8 @@ interface ReportCardData {
 }
 
 export const ReportsScreen: React.FC = () => {
+	const { width } = useResponsive();
+	const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 	const themeColors = useColors();
 	const themeShadows = useShadows();
 	const gradients = useGradients();
@@ -1383,7 +1387,7 @@ export const ReportsScreen: React.FC = () => {
 		>
 			<ProfileFeatureBackButton />
 			<ScrollView
-				contentContainerStyle={styles.scrollContent}
+				contentContainerStyle={[styles.scrollContent, isWebDesktop && styles.webScrollContent]}
 				refreshControl={
 					<RefreshControl
 						refreshing={
@@ -1395,7 +1399,7 @@ export const ReportsScreen: React.FC = () => {
 				}
 			>
 				<FadeIn>
-					<View style={styles.header}>
+					<View style={[styles.header, isWebDesktop && styles.webHeader]}>
 						<Text style={[styles.title, { color: themeColors.text.primary }]}>
 							Reportes
 						</Text>
@@ -1481,6 +1485,8 @@ const styles = StyleSheet.create({
 		padding: spacing.md,
 		paddingBottom: floatingTabBarMetrics.contentBottomPadding,
 	},
+	webScrollContent: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
+	webHeader: { marginBottom: spacing.xl },
 	header: {
 		marginBottom: spacing.lg,
 	},

@@ -170,7 +170,6 @@ export function AppIntroAnimation({
       testID="app-intro-overlay"
       accessibilityViewIsModal
       importantForAccessibility="yes"
-      pointerEvents="auto"
       style={[
         styles.overlay,
         { backgroundColor: colors.background, opacity: overlayOpacity },

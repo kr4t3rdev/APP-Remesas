@@ -11,6 +11,7 @@ import {
   AccessibilityInfo,
   Animated,
   Easing,
+  Platform,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native";
@@ -68,7 +69,7 @@ export const TabBarMotionProvider: React.FC<React.PropsWithChildren> = ({
       toValue,
       duration: 240,
       easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== "web",
     }).start();
   }, [display, progress, reduceMotion]);
 

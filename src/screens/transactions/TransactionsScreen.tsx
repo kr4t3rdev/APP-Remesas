@@ -9,6 +9,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   useWindowDimensions,
+  Platform,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 
@@ -37,8 +38,11 @@ import { useTabBarScrollBehavior, useTabScrollToTop } from "../../navigation/Tab
 import { TransactionModal } from "../../components/business/modals/TransactionModal";
 import { getTransactionsHeaderLayout } from "./transactionsHeaderLayout";
 import type { RootStackParamList } from "../../navigation/types";
+import { BREAKPOINTS, useResponsive } from "../../hooks/useResponsive";
 
 export const TransactionsScreen: React.FC = () => {
+  const { width: responsiveWidth } = useResponsive();
+  const isWebDesktop = Platform.OS === "web" && responsiveWidth >= BREAKPOINTS.tablet;
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const themeColors = useColors();
   const themeShadows = useShadows();
@@ -244,7 +248,7 @@ export const TransactionsScreen: React.FC = () => {
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
       <FadeIn>
-        <View style={styles.header}>
+        <View style={[styles.header, isWebDesktop && styles.webHeader]}>
           <View
             style={[
               styles.headerTopRow,
@@ -341,7 +345,7 @@ export const TransactionsScreen: React.FC = () => {
           data={transactions}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderTransaction}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, isWebDesktop && styles.webListContent]}
           refreshControl={
             <RefreshControl
               refreshing={transactionsQuery.isRefetching}
@@ -480,6 +484,19 @@ const styles = StyleSheet.create({
   header: {
     padding: spacing.md,
     paddingBottom: spacing.sm,
+  },
+  webHeader: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl,
+  },
+  webListContent: {
+    width: "100%",
+    maxWidth: 1440,
+    alignSelf: "center",
+    paddingHorizontal: spacing.xl,
   },
   headerTopRow: {
     flexDirection: "row",

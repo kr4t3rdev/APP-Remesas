@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { AppState } from "react-native";
+import { AppState, Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../store/authStore";
@@ -66,6 +66,7 @@ export function usePushNotificationHandler() {
 
 	// ── 2. Foreground: refresh notification queries ──────────────────────
 	useEffect(() => {
+		if (Platform.OS === "web") return;
 		const subscription = Notifications.addNotificationReceivedListener(() => {
 			queryClient.invalidateQueries({ queryKey: ["notifications"] });
 		});
@@ -75,6 +76,7 @@ export function usePushNotificationHandler() {
 
 	// ── 3. Tapped: refresh notification queries ─────────────────────────
 	useEffect(() => {
+		if (Platform.OS === "web") return;
 		const subscription = Notifications.addNotificationResponseReceivedListener(
 			() => {
 				// Notifications are accessed via the bell/NotificationCenter,

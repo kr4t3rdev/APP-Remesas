@@ -284,10 +284,15 @@ const styles = StyleSheet.create({
   formCard: {
     padding: spacing.lg,
     borderRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    ...Platform.select({
+      web: { boxShadow: "0 18px 48px rgba(15, 23, 42, 0.12)" },
+      default: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+    }),
     elevation: 5,
   },
   errorText: {

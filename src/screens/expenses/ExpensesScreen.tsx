@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Alert } from "../../utils/alert";
 
@@ -32,6 +34,7 @@ import {
   useUpdateExpenseMutation,
   useDeleteExpenseMutation,
 } from "../../modules/expenses/application/useExpenses";
+import { BREAKPOINTS } from "../../hooks/useResponsive";
 
 const CATEGORIES: {
   id: ExpenseCategory | "all";
@@ -47,6 +50,8 @@ const CATEGORIES: {
 ];
 
 export const ExpensesScreen: React.FC = () => {
+  const { width } = useWindowDimensions();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
   const themeColors = useColors();
   const themeShadows = useShadows();
   const tabBarScrollBehavior = useTabBarScrollBehavior();
@@ -173,7 +178,7 @@ export const ExpensesScreen: React.FC = () => {
     <SafeAreaView
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, isWebDesktop && styles.webHeader]}>
         <FadeInDown delay={0}>
           <View>
             <Text style={[styles.title, { color: themeColors.text.primary }]}>
@@ -189,7 +194,7 @@ export const ExpensesScreen: React.FC = () => {
       </View>
 
       <FadeInDown delay={50}>
-        <View style={styles.statsRow}>
+         <View style={[styles.statsRow, isWebDesktop && styles.webStatsRow]}>
           <View
             style={[
               styles.statCard,
@@ -296,7 +301,7 @@ export const ExpensesScreen: React.FC = () => {
             onDelete={handleDeleteExpense}
           />
         )}
-        contentContainerStyle={styles.listContent}
+         contentContainerStyle={[styles.listContent, isWebDesktop && styles.webListContent]}
          refreshControl={
           <RefreshControl
             refreshing={expensesQuery.isRefetching}
@@ -377,6 +382,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingBottom: spacing.sm,
   },
+  webHeader: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: 32, paddingTop: 32 },
+  webStatsRow: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: 32 },
+  webListContent: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: 32 },
   title: {
     fontSize: 28,
     fontWeight: "700",

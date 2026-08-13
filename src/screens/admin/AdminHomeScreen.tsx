@@ -6,6 +6,7 @@ import {
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -21,6 +22,7 @@ import { useAdminHomeData } from "../../modules/admin/application/useAdminHomeDa
 import { useAuthStore } from "../../store/authStore";
 import { useColors, useShadows } from "../../store/themeStore";
 import { borderRadius, spacing } from "../../theme";
+import { BREAKPOINTS, useResponsive } from "../../hooks/useResponsive";
 import type { AdminAuditLog } from "../../types";
 import type { AdminTabParamList, RootStackParamList } from "../../navigation/types";
 
@@ -88,6 +90,8 @@ export const AdminHomeScreen: React.FC = () => {
   );
   const navigation = useNavigation<AdminHomeNavigationProp>();
   const user = useAuthStore((s) => s.user);
+  const { width } = useResponsive();
+  const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
   const { kpis, recentEvents, isRefreshing, blockErrors, refetchAll } =
     useAdminHomeData();
@@ -138,7 +142,10 @@ export const AdminHomeScreen: React.FC = () => {
                 <Text style={styles.avatarText}>{initials}</Text>
               </View>
             </View>
-            <Text style={styles.headerTitle}>Inicio</Text>
+            <View style={styles.headerCopy}>
+              <Text style={styles.headerTitle}>{isWebDesktop ? "Centro de operaciones" : "Inicio"}</Text>
+              {isWebDesktop && <Text style={styles.headerMeta}>RESUMEN DE PLATAFORMA · ACTUALIZACIÓN EN TIEMPO REAL</Text>}
+            </View>
             <TouchableOpacity
               onPress={() => void refetchAll()}
               style={styles.headerIconButton}
@@ -169,6 +176,27 @@ export const AdminHomeScreen: React.FC = () => {
               secondaryLabel="Actualizar"
             />
           </FadeInDown>
+        )}
+
+        {isWebDesktop && kpis && (
+          <View style={styles.kpiStrip} testID="admin-home-kpi-strip">
+            <View style={styles.kpiCell}>
+              <Text style={styles.kpiLabel}>ACTIVOS · 30D</Text>
+              <Text style={styles.kpiValue}>{kpis.activeUsers30d.toLocaleString()}</Text>
+            </View>
+            <View style={styles.kpiCell}>
+              <Text style={styles.kpiLabel}>NUEVOS</Text>
+              <Text style={styles.kpiValue}>{kpis.newUsersPeriod.toLocaleString()}</Text>
+            </View>
+            <View style={styles.kpiCell}>
+              <Text style={styles.kpiLabel}>EN RIESGO</Text>
+              <Text style={[styles.kpiValue, { color: colors.warning }]}>{kpis.revenueAtRiskCup.toLocaleString("es-CU")} CUP</Text>
+            </View>
+            <View style={styles.kpiCell}>
+              <Text style={styles.kpiLabel}>CONVERSIÓN</Text>
+              <Text style={[styles.kpiValue, { color: colors.success }]}>{kpis.trialToPaidConversionPct.toFixed(1)}%</Text>
+            </View>
+          </View>
         )}
 
         <FadeInDown delay={150} duration={280}>
@@ -253,6 +281,8 @@ const createStyles = (
   StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.background },
     content: { padding: spacing.md },
+    headerCopy: { flex: 1, marginLeft: spacing.md },
+    headerMeta: { color: colors.text.tertiary, fontSize: 10, fontWeight: "700", letterSpacing: 1, marginTop: 4 },
     header: {
       flexDirection: "row",
       alignItems: "center",
@@ -279,6 +309,18 @@ const createStyles = (
       fontWeight: "700",
       color: colors.text.primary,
     },
+    kpiStrip: {
+      flexDirection: "row",
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: borderRadius.lg,
+      marginBottom: spacing.md,
+      overflow: "hidden",
+    },
+    kpiCell: { flex: 1, padding: spacing.md, borderRightWidth: 1, borderRightColor: colors.border, gap: 5 },
+    kpiLabel: { color: colors.text.tertiary, fontSize: 10, fontWeight: "800", letterSpacing: 1 },
+    kpiValue: { color: colors.text.primary, fontSize: 20, fontWeight: "800", fontVariant: ["tabular-nums"] },
     headerIconButton: {
       width: 44,
       height: 44,
