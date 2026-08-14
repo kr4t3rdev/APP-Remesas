@@ -7,3 +7,10 @@ describe("unknown currency identity", () => {
     expect(getCurrencySymbol("")).toBe("");
   });
 });
+
+describe("Zelle (ZLL)", () => {
+  it("maps to the US country code and dollar symbol", () => {
+    expect(getCountryCode("ZLL")).toBe("US");
+    expect(getCurrencySymbol("ZLL")).toBe("$");
+  });
+});

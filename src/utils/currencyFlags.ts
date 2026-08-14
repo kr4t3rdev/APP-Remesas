@@ -18,6 +18,7 @@ type CurrencyInfo = {
 
 const currencyInfoMap: Record<string, CurrencyInfo> = {
   USD: { flag: "🇺🇸", backgroundColor: alpha08(colors.primary[500]), textColor: colors.primary[600] },
+  ZLL: { flag: "🇺🇸", backgroundColor: alpha08(colors.primary[500]), textColor: colors.primary[600] },
   EUR: { flag: "🇪🇺", backgroundColor: alpha08(colors.success), textColor: colors.success },
   CUP: { flag: "🇨🇺", backgroundColor: alpha08(colors.warning), textColor: colors.warning },
   MLC: { flag: "🇨🇺", backgroundColor: alpha08(colors.warning), textColor: colors.warning },

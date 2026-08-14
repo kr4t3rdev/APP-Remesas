@@ -148,7 +148,18 @@ export const useResetRateHistoryMutation = () => {
       exchangeRatesRepository.resetHistory(currencyId),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["exchangeRates"] }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.exchangeRates.history(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.exchangeRates.manualRates(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.exchangeRates.current(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.dashboard.exchangeRates(),
+        }),
       ]);
     },
   });
