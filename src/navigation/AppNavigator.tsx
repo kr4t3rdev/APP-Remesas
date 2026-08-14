@@ -2,7 +2,7 @@ import type React from "react";
 import { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, Platform } from "react-native";
 import { WelcomeScreen } from "../screens/auth/WelcomeScreen";
 import { LoginScreen } from "../screens/auth/LoginScreen";
 import { RegisterScreen } from "../screens/auth/RegisterScreen";
@@ -20,13 +20,25 @@ import { usePushNotificationHandler } from "../hooks/usePushNotificationHandler"
 import { useAuthStore } from "../store/authStore";
 import { colors } from "../theme";
 import type { RootStackParamList } from "./types";
+import { webLinking } from "./webLinking";
+import { WebWorkspaceFrame } from "../web/workspace/WebWorkspaceFrame";
+import { Sidebar } from "../components/layout/Sidebar";
 import { AdminUserDetailScreen } from "../screens/admin/AdminUserDetailScreen";
 import { AdminLicensesListScreen } from "../screens/admin/licenses/AdminLicensesListScreen";
 import { AdminLicenseDetailScreen } from "../screens/admin/licenses/AdminLicenseDetailScreen";
+import { AdminAuditLogScreen } from "../screens/admin/AdminAuditLogScreen";
+import { AdminExportReportsScreen } from "../screens/admin/AdminExportReportsScreen";
 import {
 	BusinessWorkersScreen,
 	UIWorkersRedirect,
 } from "./BusinessWorkersRouter";
+
+// The web implementation accepts rootWorkspace to keep the rail visible on
+// stack-level pages. The native implementation intentionally keeps its
+// existing props and behavior unchanged.
+const WebRootSidebar = Sidebar as React.ComponentType<
+	React.ComponentProps<typeof Sidebar> & { rootWorkspace?: boolean }
+>;
 
 const AuthStack = createNativeStackNavigator<RootStackParamList>();
 
@@ -50,6 +62,32 @@ const AuthStackNavigator: React.FC = () => (
 );
 
 const MainStack = createNativeStackNavigator<RootStackParamList>();
+
+function webWorkspaceRoot<P extends object>(Screen: React.ComponentType<P>, title: string) {
+	return function WebWorkspaceRoot(props: P) {
+		if (Platform.OS !== "web") return <Screen {...props} />;
+		const { user } = useAuthStore();
+		return (
+			<View style={{ flex: 1, flexDirection: "row" }}>
+				<WebRootSidebar isAdmin={user?.role === "ADMIN"} rootWorkspace />
+				<WebWorkspaceFrame title={title}><Screen {...props} /></WebWorkspaceFrame>
+			</View>
+		);
+	};
+}
+
+const WebCashHistoryScreen = webWorkspaceRoot(CashHistoryScreen, "Historial de caja");
+const WebAdminUserDetailScreen = webWorkspaceRoot(AdminUserDetailScreen, "Detalle de usuario");
+const WebExchangeRatesScreen = webWorkspaceRoot(ExchangeRatesScreen, "Tasas de cambio");
+const WebBankAccountsScreen = webWorkspaceRoot(BankAccountsScreen, "Cuentas bancarias");
+const WebCurrenciesScreen = webWorkspaceRoot(CurrenciesScreen, "Monedas");
+const WebReportsScreen = webWorkspaceRoot(ReportsScreen, "Reportes");
+const WebObjectivesScreen = webWorkspaceRoot(ObjectivesScreen, "Objetivos");
+const WebAdminLicensesListScreen = webWorkspaceRoot(AdminLicensesListScreen, "Licencias");
+const WebAdminLicenseDetailScreen = webWorkspaceRoot(AdminLicenseDetailScreen, "Detalle de licencia");
+const WebAdminAuditLogScreen = webWorkspaceRoot(AdminAuditLogScreen, "Auditoría");
+const WebAdminExportReportsScreen = webWorkspaceRoot(AdminExportReportsScreen, "Exportar reportes");
+const WebBusinessWorkersScreen = webWorkspaceRoot(BusinessWorkersScreen, "Trabajadores");
 
 const MainStackNavigator: React.FC<{
 	initialRouteName?: keyof RootStackParamList;
@@ -75,7 +113,7 @@ const MainStackNavigator: React.FC<{
 			/>
 			<MainStack.Screen
 				name="AdminUserDetail"
-				component={AdminUserDetailScreen}
+				component={WebAdminUserDetailScreen}
 				options={{
 					headerShown: false,
 					presentation: "card",
@@ -83,7 +121,7 @@ const MainStackNavigator: React.FC<{
 			/>
 			<MainStack.Screen
 				name="CashHistory"
-				component={CashHistoryScreen}
+				component={WebCashHistoryScreen}
 				options={{
 					headerShown: false,
 					presentation: "card",
@@ -91,7 +129,7 @@ const MainStackNavigator: React.FC<{
 			/>
 			<MainStack.Screen
 				name="ExchangeRates"
-				component={ExchangeRatesScreen}
+				component={WebExchangeRatesScreen}
 				options={{
 					headerShown: false,
 					presentation: "card",
@@ -99,7 +137,7 @@ const MainStackNavigator: React.FC<{
 			/>
 			<MainStack.Screen
 				name="BankAccounts"
-				component={BankAccountsScreen}
+				component={WebBankAccountsScreen}
 				options={{
 					headerShown: false,
 					presentation: "card",
@@ -107,7 +145,7 @@ const MainStackNavigator: React.FC<{
 			/>
 			<MainStack.Screen
 				name="Currencies"
-				component={CurrenciesScreen}
+				component={WebCurrenciesScreen}
 				options={{
 					headerShown: false,
 					presentation: "card",
@@ -115,7 +153,7 @@ const MainStackNavigator: React.FC<{
 			/>
 			<MainStack.Screen
 				name="Reports"
-				component={ReportsScreen}
+				component={WebReportsScreen}
 				options={{
 					headerShown: false,
 					presentation: "card",
@@ -123,7 +161,7 @@ const MainStackNavigator: React.FC<{
 			/>
 			<MainStack.Screen
 				name="Objectives"
-				component={ObjectivesScreen}
+				component={WebObjectivesScreen}
 				options={{
 					headerShown: false,
 					presentation: "card",
@@ -131,7 +169,7 @@ const MainStackNavigator: React.FC<{
 			/>
 			<MainStack.Screen
 				name="AdminLicensesList"
-				component={AdminLicensesListScreen}
+				component={WebAdminLicensesListScreen}
 				options={{
 					headerShown: false,
 					presentation: "card",
@@ -139,15 +177,25 @@ const MainStackNavigator: React.FC<{
 			/>
 			<MainStack.Screen
 				name="AdminLicenseDetail"
-				component={AdminLicenseDetailScreen}
+				component={WebAdminLicenseDetailScreen}
 				options={{
 					headerShown: false,
 					presentation: "card",
 				}}
 			/>
 			<MainStack.Screen
+				name="AdminAuditLog"
+				component={WebAdminAuditLogScreen}
+				options={{ headerShown: false, presentation: "card" }}
+			/>
+			<MainStack.Screen
+				name="AdminExportReports"
+				component={WebAdminExportReportsScreen}
+				options={{ headerShown: false, presentation: "card" }}
+			/>
+			<MainStack.Screen
 				name="BusinessWorkers"
-				component={BusinessWorkersScreen}
+				component={WebBusinessWorkersScreen}
 				options={{
 					headerShown: false,
 					presentation: "card",
@@ -197,7 +245,7 @@ export const AppNavigator: React.FC = () => {
 	// Si está autenticado pero debe cambiar contraseña, mostrar pantalla de cambio obligatorio
 	if (isAuthenticated && mustChangePassword) {
 		return (
-			<NavigationContainer>
+			<NavigationContainer linking={Platform.OS === "web" ? webLinking : undefined}>
 				<MainStackNavigator initialRouteName="ChangePassword" />
 				<NotificationBootstrapper />
 			</NavigationContainer>
@@ -205,7 +253,7 @@ export const AppNavigator: React.FC = () => {
 	}
 
 	return (
-		<NavigationContainer>
+		<NavigationContainer linking={Platform.OS === "web" ? webLinking : undefined}>
 			{isAuthenticated ? <MainStackNavigator /> : <AuthStackNavigator />}
 			<NotificationBootstrapper />
 		</NavigationContainer>
