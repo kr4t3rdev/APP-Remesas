@@ -19,7 +19,7 @@ test.describe('Redesign visual verification', () => {
   async function login(page: Page, role: 'ADMIN' | 'USER'): Promise<void> {
     const emailInput = page.getByPlaceholder('admin@cambios.com');
     if ((await emailInput.count()) === 0) {
-      const loginCta = page.getByText('Iniciar Sesión').first();
+      const loginCta = page.getByRole('button', { name: 'Iniciar sesión' }).first();
       await loginCta.click();
       await expect(page.getByPlaceholder('admin@cambios.com')).toBeVisible({ timeout: 10000 });
     }

@@ -58,13 +58,13 @@ test.describe('Auth screens responsive layout', () => {
 
   async function gotoLogin(page: Page): Promise<void> {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.getByText('Iniciar Sesión').first().click();
+    await page.getByRole('button', { name: 'Iniciar sesión' }).first().click();
     await expect(page.getByPlaceholder('admin@cambios.com')).toBeVisible();
   }
 
   async function gotoRegister(page: Page): Promise<void> {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.getByText('Registrarse').first().click();
+    await page.getByRole('button', { name: 'Crear cuenta' }).first().click();
     await expect(page.getByText('Regístrate para comenzar').first()).toBeVisible();
   }
 
@@ -137,27 +137,28 @@ test.describe('Auth screens responsive layout', () => {
   });
 
   test.describe('WelcomeScreen', () => {
-    test('mobile viewport (375px) - renders full-screen gradient layout', async ({ page }) => {
+    test('mobile viewport (375px) - renders the responsive web landing', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-      await expect(page.getByText('CashFlows', { exact: true }).first()).toBeVisible();
-      await expect(page.getByText('Tu gestor de finanzas personales')).toBeVisible();
-      await expect(page.getByText('Cambio de divisas')).toBeVisible();
-      await expect(page.getByText('Control de transacciones')).toBeVisible();
-      await expect(page.getByText('Iniciar Sesión').filter({ visible: true }).first()).toBeVisible();
-      await expect(page.getByText('Registrarse').first()).toBeVisible();
+      await expect(page.getByText('Cashflow', { exact: true }).first()).toBeVisible();
+      await expect(page.getByText('Tu casa de cambio, en una sola estación.')).toBeVisible();
+      await expect(page.getByText('FX multicurrency')).toBeVisible();
+      await expect(page.getByText('El control empieza cuando ves el día completo.')).toBeVisible();
+      await expect(page.getByText('Iniciar sesión').first()).toBeVisible();
+      await expect(page.getByText('Crear cuenta').first()).toBeVisible();
     });
 
-    test('desktop viewport (1280px) - renders split layout (no BrandingPanel)', async ({ page }) => {
+    test('desktop viewport (1280px) - renders the full landing hierarchy', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-      await expect(page.getByText('CashFlows', { exact: true }).first()).toBeVisible();
-      await expect(page.getByText('Tu gestor de finanzas personales')).toBeVisible();
-      await expect(page.getByText('Cambio de divisas')).toBeVisible();
-      await expect(page.getByText('Iniciar Sesión').filter({ visible: true }).first()).toBeVisible();
-      await expect(page.getByText('Registrarse').first()).toBeVisible();
+      await expect(page.getByText('Cashflow', { exact: true }).first()).toBeVisible();
+      await expect(page.getByText('Tu casa de cambio, en una sola estación.')).toBeVisible();
+      await expect(page.getByText('FX multicurrency')).toBeVisible();
+      await expect(page.getByText('El control empieza cuando ves el día completo.')).toBeVisible();
+      await expect(page.getByText('Iniciar sesión').first()).toBeVisible();
+      await expect(page.getByText('Crear cuenta').first()).toBeVisible();
     });
   });
 

@@ -109,3 +109,7 @@ La base URL está en:
 - Tema y tokens en `src/theme/index.ts`.
 - Componentes de UI reutilizables en `src/components/ui`.
 - Componentes de animación y gráficos en `src/components/animations` y `src/components/charts`.
+
+## Interfaz Web
+
+La experiencia Web de Cashflow incluye una landing de cuatro secciones en `src/screens/auth/WelcomeScreen.web.tsx`: presentación, operaciones, control del negocio y acceso. Sus botones **Iniciar sesión** y **Crear cuenta** usan la navegación Web existente; esta implementación no modifica la UI nativa de Android o iOS.

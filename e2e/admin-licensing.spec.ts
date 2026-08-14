@@ -127,7 +127,7 @@ async function login(page: Page, email: string, password: string): Promise<void>
     return;
   }
 
-  const loginCta = page.getByText('Iniciar Sesión').first();
+  const loginCta = page.getByRole('button', { name: 'Iniciar sesión' }).first();
   await loginCta.click();
   await expect(page.getByPlaceholder('admin@cambios.com')).toBeVisible({ timeout: 10_000 });
   await page.getByPlaceholder('admin@cambios.com').fill(email);

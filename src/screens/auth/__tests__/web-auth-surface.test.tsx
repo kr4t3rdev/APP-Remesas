@@ -7,13 +7,17 @@ import { RegisterScreen } from "../RegisterScreen.web";
 describe("web authentication surface", () => {
   it("offers distinct entry actions from the web welcome surface", () => {
     const navigation = { navigate: jest.fn() };
-    const { getByLabelText } = render(<WelcomeScreen navigation={navigation} />);
+    const { getByLabelText, getByText } = render(<WelcomeScreen navigation={navigation} />);
 
     fireEvent.press(getByLabelText("Iniciar sesión"));
     fireEvent.press(getByLabelText("Crear cuenta"));
 
     expect(navigation.navigate).toHaveBeenNthCalledWith(1, "Login");
     expect(navigation.navigate).toHaveBeenNthCalledWith(2, "Register");
+    expect(getByText("Tu casa de cambio, en una sola estación.")).toBeTruthy();
+    expect(getByText("Todo lo que mueve tu operación, conectado.")).toBeTruthy();
+    expect(getByText("El control empieza cuando ves el día completo.")).toBeTruthy();
+    expect(getByText("Empieza con una operación más clara.")).toBeTruthy();
   });
 
   it("exposes labelled login fields and validates empty submission", () => {
