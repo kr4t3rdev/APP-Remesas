@@ -229,6 +229,27 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
           >
             {isDesktop ? (
               <>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Volver al inicio"
+                  hitSlop={8}
+                  onPress={() => navigation.navigate("Welcome")}
+                  style={styles.backButton}
+                >
+                  <Ionicons
+                    name="arrow-back"
+                    size={24}
+                    color={themeColors.primary[500]}
+                  />
+                  <Text
+                    style={[
+                      styles.backButtonText,
+                      { color: themeColors.primary[500] },
+                    ]}
+                  >
+                    Volver
+                  </Text>
+                </TouchableOpacity>
                 <Text
                   style={[styles.title, { color: themeColors.text.primary }]}
                 >
@@ -246,7 +267,10 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
             ) : (
               <>
                 <TouchableOpacity
-                  onPress={() => navigation.goBack()}
+                  accessibilityRole="button"
+                  accessibilityLabel="Volver al inicio"
+                  hitSlop={8}
+                  onPress={() => navigation.navigate("Welcome")}
                   style={styles.backButton}
                 >
                   <Ionicons

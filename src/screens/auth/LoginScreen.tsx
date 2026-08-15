@@ -76,12 +76,35 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         {/* Header - only on mobile, on desktop it's in BrandingPanel */}
         {!isDesktop && (
           <View style={styles.header}>
-            <Text style={[styles.title, { color: colors.text.primary }]}>
-              Casa de Cambio
-            </Text>
-            <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-              Inicia sesión para continuar
-            </Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Volver al inicio"
+              hitSlop={8}
+              onPress={() => navigation?.navigate("Welcome")}
+              style={styles.backButton}
+            >
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={colors.primary[500]}
+              />
+              <Text
+                style={[
+                  styles.backButtonText,
+                  { color: colors.primary[500] },
+                ]}
+              >
+                Volver
+              </Text>
+            </TouchableOpacity>
+            <View style={styles.titleContainer}>
+              <Text style={[styles.title, { color: colors.text.primary }]}>
+                Casa de Cambio
+              </Text>
+              <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
+                Inicia sesión para continuar
+              </Text>
+            </View>
           </View>
         )}
 
@@ -217,7 +240,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   if (isDesktop) {
     return (
       <AuthWrapper>
-        <Text style={[styles.desktopTitle, { color: colors.text.primary }]}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Volver al inicio"
+          hitSlop={8}
+          onPress={() => navigation?.navigate("Welcome")}
+          style={styles.backButton}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={colors.primary[500]}
+          />
+          <Text
+            style={[styles.backButtonText, { color: colors.primary[500] }]}
+          >
+            Volver al inicio
+          </Text>
+        </TouchableOpacity>
+        <Text
+          style={[styles.desktopTitle, { color: colors.text.primary }]}
+        >
           Iniciar Sesión
         </Text>
         <Text
@@ -261,6 +304,19 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.xl,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.md,
+    gap: spacing.xs,
+  },
+  backButtonText: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  titleContainer: {
+    gap: spacing.xs,
   },
   title: {
     fontSize: 32,
