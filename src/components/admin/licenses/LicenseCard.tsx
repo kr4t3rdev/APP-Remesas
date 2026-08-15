@@ -1,40 +1,44 @@
-import React from "react";
+import React, { memo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { License } from "../../../types/licenses";
-import { useColors } from "../../../store/themeStore";
+import { useColors, useIsDark } from "../../../store/themeStore";
 
 interface LicenseCardProps {
   license: License;
   onPress: () => void;
+  onRenew?: () => void;
 }
 
-const getStatusColor = (status: string, isDark: boolean) => {
+const getStatusColor = (
+  status: string,
+  colors: ReturnType<typeof useColors>,
+) => {
   switch (status) {
     case "active":
       return {
-        bg: isDark ? "rgba(22, 101, 52, 0.2)" : "#dcfce7",
-        text: isDark ? "#4ade80" : "#166534",
+        bg: `${colors.success}18`,
+        text: colors.success,
       };
     case "expired":
       return {
-        bg: isDark ? "rgba(75, 85, 99, 0.2)" : "#f3f4f6",
-        text: isDark ? "#9ca3af" : "#4b5563",
+        bg: `${colors.text.secondary}18`,
+        text: colors.text.secondary,
       };
     case "subscribed":
       return {
-        bg: isDark ? "rgba(30, 64, 175, 0.2)" : "#dbeafe",
-        text: isDark ? "#60a5fa" : "#1e40af",
+        bg: `${colors.info}18`,
+        text: colors.info,
       };
     case "pending":
       return {
-        bg: isDark ? "rgba(146, 64, 14, 0.2)" : "#fef3c7",
-        text: isDark ? "#fbbf24" : "#92400e",
+        bg: `${colors.warning}18`,
+        text: colors.warning,
       };
     default:
       return {
-        bg: isDark ? "#1f2937" : "#f3f4f6",
-        text: isDark ? "#9ca3af" : "#4b5563",
+        bg: `${colors.text.secondary}18`,
+        text: colors.text.secondary,
       };
   }
 };
@@ -84,11 +88,12 @@ const getIconForPlan = (planName: string, isDark: boolean) => {
 export const LicenseCard: React.FC<LicenseCardProps> = ({
   license,
   onPress,
+  onRenew,
 }) => {
   const colors = useColors();
-  const isDark = colors.background === "#0f172a"; // Simplified check, or use useIsDark() if exported
+  const isDark = useIsDark();
 
-  const statusStyle = getStatusColor(license.status, isDark);
+  const statusStyle = getStatusColor(license.status, colors);
   const iconConfig = getIconForPlan(license.planName, isDark);
 
   // Display up to 2 users, then +N
@@ -105,6 +110,8 @@ export const LicenseCard: React.FC<LicenseCardProps> = ({
       style={[styles.card, cardStyle]}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Licencia ${license.planName}, estado ${getStatusLabel(license.status)}`}
     >
       <View style={styles.headerRow}>
         <View style={styles.leftHeader}>
@@ -125,7 +132,10 @@ export const LicenseCard: React.FC<LicenseCardProps> = ({
           </View>
         </View>
 
-        <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
+        <View
+          style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}
+          accessibilityLabel={`Estado: ${getStatusLabel(license.status)}`}
+        >
           <Text style={[styles.statusText, { color: statusStyle.text }]}>
             {getStatusLabel(license.status)}
           </Text>
@@ -154,7 +164,6 @@ export const LicenseCard: React.FC<LicenseCardProps> = ({
                 },
               ]}
             >
-              {/* Fallback to icon since we don't have real images in mock */}
               <Ionicons name="person" size={12} color="#6b7280" />
             </View>
           ))}
@@ -187,7 +196,12 @@ export const LicenseCard: React.FC<LicenseCardProps> = ({
 
         <View style={styles.actionContainer}>
           {license.status === "expired" ? (
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={onRenew}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              accessibilityRole="button"
+              accessibilityLabel={`Renovar licencia ${license.planName}`}
+            >
               <Text style={styles.renewText}>Renovar</Text>
             </TouchableOpacity>
           ) : license.autoRenew ? (
@@ -204,6 +218,8 @@ export const LicenseCard: React.FC<LicenseCardProps> = ({
     </TouchableOpacity>
   );
 };
+
+export default memo(LicenseCard);
 
 const styles = StyleSheet.create({
   card: {

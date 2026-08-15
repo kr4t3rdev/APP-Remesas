@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  useColorScheme,
   Platform,
   useWindowDimensions,
 } from "react-native";
@@ -18,73 +17,106 @@ import { LicenseSummaryCard } from "../../../components/admin/licenses/LicenseSu
 import { LicenseUserRow } from "../../../components/admin/licenses/LicenseUserRow";
 import { licensesApi } from "../../../api/licensesApi";
 import { LicenseDetail } from "../../../types/licenses";
-import { useThemeStore, useColors } from "../../../store/themeStore";
+import { useColors, useIsDark } from "../../../store/themeStore";
 import { BREAKPOINTS } from "../../../hooks/useResponsive";
+
+type LoadState =
+  | { kind: "loading" }
+  | { kind: "not-found" }
+  | { kind: "error"; message: string }
+  | { kind: "ready"; detail: LicenseDetail };
 
 export const AdminLicenseDetailScreen: React.FC = () => {
   const route = useRoute<any>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { licenseId } = route.params;
 
-  const colorScheme = useColorScheme();
-  const setTheme = useThemeStore((state) => state.setTheme);
   const colors = useColors();
-  const isDark = colorScheme === "dark";
+  const isDark = useIsDark();
   const { width } = useWindowDimensions();
   const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
-  useEffect(() => {
-    if (colorScheme) {
-      setTheme(colorScheme);
-    }
-  }, [colorScheme, setTheme]);
-
-  const [detail, setDetail] = useState<LicenseDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [state, setState] = useState<LoadState>({ kind: "loading" });
 
   useEffect(() => {
     loadDetails();
   }, [licenseId]);
 
   const loadDetails = async () => {
-    setLoading(true);
+    setState({ kind: "loading" });
     try {
       const data = await licensesApi.fetchLicenseDetails(licenseId);
-      setDetail(data);
+      if (!data) {
+        setState({ kind: "not-found" });
+      } else {
+        setState({ kind: "ready", detail: data });
+      }
     } catch (error) {
       console.error(error);
-    } finally {
-      setLoading(false);
+      const message =
+        error instanceof Error ? error.message : "Error al cargar la licencia";
+      setState({ kind: "error", message });
     }
   };
 
-  if (loading) {
+  if (state.kind === "loading") {
     return (
       <SafeAreaView
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: colors.background },
-        ]}
+        style={[styles.loadingContainer, { backgroundColor: colors.background }]}
+        edges={["top", "bottom"]}
       >
-        <ActivityIndicator size="large" color="#3b82f6" />
+        <ActivityIndicator size="large" color={colors.primary[500]} />
       </SafeAreaView>
     );
   }
 
-  if (!detail) {
+  if (state.kind === "not-found") {
     return (
       <SafeAreaView
-        style={[
-          styles.loadingContainer,
-          { backgroundColor: colors.background },
-        ]}
+        style={[styles.loadingContainer, { backgroundColor: colors.background }]}
+        edges={["top", "bottom"]}
       >
-        <Text style={{ color: colors.text.primary }}>
+        <Ionicons
+          name="alert-circle-outline"
+          size={48}
+          color={colors.text.secondary}
+        />
+        <Text style={[styles.emptyText, { color: colors.text.primary }]}>
           Licencia no encontrada
+        </Text>
+        <Text style={[styles.emptySub, { color: colors.text.secondary }]}>
+          La licencia puede haber sido eliminada o el ID es inválido.
         </Text>
       </SafeAreaView>
     );
   }
+
+  if (state.kind === "error") {
+    return (
+      <SafeAreaView
+        style={[styles.loadingContainer, { backgroundColor: colors.background }]}
+        edges={["top", "bottom"]}
+      >
+        <Ionicons name="cloud-offline-outline" size={48} color={colors.danger} />
+        <Text style={[styles.emptyText, { color: colors.text.primary }]}>
+          No se pudo cargar la licencia
+        </Text>
+        <Text style={[styles.emptySub, { color: colors.text.secondary }]}>
+          {state.message}
+        </Text>
+        <TouchableOpacity
+          onPress={loadDetails}
+          style={[styles.retryButton, { backgroundColor: colors.primary[500] }]}
+          accessibilityRole="button"
+          accessibilityLabel="Reintentar carga"
+        >
+          <Text style={styles.retryText}>Reintentar</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  const detail = state.detail;
 
   return (
     <SafeAreaView
@@ -97,17 +129,26 @@ export const AdminLicenseDetailScreen: React.FC = () => {
       />
 
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          isWebDesktop && styles.webContent,
-        ]}
+        contentContainerStyle={[styles.content, isWebDesktop && styles.webContent]}
       >
         <LicenseSummaryCard license={detail} />
 
         <View style={styles.usersList}>
-          {detail.fullUserList.map((user) => (
-            <LicenseUserRow key={user.id} user={user} onPress={() => {}} />
-          ))}
+          {detail.fullUserList.length === 0 ? (
+            <Text style={[styles.emptyText, { color: colors.text.secondary }]}>
+              No hay usuarios asignados a esta licencia.
+            </Text>
+          ) : (
+            detail.fullUserList.map((user) => (
+              <LicenseUserRow
+                key={user.id}
+                user={user}
+                onPress={() => {
+                  navigation.navigate("AdminUserDetail", { userId: user.id });
+                }}
+              />
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -117,13 +158,12 @@ export const AdminLicenseDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
+    padding: 24,
   },
   content: {
     paddingHorizontal: 20,
@@ -136,41 +176,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingBottom: 40,
   },
-  listHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#111827",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
-  actionLink: {
-    fontSize: 14,
-    color: "#3b82f6",
-    fontWeight: "500",
-  },
   usersList: {
     marginBottom: 20,
   },
-  fab: {
-    position: "absolute",
-    bottom: 32,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#3b82f6",
+  emptyText: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginTop: 12,
+    textAlign: "center",
+  },
+  emptySub: {
+    fontSize: 13,
+    marginTop: 4,
+    textAlign: "center",
+  },
+  retryButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 9999,
+    minHeight: 44,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#3b82f6",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+  },
+  retryText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

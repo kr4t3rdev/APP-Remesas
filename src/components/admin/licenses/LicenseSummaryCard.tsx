@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LicenseDetail } from "../../../types/licenses";
 import { useColors } from "../../../store/themeStore";
+import { borderRadius } from "../../../theme";
 
 interface LicenseSummaryCardProps {
   license: LicenseDetail;
@@ -12,42 +13,32 @@ export const LicenseSummaryCard: React.FC<LicenseSummaryCardProps> = ({
   license,
 }) => {
   const colors = useColors();
-  const isDark = colors.background === "#0f172a";
   const progress = Math.min(1, license.usedUsers / license.maxUsers);
+  const accent = colors.primary[500];
+  const accentBg = `${accent}14`;
 
   return (
     <View
       style={[
         styles.card,
         {
-          backgroundColor: isDark ? "#1e293b" : "#eff6ff",
-          borderColor: isDark ? "#334155" : "#dbeafe",
+          backgroundColor: colors.card,
+          borderColor: colors.border,
         },
       ]}
     >
       <View style={styles.header}>
-        <View style={styles.iconCircle}>
-          <Ionicons name="ribbon" size={24} color="#fff" />
+        <View style={[styles.iconCircle, { backgroundColor: accent }]}>
+          <Ionicons name="ribbon" size={24} color={colors.text.inverse} />
         </View>
         <View style={styles.info}>
           <View style={styles.titleRow}>
-            <Text
-              style={[styles.title, { color: isDark ? "#fff" : "#1e3a8a" }]}
-            >
+            <Text style={[styles.title, { color: colors.text.primary }]}>
               Licencia {license.planName}
             </Text>
             {license.planName.includes("Enterprise") && (
-              <View
-                style={[
-                  styles.proBadge,
-                  {
-                    backgroundColor: isDark
-                      ? "rgba(59, 130, 246, 0.2)"
-                      : "#dbeafe",
-                  },
-                ]}
-              >
-                <Text style={styles.proText}>PRO</Text>
+              <View style={[styles.proBadge, { backgroundColor: accentBg }]}>
+                <Text style={[styles.proText, { color: accent }]}>PRO</Text>
               </View>
             )}
           </View>
@@ -72,14 +63,12 @@ export const LicenseSummaryCard: React.FC<LicenseSummaryCardProps> = ({
         </Text>
       </View>
 
-      <View
-        style={[
-          styles.progressBarBg,
-          { backgroundColor: isDark ? "#334155" : "#dbeafe" },
-        ]}
-      >
+      <View style={[styles.progressBarBg, { backgroundColor: accentBg }]}>
         <View
-          style={[styles.progressBarFill, { width: `${progress * 100}%` }]}
+          style={[
+            styles.progressBarFill,
+            { width: `${progress * 100}%`, backgroundColor: accent },
+          ]}
         />
       </View>
     </View>
@@ -102,7 +91,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#3b82f6",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -124,11 +112,10 @@ const styles = StyleSheet.create({
   proBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: borderRadius.sm,
     marginLeft: 8,
   },
   proText: {
-    color: "#3b82f6",
     fontSize: 10,
     fontWeight: "700",
   },
@@ -164,7 +151,6 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: "100%",
-    backgroundColor: "#3b82f6",
     borderRadius: 4,
   },
 });

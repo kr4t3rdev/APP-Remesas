@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -147,31 +149,50 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
     setLoading(true);
     setError(null);
 
-    try {
-      for (const userId of selectedUserIds) {
+    const ids = Array.from(selectedUserIds);
+    const planId = parseInt(selectedPlanId, 10);
+
+    const results = await Promise.allSettled(
+      ids.map((userId) => {
         const payload: AssignLicensePayload = {
           userId,
-          planId: parseInt(selectedPlanId, 10),
+          planId,
           cycle: selectedCycle,
         };
         if (customExpiry.trim()) {
           payload.expiresAt = customExpiry.trim();
         }
-        await licensesApi.assignLicense(payload);
-      }
+        return licensesApi.assignLicense(payload);
+      }),
+    );
+
+    const fulfilled = results.filter((r) => r.status === "fulfilled").length;
+    const rejected = results.filter((r) => r.status === "rejected");
+    const failedUserIds = ids.filter(
+      (_, index) => results[index].status === "rejected",
+    );
+    const failures = rejected.map((r) => {
+      const err = (r as PromiseRejectedResult).reason;
+      return (
+        err?.response?.data?.message ||
+        (err instanceof Error ? err.message : "Error desconocido")
+      );
+    });
+
+    if (rejected.length === 0) {
       resetState();
       onSuccess();
-    } catch (err: any) {
-      console.error("Error assigning license:", err);
-      // El error 400 generalmente viene con un mensaje del backend
-      const backendMessage = err?.response?.data?.message;
-      const message =
-        backendMessage ||
-        (err instanceof Error ? err.message : "Error al asignar licencias");
-      setError(message);
-    } finally {
-      setLoading(false);
+    } else if (fulfilled === 0) {
+      const backendMessage = failures[0];
+      setError(backendMessage || "Error al asignar licencias");
+    } else {
+      setSelectedUserIds(new Set(failedUserIds));
+      setError(
+        `${fulfilled} asignada(s). ${rejected.length} fallaron: ${failures[0]}`,
+      );
     }
+
+    setLoading(false);
   };
 
   const filteredUsers = getFilteredUsers();
@@ -186,12 +207,15 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
       animationType="fade"
       onRequestClose={handleCancel}
     >
-      <View style={styles.backdrop}>
-        <View style={styles.dialog}>
+      <KeyboardAvoidingView
+        style={styles.backdrop}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+      <View style={styles.dialog}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Asignar Licencia</Text>
-            <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
+            <TouchableOpacity onPress={handleCancel} style={styles.closeButton} accessibilityRole="button" accessibilityLabel="Cerrar diálogo de asignación">
               <Ionicons name="close" size={24} color={colors.text.secondary} />
             </TouchableOpacity>
           </View>
@@ -224,6 +248,13 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
               ]}
               onPress={toggleSelectAll}
               disabled={filteredUsers.length === 0}
+              accessibilityRole="checkbox"
+              accessibilityState={{
+                checked:
+                  selectedUserIds.size === filteredUsers.length &&
+                  filteredUsers.length > 0,
+              }}
+              accessibilityLabel="Seleccionar todos los usuarios"
             >
               <Ionicons
                 name={
@@ -256,6 +287,9 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
                         },
                       ]}
                       onPress={() => toggleUser(user.id)}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: isSelected }}
+                      accessibilityLabel={`Seleccionar usuario ${user.name}`}
                     >
                       <Ionicons
                         name={isSelected ? "checkbox" : "square-outline"}
@@ -299,6 +333,9 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
                         },
                       ]}
                       onPress={() => setSelectedPlanId(plan.id)}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: isSelected }}
+                      accessibilityLabel={`Plan ${plan.name}, ${plan.price} USD`}
                     >
                       <View
                         style={[
@@ -353,6 +390,9 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
                       },
                     ]}
                     onPress={() => setSelectedCycle(cycle.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: isSelected }}
+                    accessibilityLabel={`Ciclo ${cycle.label}`}
                   >
                     <Text
                       style={[
@@ -398,6 +438,8 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
               style={styles.cancelButton}
               onPress={handleCancel}
               disabled={loading}
+              accessibilityRole="button"
+              accessibilityLabel="Cancelar asignación"
             >
               <Text style={styles.cancelText}>Cancelar</Text>
             </TouchableOpacity>
@@ -413,7 +455,7 @@ export const AssignLicenseModal: React.FC<AssignLicenseModalProps> = ({
             />
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

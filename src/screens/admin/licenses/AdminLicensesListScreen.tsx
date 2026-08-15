@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -16,11 +16,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { AdminHeader } from "../../../components/admin/layout/AdminHeader";
 import { LicenseCard } from "../../../components/admin/licenses/LicenseCard";
 import { AssignLicenseModal } from "../../../components/admin/licenses/AssignLicenseModal";
+import { ExtendLicenseModal } from "../../../components/admin/licenses/ExtendLicenseModal";
 import { licensesApi } from "../../../api/licensesApi";
 import { License } from "../../../types/licenses";
 import { useColors, useIsDark } from "../../../store/themeStore";
 import { borderRadius } from "../../../theme";
 import { BREAKPOINTS } from "../../../hooks/useResponsive";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "../../../shared/query/queryKeys";
 
 const TABS: { id: string; label: string }[] = [
   { id: "all", label: "Todas" },
@@ -33,30 +36,29 @@ export const AdminLicensesListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [licenses, setLicenses] = useState<License[]>([]);
-  const [loading, setLoading] = useState(true);
   const [assignModalVisible, setAssignModalVisible] = useState(false);
+  const [extendModal, setExtendModal] = useState<{
+    licenseId: string;
+    currentExpiry: Date;
+    currentPlanId: number;
+    currentCycle: "MONTHLY" | "SEMIANNUAL" | "ANNUAL";
+  } | null>(null);
 
   const colors = useColors();
   const isDark = useIsDark();
   const { width } = useWindowDimensions();
   const isWebDesktop = Platform.OS === "web" && width >= BREAKPOINTS.tablet;
 
-  useEffect(() => {
-    loadLicenses();
-  }, []);
-
-  const loadLicenses = async () => {
-    setLoading(true);
-    try {
-      const data = await licensesApi.fetchLicenses();
-      setLicenses(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: licenses = [],
+    isLoading: loading,
+    error: licensesError,
+    refetch: loadLicenses,
+  } = useQuery<License[]>({
+    queryKey: queryKeys.subscriptions.list(),
+    queryFn: licensesApi.fetchLicenses,
+    staleTime: 1000 * 60 * 2,
+  });
 
   const filteredLicenses = useMemo(() => {
     return licenses.filter((license) => {
@@ -106,11 +108,16 @@ export const AdminLicensesListScreen: React.FC = () => {
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor={colors.text.secondary}
+            accessibilityLabel="Buscar licencias o usuarios"
+            accessibilityRole="search"
           />
         </View>
 
         {/* Tabs */}
-        <View style={[styles.tabsRow, { borderBottomColor: colors.border }]}>
+        <View
+          style={[styles.tabsRow, { borderBottomColor: colors.border }]}
+          accessibilityRole="tablist"
+        >
           {TABS.map((tab) => (
             <TouchableOpacity
               key={tab.id}
@@ -119,6 +126,9 @@ export const AdminLicensesListScreen: React.FC = () => {
                 styles.tabItem,
                 activeTab === tab.id && styles.tabItemActive,
               ]}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: activeTab === tab.id }}
+              accessibilityLabel={`Filtrar por licencias ${tab.label.toLowerCase()}`}
             >
               <Text
                 style={[
@@ -169,6 +179,18 @@ export const AdminLicensesListScreen: React.FC = () => {
           <View style={styles.center}>
             <ActivityIndicator size="large" color={colors.primary[500]} />
           </View>
+        ) : licensesError ? (
+          <View style={styles.center}>
+            <Text style={[styles.emptyText, { color: colors.text.primary }]}>No se pudieron cargar las licencias.</Text>
+            <TouchableOpacity
+              onPress={() => loadLicenses()}
+              style={[styles.retryButton, { backgroundColor: colors.primary[500] }]}
+              accessibilityRole="button"
+              accessibilityLabel="Reintentar carga de licencias"
+            >
+              <Text style={styles.retryText}>Reintentar</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <FlatList
             data={filteredLicenses}
@@ -181,6 +203,23 @@ export const AdminLicensesListScreen: React.FC = () => {
                     licenseId: item.id,
                   });
                 }}
+                onRenew={() => {
+                  if (
+                    item.expiresAtRaw &&
+                    item.planId &&
+                    item.billingCycle &&
+                    (item.billingCycle === "MONTHLY" ||
+                      item.billingCycle === "SEMIANNUAL" ||
+                      item.billingCycle === "ANNUAL")
+                  ) {
+                    setExtendModal({
+                      licenseId: item.id,
+                      currentExpiry: new Date(item.expiresAtRaw),
+                      currentPlanId: item.planId,
+                      currentCycle: item.billingCycle,
+                    });
+                  }
+                }}
               />
             )}
             contentContainerStyle={styles.listContent}
@@ -188,7 +227,9 @@ export const AdminLicensesListScreen: React.FC = () => {
               <Text
                 style={[styles.emptyText, { color: colors.text.secondary }]}
               >
-                No se encontraron licencias.
+                {licenses.length === 0
+                  ? "No hay licencias registradas."
+                  : "No hay licencias que coincidan con el filtro."}
               </Text>
             }
           />
@@ -206,6 +247,8 @@ export const AdminLicensesListScreen: React.FC = () => {
             },
           ]}
           onPress={() => setAssignModalVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Asignar nueva licencia"
         >
           <Ionicons name="add" size={30} color="#fff" />
         </TouchableOpacity>
@@ -216,6 +259,19 @@ export const AdminLicensesListScreen: React.FC = () => {
         onCancel={() => setAssignModalVisible(false)}
         onSuccess={() => {
           setAssignModalVisible(false);
+          loadLicenses();
+        }}
+      />
+
+      <ExtendLicenseModal
+        visible={extendModal !== null}
+        licenseId={extendModal?.licenseId ?? ""}
+        currentExpiry={extendModal?.currentExpiry ?? new Date()}
+        currentPlanId={extendModal?.currentPlanId ?? 0}
+        currentCycle={extendModal?.currentCycle ?? "MONTHLY"}
+        onCancel={() => setExtendModal(null)}
+        onSuccess={() => {
+          setExtendModal(null);
           loadLicenses();
         }}
       />
@@ -282,6 +338,8 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     marginRight: 24,
+    minHeight: 44,
+    justifyContent: "center",
     paddingBottom: 12,
     position: "relative",
   },
@@ -325,12 +383,26 @@ const styles = StyleSheet.create({
     color: "#9ca3af",
     marginTop: 20,
   },
+  retryButton: {
+    marginTop: 12,
+    minHeight: 44,
+    paddingHorizontal: 18,
+    borderRadius: borderRadius.full,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  retryText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
   fab: {
     position: "absolute",
     bottom: 24,
     right: 24,
     width: 56,
     height: 56,
+    minWidth: 44,
+    minHeight: 44,
     borderRadius: 28,
     backgroundColor: "#3b82f6",
     justifyContent: "center",

@@ -30,7 +30,7 @@ export const subscriptionsRepository = {
 
   async renewLicense(
     id: number,
-    data: { planId: number; cycle: BillingCycle },
+    data: { planId: number; cycle: BillingCycle; months?: number },
   ): Promise<UserLicense> {
     const response = await api.patch<UserLicense>(
       `/subscriptions/licenses/${id}/renew`,

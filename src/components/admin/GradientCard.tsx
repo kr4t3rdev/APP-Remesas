@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useColors } from "../../store/themeStore";
+import { useColors, useIsDark } from "../../store/themeStore";
 
 type Props = {
   title: string;
@@ -23,7 +23,7 @@ export const GradientCard: React.FC<Props> = ({
   onPress,
 }) => {
   const colors = useColors();
-  const isDark = colors.background === "#0f172a";
+  const isDark = useIsDark();
 
   return (
     <View

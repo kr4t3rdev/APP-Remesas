@@ -40,10 +40,16 @@ export const useRenewLicenseMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { id: number; planId: number; cycle: BillingCycle }) =>
+    mutationFn: (data: {
+      id: number;
+      planId: number;
+      cycle: BillingCycle;
+      months?: number;
+    }) =>
       subscriptionsRepository.renewLicense(data.id, {
         planId: data.planId,
         cycle: data.cycle,
+        months: data.months,
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({

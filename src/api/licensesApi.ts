@@ -54,6 +54,13 @@ const mapBackendLicenseToFrontend = (license: any): License => {
       month: "short",
       year: "numeric",
     }),
+    expiresAtRaw: license.expiresAt,
+    planId: license.planId,
+    billingCycle: (license.cycle as
+      | "MONTHLY"
+      | "SEMIANNUAL"
+      | "ANNUAL"
+      | undefined) ?? "MONTHLY",
     autoRenew: true, // Defaulting to true for now
   };
 };

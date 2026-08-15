@@ -6,6 +6,8 @@ export interface LicenseUser {
   avatar?: string;
 }
 
+export type BillingCycleRaw = "MONTHLY" | "SEMIANNUAL" | "ANNUAL";
+
 export interface License {
   id: string;
   planName: string;
@@ -13,6 +15,9 @@ export interface License {
   status: LicenseStatus;
   assignedUsers: LicenseUser[];
   expiryDate?: string; // "12 Dic 2024" or ISO
+  expiresAtRaw?: string; // ISO string from backend, used to extend
+  planId?: number;
+  billingCycle?: BillingCycleRaw | string;
   autoRenew: boolean;
 }
 

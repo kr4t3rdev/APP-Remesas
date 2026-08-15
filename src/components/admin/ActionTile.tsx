@@ -1,7 +1,7 @@
 import React from "react";
 import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useColors } from "../../store/themeStore";
+import { useColors, useIsDark } from "../../store/themeStore";
 
 type Props = {
   label: string;
@@ -11,7 +11,7 @@ type Props = {
 
 export const ActionTile: React.FC<Props> = ({ label, icon, onPress }) => {
   const colors = useColors();
-  const isDark = colors.background === "#0f172a";
+  const isDark = useIsDark();
 
   return (
     <TouchableOpacity

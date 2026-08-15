@@ -1,11 +1,13 @@
 import React, { useMemo, useState } from "react";
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
-  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { addDays, format } from "date-fns";
@@ -13,7 +15,6 @@ import { es } from "date-fns/locale";
 import { useColors, useShadows } from "../../../store/themeStore";
 import { borderRadius, spacing } from "../../../theme";
 import { licensesApi, BillingCycle } from "../../../api/licensesApi";
-import api from "../../../services/api";
 
 type ExtendLicenseModalProps = {
   visible: boolean;
@@ -55,26 +56,29 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
   const [selectedDays, setSelectedDays] = useState<number>(30);
   const [customDays, setCustomDays] = useState<string>("");
 
-  const newExpiry = (() => {
-    const days = customDays.trim() ? parseInt(customDays, 10) : selectedDays;
-    const baseDate = currentExpiry > new Date() ? currentExpiry : new Date();
-    return addDays(baseDate, days);
-  })();
+  const effectiveDays = customDays.trim() ? parseInt(customDays, 10) : selectedDays;
+  const baseDate = currentExpiry > new Date() ? currentExpiry : new Date();
+  const newExpiry = addDays(baseDate, isNaN(effectiveDays) ? 0 : effectiveDays);
 
   const handleExtend = async () => {
+    if (!licenseId || isNaN(effectiveDays) || effectiveDays <= 0) {
+      setError("Selecciona un período de extensión válido");
+      return;
+    }
     setLoading(true);
     setError(null);
 
     try {
-      await api.patch(`/subscriptions/licenses/${licenseId}/renew`, {
-        planId: currentPlanId,
-        cycle: currentCycle,
-      });
+      const months = Math.max(1, Math.round(effectiveDays / 30));
+      await licensesApi.extendLicense(licenseId, months);
       onSuccess();
     } catch (err: unknown) {
       console.error("Error extending license:", err);
+      const backendMessage = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
       const message =
-        err instanceof Error ? err.message : "Error al extender la licencia";
+        backendMessage ||
+        (err instanceof Error ? err.message : "Error al extender la licencia");
       setError(message);
     } finally {
       setLoading(false);
@@ -90,9 +94,11 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
       animationType="fade"
       onRequestClose={onCancel}
     >
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <View style={styles.dialog}>
-          {/* Header */}
           <View
             style={[
               styles.iconContainer,
@@ -108,7 +114,6 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
 
           <Text style={styles.title}>Extender Licencia</Text>
 
-          {/* Current vs New Expiry */}
           <View style={styles.datePreview}>
             <View style={styles.dateRow}>
               <Text style={styles.dateLabel}>Fecha actual:</Text>
@@ -136,7 +141,6 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
             </View>
           </View>
 
-          {/* Extension Period Options */}
           <Text style={styles.sectionTitle}>
             Seleccionar período de extensión
           </Text>
@@ -162,6 +166,9 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
                     setSelectedDays(option.days);
                     setCustomDays("");
                   }}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: isSelected }}
+                  accessibilityLabel={`Extender ${option.label}`}
                 >
                   <Text
                     style={[
@@ -179,58 +186,40 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
             })}
           </View>
 
-          {/* Custom Days Input */}
           <View style={styles.customRow}>
             <Text style={styles.customLabel}>O personalizado:</Text>
-            <View style={styles.customInput}>
-              <TouchableOpacity
-                style={[
-                  styles.customOption,
-                  customDays.trim() !== "" && {
-                    borderColor: colors.primary[500],
-                    backgroundColor: `${colors.primary[500]}10`,
-                  },
-                ]}
-                onPress={() => {}}
-              >
-                <View style={styles.inputWrapper}>
-                  <Text style={styles.inputText}>Días:</Text>
-                  <View style={styles.inputField}>
-                    <TouchableOpacity
-                      style={styles.inputValue}
-                      onPress={() => {
-                        // Focus logic handled by native
-                      }}
-                    >
-                      <View style={styles.textInputContainer}>
-                        <TextInput
-                          style={styles.textInput}
-                          value={customDays}
-                          onChangeText={(text) => {
-                            const num = text.replace(/[^0-9]/g, "");
-                            setCustomDays(num);
-                          }}
-                          placeholder="0"
-                          placeholderTextColor={colors.text.tertiary}
-                          keyboardType="number-pad"
-                          maxLength={3}
-                        />
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </TouchableOpacity>
+            <View
+              style={[
+                styles.customOption,
+                customDays.trim() !== "" && {
+                  borderColor: colors.primary[500],
+                  backgroundColor: `${colors.primary[500]}10`,
+                },
+              ]}
+            >
+              <Text style={styles.inputText}>Días:</Text>
+              <TextInput
+                style={styles.textInput}
+                value={customDays}
+                onChangeText={(text) => {
+                  const num = text.replace(/[^0-9]/g, "");
+                  setCustomDays(num);
+                }}
+                placeholder="0"
+                placeholderTextColor={colors.text.tertiary}
+                keyboardType="number-pad"
+                maxLength={3}
+                accessibilityLabel="Días de extensión personalizados"
+              />
             </View>
           </View>
 
-          {/* Plan Info */}
           <View style={styles.planInfo}>
             <Text style={styles.planInfoText}>
-              Plan: {currentCycle ? CYCLE_LABELS[currentCycle] : "N/A"}
+              Plan: {CYCLE_LABELS[currentCycle]} (ID {currentPlanId})
             </Text>
           </View>
 
-          {/* Error Message */}
           {error && (
             <View style={styles.errorContainer}>
               <Ionicons name="alert-circle" size={16} color={colors.danger} />
@@ -238,12 +227,13 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
             </View>
           )}
 
-          {/* Actions */}
           <View style={styles.actions}>
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={onCancel}
               disabled={loading}
+              accessibilityRole="button"
+              accessibilityLabel="Cancelar extensión"
             >
               <Text style={styles.cancelText}>Cancelar</Text>
             </TouchableOpacity>
@@ -258,6 +248,8 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
               ]}
               onPress={handleExtend}
               disabled={loading}
+              accessibilityRole="button"
+              accessibilityLabel="Confirmar extensión de licencia"
             >
               <Text style={styles.confirmText}>
                 {loading ? "Extendiendo..." : "Confirmar Extensión"}
@@ -265,13 +257,10 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
-
-// Simple TextInput without using the custom Input component
-import { TextInput } from "react-native";
 
 const createStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
@@ -377,39 +366,24 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       fontSize: 14,
       color: colors.text.secondary,
     },
-    customInput: {
-      flex: 1,
-    },
     customOption: {
+      flex: 1,
       flexDirection: "row",
       alignItems: "center",
+      gap: spacing.sm,
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: borderRadius.md,
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
-    },
-    inputWrapper: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.sm,
+      backgroundColor: colors.background,
     },
     inputText: {
       fontSize: 14,
       color: colors.text.secondary,
     },
-    inputField: {
-      flex: 1,
-    },
-    inputValue: {
-      flex: 1,
-    },
-    textInputContainer: {
-      backgroundColor: colors.background,
-      borderRadius: borderRadius.sm,
-      paddingHorizontal: spacing.sm,
-    },
     textInput: {
+      flex: 1,
       fontSize: 14,
       color: colors.text.primary,
       paddingVertical: spacing.xs,
@@ -449,7 +423,7 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     },
     confirmButton: {
       width: "100%",
-      height: 50,
+      minHeight: 50,
       borderRadius: 25,
       justifyContent: "center",
       alignItems: "center",
@@ -461,7 +435,7 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
     },
     cancelButton: {
       width: "100%",
-      height: 50,
+      minHeight: 50,
       borderRadius: 25,
       justifyContent: "center",
       alignItems: "center",

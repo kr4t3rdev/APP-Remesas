@@ -1,8 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LicenseUserDetail } from "../../../types/licenses";
-import { useColors } from "../../../store/themeStore";
+import { useColors, useIsDark } from "../../../store/themeStore";
 
 interface LicenseUserRowProps {
   user: LicenseUserDetail;
@@ -14,7 +14,7 @@ export const LicenseUserRow: React.FC<LicenseUserRowProps> = ({
   onPress,
 }) => {
   const colors = useColors();
-  const isDark = colors.background === "#0f172a";
+  const isDark = useIsDark();
 
   return (
     <TouchableOpacity
@@ -24,6 +24,8 @@ export const LicenseUserRow: React.FC<LicenseUserRowProps> = ({
       ]}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Ver usuario ${user.name}`}
     >
       <View style={styles.avatarContainer}>
         {/* Placeholder for avatar image */}
