@@ -480,8 +480,8 @@
     "semantic_hash": ""
   },
   "src/components/auth/BrandingPanel.tsx": {
-    "mtime": 1785561137.0761833,
-    "ast_hash": "abdcd14848ac126e8249fc45c317a409",
+    "mtime": 1786205293.5075366,
+    "ast_hash": "7df33132b2967fa787e1a6d4bdbb3af3",
     "semantic_hash": ""
   },
   "src/components/auth/index.ts": {
@@ -490,13 +490,13 @@
     "semantic_hash": ""
   },
   "src/components/business/modals/TransactionModal.tsx": {
-    "mtime": 1786198599.058624,
-    "ast_hash": "20dad5cee682ead892718f9d8f4bd801",
+    "mtime": 1786235434.595235,
+    "ast_hash": "17e60f71a3bb117ffdb99244f32f53bd",
     "semantic_hash": ""
   },
   "src/components/business/modals/__tests__/TransactionModal.test.tsx": {
-    "mtime": 1786198657.9314272,
-    "ast_hash": "29370a54d5bb2468f45ca5707bd53906",
+    "mtime": 1786234466.589176,
+    "ast_hash": "329b397d4e89462d1cdec531c8810fb9",
     "semantic_hash": ""
   },
   "src/components/charts/Charts.tsx": {
@@ -545,8 +545,8 @@
     "semantic_hash": ""
   },
   "src/components/layout/Header.tsx": {
-    "mtime": 1785561137.0747159,
-    "ast_hash": "e9e8153362dd984e9001c7b064ec3223",
+    "mtime": 1786205292.8627279,
+    "ast_hash": "5c775b81feb6350e9cdf1b72d1d07e9c",
     "semantic_hash": ""
   },
   "src/components/layout/MainLayout.tsx": {
@@ -560,8 +560,8 @@
     "semantic_hash": ""
   },
   "src/components/layout/Sidebar.tsx": {
-    "mtime": 1785561137.0754704,
-    "ast_hash": "acb313ce97fa7965d3c69a1be22bf938",
+    "mtime": 1786205292.3634856,
+    "ast_hash": "ef49f9dba0b8813b87172a3791b430cd",
     "semantic_hash": ""
   },
   "src/components/layout/index.ts": {
@@ -652,11 +652,6 @@
   "src/components/worker-payments/AddBalanceModal.tsx": {
     "mtime": 1785493914.3185003,
     "ast_hash": "b7da550d5dbf0cdad8dc70be038ec7c4",
-    "semantic_hash": ""
-  },
-  "src/components/worker-payments/TransactionFormModal.tsx": {
-    "mtime": 1785493914.320161,
-    "ast_hash": "6d12181e0510d7dfbd7480d55dc2ec66",
     "semantic_hash": ""
   },
   "src/components/worker-payments/WorkerCard.tsx": {
@@ -965,23 +960,23 @@
     "semantic_hash": ""
   },
   "src/modules/worker-payments/application/useWorkerPayments.test.tsx": {
-    "mtime": 1785493811.4699495,
-    "ast_hash": "20cf03d01feaa4a594a6f1faefeb4158",
+    "mtime": 1786199509.9591768,
+    "ast_hash": "05b757e405fdfed5288d4fc4c310ede0",
     "semantic_hash": ""
   },
   "src/modules/worker-payments/application/useWorkerPayments.ts": {
-    "mtime": 1785493914.3249881,
-    "ast_hash": "3f7b7345c26f1858e26a1aba719461fb",
+    "mtime": 1786199604.3576505,
+    "ast_hash": "8a6489e4faef1bc32bd7c93065b5f1c0",
     "semantic_hash": ""
   },
   "src/modules/worker-payments/infrastructure/workerPayments.repository.test.ts": {
-    "mtime": 1784247315.6173754,
-    "ast_hash": "9ee063a6d33afd55256dc09e83151cea",
+    "mtime": 1786199528.8392153,
+    "ast_hash": "78b5d70942f8af34fc30747878a8373e",
     "semantic_hash": ""
   },
   "src/modules/worker-payments/infrastructure/workerPayments.repository.ts": {
-    "mtime": 1784638602.5915093,
-    "ast_hash": "0f1c041303d2e5ea4cbf3e5b9b6f0f01",
+    "mtime": 1786199624.8703148,
+    "ast_hash": "50d4218c9b7effd6595201c86af323f1",
     "semantic_hash": ""
   },
   "src/navigation/AdminTabs.tsx": {
@@ -1160,13 +1155,13 @@
     "semantic_hash": ""
   },
   "src/screens/auth/WelcomeScreen.tsx": {
-    "mtime": 1785561137.0766304,
-    "ast_hash": "184c54021d3f25a5da558f391d30e07c",
+    "mtime": 1786205292.2229664,
+    "ast_hash": "07bb6347c2dc025b814e7ea86d8a2b58",
     "semantic_hash": ""
   },
   "src/screens/auth/__tests__/RegisterScreen.integration.test.tsx": {
-    "mtime": 1783724096.1087432,
-    "ast_hash": "c38c6a7a8f6d2e4605decd2315f885b5",
+    "mtime": 1786206209.8211184,
+    "ast_hash": "4765ec8cc11d00b7873e784ef435652e",
     "semantic_hash": ""
   },
   "src/screens/bank-accounts/BankAccountsScreen.tsx": {
@@ -1310,8 +1305,8 @@
     "semantic_hash": ""
   },
   "src/screens/worker-payments/WorkerPaymentsScreen.tsx": {
-    "mtime": 1786195158.2676256,
-    "ast_hash": "8d8811736374cb0ac3fcee2bcd031d03",
+    "mtime": 1786199780.4279745,
+    "ast_hash": "dfad32a177425c7884269f6c83c4a90d",
     "semantic_hash": ""
   },
   "src/services/__tests__/authValidationApi.test.ts": {
@@ -1405,8 +1400,8 @@
     "semantic_hash": ""
   },
   "src/types/worker.ts": {
-    "mtime": 1784259462.9354072,
-    "ast_hash": "dbb92698b9cab6bb64dd08edc5ed2f21",
+    "mtime": 1786199881.9621327,
+    "ast_hash": "6e644eedaf455bc77bcd4547cf8cabc1",
     "semantic_hash": ""
   },
   "src/utils/__tests__/validators.test.ts": {
@@ -2205,8 +2200,8 @@
     "semantic_hash": ""
   },
   "src/components/worker-payments/__tests__/WorkerPaymentModals.test.tsx": {
-    "mtime": 1786198949.0766509,
-    "ast_hash": "8471c6b7d3b464b7f8a0528491cc83ff",
+    "mtime": 1786230750.414368,
+    "ast_hash": "c95de67539d06c52288ae619b7078540",
     "semantic_hash": ""
   },
   "src/modules/transactions/application/useTransactions.test.tsx": {
