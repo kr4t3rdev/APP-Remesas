@@ -108,6 +108,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
 
   return (
     <WebAuthFrame
+      navigation={navigation}
+      publicRoute="register"
       eyebrow="CASHFLOW / REGISTRO"
       title="Crea tu estación de trabajo."
       subtitle="Completa tus datos y comienza a ordenar la operación de tu casa de cambio."

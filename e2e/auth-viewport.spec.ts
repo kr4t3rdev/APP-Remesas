@@ -65,73 +65,72 @@ test.describe('Auth screens responsive layout', () => {
   async function gotoRegister(page: Page): Promise<void> {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: 'Crear cuenta' }).first().click();
-    await expect(page.getByText('Regístrate para comenzar').first()).toBeVisible();
+    await expect(page.getByText('Crea tu estación de trabajo.').first()).toBeVisible();
   }
 
   async function gotoVerificationPending(page: Page): Promise<void> {
     await gotoRegister(page);
-    await page.getByPlaceholder('Juan Pérez').fill('Test User');
-    await page.getByPlaceholder('Juanito123').fill('testuser');
-    await page.getByPlaceholder('correo@ejemplo.com').fill('test@example.com');
+    await page.getByPlaceholder('Nombre y apellido').fill('Test User');
+    await page.getByPlaceholder('Tu identificador').fill('testuser');
+    await page.getByPlaceholder('nombre@casadecambio.com').fill('test@example.com');
     await page.getByPlaceholder('••••••••').first().fill('Password123');
     await page.getByPlaceholder('••••••••').last().fill('Password123');
     await page.getByText('Acepto los términos y condiciones').click();
-    await page.getByText('Crear Cuenta', { exact: true }).filter({ visible: true }).last().click();
+    await page.getByText('Crear cuenta', { exact: true }).filter({ visible: true }).last().click();
     await expect(page.getByText('¡Registro exitoso!')).toBeVisible();
   }
 
   test.describe('LoginScreen', () => {
-    test('mobile viewport (375px) - renders mobile layout without BrandingPanel', async ({ page }) => {
+    test('mobile viewport (375px) - renders the shared public auth shell', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
       await gotoLogin(page);
 
-      await expect(page.getByText('Casa de Cambio')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Ir al inicio' })).toBeVisible();
+      await expect(page.getByText('Vuelve a tu mesa operativa.')).toBeVisible();
       await expect(page.getByText('Inicia sesión para continuar')).toBeVisible();
       await expect(page.getByPlaceholder('admin@cambios.com')).toBeVisible();
       await expect(page.getByPlaceholder('••••••••')).toBeVisible();
       await expect(page.getByText('Iniciar Sesión').filter({ visible: true }).first()).toBeVisible();
-      await expect(page.getByText('¿Olvidaste tu contraseña?')).toBeVisible();
+      await expect(page.getByText('Crear cuenta').last()).toBeVisible();
       await expect(page.getByTestId('branding-panel')).not.toBeVisible();
-      await expect(page.getByText('Regístrate').first()).toBeVisible();
     });
 
-    test('desktop viewport (1280px) - renders split layout with BrandingPanel', async ({ page }) => {
+    test('desktop viewport (1280px) - renders the shared public auth shell', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await gotoLogin(page);
 
+      await expect(page.getByRole('button', { name: 'Ir al inicio' })).toBeVisible();
+      await expect(page.getByText('Vuelve a tu mesa operativa.')).toBeVisible();
       await expect(page.getByText('Iniciar Sesión').filter({ visible: true }).first()).toBeVisible();
-      await expect(page.getByText('Ingresa tus credenciales para continuar')).toBeVisible();
+      await expect(page.getByText('Inicia sesión para continuar')).toBeVisible();
       await expect(page.getByPlaceholder('admin@cambios.com')).toBeVisible();
       await expect(page.getByPlaceholder('••••••••')).toBeVisible();
-      await expect(page.getByTestId('branding-panel')).toBeVisible();
-      await expect(page.getByTestId('branding-panel').getByText('CashFlows', { exact: true })).toBeVisible();
-      await expect(page.getByTestId('branding-panel').getByText('Cambio de divisas')).toBeVisible();
-      await expect(page.getByText('¿No tienes cuenta?')).toBeVisible();
+      await expect(page.getByTestId('branding-panel')).not.toBeVisible();
+      await expect(page.getByText('Crear cuenta').last()).toBeVisible();
     });
   });
 
   test.describe('RegisterScreen', () => {
-    test('mobile viewport (375px) - renders mobile layout', async ({ page }) => {
+    test('mobile viewport (375px) - renders the shared public auth shell', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
       await gotoRegister(page);
 
-      await expect(page.getByText('Volver')).toBeVisible();
-      await expect(page.getByText('Crear Cuenta').first()).toBeVisible();
-      await expect(page.getByText('Regístrate para comenzar')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Ir al inicio' })).toBeVisible();
+      await expect(page.getByText('Crea tu estación de trabajo.')).toBeVisible();
+      await expect(page.getByText('Completa tus datos y comienza a ordenar la operación de tu casa de cambio.')).toBeVisible();
       await expect(page.getByText('¿Ya tienes una cuenta?')).toBeVisible();
-      await expect(page.getByText('Iniciar Sesión').filter({ visible: true }).first()).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Iniciar sesión' })).toBeVisible();
       await expect(page.getByTestId('branding-panel')).not.toBeVisible();
     });
 
-    test('desktop viewport (1280px) - renders split layout with BrandingPanel', async ({ page }) => {
+    test('desktop viewport (1280px) - renders the shared public auth shell', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await gotoRegister(page);
 
-      await expect(page.getByText('Crear Cuenta').first()).toBeVisible();
-      await expect(page.getByText('Regístrate para comenzar')).toBeVisible();
-      await expect(page.getByTestId('branding-panel')).toBeVisible();
-      await expect(page.getByTestId('branding-panel').getByText('CashFlows', { exact: true })).toBeVisible();
-      await expect(page.getByTestId('branding-panel').getByText('Cambio de divisas')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Ir al inicio' })).toBeVisible();
+      await expect(page.getByText('Crea tu estación de trabajo.')).toBeVisible();
+      await expect(page.getByText('Crear cuenta').last()).toBeVisible();
+      await expect(page.getByTestId('branding-panel')).not.toBeVisible();
       await expect(page.getByText('¿Ya tienes una cuenta?')).toBeVisible();
     });
   });
@@ -141,7 +140,7 @@ test.describe('Auth screens responsive layout', () => {
       await page.setViewportSize({ width: 375, height: 812 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-      await expect(page.getByText('Cashflow', { exact: true }).first()).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Ir al inicio' })).toBeVisible();
       await expect(page.getByText('Tu casa de cambio, en una sola estación.')).toBeVisible();
       await expect(page.getByText('FX multicurrency')).toBeVisible();
       await expect(page.getByText('El control empieza cuando ves el día completo.')).toBeVisible();
@@ -153,7 +152,7 @@ test.describe('Auth screens responsive layout', () => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-      await expect(page.getByText('Cashflow', { exact: true }).first()).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Ir al inicio' })).toBeVisible();
       await expect(page.getByText('Tu casa de cambio, en una sola estación.')).toBeVisible();
       await expect(page.getByText('FX multicurrency')).toBeVisible();
       await expect(page.getByText('El control empieza cuando ves el día completo.')).toBeVisible();
@@ -187,31 +186,30 @@ test.describe('Auth screens responsive layout', () => {
   });
 
   test.describe('BrandingPanel visibility across breakpoints', () => {
-    test('LoginScreen: BrandingPanel hidden on mobile, visible on desktop', async ({ page }) => {
+    test('LoginScreen: shared public header remains consistent across breakpoints', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
       await gotoLogin(page);
 
-      await expect(page.getByText('Casa de Cambio')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Ir al inicio' })).toBeVisible();
       await expect(page.getByTestId('branding-panel')).not.toBeVisible();
 
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.waitForTimeout(300);
-      await expect(page.getByTestId('branding-panel')).toBeVisible();
-      await expect(
-        page.getByTestId('branding-panel').getByText('Cambio de divisas'),
-      ).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Ir al inicio' })).toBeVisible();
+      await expect(page.getByTestId('branding-panel')).not.toBeVisible();
     });
 
-    test('RegisterScreen: BrandingPanel hidden on mobile, visible on desktop', async ({ page }) => {
+    test('RegisterScreen: shared public header remains consistent across breakpoints', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
       await gotoRegister(page);
 
-      await expect(page.getByText('Volver')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Ir al inicio' })).toBeVisible();
       await expect(page.getByTestId('branding-panel')).not.toBeVisible();
 
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.waitForTimeout(300);
-      await expect(page.getByTestId('branding-panel')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Ir al inicio' })).toBeVisible();
+      await expect(page.getByTestId('branding-panel')).not.toBeVisible();
     });
 
     test('VerificationPendingScreen: BrandingPanel hidden on mobile, visible on desktop', async ({ page }) => {

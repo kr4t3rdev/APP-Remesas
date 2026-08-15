@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { AppLogo } from "../../components/branding/AppLogo";
 import { useColors } from "../../store/themeStore";
 import { webBreakpoints, webMetrics, webType } from "../../web/design/webTokens";
+import { WebPublicHeader } from "../../web/auth/WebPublicHeader";
 
 interface WelcomeScreenProps {
   navigation?: any;
@@ -91,53 +92,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.root}>
-      <View style={styles.header}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Ir al inicio"
-          onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: !reduceMotion })}
-          style={styles.brand}
-        >
-          <AppLogo size={34} />
-          <View>
-            <Text style={styles.brandName}>Cashflow</Text>
-            <Text style={styles.brandMeta}>MESA DE CAMBIO</Text>
-          </View>
-        </Pressable>
-        {!isMobile ? (
-          <View style={styles.nav}>
-            <Pressable accessibilityRole="link" onPress={() => scrollTo("operaciones")} style={styles.navLink}>
-              <Text style={styles.navLinkText}>Operaciones</Text>
-            </Pressable>
-            <Pressable accessibilityRole="link" onPress={() => scrollTo("control")} style={styles.navLink}>
-              <Text style={styles.navLinkText}>Control</Text>
-            </Pressable>
-            <Pressable accessibilityRole="link" onPress={() => scrollTo("acceso")} style={styles.navLink}>
-              <Text style={styles.navLinkText}>Acceso</Text>
-            </Pressable>
-          </View>
-        ) : null}
-        <View style={styles.headerActions}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Iniciar sesión"
-            onPress={() => goTo("Login")}
-            style={({ pressed }) => [styles.headerLogin, pressed && styles.pressed]}
-          >
-            <Text style={styles.headerLoginText}>Iniciar sesión</Text>
-          </Pressable>
-          {!isMobile ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Crear cuenta"
-              onPress={() => goTo("Register")}
-              style={({ pressed }) => [styles.headerRegister, pressed && styles.pressed]}
-            >
-              <Text style={styles.headerRegisterText}>Crear cuenta</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      </View>
+      <WebPublicHeader
+        current="landing"
+        navigation={navigation}
+        onHomePress={() => scrollRef.current?.scrollTo({ y: 0, animated: !reduceMotion })}
+        onSectionPress={scrollTo}
+      />
 
       <ScrollView
         ref={scrollRef}

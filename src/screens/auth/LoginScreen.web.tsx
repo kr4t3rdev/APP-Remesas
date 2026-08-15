@@ -51,6 +51,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   return (
     <WebAuthFrame
+      navigation={navigation}
+      publicRoute="login"
       eyebrow="CASHFLOW / ACCESO"
       title="Vuelve a tu mesa operativa."
       subtitle="Inicia sesión para continuar"

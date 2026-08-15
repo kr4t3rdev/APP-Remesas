@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -7,9 +8,9 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { AppLogo } from "../../components/branding/AppLogo";
 import { useColors } from "../../store/themeStore";
 import { webBreakpoints, webMetrics, webType } from "../design/webTokens";
+import { WebPublicHeader, type WebPublicRoute } from "./WebPublicHeader";
 
 interface WebAuthFrameProps {
   eyebrow?: string;
@@ -17,7 +18,8 @@ interface WebAuthFrameProps {
   subtitle: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  showRail?: boolean;
+  navigation?: any;
+  publicRoute?: Exclude<WebPublicRoute, "landing">;
 }
 
 export function WebAuthFrame({
@@ -26,7 +28,8 @@ export function WebAuthFrame({
   subtitle,
   children,
   footer,
-  showRail = true,
+  navigation,
+  publicRoute,
 }: WebAuthFrameProps) {
   const colors = useColors();
   const { width } = useWindowDimensions();
@@ -35,25 +38,10 @@ export function WebAuthFrame({
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      {isDesktop && showRail ? (
-        <View style={[styles.rail, { backgroundColor: colors.primary[700] }]}>
-          <View style={styles.railBrand}>
-            <AppLogo size={40} />
-            <Text style={styles.railBrandName}>Cashflow</Text>
-          </View>
-          <View style={styles.railCopy}>
-            <Text style={styles.railKicker}>MESA DE CAMBIO</Text>
-            <Text style={styles.railTitle}>
-              Cada saldo visible. Cada operación en su lugar.
-            </Text>
-            <Text style={styles.railBody}>
-              Una estación de trabajo para operar FX, caja y reportes sin
-              perder el hilo del día.
-            </Text>
-          </View>
-          <Text style={styles.railMeta}>SEGURO · MULTIMONEDA · AUDITABLE</Text>
-        </View>
-      ) : null}
+      <WebPublicHeader
+        current={publicRoute ?? "login"}
+        navigation={navigation}
+      />
 
       <ScrollView
         contentContainerStyle={[
@@ -63,8 +51,23 @@ export function WebAuthFrame({
         keyboardShouldPersistTaps="handled"
       >
         <View style={[styles.panel, { backgroundColor: colors.card }]}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Volver al inicio"
+            onPress={() => navigation?.navigate("Welcome")}
+            style={({ pressed }) => [
+              styles.backRow,
+              pressed && styles.backRowPressed,
+            ]}
+          >
+            <Text style={[styles.backArrow, { color: colors.primary[600] }]}>
+              {"\u2190"}
+            </Text>
+            <Text style={[styles.backText, { color: colors.primary[600] }]}>
+              Volver al inicio
+            </Text>
+          </Pressable>
           <View style={styles.panelHeader}>
-            {!isDesktop ? <AppLogo size={36} /> : null}
             <Text style={[styles.eyebrow, { color: colors.primary[600] }]}>
               {eyebrow}
             </Text>
@@ -147,53 +150,7 @@ export function WebField({
 
 const createStyles = (colors: ReturnType<typeof useColors>) =>
   StyleSheet.create({
-    root: { flex: 1, flexDirection: "row", minHeight: "100%" },
-    rail: {
-      flex: 0.42,
-      minWidth: 360,
-      maxWidth: 560,
-      justifyContent: "space-between",
-      paddingHorizontal: 48,
-      paddingVertical: 44,
-    },
-    railBrand: { flexDirection: "row", alignItems: "center", gap: 12 },
-    railBrandName: {
-      color: "#FFFFFF",
-      fontFamily: webType.family,
-      fontSize: 18,
-      fontWeight: "700",
-      letterSpacing: 0.2,
-    },
-    railCopy: { maxWidth: 380, gap: 14 },
-    railKicker: {
-      color: "#BFD4FF",
-      fontFamily: webType.family,
-      fontSize: 11,
-      fontWeight: "700",
-      letterSpacing: 1.4,
-    },
-    railTitle: {
-      color: "#FFFFFF",
-      fontFamily: webType.family,
-      fontSize: 36,
-      fontWeight: "700",
-      lineHeight: 44,
-      maxWidth: 360,
-    },
-    railBody: {
-      color: "#D7E3F8",
-      fontFamily: webType.family,
-      fontSize: 16,
-      lineHeight: 25,
-      maxWidth: 340,
-    },
-    railMeta: {
-      color: "#BFD4FF",
-      fontFamily: webType.family,
-      fontSize: 11,
-      fontWeight: "700",
-      letterSpacing: 1.1,
-    },
+    root: { flex: 1, flexDirection: "column", minHeight: "100%" },
     content: {
       flexGrow: 1,
       justifyContent: "center",
@@ -211,6 +168,31 @@ const createStyles = (colors: ReturnType<typeof useColors>) =>
       borderColor: colors.border,
     },
     panelHeader: { gap: 10, marginBottom: 28 },
+    backRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 7,
+      alignSelf: "flex-start",
+      minHeight: webMetrics.touchTarget,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      marginLeft: -10,
+      marginTop: -14,
+      marginBottom: 10,
+      borderRadius: webMetrics.fieldRadius,
+    },
+    backRowPressed: { opacity: 0.6 },
+    backArrow: {
+      fontFamily: webType.family,
+      fontSize: 18,
+      lineHeight: 20,
+      fontWeight: "700",
+    },
+    backText: {
+      fontFamily: webType.family,
+      fontSize: 13,
+      fontWeight: "600",
+    },
     eyebrow: {
       fontFamily: webType.family,
       fontSize: 11,
