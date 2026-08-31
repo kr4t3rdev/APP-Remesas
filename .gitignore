@@ -39,6 +39,9 @@ credentials.json
 output/apk/
 relases/
 
+# Vercel
+.vercel/
+
 # typescript
 *.tsbuildinfo
 
@@ -52,3 +55,5 @@ relases/
 # Playwright
 playwright-report/
 test-results/
+.vercel
+.env*
