@@ -18,6 +18,7 @@ import { GradientCard } from "../../components/admin/GradientCard";
 import { ActionTile } from "../../components/admin/ActionTile";
 import { t } from "../../i18n";
 import { AdminMetrics } from "../../types/adminMetrics";
+import { fetchAdminMetrics } from "../../api/adminMetricsApi";
 import { BottomNav } from "../../components/admin/BottomNav";
 import { AdminHeader } from "../../components/admin/layout/AdminHeader";
 import { useThemeStore } from "../../store/themeStore";
@@ -38,23 +39,18 @@ export const AdminServicesScreen: React.FC = () => {
     }
   }, [colorScheme, setTheme]);
 
-  const fetchMetrics = () => {
-    // Bind dynamic metrics on mount
-    // Fallback to mock locally if API isn't wired yet
-    // We import the API lazily here to avoid runtime dependency issues in SSR-like environments
-    import("../../api/adminMetricsApi")
-      .then((m) => {
-        m.fetchAdminMetrics().then((data: AdminMetrics) => setMetrics(data));
-      })
-      .catch(() => {
-        // Fallback demo data
-        setMetrics({
-          activeCount: 1240,
-          expiredCount: 85,
-          activeDelta: "+12%",
-          expiredDelta: "-5%",
-        });
-      });
+  const [hasError, setHasError] = useState(false);
+
+  const fetchMetrics = async () => {
+    // Bind metrics on mount. Errors surface as an error state —
+    // never render fabricated metrics as if they were real.
+    setHasError(false);
+    try {
+      const data: AdminMetrics = await fetchAdminMetrics();
+      setMetrics(data);
+    } catch {
+      setHasError(true);
+    }
   };
 
   useEffect(() => {
@@ -114,6 +110,12 @@ export const AdminServicesScreen: React.FC = () => {
               icon="alert-circle"
               iconColor="#ef4444"
             />
+          </View>
+        ) : hasError ? (
+          <View style={styles.loadingRow}>
+            <Text style={{ color: "#dc2626", fontWeight: "600" }}>
+              No se pudieron cargar los indicadores. Reintenta.
+            </Text>
           </View>
         ) : (
           <View style={styles.loadingRow}>

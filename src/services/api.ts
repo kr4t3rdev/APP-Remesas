@@ -6,7 +6,7 @@ import type { ApiError } from "../types";
 interface RequestConfig {
   method?: string;
   headers?: Record<string, string>;
-  body?: string;
+  body?: string | FormData;
 }
 
 interface ApiResponse<T = any> {
@@ -118,16 +118,21 @@ class ApiClient {
     const queryString = options?.params ? this.buildQueryString(options.params) : '';
     const fullUrl = `${this.baseURL}${url}${queryString}`;
 
+    // FormData (uploads) must not be JSON-stringified, and its Content-Type
+    // must be left to fetch/React Native so the multipart boundary is set.
+    const isFormData =
+      typeof FormData !== "undefined" && options?.data instanceof FormData;
+
     let config: RequestConfig = {
       method,
       headers: {
-        "Content-Type": "application/json",
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...options?.headers,
       },
     };
 
     if (options?.data) {
-      config.body = JSON.stringify(options.data);
+      config.body = isFormData ? options.data : JSON.stringify(options.data);
     }
 
     // Ejecutar interceptores de request

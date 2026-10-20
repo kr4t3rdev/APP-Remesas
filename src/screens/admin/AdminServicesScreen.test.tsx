@@ -36,20 +36,33 @@ describe("AdminServicesScreen", () => {
   });
 
   it("renders metrics cards with data", async () => {
-    // The component uses dynamic import which might fail in test env, falling back to default data
-    // We check for the fallback data or mocked data if dynamic import works
+    (adminMetricsApi.fetchAdminMetrics as jest.Mock).mockResolvedValue({
+      activeCount: 1240,
+      expiredCount: 85,
+      activeDelta: "+12%",
+      expiredDelta: "-5%",
+    });
+
     const { getByText } = render(<AdminServicesScreen />);
 
     await waitFor(() => {
-      // Expecting fallback data or mock data.
-      // Since the previous run showed 1,240, it means it fell back.
-      // We can try to make the test flexible or just expect the fallback if we can't easily mock dynamic import.
-      try {
-        expect(getByText("1,240")).toBeTruthy();
-      } catch {
-        expect(getByText("999")).toBeTruthy();
-      }
+      expect(getByText("1,240")).toBeTruthy();
     });
+  });
+
+  it("shows an error state instead of fabricated metrics when the API fails", async () => {
+    (adminMetricsApi.fetchAdminMetrics as jest.Mock).mockRejectedValue(
+      new Error("API down"),
+    );
+
+    const { getByText, queryByText } = render(<AdminServicesScreen />);
+
+    await waitFor(() => {
+      expect(
+        getByText("No se pudieron cargar los indicadores. Reintenta."),
+      ).toBeTruthy();
+    });
+    expect(queryByText("1,240")).toBeNull();
   });
 
   it("renders management cards", async () => {

@@ -1,7 +1,4 @@
-import { API_CONFIG } from "../config/constants";
-import * as SecureStore from "expo-secure-store";
-
-const BASE_URL = API_CONFIG.baseURL;
+import api from "../services/api";
 
 export interface UploadResponse {
   message: string;
@@ -11,43 +8,25 @@ export interface UploadResponse {
 
 export const uploadApi = {
   /**
-   * Upload user avatar
-   * @param imageUri Local URI of the image to upload
+   * Upload user avatar (POST /upload/avatar, multipart/form-data).
+   * Goes through the shared ApiClient: it attaches the stored auth token,
+   * applies the timeout and clears the session on 401. The client detects
+   * FormData and lets the runtime set the multipart boundary.
    */
   async uploadAvatar(imageUri: string): Promise<UploadResponse> {
-    try {
-      const token = await SecureStore.getItemAsync("auth_token");
+    const filename = imageUri.split("/").pop() || "avatar.jpg";
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : "image/jpeg";
 
-      const formData = new FormData();
-      const filename = imageUri.split("/").pop() || "avatar.jpg";
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : "image/jpeg";
+    const formData = new FormData();
+    // @ts-ignore - React Native FormData expects name, type, uri
+    formData.append("file", {
+      uri: imageUri,
+      name: filename,
+      type,
+    });
 
-      // @ts-ignore - React Native FormData expects name, type, uri
-      formData.append("file", {
-        uri: imageUri,
-        name: filename,
-        type,
-      });
-
-      const response = await fetch(`${BASE_URL}/upload/avatar`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to upload avatar");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("[uploadApi] Upload error:", error);
-      throw error;
-    }
+    const response = await api.post<UploadResponse>("/upload/avatar", formData);
+    return response.data!;
   },
 };

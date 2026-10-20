@@ -1,11 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -26,10 +25,13 @@ type ExtendLicenseModalProps = {
   onSuccess: () => void;
 };
 
-const EXTENSION_OPTIONS = [
-  { days: 30, label: "30 días" },
-  { days: 60, label: "60 días" },
-  { days: 90, label: "90 días" },
+// The backend renews licenses by billing cycle only
+// (PATCH /subscriptions/licenses/:id/renew { planId, cycle }),
+// mirroring CYCLE_DAYS in the API: MONTHLY=30, SEMIANNUAL=180, ANNUAL=365.
+const EXTENSION_OPTIONS: { cycle: BillingCycle; days: number; label: string }[] = [
+  { cycle: "MONTHLY", days: 30, label: "Mensual" },
+  { cycle: "SEMIANNUAL", days: 180, label: "Semestral" },
+  { cycle: "ANNUAL", days: 365, label: "Anual" },
 ];
 
 const CYCLE_LABELS: Record<BillingCycle, string> = {
@@ -53,24 +55,27 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDays, setSelectedDays] = useState<number>(30);
-  const [customDays, setCustomDays] = useState<string>("");
+  const [selectedCycle, setSelectedCycle] = useState<BillingCycle>(currentCycle);
 
-  const effectiveDays = customDays.trim() ? parseInt(customDays, 10) : selectedDays;
+  useEffect(() => {
+    if (visible) setSelectedCycle(currentCycle);
+  }, [visible, currentCycle]);
+
+  const effectiveDays =
+    EXTENSION_OPTIONS.find((option) => option.cycle === selectedCycle)?.days ?? 30;
   const baseDate = currentExpiry > new Date() ? currentExpiry : new Date();
-  const newExpiry = addDays(baseDate, isNaN(effectiveDays) ? 0 : effectiveDays);
+  const newExpiry = addDays(baseDate, effectiveDays);
 
   const handleExtend = async () => {
-    if (!licenseId || isNaN(effectiveDays) || effectiveDays <= 0) {
-      setError("Selecciona un período de extensión válido");
+    if (!licenseId || !currentPlanId) {
+      setError("No se pudo identificar el plan de la licencia");
       return;
     }
     setLoading(true);
     setError(null);
 
     try {
-      const months = Math.max(1, Math.round(effectiveDays / 30));
-      await licensesApi.extendLicense(licenseId, months);
+      await licensesApi.extendLicense(licenseId, currentPlanId, selectedCycle);
       onSuccess();
     } catch (err: unknown) {
       console.error("Error extending license:", err);
@@ -146,11 +151,10 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
           </Text>
           <View style={styles.optionsRow}>
             {EXTENSION_OPTIONS.map((option) => {
-              const isSelected =
-                customDays.trim() === "" && selectedDays === option.days;
+              const isSelected = selectedCycle === option.cycle;
               return (
                 <TouchableOpacity
-                  key={option.days}
+                  key={option.cycle}
                   style={[
                     styles.optionItem,
                     {
@@ -162,13 +166,10 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
                       backgroundColor: `${colors.primary[500]}10`,
                     },
                   ]}
-                  onPress={() => {
-                    setSelectedDays(option.days);
-                    setCustomDays("");
-                  }}
+                  onPress={() => setSelectedCycle(option.cycle)}
                   accessibilityRole="radio"
                   accessibilityState={{ selected: isSelected }}
-                  accessibilityLabel={`Extender ${option.label}`}
+                  accessibilityLabel={`Extender ciclo ${option.label}`}
                 >
                   <Text
                     style={[
@@ -186,37 +187,9 @@ export const ExtendLicenseModal: React.FC<ExtendLicenseModalProps> = ({
             })}
           </View>
 
-          <View style={styles.customRow}>
-            <Text style={styles.customLabel}>O personalizado:</Text>
-            <View
-              style={[
-                styles.customOption,
-                customDays.trim() !== "" && {
-                  borderColor: colors.primary[500],
-                  backgroundColor: `${colors.primary[500]}10`,
-                },
-              ]}
-            >
-              <Text style={styles.inputText}>Días:</Text>
-              <TextInput
-                style={styles.textInput}
-                value={customDays}
-                onChangeText={(text) => {
-                  const num = text.replace(/[^0-9]/g, "");
-                  setCustomDays(num);
-                }}
-                placeholder="0"
-                placeholderTextColor={colors.text.tertiary}
-                keyboardType="number-pad"
-                maxLength={3}
-                accessibilityLabel="Días de extensión personalizados"
-              />
-            </View>
-          </View>
-
           <View style={styles.planInfo}>
             <Text style={styles.planInfoText}>
-              Plan: {CYCLE_LABELS[currentCycle]} (ID {currentPlanId})
+              Plan ID {currentPlanId} · Ciclo: {CYCLE_LABELS[selectedCycle]} (+{effectiveDays} días)
             </Text>
           </View>
 

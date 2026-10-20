@@ -89,22 +89,20 @@ export const licensesApi = {
     });
   },
 
-  extendLicense: async (id: string, months: number): Promise<void> => {
-    // The backend expects a patch to /renew with planId and cycle.
-    // For now we'll do a simple fallback if the API is different.
-    await api.patch(`/subscriptions/licenses/${id}/renew`, { months });
-  },
-
-  removeUserFromLicense: async (
-    licenseId: string,
-    userId: string,
+  extendLicense: async (
+    id: string,
+    planId: number,
+    cycle: BillingCycle,
   ): Promise<void> => {
-    await api.delete(`/subscriptions/licenses/${licenseId}/users/${userId}`);
+    // Backend contract (RenewLicenseDto): PATCH /subscriptions/licenses/:id/renew
+    // requires { planId, cycle }. It rejects any other property
+    // (ValidationPipe forbidNonWhitelisted), so never send { months }.
+    await subscriptionsRepository.renewLicense(Number(id), { planId, cycle });
   },
 
-  deleteLicense: async (id: string): Promise<void> => {
-    await api.delete(`/subscriptions/licenses/${id}`);
-  },
+  // NOTE: there is intentionally no deleteLicense / removeUserFromLicense.
+  // The backend exposes no DELETE route under /subscriptions/licenses —
+  // calling one returned 404. License lifecycle is renew/suspend/reactivate.
 
   fetchLicenseDetails: async (id: string): Promise<LicenseDetail | null> => {
     try {

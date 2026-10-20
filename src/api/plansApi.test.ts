@@ -41,7 +41,7 @@ describe("plansApi", () => {
       themeColor: "#fff",
     });
 
-    expect(api.post).toHaveBeenCalledWith("/subscriptions/plans", {
+    expect(api.post).toHaveBeenCalledWith("/plans", {
       name: "Plan Pro",
       description: "desc",
       isActive: true,
@@ -64,7 +64,7 @@ describe("plansApi", () => {
 
     await plansApi.updatePlan("7", { name: "Plan Pro", price: 120 });
 
-    expect(api.patch).toHaveBeenCalledWith("/subscriptions/plans/7", {
+    expect(api.patch).toHaveBeenCalledWith("/plans/7", {
       name: "Plan Pro",
       monthlyUsd: 120,
     });
