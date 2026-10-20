@@ -11,7 +11,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:e2e": "E2E_RUN=1 playwright test",
-    "test:e2e:list": "playwright test --list"
+    "test:e2e:list": "playwright test --list",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
