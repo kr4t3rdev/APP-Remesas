@@ -34,7 +34,7 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
       - name: Test (Jest)
-        run: pnpm exec jest --ci
+        run: pnpm exec jest --ci --forceExit
   build-web:
     name: Build web
     runs-on: ubuntu-latest
