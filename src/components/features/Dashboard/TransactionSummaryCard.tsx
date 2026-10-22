@@ -111,7 +111,7 @@ export const TransactionSummaryCard: React.FC<TransactionSummaryCardProps> = ({
               color: colors.text.primary,
             }}
           >
-            $ {report.profit.net.toLocaleString()}
+            $ {Number(report.profit.net ?? 0).toLocaleString()}
           </Text>
         </View>
       </View>

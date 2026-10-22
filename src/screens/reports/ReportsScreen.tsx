@@ -182,9 +182,9 @@ export const ReportsScreen: React.FC = () => {
 		const num = Number(value) || 0;
 		return num.toLocaleString("es-CU", { minimumFractionDigits: 2 });
 	};
-	const formatPrimaryAmount = (value: number | string) => {
+	const formatPrimaryAmount = (value: number | string | null | undefined) => {
 		const identity = primaryCurrency?.symbol || primaryCurrency?.code || "";
-		return `${identity}${identity ? " " : ""}${formatNumber(value)}`;
+		return `${identity}${identity ? " " : ""}${formatNumber(Number(value ?? 0))}`;
 	};
 
 	const handlePeriodStartChange = (date: string) => {
@@ -263,7 +263,7 @@ export const ReportsScreen: React.FC = () => {
 		? Object.entries(safeDailyReport.expenses.byCategory).map(
 				([category, data]) => ({
 					label: category.charAt(0).toUpperCase() + category.slice(1),
-					value: data?.total ?? 0,
+					value: Number(data?.total ?? 0),
 					color:
 						themeColors.dashboard.categories?.[
 							category as keyof typeof themeColors.dashboard.categories
@@ -278,7 +278,7 @@ export const ReportsScreen: React.FC = () => {
 	const periodDailyChartData = periodReport?.dailyBreakdown
 		? periodReport.dailyBreakdown.map((item) => ({
 				label: format(new Date(item.date), "dd/MM"),
-				value: item.marginProfit,
+				value: Number(item.marginProfit),
 				color: themeColors.primary[500],
 			}))
 		: [];
@@ -287,7 +287,7 @@ export const ReportsScreen: React.FC = () => {
 		? Object.entries(periodReport.expensesByCategory).map(
 				([category, data]) => ({
 					label: category.charAt(0).toUpperCase() + category.slice(1),
-					value: data.total,
+					value: Number(data.total),
 					color:
 						themeColors.dashboard.categories?.[
 							category as keyof typeof themeColors.dashboard.categories
@@ -389,9 +389,9 @@ export const ReportsScreen: React.FC = () => {
 								}
 								color={themeColors.success}
 								trend={
-									safeDailyReport.profit.net > 0
+									Number(safeDailyReport.profit.net ?? 0) > 0
 										? "up"
-										: safeDailyReport.profit.net < 0
+										: Number(safeDailyReport.profit.net ?? 0) < 0
 											? "down"
 											: "neutral"
 								}
@@ -901,9 +901,9 @@ export const ReportsScreen: React.FC = () => {
 									}
 									color={themeColors.success}
 									trend={
-										periodReport.summary.netProfit > 0
+										Number(periodReport.summary.netProfit ?? 0) > 0
 											? "up"
-											: periodReport.summary.netProfit < 0
+											: Number(periodReport.summary.netProfit ?? 0) < 0
 												? "down"
 												: "neutral"
 									}
@@ -985,17 +985,17 @@ export const ReportsScreen: React.FC = () => {
 	const renderProfitReport = () => {
 		const profitReport = profitReportQuery.data;
 		const marginPct =
-			profitReport && profitReport.totalVentas > 0
-				? (profitReport.totalMarginProfit / profitReport.totalVentas) * 100
+			profitReport && Number(profitReport.totalVentas) > 0
+				? (Number(profitReport.totalMarginProfit) / Number(profitReport.totalVentas)) * 100
 				: 0;
 		const hasData =
 			profitReport &&
-			(profitReport.totalMarginProfit !== 0 || profitReport.totalVentas > 0);
+			(Number(profitReport.totalMarginProfit) !== 0 || Number(profitReport.totalVentas) > 0);
 
 		const profitByCurrency = profitReport
 			? Object.entries(profitReport.byCurrency).map(([code, data]) => ({
 					label: code,
-					value: data.marginProfit,
+					value: Number(data.marginProfit),
 					count: data.count,
 				}))
 			: [];
@@ -1145,14 +1145,14 @@ export const ReportsScreen: React.FC = () => {
 													name="swap-vertical"
 													size={20}
 													color={
-														profitReport!.netFlow >= 0
+														Number(profitReport!.netFlow) >= 0
 															? themeColors.success
 															: themeColors.danger
 													}
 												/>
 											}
 											color={
-												profitReport!.netFlow >= 0
+												Number(profitReport!.netFlow) >= 0
 													? themeColors.success
 													: themeColors.danger
 											}

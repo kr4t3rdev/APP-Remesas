@@ -238,43 +238,45 @@ export type DailyReport = {
     total: number;
     compras: number;
     ventas: number;
-    totalCompras: number;
-    totalVentas: number;
+    /** Decimales como string (tarea 1.14). */
+    totalCompras: string;
+    totalVentas: string;
   };
   expenses: {
     total: number;
-    totalAmount: number;
-    totalAmountInCup: number | null;
+    totalAmount: string;
+    totalAmountInCup: string | null;
     unconvertedCount: number;
-    byCategory: Record<string, { count: number; total: number }>;
+    byCategory: Record<string, { count: number; total: string }>;
   };
   profit: {
     margin: number;
-    marginProfit: number;
-    net: number;
+    marginProfit: string;
+    net: string | null;
   };
 };
 
-export type CategorySummary = Record<string, { count: number; total: number }>;
+export type CategorySummary = Record<string, { count: number; total: string }>;
 
 export type CurrencyTransactionSummary = Record<
   string,
-  { compras: number; ventas: number; count: number }
+  { compras: string; ventas: string; count: number }
 >;
 
 export type CurrencyExpenseSummary = Record<
   string,
-  { total: number; count: number }
+  { total: string; count: number }
 >;
 
 export type DailyBreakdownItem = {
   date: string;
   transactions: number;
-  transactionsTotalCup: number;
+  /** Decimales como string (tarea 1.14). */
+  transactionsTotalCup: string;
   expenses: number;
-  expensesTotalCup: number;
+  expensesTotalCup: string;
   expensesUnconverted: number;
-  marginProfit: number;
+  marginProfit: string;
 };
 
 export type PeriodReport = {
@@ -285,11 +287,11 @@ export type PeriodReport = {
   summary: {
     totalTransactions: number;
     totalExpensesCount: number;
-    totalExpensesAmount: number;
-    totalExpensesInCup: number | null;
+    totalExpensesAmount: string;
+    totalExpensesInCup: string | null;
     unconvertedExpensesCount: number;
-    marginProfit: number;
-    netProfit: number;
+    marginProfit: string;
+    netProfit: string | null;
   };
   dailyBreakdown: DailyBreakdownItem[];
   transactionsByCurrency: CurrencyTransactionSummary;
@@ -300,16 +302,17 @@ export type ProfitReportTransaction = {
   id: number;
   type: TransactionType;
   currency: string;
-  amount: number;
-  rate: number;
-  totalCup: number;
-  marginProfit: number;
+  /** Decimales como string (tarea 1.14). */
+  amount: string;
+  rate: string;
+  totalCup: string;
+  marginProfit: string;
   createdAt: string;
 };
 
 export type ProfitByCurrencySummary = Record<
   string,
-  { marginProfit: number; count: number }
+  { marginProfit: string; count: number }
 >;
 
 export type ProfitReport = {
@@ -317,10 +320,10 @@ export type ProfitReport = {
     startDate: string;
     endDate: string;
   };
-  totalMarginProfit: number;
-  totalCompras: number;
-  totalVentas: number;
-  netFlow: number;
+  totalMarginProfit: string;
+  totalCompras: string;
+  totalVentas: string;
+  netFlow: string;
   byCurrency: ProfitByCurrencySummary;
   transactions: ProfitReportTransaction[];
 };
@@ -328,17 +331,17 @@ export type ProfitReport = {
 export type CurrencyReport = {
   currencyId: number;
   currency: Currency | null;
-  currentBalance: number;
+  currentBalance: string;
   totalTransactions: number;
-  totalCompras: number;
-  totalVentas: number;
+  totalCompras: string;
+  totalVentas: string;
   transactions: Transaction[];
 };
 
 export type ExpensesReport = {
   total: number;
-  totalAmount: number;
-  totalAmountInCup: number | null;
+  totalAmount: string;
+  totalAmountInCup: string | null;
   unconvertedCount: number;
   byCategory: CategorySummary;
   byCurrency: CurrencyExpenseSummary;
@@ -351,7 +354,7 @@ export type AccountReportItem = BankAccount & {
 
 export type AccountsReport = {
   totalAccounts: number;
-  totalBalance: number;
+  totalBalance: string;
   accounts: AccountReportItem[];
 };
 
