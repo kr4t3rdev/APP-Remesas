@@ -480,16 +480,18 @@ export type AdminKpiSnapshot = {
   trialToPaidConversionPct: number;
   renewalRatePct: number;
   cancellationRatePct: number;
-  mrrEstimateCup: number;
-  arpuEstimateCup: number;
-  revenueAtRiskCup: number;
+  /** Decimales como string (representación única acordada, tarea 1.14). */
+  mrrEstimateCup: string;
+  arpuEstimateCup: string;
+  revenueAtRiskCup: string;
 };
 
 export type AdminPlatformSeriesBucket = {
   label: string;
   year: number;
   month: number;
-  billingCup: number;
+  /** Decimal como string (representación única acordada, tarea 1.14). */
+  billingCup: string;
   newUsers: number;
   churn: number;
 };
@@ -498,7 +500,7 @@ export type AdminPlatformSeries = {
   monthsBack: number;
   series: AdminPlatformSeriesBucket[];
   totals: {
-    billingCup: number;
+    billingCup: string;
     newUsers: number;
     churn: number;
   };

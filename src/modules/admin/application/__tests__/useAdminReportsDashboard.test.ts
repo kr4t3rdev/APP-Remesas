@@ -26,12 +26,12 @@ describe("useAdminReportsDashboard helpers", () => {
 
   it("creates 6 platform bars from real platform series data", () => {
     const series = [
-      { label: "ENE", year: 2026, month: 0, billingCup: 100, newUsers: 5, churn: 1 },
-      { label: "FEB", year: 2026, month: 1, billingCup: 250, newUsers: 8, churn: 2 },
-      { label: "MAR", year: 2026, month: 2, billingCup: 400, newUsers: 12, churn: 1 },
-      { label: "ABR", year: 2026, month: 3, billingCup: 600, newUsers: 15, churn: 3 },
-      { label: "MAY", year: 2026, month: 4, billingCup: 500, newUsers: 10, churn: 2 },
-      { label: "JUN", year: 2026, month: 5, billingCup: 700, newUsers: 18, churn: 4 },
+      { label: "ENE", year: 2026, month: 0, billingCup: "100", newUsers: 5, churn: 1 },
+      { label: "FEB", year: 2026, month: 1, billingCup: "250", newUsers: 8, churn: 2 },
+      { label: "MAR", year: 2026, month: 2, billingCup: "400", newUsers: 12, churn: 1 },
+      { label: "ABR", year: 2026, month: 3, billingCup: "600", newUsers: 15, churn: 3 },
+      { label: "MAY", year: 2026, month: 4, billingCup: "500", newUsers: 10, churn: 2 },
+      { label: "JUN", year: 2026, month: 5, billingCup: "700", newUsers: 18, churn: 4 },
     ];
 
     const bars = buildPlatformBars(series);

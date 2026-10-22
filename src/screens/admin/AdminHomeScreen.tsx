@@ -190,7 +190,7 @@ export const AdminHomeScreen: React.FC = () => {
             </View>
             <View style={styles.kpiCell}>
               <Text style={styles.kpiLabel}>EN RIESGO</Text>
-              <Text style={[styles.kpiValue, { color: colors.warning }]}>{kpis.revenueAtRiskCup.toLocaleString("es-CU")} CUP</Text>
+              <Text style={[styles.kpiValue, { color: colors.warning }]}>{Number(kpis.revenueAtRiskCup).toLocaleString("es-CU")} CUP</Text>
             </View>
             <View style={styles.kpiCell}>
               <Text style={styles.kpiLabel}>CONVERSIÓN</Text>

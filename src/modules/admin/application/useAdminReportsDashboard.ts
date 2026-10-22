@@ -132,15 +132,15 @@ export function buildPlatformBars(
 ): DashboardPlatformBar[] {
 	if (!series.length) return [];
 
-	const maxAbs = Math.max(...series.map((s) => Math.abs(s.billingCup)), 0);
+	const maxAbs = Math.max(...series.map((s) => Math.abs(Number(s.billingCup))), 0);
 	const activeIndex =
 		maxAbs <= 0
 			? Math.floor(series.length / 2)
-			: series.findIndex((s) => Math.abs(s.billingCup) === maxAbs);
+			: series.findIndex((s) => Math.abs(Number(s.billingCup)) === maxAbs);
 
 	return series.map((bucket, idx) => ({
 		label: bucket.label,
-		value: bucket.billingCup,
+		value: Number(bucket.billingCup),
 		isActive: idx === activeIndex,
 	}));
 }
@@ -202,7 +202,7 @@ export function buildUsersGrowthPoints(
 function buildMetricTiles(
 	kpis: AdminKpiSnapshot | null,
 ): DashboardMetricTile[] {
-	const mrr = kpis?.mrrEstimateCup ?? 0;
+	const mrr = Number(kpis?.mrrEstimateCup ?? 0);
 	const users = kpis?.totalUsers ?? 0;
 	const trialToPaidTrend = buildTrend(kpis?.trialToPaidConversionPct ?? 0);
 
@@ -256,7 +256,7 @@ function buildPlatformModel(
 	platformSeries?: AdminPlatformSeries | null,
 ) {
 	const bars = buildPlatformBars(platformSeries?.series ?? []);
-	const totalBilling = platformSeries?.totals?.billingCup ?? 0;
+	const totalBilling = Number(platformSeries?.totals?.billingCup ?? 0);
 	const newUsersTotal = platformSeries?.totals?.newUsers ?? 0;
 	const churnTotal = platformSeries?.totals?.churn ?? 0;
 
