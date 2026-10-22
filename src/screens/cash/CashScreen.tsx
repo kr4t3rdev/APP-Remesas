@@ -238,7 +238,7 @@ export const CashScreen: React.FC = () => {
                             </View>
                             <Text style={[styles.currencyCode, { color: colors.text.secondary }]} numberOfLines={1}>{account.name}</Text>
                             <Text style={[styles.bankName, { color: colors.text.secondary }]} numberOfLines={1}>{account.bankName}</Text>
-                            <Text style={[styles.balanceValue, { color: colors.text.primary }]}>{formatAmount(account.balance, account.currency.symbol)}</Text>
+                            <Text style={[styles.balanceValue, { color: colors.text.primary }]}>{formatAmount(Number(account.balance), account.currency.symbol)}</Text>
                           </View>
                         </ScaleIn>
                       );

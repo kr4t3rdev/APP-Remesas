@@ -123,7 +123,8 @@ export type BankAccount = {
   currencyId: number;
   currency: Currency;
   accountNumber: string;
-  balance: number;
+  /** Decimal como string (representación única acordada, tarea 1.14). */
+  balance: string;
   isActive: boolean;
 };
 

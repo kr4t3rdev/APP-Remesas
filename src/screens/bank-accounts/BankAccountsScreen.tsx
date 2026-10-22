@@ -231,7 +231,7 @@ export const BankAccountsScreen: React.FC = () => {
               <Text style={[styles.balanceLabel, { color: colors.text.tertiary }]}>DISPONIBLE</Text>
               <Text style={[styles.balanceValue, { color: colors.text.primary }]}>
                 {item.currency.symbol}
-                {item.balance.toLocaleString("en-US", {
+                {Number(item.balance).toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                 })}
               </Text>
@@ -260,7 +260,7 @@ export const BankAccountsScreen: React.FC = () => {
       if (!acc[code]) {
         acc[code] = { symbol: account.currency.symbol, code, balance: 0 };
       }
-      acc[code].balance += account.balance;
+      acc[code].balance += Number(account.balance);
       return acc;
     },
     {},
