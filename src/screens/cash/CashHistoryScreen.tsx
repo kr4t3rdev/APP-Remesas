@@ -75,7 +75,7 @@ export const CashHistoryScreen: React.FC = () => {
       iconBg = colors.primary[50];
       title = "Arqueo de Caja";
       subtitle = item.notes || "Sin notas";
-      const diff = item.difference;
+      const diff = Number(item.difference);
       amount = `Diff: ${diff > 0 ? "+" : ""}${diff}`;
       amountColor =
         diff === 0 ? colors.success : diff > 0 ? colors.success : colors.danger;

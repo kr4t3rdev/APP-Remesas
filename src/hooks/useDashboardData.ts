@@ -139,9 +139,9 @@ export const useDashboardData = () => {
     return isPrimary || exchangeRatesData.some((rate) => rate.currencyId === balance.currencyId);
   })
     ? cashBalancesData.reduce((sum, balance) => {
-        if (balance.currencyId === primaryCurrency.id) return sum + balance.balance;
+        if (balance.currencyId === primaryCurrency.id) return sum + Number(balance.balance);
         const rate = exchangeRatesData.find((item) => item.currencyId === balance.currencyId);
-        return sum + (rate ? balance.balance * Number(rate.sellRate) : 0);
+        return sum + (rate ? Number(balance.balance) * Number(rate.sellRate) : 0);
       }, 0)
     : null;
 

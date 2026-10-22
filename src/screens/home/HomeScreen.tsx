@@ -394,7 +394,7 @@ export const HomeScreen: React.FC = () => {
                           { color: themeColors.text.primary },
                         ]}
                       >
-                        {balance.balance.toLocaleString("es-CU", {
+                        {Number(balance.balance).toLocaleString("es-CU", {
                           minimumFractionDigits: 2,
                         })}
                       </Text>

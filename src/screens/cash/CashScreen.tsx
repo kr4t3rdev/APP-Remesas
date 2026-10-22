@@ -207,7 +207,7 @@ export const CashScreen: React.FC = () => {
                               <Text style={[styles.currencySymbol, { color: colors.text.primary }]}>{balance.currency.symbol}</Text>
                           </View>
                             <Text style={[styles.currencyCode, { color: colors.text.secondary }]}>{balance.currency.code}</Text>
-                            <Text style={[styles.balanceValue, { color: colors.text.primary }]}>{formatAmount(balance.balance, balance.currency.symbol)}</Text>
+                            <Text style={[styles.balanceValue, { color: colors.text.primary }]}>{formatAmount(Number(balance.balance), balance.currency.symbol)}</Text>
                           </View>
                         </ScaleIn>
                       );
@@ -274,7 +274,7 @@ export const CashScreen: React.FC = () => {
                     id: movement.id,
                     title: movement.title,
                     subtitle: `${movement.description} · ${format(new Date(movement.createdAt), "d MMM, HH:mm", { locale: es })}`,
-                    amount: movement.totalBase ?? movement.amount,
+                    amount: Number(movement.totalBase ?? movement.amount),
                     type: movement.direction === "IN" ? "INCOME" : "EXPENSE",
                     badgeLabel: movement.totalBase !== null ? overview.primaryCurrency?.code ?? movement.currency.code : movement.currency.code,
                     currencySymbol: movement.totalBase !== null ? overview.primaryCurrency?.symbol : movement.currency.symbol,
@@ -290,8 +290,9 @@ export const CashScreen: React.FC = () => {
                 <View style={styles.section}>
                   <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>Último arqueo</Text>
                   {overview.latestAudits.map((audit) => {
-                    const status = audit.difference === 0 ? "Cuadrado" : audit.difference < 0 ? "Faltante" : "Sobrante";
-                    const statusColor = audit.difference === 0 ? colors.success : audit.difference < 0 ? colors.danger : colors.warning;
+                    const diffNum = Number(audit.difference);
+                    const status = diffNum === 0 ? "Cuadrado" : diffNum < 0 ? "Faltante" : "Sobrante";
+                    const statusColor = diffNum === 0 ? colors.success : diffNum < 0 ? colors.danger : colors.warning;
                     return (
                       <View key={audit.id} style={[styles.auditCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <View style={styles.auditHeader}>
@@ -300,10 +301,10 @@ export const CashScreen: React.FC = () => {
                         </View>
                         <Text style={[styles.auditCurrency, { color: colors.text.primary }]}>{audit.currency.code}</Text>
                         <View style={styles.auditAmounts}>
-                          <AuditAmount label="Esperado" value={formatAmount(audit.expectedBalance, audit.currency.symbol)} color={colors.text.primary} labelColor={colors.text.secondary} />
-                          <AuditAmount label="Real" value={formatAmount(audit.actualBalance, audit.currency.symbol)} color={statusColor} labelColor={colors.text.secondary} />
+                          <AuditAmount label="Esperado" value={formatAmount(Number(audit.expectedBalance), audit.currency.symbol)} color={colors.text.primary} labelColor={colors.text.secondary} />
+                          <AuditAmount label="Real" value={formatAmount(Number(audit.actualBalance), audit.currency.symbol)} color={statusColor} labelColor={colors.text.secondary} />
                         </View>
-                        <Text style={[styles.auditDifference, { color: statusColor }]}>Diferencia: {formatAmount(audit.difference, audit.currency.symbol)}</Text>
+                        <Text style={[styles.auditDifference, { color: statusColor }]}>Diferencia: {formatAmount(Number(audit.difference), audit.currency.symbol)}</Text>
                         {audit.notes ? <Text style={[styles.auditNotes, { color: colors.text.secondary }]}>{audit.notes}</Text> : null}
                       </View>
                     );

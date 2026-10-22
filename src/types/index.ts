@@ -63,16 +63,18 @@ export type CashBalance = {
   id: number;
   currencyId: number;
   currency: Currency;
-  balance: number;
+  /** Decimal como string (representación única acordada, tarea 1.14). */
+  balance: string;
 };
 
 export type CashAudit = {
   id: number;
   currencyId: number;
   currency: Currency;
-  expectedBalance: number;
-  actualBalance: number;
-  difference: number;
+  /** Decimales como string (representación única acordada, tarea 1.14). */
+  expectedBalance: string;
+  actualBalance: string;
+  difference: string;
   notes?: string;
   createdAt: string;
 };
@@ -83,7 +85,8 @@ export type CashAdjustment = {
   id: number;
   currencyId: number;
   currency: Currency;
-  amount: number;
+  /** Decimal como string (representación única acordada, tarea 1.14). */
+  amount: string;
   type: CashAdjustmentType;
   reason: string;
   createdAt: string;
@@ -96,8 +99,10 @@ export type CashOverviewMovement = {
   direction: "IN" | "OUT";
   title: string;
   description: string;
-  amount: number;
-  totalBase: number | null;
+  /** Decimales como string (representación única acordada, tarea 1.14). */
+  amount: string;
+  cashAmount: string;
+  totalBase: string | null;
   currency: Currency;
   createdAt: string;
 };

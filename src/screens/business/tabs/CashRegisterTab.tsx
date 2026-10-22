@@ -178,7 +178,7 @@ export const CashRegisterTab = () => {
                       </View>
                       <Text style={[styles.balanceLabel, { color: colors.text.secondary }]}>{balance.currency.name}</Text>
                       <Text style={[styles.balanceValue, { color: colors.text.primary }]}>
-                        {formatAmount(balance.balance, balance.currency.symbol)}
+                        {formatAmount(Number(balance.balance), balance.currency.symbol)}
                       </Text>
                     </View>
                   ))}
@@ -213,7 +213,7 @@ export const CashRegisterTab = () => {
                     id: movement.id,
                     title: movement.title,
                     subtitle: `${movement.description} · ${format(new Date(movement.createdAt), "d MMM, HH:mm", { locale: es })}`,
-                    amount: movement.totalBase ?? movement.amount,
+                    amount: Number(movement.totalBase ?? movement.amount),
                     type: movement.direction === "IN" ? "INCOME" : "EXPENSE",
                     badgeLabel: movement.currency.code,
                     currencySymbol: movement.totalBase !== null
@@ -234,9 +234,9 @@ export const CashRegisterTab = () => {
                     key={audit.id}
                     audit={{
                       dateFormatted: format(new Date(audit.createdAt), "d MMM, yyyy · HH:mm", { locale: es }),
-                      expected: audit.expectedBalance,
-                      actual: audit.actualBalance,
-                      status: audit.difference === 0 ? "MATCHED" : audit.difference < 0 ? "SHORTAGE" : "OVERAGE",
+                      expected: Number(audit.expectedBalance),
+                      actual: Number(audit.actualBalance),
+                      status: Number(audit.difference) === 0 ? "MATCHED" : Number(audit.difference) < 0 ? "SHORTAGE" : "OVERAGE",
                       auditorName: "Usuario actual",
                     }}
                   />
