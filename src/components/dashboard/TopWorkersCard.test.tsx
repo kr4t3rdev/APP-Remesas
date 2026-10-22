@@ -44,11 +44,11 @@ describe("TopWorkersCard Component", () => {
       id: 1,
       currencyId: 1, // USD
       currency: { id: 1, code: "USD", name: "Dólar", symbol: "$", isActive: true },
-      referenceRate: 120,
-      buyMargin: 0,
-      sellMargin: 0,
-      buyRate: 118,
-      sellRate: 120,
+      referenceRate: "120",
+      buyMargin: "0",
+      sellMargin: "0",
+      buyRate: "118",
+      sellRate: "120",
       effectiveDate: "2026-07-14",
     },
   ];

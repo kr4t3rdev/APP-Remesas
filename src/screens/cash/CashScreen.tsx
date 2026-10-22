@@ -325,7 +325,7 @@ export const CashScreen: React.FC = () => {
                     <BarChart
                       data={exchangeRatesQuery.data.map((r) => ({
                         label: r.currency.code,
-                        value: r.buyRate || r.referenceRate || r.sellRate || 1,
+                        value: Number(r.buyRate || r.referenceRate || r.sellRate || 1),
                         color: currencyColor(r.currency.code),
                       }))}
                       height={100}

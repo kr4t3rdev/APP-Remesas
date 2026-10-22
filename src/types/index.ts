@@ -15,11 +15,12 @@ export type ExchangeRate = {
   id: number;
   currencyId: number;
   currency: Currency;
-  referenceRate: number;
-  buyMargin: number;
-  sellMargin: number;
-  buyRate: number;
-  sellRate: number;
+  /** Decimal como string (representación única acordada, tarea 1.14). */
+  referenceRate: string;
+  buyMargin: string;
+  sellMargin: string;
+  buyRate: string;
+  sellRate: string;
   effectiveDate: string;
   isNewRate?: boolean;
 };

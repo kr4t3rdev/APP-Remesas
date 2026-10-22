@@ -493,7 +493,7 @@ export const HomeScreen: React.FC = () => {
                             { color: themeColors.financial.compraForeground },
                           ]}
                         >
-                          {(rate.buyRate ?? 0).toFixed(2)}
+                          {Number(rate.buyRate ?? 0).toFixed(2)}
                         </Text>
                       </View>
                       <View
@@ -517,7 +517,7 @@ export const HomeScreen: React.FC = () => {
                             { color: themeColors.financial.ventaForeground },
                           ]}
                         >
-                          {(rate.sellRate ?? 0).toFixed(2)}
+                          {Number(rate.sellRate ?? 0).toFixed(2)}
                         </Text>
                       </View>
                     </View>

@@ -70,7 +70,7 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
   const ratedCurrencies = useMemo(() => {
     const currencyById = new Map((currencies.data ?? []).map((item) => [item.id, item]));
     return [...currentRateByCurrencyId.values()]
-      .filter((item) => item.currencyId !== primaryCurrencyId && item.buyRate > 0 && item.sellRate > 0)
+      .filter((item) => item.currencyId !== primaryCurrencyId && Number(item.buyRate) > 0 && Number(item.sellRate) > 0)
       .map((item) => currencyById.get(item.currencyId) ?? item.currency)
       .filter((item): item is NonNullable<typeof item> => Boolean(item && item.isActive !== false));
   }, [primaryCurrencyId, currencies.data, currentRateByCurrencyId]);
@@ -110,7 +110,8 @@ export const TransactionModal = ({ visible, onClose, worker }: TransactionModalP
     ? existingPosition ?? { currencyId: selectedCurrencyId, saldo: 0, costoPromedio: null, availableForSale: false }
     : existingPosition;
   const rateItem = currentRateByCurrencyId.get(selectedCurrencyId);
-  const activeRate = type === "COMPRA" ? rateItem?.buyRate ?? 0 : rateItem?.sellRate ?? 0;
+  // Decimal-string del contrato -> number en la frontera de aritmética (tarea 1.14).
+  const activeRate = type === "COMPRA" ? Number(rateItem?.buyRate ?? 0) : Number(rateItem?.sellRate ?? 0);
   useEffect(() => {
     setRateInput(activeRate > 0 ? formatRateInput(activeRate) : "");
   }, [activeRate, selectedCurrencyId, type]);
