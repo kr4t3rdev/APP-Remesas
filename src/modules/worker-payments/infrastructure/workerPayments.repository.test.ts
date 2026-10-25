@@ -89,7 +89,7 @@ describe("workerPaymentsRepository", () => {
 
       expect(mockedApi.post).toHaveBeenCalledWith(
         "/worker-payments/1/balance",
-        { amount: 300 },
+        { amount: "300" },
       );
       expect(result).toEqual({ id: 1, balance: 1300 });
     });

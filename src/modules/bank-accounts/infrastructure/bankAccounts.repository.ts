@@ -1,4 +1,5 @@
 import api from "../../../services/api";
+import { toOptionalDecimalString } from "../../../utils/decimalString";
 import type { BankAccount, Currency } from "../../../types";
 
 type CreateBankAccountDto = {
@@ -36,12 +37,23 @@ export const bankAccountsRepository = {
   },
 
   async create(data: CreateBankAccountDto): Promise<BankAccount> {
-    const response = await api.post<BankAccount>("/bank-accounts", data);
+    // Decisión 1.14: el saldo inicial viaja como decimal-string.
+    const response = await api.post<BankAccount>("/bank-accounts", {
+      ...data,
+      ...(data.initialBalance !== undefined
+        ? { initialBalance: toOptionalDecimalString(data.initialBalance) }
+        : {}),
+    });
     return response.data!;
   },
 
   async update(id: number, data: UpdateBankAccountDto): Promise<BankAccount> {
-    const response = await api.patch<BankAccount>(`/bank-accounts/${id}`, data);
+    const response = await api.patch<BankAccount>(`/bank-accounts/${id}`, {
+      ...data,
+      ...(data.initialBalance !== undefined
+        ? { initialBalance: toOptionalDecimalString(data.initialBalance) }
+        : {}),
+    });
     return response.data!;
   },
 

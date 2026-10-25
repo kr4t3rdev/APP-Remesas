@@ -50,7 +50,10 @@ describe("expensesRepository", () => {
 
     const result = await expensesRepository.createExpense(payload);
 
-    expect(mockedApi.post).toHaveBeenCalledWith("/expenses", payload);
+    expect(mockedApi.post).toHaveBeenCalledWith("/expenses", {
+      ...payload,
+      amount: "50",
+    });
     expect(result).toEqual({ id: 9, ...payload });
   });
 

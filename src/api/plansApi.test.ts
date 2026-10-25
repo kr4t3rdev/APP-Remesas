@@ -45,7 +45,7 @@ describe("plansApi", () => {
       name: "Plan Pro",
       description: "desc",
       isActive: true,
-      monthlyUsd: 99,
+      monthlyUsd: "99",
     });
   });
 
@@ -66,7 +66,7 @@ describe("plansApi", () => {
 
     expect(api.patch).toHaveBeenCalledWith("/plans/7", {
       name: "Plan Pro",
-      monthlyUsd: 120,
+      monthlyUsd: "120",
     });
   });
 });

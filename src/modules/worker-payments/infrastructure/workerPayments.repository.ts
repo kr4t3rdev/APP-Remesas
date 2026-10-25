@@ -1,4 +1,5 @@
 import api from "../../../services/api";
+import { toDecimalString } from "../../../utils/decimalString";
 import type {
   Worker,
   CreateWorkerInput,
@@ -40,9 +41,13 @@ export const workerPaymentsRepository = {
     },
   ): Promise<Worker> {
     try {
+      // Decisión 1.14: el monto viaja como decimal-string.
       const response = await api.post<{ worker?: Worker; workerBalance?: Worker }>(
         `/worker-payments/${workerId}/balance`,
-        payload,
+        {
+          ...payload,
+          amount: toDecimalString(payload.amount),
+        },
       );
       return response.data!.worker ?? response.data!.workerBalance!;
     } catch (error: any) {
@@ -69,9 +74,13 @@ export const workerPaymentsRepository = {
     },
   ): Promise<Worker> {
     try {
+      // Decisión 1.14: el monto viaja como decimal-string.
       const response = await api.post<{ worker?: Worker; workerBalance?: Worker }>(
         `/worker-payments/${workerId}/deposit`,
-        payload,
+        {
+          ...payload,
+          amount: toDecimalString(payload.amount),
+        },
       );
       return response.data!.worker ?? response.data!.workerBalance!;
     } catch (error: any) {

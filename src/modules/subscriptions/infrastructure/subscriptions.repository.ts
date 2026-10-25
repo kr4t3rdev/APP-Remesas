@@ -1,4 +1,5 @@
 import api from "../../../services/api";
+import { toDecimalString } from "../../../utils/decimalString";
 import type {
   BillingCycle,
   SubscriptionPayment,
@@ -72,7 +73,12 @@ export const subscriptionsRepository = {
   }): Promise<SubscriptionPayment> {
     const response = await api.post<SubscriptionPayment>(
       "/subscriptions/payments",
-      data,
+      // Decisión 1.14: el importe USD y la tasa viajan como decimal-string.
+      {
+        ...data,
+        amountUsd: toDecimalString(data.amountUsd),
+        exchangeRateUsed: toDecimalString(data.exchangeRateUsed),
+      },
     );
     return response.data!;
   },

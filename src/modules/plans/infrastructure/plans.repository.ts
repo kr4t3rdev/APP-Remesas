@@ -1,4 +1,5 @@
 import api from "../../../services/api";
+import { toDecimalString, toOptionalDecimalString } from "../../../utils/decimalString";
 import type { CreatePlanInput, Plan } from "../../../types";
 
 // The backend exposes plans only under /plans (PlansController).
@@ -16,12 +17,35 @@ export const plansRepository = {
   },
 
   async create(data: CreatePlanInput): Promise<Plan> {
-    const response = await api.post<Plan>("/plans", data);
+    // Decisión 1.14: los precios viajan como decimal-string.
+    const response = await api.post<Plan>("/plans", {
+      ...data,
+      ...(data.monthlyUsd !== undefined
+        ? { monthlyUsd: toDecimalString(data.monthlyUsd) }
+        : {}),
+      ...(data.semiannualUsd !== undefined
+        ? { semiannualUsd: toDecimalString(data.semiannualUsd) }
+        : {}),
+      ...(data.annualUsd !== undefined
+        ? { annualUsd: toDecimalString(data.annualUsd) }
+        : {}),
+    });
     return response.data!;
   },
 
   async update(id: number, data: Partial<CreatePlanInput>): Promise<Plan> {
-    const response = await api.patch<Plan>(`/plans/${id}`, data);
+    const response = await api.patch<Plan>(`/plans/${id}`, {
+      ...data,
+      ...(data.monthlyUsd !== undefined
+        ? { monthlyUsd: toDecimalString(data.monthlyUsd) }
+        : {}),
+      ...(data.semiannualUsd !== undefined
+        ? { semiannualUsd: toOptionalDecimalString(data.semiannualUsd) }
+        : {}),
+      ...(data.annualUsd !== undefined
+        ? { annualUsd: toOptionalDecimalString(data.annualUsd) }
+        : {}),
+    });
     return response.data!;
   },
 

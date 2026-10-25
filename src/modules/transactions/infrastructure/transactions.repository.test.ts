@@ -37,7 +37,7 @@ it("forwards remittance classification and active-rate persistence in the body",
 
   expect(api.post).toHaveBeenCalledWith(
     "/fx-operations/transfers",
-    expect.objectContaining({ operationKind: "REMITTANCE", persistRate: true, rate: 245 }),
+    expect.objectContaining({ operationKind: "REMITTANCE", persistRate: true, rate: "245", amount: "10" }),
     { headers: { "Idempotency-Key": "remittance-1" } },
   );
 });
@@ -49,7 +49,7 @@ it("posts the controlled historical opening contract", async () => {
 
   expect(api.post).toHaveBeenCalledWith("/fx-operations/positions/open", {
     currencyId: 2,
-    openingCost: 250.125,
+    openingCost: "250.125",
   });
 });
 

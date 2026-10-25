@@ -1,4 +1,5 @@
 import api from "../../../services/api";
+import { toDecimalString } from "../../../utils/decimalString";
 import type {
   CashAdjustment,
   CashAdjustmentType,
@@ -43,7 +44,11 @@ export const cashRepository = {
     actualBalance: number;
     notes?: string;
   }): Promise<void> {
-    await api.post("/cash-audits", data);
+    // Decisión 1.14: el saldo real viaja como decimal-string.
+    await api.post("/cash-audits", {
+      ...data,
+      actualBalance: toDecimalString(data.actualBalance),
+    });
   },
 
   async createCashAdjustment(data: {
@@ -52,7 +57,11 @@ export const cashRepository = {
     type: CashAdjustmentType;
     reason: string;
   }): Promise<CashAdjustment> {
-    const response = await api.post<CashAdjustment>("/cash-adjustments", data);
+    // Decisión 1.14: el importe viaja como decimal-string.
+    const response = await api.post<CashAdjustment>("/cash-adjustments", {
+      ...data,
+      amount: toDecimalString(data.amount),
+    });
     return response.data!;
   },
 };

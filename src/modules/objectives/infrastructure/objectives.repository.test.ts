@@ -62,7 +62,10 @@ describe("objectivesRepository", () => {
 
     const result = await objectivesRepository.createObjective(payload);
 
-    expect(mockedApi.post).toHaveBeenCalledWith("/objectives", payload);
+    expect(mockedApi.post).toHaveBeenCalledWith("/objectives", {
+      ...payload,
+      targetAmount: "1000",
+    });
     expect(result).toEqual({ id: 9, ...payload });
   });
 
@@ -72,7 +75,9 @@ describe("objectivesRepository", () => {
 
     const result = await objectivesRepository.updateObjective(3, payload);
 
-    expect(mockedApi.patch).toHaveBeenCalledWith("/objectives/3", payload);
+    expect(mockedApi.patch).toHaveBeenCalledWith("/objectives/3", {
+      targetAmount: "2000",
+    });
     expect(result).toEqual({ id: 3, ...payload });
   });
 

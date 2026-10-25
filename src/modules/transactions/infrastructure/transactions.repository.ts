@@ -1,4 +1,5 @@
 import api from "../../../services/api";
+import { toDecimalString } from "../../../utils/decimalString";
 import type {
   Currency,
   ExchangeRate,
@@ -39,14 +40,26 @@ export const transactionsRepository = {
   },
 
   async createTransaction(data: TransferRequest): Promise<TransferResponse> {
-    const { idempotencyKey, ...request } = data;
+    const { idempotencyKey, ...rest } = data;
     if (!idempotencyKey) throw new Error("Idempotency-Key is required for a transfer intent");
+    // Decisión 1.14: los importes y tasas viajan como decimal-string.
+    const request = {
+      ...rest,
+      amount: toDecimalString(data.amount),
+      rate: toDecimalString(data.rate),
+      ...(data.workerProfit !== undefined
+        ? { workerProfit: toDecimalString(data.workerProfit) }
+        : {}),
+    };
     const response = await api.post<TransferResponse>("/fx-operations/transfers", request, { headers: { "Idempotency-Key": idempotencyKey } });
     return response.data!;
   },
 
   async openPosition(data: OpenPositionRequest): Promise<OpenPositionResponse> {
-    const response = await api.post<OpenPositionResponse>("/fx-operations/positions/open", data);
+    const response = await api.post<OpenPositionResponse>("/fx-operations/positions/open", {
+      ...data,
+      openingCost: toDecimalString(data.openingCost),
+    });
     if (!response.data) throw new Error("No se pudo abrir la posición histórica");
     return response.data;
   },

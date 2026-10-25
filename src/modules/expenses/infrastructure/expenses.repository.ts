@@ -1,4 +1,5 @@
 import api from "../../../services/api";
+import { toDecimalString } from "../../../utils/decimalString";
 import type {
   Expense,
   ExpenseListResponse,
@@ -49,7 +50,11 @@ export const expensesRepository = {
 
   async createExpense(data: CreateExpenseInput): Promise<Expense> {
     try {
-      const response = await api.post<Expense>("/expenses", data);
+      // Decisión 1.14: el importe viaja como decimal-string.
+      const response = await api.post<Expense>("/expenses", {
+        ...data,
+        amount: toDecimalString(data.amount),
+      });
       return response.data!;
     } catch (error) {
       logError("createExpense", { payload: data }, error);
@@ -59,7 +64,12 @@ export const expensesRepository = {
 
   async updateExpense(id: number, data: UpdateExpenseInput): Promise<Expense> {
     try {
-      const response = await api.patch<Expense>(`/expenses/${id}`, data);
+      const response = await api.patch<Expense>(`/expenses/${id}`, {
+        ...data,
+        ...(data.amount !== undefined
+          ? { amount: toDecimalString(data.amount) }
+          : {}),
+      });
       return response.data!;
     } catch (error) {
       logError("updateExpense", { id, payload: data }, error);

@@ -1,4 +1,5 @@
 import api from "../../../services/api";
+import { toDecimalString } from "../../../utils/decimalString";
 import type {
   Currency,
   ExchangeRate,
@@ -74,8 +75,10 @@ export const exchangeRatesRepository = {
   async createRateHistory(
     data: CreateRateHistoryInput,
   ): Promise<RateHistoryEntry> {
+    // Decisión 1.14: la tasa viaja como decimal-string.
     const response = await api.post<RateHistoryEntry>("/rate-history", {
       ...data,
+      rate: toDecimalString(data.rate),
       source: data.source ?? "MANUAL",
     });
     return response.data!;
@@ -85,9 +88,14 @@ export const exchangeRatesRepository = {
     currencyId: number,
     data: { referenceRate: number; buyMargin: number; sellMargin: number },
   ): Promise<ExchangeRate> {
+    // Decisión 1.14: tasa y márgenes viajan como decimal-string.
     const response = await api.put<ExchangeRate>(
       `/exchange-rates/${currencyId}`,
-      data,
+      {
+        referenceRate: toDecimalString(data.referenceRate),
+        buyMargin: toDecimalString(data.buyMargin),
+        sellMargin: toDecimalString(data.sellMargin),
+      },
     );
     return response.data!;
   },

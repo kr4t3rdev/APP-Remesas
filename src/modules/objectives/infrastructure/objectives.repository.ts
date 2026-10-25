@@ -1,4 +1,5 @@
 import api from "../../../services/api";
+import { toDecimalString } from "../../../utils/decimalString";
 import type {
   Objective,
   ObjectiveStatus,
@@ -27,7 +28,11 @@ export const objectivesRepository = {
   },
 
   async createObjective(data: CreateObjectiveInput): Promise<Objective> {
-    const response = await api.post<Objective>("/objectives", data);
+    // Decisión 1.14: la meta viaja como decimal-string.
+    const response = await api.post<Objective>("/objectives", {
+      ...data,
+      targetAmount: toDecimalString(data.targetAmount),
+    });
     return response.data!;
   },
 
@@ -35,7 +40,12 @@ export const objectivesRepository = {
     id: number,
     data: UpdateObjectiveInput,
   ): Promise<Objective> {
-    const response = await api.patch<Objective>(`/objectives/${id}`, data);
+    const response = await api.patch<Objective>(`/objectives/${id}`, {
+      ...data,
+      ...(data.targetAmount !== undefined
+        ? { targetAmount: toDecimalString(data.targetAmount) }
+        : {}),
+    });
     return response.data!;
   },
 
